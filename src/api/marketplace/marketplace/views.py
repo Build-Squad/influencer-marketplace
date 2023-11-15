@@ -1,7 +1,7 @@
-from django.shortcuts import redirect, render
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from django.contrib.auth.models import User
-from tweepy import OAuthHandler, API, OAuth2UserHandler
+from tweepy import OAuth2UserHandler
+from django.http import JsonResponse, HttpResponseBadRequest
 
 
 CONSUMER_KEY = "Mp98xRu1ZVLfrndEyInM4ObLw"
@@ -11,7 +11,7 @@ ACCESS_SECRET = "GOQGmBwXM7jgc6bnqGkcRn6jX25ibxwWTbTdwWrkYKOBq"
 CLIENT_ID = "UXRNdzBqU3B4X29kLVRDSDBlN2c6MTpjaQ"
 CLIENT_SECRET = "UGyk7GeJ-dgC14RPfasEGQlUjJWhtAK5BQ9p-ksThG6xHIwouW"
 
-# Ref - https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
+# Defines scope for OAuth2 with PKCE
 SCOPES = [
     "offline.access",
     "tweet.read",
@@ -21,27 +21,30 @@ SCOPES = [
     "follows.write",
     "mute.read",
 ]
+callback_url = "http://127.0.0.1:8000/twitter-login-callback"
+oauth2_user_handler = OAuth2UserHandler(
+    client_id=CLIENT_ID,
+    redirect_uri=callback_url,
+    scope=SCOPES,
+)
 
 
 def authTwitterUser(request):
-    callback_url = "http://127.0.0.1:8000/twitter-login-callback"
-    oauth2_user_handler = OAuth2UserHandler(
-        client_id=CLIENT_ID,
-        redirect_uri=callback_url,
-        scope=SCOPES,
-    )
     auth_url = oauth2_user_handler.get_authorization_url()
-    return redirect(auth_url)
+    return JsonResponse({"auth_url": auth_url})
 
 
 def twitterLoginCallback(request):
-    # auth_handler = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-    # auth_handler.set_access_token(
-    #     request.GET["oauth_token"], request.GET["oauth_verifier"]
-    # )
+    if "code" not in request.GET:
+        return HttpResponseBadRequest(
+            "Authorization code not found in the callback URL."
+        )
+    authorization_response_url = request.build_absolute_uri()
 
-    # api = API(auth_handler)
+    try:
+        access_token = oauth2_user_handler.fetch_token(authorization_response_url)
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error fetching access token: {str(e)}")
 
-    # TODO: Store the access token and refresh token securely.
-
+    # Redirect to your frontend or any desired URL
     return redirect("http://localhost:3000/")
