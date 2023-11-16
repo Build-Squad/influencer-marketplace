@@ -1,15 +1,7 @@
 from django.shortcuts import redirect
-from django.contrib.auth.models import User
-from tweepy import OAuth2UserHandler
+from tweepy import API, Client, OAuth1UserHandler
 from django.http import JsonResponse, HttpResponseBadRequest
-
-
-CONSUMER_KEY = "Mp98xRu1ZVLfrndEyInM4ObLw"
-CONSUMER_SECRET = "UHC387WEtwFuklIjZ60V65Ns0Tze1s0U1ZLK6EhOEMcdMnT1nH"
-ACCESS_TOKEN = "1722312724565434368-8W2cBj1jVzCVgJDzJaHgFdeoSRlOew"
-ACCESS_SECRET = "GOQGmBwXM7jgc6bnqGkcRn6jX25ibxwWTbTdwWrkYKOBq"
-CLIENT_ID = "UXRNdzBqU3B4X29kLVRDSDBlN2c6MTpjaQ"
-CLIENT_SECRET = "UGyk7GeJ-dgC14RPfasEGQlUjJWhtAK5BQ9p-ksThG6xHIwouW"
+from decouple import config
 
 # Defines scope for OAuth2 with PKCE
 SCOPES = [
@@ -21,28 +13,44 @@ SCOPES = [
     "follows.write",
     "mute.read",
 ]
-callback_url = "http://127.0.0.1:8000/twitter-login-callback"
-oauth2_user_handler = OAuth2UserHandler(
-    client_id=CLIENT_ID,
-    redirect_uri=callback_url,
-    scope=SCOPES,
+callback_url = "https://127.0.0.1:8000/twitter-login-callback"
+
+# This is OAuth1.0 authentication instance that'll be used to interact with API/Client for V1/V2 version of API
+oauth1_user_handler = OAuth1UserHandler(
+    config("CONSUMER_KEY"), config("CONSUMER_SECRET"), callback=callback_url
 )
 
 
 def authTwitterUser(request):
-    auth_url = oauth2_user_handler.get_authorization_url()
+    auth_url = oauth1_user_handler.get_authorization_url()
     return JsonResponse({"auth_url": auth_url})
 
 
 def twitterLoginCallback(request):
-    if "code" not in request.GET:
+    if "oauth_verifier" not in request.GET:
         return HttpResponseBadRequest(
-            "Authorization code not found in the callback URL."
+            "Authorization oauth_verifier not found in the callback URL."
         )
-    authorization_response_url = request.build_absolute_uri()
 
     try:
-        access_token = oauth2_user_handler.fetch_token(authorization_response_url)
+        access_token, access_token_secret = oauth1_user_handler.get_access_token(
+            request.GET.get("oauth_verifier")
+        )
+
+        # Tweepy Instance for accessing API V1 services
+        api = API(oauth1_user_handler)
+
+        # Tweepy Instance for accessing API V2 services
+        client = Client(
+            consumer_key=config("CONSUMER_KEY"),
+            consumer_secret=config("CONSUMER_SECRET"),
+            access_token=access_token,
+            access_token_secret=access_token_secret,
+        )
+        user = client.get_me()
+        print(user)
+
+        # Store
     except Exception as e:
         return HttpResponseBadRequest(f"Error fetching access token: {str(e)}")
 

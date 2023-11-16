@@ -8,7 +8,7 @@ import Image from "next/image";
 export default function Home() {
   const authTwitterUser = async () => {
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/auth-twitter-user/`);
+      const res = await axios.get(`https://127.0.0.1:8000/auth-twitter-user/`);
       window.location.href = res.data.auth_url;
     } catch (e) {
       window.alert(e);
