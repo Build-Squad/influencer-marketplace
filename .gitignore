@@ -35,3 +35,9 @@
 /src/ui/*.tsbuildinfo
 /src/ui/next-env.d.ts
 .DS_Store
+
+# blockchain
+/src/contract/node_modules
+/src/contract/.vscode/settings.json
+/src/contract/artifacts/
+/src/contract/cache
