@@ -1,6 +1,6 @@
-Setting Up the Code Locally
+# Setting Up the Code Locally
 
-Prerequisites:-
+## Prerequisites:-
 
 Before setting up the code locally, ensure the following prerequisites are met:
 
@@ -12,7 +12,7 @@ PostgreSQL Installation:
 
 PostgreSQL must be installed on your machine. Install using Homebrew (for Mac) or Download and install it from postgresql.org.
 
-Setup Steps
+## Setup Steps:-
 
 Follow these steps to set up the code locally:
 
@@ -21,18 +21,18 @@ Follow these steps to set up the code locally:
 2. cd /src/api/marketplace
 
 3. Create Virtual Environment 
-# On Linux/Mac
+On Linux/Mac
 python3 -m venv venv
 
-# On Windows
+On Windows
 python -m venv venv
 
 4. Activate Virtual Environment
 
-# On Linux/Mac
+On Linux/Mac
 source venv/bin/activate
 
-# On Windows
+On Windows
 .\venv\Scripts\activate
 
 5. Install dependencies
