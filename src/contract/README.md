@@ -13,7 +13,7 @@
 ``` npm install -g hardhat ```  
 ``` npm install --save-dev hardhat ```  
 3. Install Dependencies:  
-``` npm install ```
+``` npm ci ```
 4. Start a local Hardnet network:  
 ``` npx hardhat node ```  
 + Note: Keep this process running in a separate terminal window as this is the local blockchain network on which the smart contract will be deployed and on each restart of this process, the blockchain will be reset.
