@@ -5,14 +5,17 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 // @notice: Escrow contract for the marketplace to hold the funds until the buyer confirms the delivery of the service
 // @dev: The contract inherits the Ownable contract from OpenZeppelin to make updates to the platform fee and platform address
 // @dev: The contract stores the transaction details and the token in it until confirmed by the buyer
 
-contract Escrow is Ownable {
-    uint public platformFee = 1; // 1%
-    address public platformAddress = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+contract Escrow is Ownable, Pausable, ReentrancyGuard {
+    uint public constant INITIAL_PLATFORM_FEE = 1; // 1%
+    uint public platformFee = INITIAL_PLATFORM_FEE;
+    address public platformAddress;
 
     // @dev: The State enum lists all the possible states of the transaction
     enum State {
@@ -22,9 +25,6 @@ contract Escrow is Ownable {
         REFUNDED,
         REJECTED
     }
-
-    // @dev: The currState variable stores the current state of the transaction
-    State public currState;
 
     struct Transaction {
         address buyer;
@@ -86,30 +86,40 @@ contract Escrow is Ownable {
         uint256 amount
     );
 
-    constructor() Ownable(platformAddress) {
-        currState = State.AWAITING_PAYMENT;
+    event PlatformFeeUpdated(uint256 platformFee);
+    event PlatformAddressUpdated(address platformAddress);
+
+    constructor(address _platformAddress) Ownable(_platformAddress) {
+        platformAddress = _platformAddress;
+    }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
     }
 
     // @dev: The initiateTransaction function is called by the buyer to initiate the transaction
     function initiateTransaction(
         address _seller,
         uint256 _amount
-    ) public payable {
+    ) public payable whenNotPaused {
         require(msg.value >= _amount, "Amount sent does not match item price");
-        require(currState == State.AWAITING_PAYMENT, "Invalid state");
         transactions[transactionCount] = Transaction({
             buyer: msg.sender,
             seller: _seller,
             amount: _amount,
             status: State.AWAITING_DELIVERY
         });
+        transactionCount++;
         emit TransactionInitiated(
             transactionCount,
             msg.sender,
             _seller,
             _amount
         );
-        transactionCount++;
     }
 
     function confirmDelivery(
@@ -118,15 +128,26 @@ contract Escrow is Ownable {
         public
         onlyBuyer(_transactionId)
         inStatus(_transactionId, State.AWAITING_DELIVERY)
+        nonReentrant
+        whenNotPaused
     {
         Transaction storage transaction = transactions[_transactionId];
+        uint256 fee = (transaction.amount * platformFee) / 100;
+        uint256 sellerAmount = transaction.amount - fee;
+
+        // Check
+        require(
+            address(this).balance >= sellerAmount + fee,
+            "Insufficient contract balance"
+        );
+
+        // Effects
         transaction.status = State.COMPLETE;
-        payable(transaction.seller).transfer(
-            transaction.amount - ((transaction.amount * platformFee) / 100)
-        );
-        payable(platformAddress).transfer(
-            (transaction.amount * platformFee) / 100
-        );
+
+        // Interaction
+        payable(transaction.seller).transfer(sellerAmount);
+        payable(platformAddress).transfer(fee);
+
         emit TransactionCompleted(
             _transactionId,
             transaction.buyer,
@@ -141,10 +162,23 @@ contract Escrow is Ownable {
         public
         onlySeller(_transactionId)
         inStatus(_transactionId, State.AWAITING_DELIVERY)
+        nonReentrant
+        whenNotPaused
     {
         Transaction storage transaction = transactions[_transactionId];
+
+        // Check
+        require(
+            address(this).balance >= transaction.amount,
+            "Insufficient contract balance"
+        );
+
+        // Effects
         transaction.status = State.REFUNDED;
+
+        // Interaction
         payable(transaction.buyer).transfer(transaction.amount);
+
         emit TransactionRefunded(
             _transactionId,
             transaction.buyer,
@@ -159,10 +193,23 @@ contract Escrow is Ownable {
         public
         onlySeller(_transactionId)
         inStatus(_transactionId, State.AWAITING_DELIVERY)
+        nonReentrant
+        whenNotPaused
     {
         Transaction storage transaction = transactions[_transactionId];
+
+        // Check
+        require(
+            address(this).balance >= transaction.amount,
+            "Insufficient contract balance"
+        );
+
+        // Effects
         transaction.status = State.REJECTED;
+
+        // Interaction
         payable(transaction.buyer).transfer(transaction.amount);
+
         emit TransactionRejected(
             _transactionId,
             transaction.buyer,
@@ -171,27 +218,27 @@ contract Escrow is Ownable {
         );
     }
 
-    function getBalance() public view returns (uint256) {
+    function getBalance() external view returns (uint256) {
         return address(this).balance;
     }
 
     function setPlatformFee(uint _platformFee) public onlyOwner {
         platformFee = _platformFee;
-    }
-
-    function getPlatformFee() public view returns (uint) {
-        return platformFee;
+        emit PlatformFeeUpdated(platformFee);
     }
 
     function setPlatformAddress(address _platformAddress) public onlyOwner {
         platformAddress = _platformAddress;
+        emit PlatformAddressUpdated(platformAddress);
     }
 
-    function getPlatformAddress() public view returns (address) {
-        return platformAddress;
+    function getTransaction(
+        uint256 _transactionId
+    ) public view returns (Transaction memory) {
+        return transactions[_transactionId];
     }
 
-		function getTransaction (uint256 _transactionId) public view returns (Transaction memory) {
-			return transactions[_transactionId];
-		}
+    function isPaused() public view returns (bool) {
+        return paused();
+    }
 }
