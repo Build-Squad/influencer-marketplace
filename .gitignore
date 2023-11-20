@@ -41,3 +41,4 @@
 /src/contract/.vscode/settings.json
 /src/contract/artifacts/
 /src/contract/cache
+src/contract/.env

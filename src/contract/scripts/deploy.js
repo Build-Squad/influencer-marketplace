@@ -1,11 +1,11 @@
 // scripts/deploy.js
 async function main () {
   // We get the contract to deploy
-  const Box = await ethers.getContractFactory('Escrow');
+  const Escrow = await ethers.getContractFactory('Escrow');
   console.log('Deploying Escrow...');
-  const box = await Box.deploy();
-  await box.deployed();
-  console.log('Escrow contract deployed to:', box.address);
+  const escrow = await Escrow.deploy(process.env.PLATFORM_ADDRESS);
+  await escrow.deployed();
+  console.log('Escrow contract deployed to:', escrow.address);
 }
 
 main()
