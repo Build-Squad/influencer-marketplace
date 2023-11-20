@@ -25,9 +25,9 @@ class CategoryMaster(models.Model):
 
 class AccountCategory(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Account Category ID', default=uuid.uuid4, editable=False)
-    twitter_account_id = models.ForeignKey(TwitterAccount, related_name='cat_twitter_account_id', on_delete=models.DO_NOTHING,
+    twitter_account = models.ForeignKey(TwitterAccount, related_name='cat_twitter_account_id', on_delete=models.DO_NOTHING,
                                          null=True)
-    category_id = models.ForeignKey(CategoryMaster, related_name='cat_category_master_id', on_delete=models.DO_NOTHING,
+    category = models.ForeignKey(CategoryMaster, related_name='cat_category_master_id', on_delete=models.DO_NOTHING,
                                          null=True)
 
     class Meta:
@@ -59,6 +59,7 @@ class User(AbstractUser):
                                          null=True)
 
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = [] 
     ordering = ('email',)
 
     class Meta:
