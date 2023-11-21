@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: ./src/api/marketplace
+    ports:
+      - "8000:8000"
+    volumes:
+      - type: bind
+        source: ./src/api/marketplace
+        target: /api/marketplace
+        consistency: cached
+      - type: volume
+        target: /api/marketplace/venv
+        consistency: cached
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_NAME=marketplace
+      - POSTGRES_USER=mp_user
+      - POSTGRES_PASSWORD="#h&{^52405F7"
+      - DJANGO_SETTINGS_MODULE=marketplace.settings
+      - PYTHONPATH=/api/marketplace
+
+  frontend:
+    build:
+      context: ./src/ui
+    image: react:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - type: bind
+        source: ./src/ui
+        target: /ui
+        consistency: cached
+      - type: volume
+        target: /ui/gbs-plus/node_modules
+        consistency: cached
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=6024"
+    command: yarn dev
+    depends_on:
+      - backend
+
+  database:
+    image: postgres:latest
+    environment:
+      - POSTGRES_NAME=marketplace
+      - POSTGRES_USER=mp_user
+      - POSTGRES_PASSWORD="#h&{^52405F7"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
