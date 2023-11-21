@@ -1,7 +1,8 @@
 from django.shortcuts import redirect
-from tweepy import API, Client, OAuth1UserHandler
+from tweepy import Client, OAuth2UserHandler
 from django.http import JsonResponse, HttpResponseBadRequest
 from decouple import config
+from marketplace.models import Users
 
 # Defines scope for OAuth2 with PKCE
 SCOPES = [
@@ -15,40 +16,38 @@ SCOPES = [
 ]
 callback_url = "https://127.0.0.1:8000/twitter-login-callback"
 
-# This is OAuth1.0 authentication instance that'll be used to interact with API/Client for V1/V2 version of API
-oauth1_user_handler = OAuth1UserHandler(
-    config("CONSUMER_KEY"), config("CONSUMER_SECRET"), callback=callback_url
+# This is OAuth2.0 PKCE authentication instance that'll be used to interact with Client for V2 version of API
+oauth2_user_handler = OAuth2UserHandler(
+    client_id=config("CLIENT_ID"),
+    redirect_uri=callback_url,
+    scope=SCOPES,
+    client_secret=config("CLIENT_SECRET"),
 )
 
 
 def authTwitterUser(request):
-    auth_url = oauth1_user_handler.get_authorization_url()
+    auth_url = oauth2_user_handler.get_authorization_url()
     return JsonResponse({"auth_url": auth_url})
 
 
 def twitterLoginCallback(request):
-    if "oauth_verifier" not in request.GET:
-        return HttpResponseBadRequest(
-            "Authorization oauth_verifier not found in the callback URL."
-        )
+    authorization_response_url = request.build_absolute_uri()
 
     try:
-        access_token, access_token_secret = oauth1_user_handler.get_access_token(
-            request.GET.get("oauth_verifier")
+        access_token_obj = oauth2_user_handler.fetch_token(authorization_response_url)
+        access_token = access_token_obj["access_token"]
+        client = Client(access_token)
+
+        userData = client.get_me(user_auth=False).data
+        print(userData)
+        newUser = Users.objects.create(
+            id=userData.id,
+            name=userData.name,
+            userName=userData.username,
+            accessToken=access_token,
         )
 
-        # Tweepy Instance for accessing API V1 services
-        api = API(oauth1_user_handler)
-
-        # Tweepy Instance for accessing API V2 services
-        client = Client(
-            consumer_key=config("CONSUMER_KEY"),
-            consumer_secret=config("CONSUMER_SECRET"),
-            access_token=access_token,
-            access_token_secret=access_token_secret,
-        )
-        user = client.get_me()
-        print(user)
+        newUser.save()
 
         # Store
     except Exception as e:
