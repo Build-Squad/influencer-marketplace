@@ -36,7 +36,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Replace with the origin of your frontend application
 ]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Application definition
 
@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
-    "marketplace"
+    "marketplace",
 ]
 
 MIDDLEWARE = [

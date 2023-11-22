@@ -20,5 +20,11 @@ from . import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth-twitter-user/", views.authTwitterUser, name="auth-twitter-user"),
-    path('twitter-login-callback/', views.twitterLoginCallback, name='twitter-login-callback'),
+    path(
+        "twitter-login-callback/",
+        views.twitterLoginCallback,
+        name="twitter-login-callback",
+    ),
+    path("is-authenticated/", views.isAuthenticated, name="is-authenticated"),
+    path("logout/", views.logoutUser, name="logout"),
 ]
