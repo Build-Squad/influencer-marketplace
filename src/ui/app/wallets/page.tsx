@@ -6,21 +6,20 @@ import Onboard from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
 import metamaskSDK from "@web3-onboard/metamask";
 import walletConnectModule from "@web3-onboard/walletconnect";
+import ABI from "../../src/abis/Escrow.json";
 
+import { ethers } from "ethers";
 import { useState } from "react";
 
 const Wallets = () => {
   const [wallets, setWallets] = useState<any[]>([]);
-  const MAINNET_RPC_URL =
-    "https://mainnet.infura.io/v3/e9b21e750d854d72b457dd091d1b0fc6";
-  const ARBITRUM_RPC_URL =
-    "https://arbitrum-mainnet.infura.io/v3/e9b21e750d854d72b457dd091d1b0fc6";
+  const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS || "";
 
   const injected = injectedModule();
   const coinbase = coinbaseModule();
 
   const wcInitOptions = {
-    projectId: "fa9ffbaaf48751bd2bc165d1d2c8183b",
+    projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "",
   };
 
   const metamask = metamaskSDK({
@@ -37,28 +36,10 @@ const Wallets = () => {
     wallets: [coinbase, walletConnect, metamask, injected],
     chains: [
       {
-        id: "0x1",
+        id: "0xaa36a7",
         token: "ETH",
-        label: "Ethereum Mainnet",
-        rpcUrl: MAINNET_RPC_URL,
-      },
-      {
-        id: 42161,
-        token: "ARB-ETH",
-        label: "Arbitrum One",
-        rpcUrl: ARBITRUM_RPC_URL,
-      },
-      {
-        id: "0xa4ba",
-        token: "ARB",
-        label: "Arbitrum Nova",
-        rpcUrl: "https://nova.arbitrum.io/rpc",
-      },
-      {
-        id: "0x2105",
-        token: "ETH",
-        label: "Base",
-        rpcUrl: "https://mainnet.base.org",
+        label: "Sepolia",
+        rpcUrl: process.env.NEXT_PUBLIC_SEPOLIA_INFURA_LINK || "",
       },
     ],
   });
@@ -67,6 +48,20 @@ const Wallets = () => {
     const connectedWallets = await onboard.connectWallet();
     console.log(connectedWallets);
     setWallets(connectedWallets);
+  };
+
+  const handleContractConnect = async () => {
+    const ethersProvider = new ethers.BrowserProvider(wallets[0].provider);
+    const signer = await ethersProvider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    console.log(contract);
+    const transaction = await contract.initiateTransaction(
+      process.env.NEXT_PUBLIC_TEST_WALLET_ADDRESS || "",
+      ethers.parseEther("0.0001"),
+      {
+        value: ethers.parseEther("0.0002"),
+      }
+    );
   };
 
   function getElement(wallet: any) {
@@ -106,6 +101,15 @@ const Wallets = () => {
             Wallets
           </Typography>
           {wallets.map((wallet: any) => getElement(wallet))}
+          <Button
+            onClick={() => {
+              handleContractConnect();
+            }}
+            variant="outlined"
+            color="secondary"
+          >
+            <Typography variant="h6">Initiate Transaction</Typography>
+          </Button>
         </Box>
       )}
     </Box>
