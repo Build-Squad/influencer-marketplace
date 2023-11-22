@@ -7,7 +7,7 @@ from django.http import (
     HttpResponseRedirect,
 )
 from decouple import config
-from marketplace.models import Users
+from accounts.models import TwitterAccount
 
 # Defines scope for OAuth2 with PKCE
 SCOPES = [
@@ -80,11 +80,11 @@ def twitterLoginCallback(request):
         userData = client.get_me(user_auth=False).data
 
         # Checking if the user with the ID already exists in our database
-        existing_user = Users.objects.filter(id=userData.id).first()
+        existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
         if existing_user is None:
-            newUser = Users.objects.create(
-                id=userData.id,
+            newUser = TwitterAccount.objects.create(
+                twitter_id=userData.id,
                 name=userData.name,
                 userName=userData.username,
                 accessToken=access_token,
