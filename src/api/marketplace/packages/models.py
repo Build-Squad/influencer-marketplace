@@ -1,3 +1,5 @@
+from datetime import *
+from django.utils import timezone
 from unicodedata import name
 from django.db import models
 import uuid
@@ -18,9 +20,14 @@ class Package(models.Model):
     status = models.CharField(max_length=100, blank=True, null=True)
     publish_date = models.DateTimeField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "package" 
+
+    def delete (self, *args, **kwargs):
+        self.deleted_at = timezone.now()
+        self.save()
 
 class ServiceMaster(models.Model):
 
@@ -35,9 +42,14 @@ class ServiceMaster(models.Model):
     limit = models.CharField(max_length=100, blank=True, null=True)
     type = models.CharField(choices=TYPE_CHOICES, max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "service_master" 
+
+    def delete (self, *args, **kwargs):
+        self.deleted_at = timezone.now()
+        self.save()
 
 class Service(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Service', default=uuid.uuid4, editable=False)
@@ -47,9 +59,14 @@ class Service(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='service_currency_id', on_delete=SET_NULL, null=True)
     status = models.CharField(max_length=100, blank=True, null=True)
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
     class Meta:
         db_table = "service"   
+
+    def delete (self, *args, **kwargs):
+        self.deleted_at = timezone.now()
+        self.save()
 
       
 

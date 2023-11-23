@@ -11,7 +11,7 @@ from .serializers import ServiceMasterSerializer, CreateServiceMasterSerializer,
 @api_view(['GET'])
 def getAllServiceMaster(request):
     try:
-      serviceMaster = ServiceMaster.objects.all()
+      serviceMaster = ServiceMaster.objects.filter(deleted_at=None)
       pagination = Pagination(serviceMaster, request)
       serializer = ServiceMasterSerializer(pagination.getData(), many=True)
       return Response({
@@ -113,7 +113,7 @@ def deleteServiceMaster(request, pk):
 @api_view(['GET'])
 def getAllService(request):
     try:
-      service = Service.objects.all()
+      service = Service.objects.filter(deleted_at=None)
       pagination = Pagination(service, request)
       serializer = ServicesSerializer(pagination.getData(), many=True)
       return Response({
@@ -218,7 +218,7 @@ def deleteService(request, pk):
 @api_view(['GET'])
 def getAllPackage(request):
     try:
-      package = Package.objects.all()
+      package = Package.objects.filter(deleted_at=None)
       pagination = Pagination(package, request)
       serializer = PackageSerializer(pagination.getData(), many=True)
       return Response({
