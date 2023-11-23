@@ -11,8 +11,8 @@ class TwitterAccount(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Twitter Account ID', default=uuid.uuid4, editable=False)
     twitter_id = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
-    userName = models.CharField(max_length=100, null=True)
-    accessToken = models.CharField(max_length=255, null=True)
+    user_name = models.CharField(max_length=100, null=True)
+    access_token = models.CharField(max_length=255, null=True)
 
     class Meta:
         db_table = "twitter_account"

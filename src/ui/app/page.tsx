@@ -9,7 +9,6 @@ import {
   IconButton,
   Button,
 } from "@mui/material";
-import { Send } from "@mui/icons-material";
 import axios from "axios";
 import Image from "next/image";
 import { Menu } from "@mui/icons-material/";
@@ -30,6 +29,7 @@ export default function Home() {
       });
       setIsUserAuthenticated(res.data.isAuthenticated);
     } catch (e) {
+      setIsUserAuthenticated(false);
       console.log("Error while authenticating:", e);
     }
   };
@@ -43,17 +43,6 @@ export default function Home() {
       setIsUserAuthenticated(false);
     } catch (e) {
       console.log("Error while logging out: ", e);
-    }
-  };
-
-  const setTempCookie = async () => {
-    try {
-      await axios.get(`https://127.0.0.1:8000/set-session/`, {
-        withCredentials: true,
-      });
-      setIsUserAuthenticated(true);
-    } catch (e) {
-      console.log("e");
     }
   };
 

@@ -8,6 +8,7 @@ from django.http import (
 )
 from decouple import config
 from accounts.models import TwitterAccount
+import jwt, datetime
 
 # Defines scope for OAuth2 with PKCE
 SCOPES = [
@@ -31,33 +32,32 @@ oauth2_user_handler = OAuth2UserHandler(
 
 
 def isAuthenticated(request):
-    your_cookie_value = request.COOKIES.get("access_token")
+    token = request.COOKIES.get("jwt")
+    if not token:
+        return JsonResponse(
+            {"isAuthenticated": False, "message": "UnAuthenticated! No token found."}
+        )
+    try:
+        payload = jwt.decode(token, config("JWT_SECRET"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({"isAuthenticated": False, "message": "Token Expired!"})
 
-    if your_cookie_value:
-        response = JsonResponse(
-            {"isAuthenticated": True, "message": f"Cookie value: {your_cookie_value}"}
-        )
-        response["Access-Control-Allow-Credentials"] = "true"
-        return response
-    else:
-        response = JsonResponse(
-            {"isAuthenticated": False, "message": "Cookie not found"}
-        )
-        response["Access-Control-Allow-Credentials"] = "true"
-        return response
+    # You now have validated the user and have the access_token
+    user = TwitterAccount.objects.filter(twitter_id=payload["id"])
+    print("payload === ", payload)
+    return JsonResponse({"isAuthenticated": True})
 
 
 def logoutUser(request):
-    response = HttpResponse("Delete Cookie")
+    response = HttpResponse("Token Deleted")
     response.set_cookie(
-        "access_token",
+        "jwt",
         "",
         max_age=0,
         secure=True,
         httponly=True,
         samesite="None",
     )
-    response["Access-Control-Allow-Credentials"] = "true"
     return response
 
 
@@ -86,8 +86,8 @@ def twitterLoginCallback(request):
             newUser = TwitterAccount.objects.create(
                 twitter_id=userData.id,
                 name=userData.name,
-                userName=userData.username,
-                accessToken=access_token,
+                user_name=userData.username,
+                access_token=access_token,
             )
 
             newUser.save()
@@ -95,18 +95,26 @@ def twitterLoginCallback(request):
             existing_user.accessToken = access_token
             existing_user.save()
 
+        # Creating a response object with JWT cookie
+        payload = {
+            "id": userData.id,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=1),
+            "iat": datetime.datetime.utcnow(),
+        }
+
+        token = jwt.encode(payload, config("JWT_SECRET"), algorithm="HS256")
+
+        response = HttpResponseRedirect("http://localhost:3000/")
+        response.set_cookie(
+            "jwt",
+            token,
+            max_age=86400,  # Expires after the day it is generated.
+            path="/",
+            secure=True,
+            httponly=True,
+            samesite="None",
+        )
+        return response
+
     except Exception as e:
         return HttpResponseBadRequest(f"Error fetching access token: {str(e)}")
-
-    response = HttpResponseRedirect("http://localhost:3000/")
-    # Store JWT token not access token directly.
-    response.set_cookie(
-        "access_token",
-        access_token,
-        max_age=86400,
-        path="/",
-        secure=True,
-        samesite="None",
-    )
-    response["Access-Control-Allow-Credentials"] = "true"
-    return response
