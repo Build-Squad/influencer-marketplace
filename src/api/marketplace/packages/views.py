@@ -3,8 +3,9 @@ from marketplace.helpers import Pagination
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Package, ServiceMaster, Service
+from core.models import Currency
+from accounts.models import User
 from .serializers import ServiceMasterSerializer, CreateServiceMasterSerializer, ServicesSerializer, CreateServicesSerializer, PackageSerializer, CreatePackageSerializer
-# Create your views here.
 
 # Service Master
 @api_view(['GET'])
@@ -38,7 +39,7 @@ def createServiceMaster(request):
         return Response({
             'code': 200,
             'success': True,
-            'data': serializer.data,
+            'data': ServiceMasterSerializer(serializer.instance).data,
             'message': 'ServiceMaster created successfully'
         })
       else:
@@ -46,7 +47,8 @@ def createServiceMaster(request):
             'code': 400,
             'success': False,
             'data': None,
-            'message': 'Bad Request'
+            'message': 'Invalid inputs',
+            'errors': serializer.errors
         })
     except Exception as e:
         print(e)
@@ -67,7 +69,7 @@ def updateServiceMaster(request, pk):
         return Response({
             'code': 200,
             'success': True,
-            'data': serializer.data,
+            'data': ServiceMasterSerializer(serializer.instance).data,
             'message': 'ServiceMaster updated successfully'
         })
       else:
@@ -75,7 +77,8 @@ def updateServiceMaster(request, pk):
             'code': 400,
             'success': False,
             'data': None,
-            'message': 'Bad Request'
+            'message': 'Invalid inputs',
+            'errors': serializer.errors
         })
     except Exception as e:
         print(e)
@@ -134,11 +137,14 @@ def createService(request):
     try:
       serializer = CreateServicesSerializer(data=request.data)
       if serializer.is_valid():
-        serializer.save()
+        service_master = ServiceMaster.objects.get(id=request.data['service_master'])
+        currency = Currency.objects.get(id=request.data['currency'])
+        package = Package.objects.get(id=request.data['package'])
+        serializer.save(service_master=service_master, package=package, currency=currency)
         return Response({
             'code': 200,
             'success': True,
-            'data': serializer.data,
+            'date': ServicesSerializer(serializer.instance).data,
             'message': 'Service created successfully'
         })
       else:
@@ -146,7 +152,8 @@ def createService(request):
             'code': 400,
             'success': False,
             'data': None,
-            'message': 'Bad Request'
+            'message': 'Invalid inputs',
+            'errors': serializer.errors
         })
     except Exception as e:
         print(e)
@@ -167,7 +174,7 @@ def updateService(request, pk):
         return Response({
             'code': 200,
             'success': True,
-            'data': serializer.data,
+            'data': ServicesSerializer(serializer.instance).data,
             'message': 'Service updated successfully'
         })
       else:
@@ -175,7 +182,8 @@ def updateService(request, pk):
             'code': 400,
             'success': False,
             'data': None,
-            'message': 'Bad Request'
+            'message': 'Invalid inputs',
+            'errors': serializer.errors
         })
     except Exception as e:
         print(e)
@@ -234,11 +242,14 @@ def createPackage(request):
     try:
       serializer = CreatePackageSerializer(data=request.data)
       if serializer.is_valid():
-        serializer.save()
+        influencer = User.objects.get(id=request.data['influencer'])
+        currency = Currency.objects.get(id=request.data['currency'])
+        serializer.save(influencer=influencer, currency=currency)
+
         return Response({
             'code': 200,
             'success': True,
-            'data': serializer.data,
+            'data': PackageSerializer(serializer.instance).data,
             'message': 'Package created successfully'
         })
       else:
@@ -246,7 +257,8 @@ def createPackage(request):
             'code': 400,
             'success': False,
             'data': None,
-            'message': 'Bad Request'
+            'message': 'Invalid inputs',
+            'errors': serializer.errors
         })
     except Exception as e:
         print(e)
@@ -267,7 +279,7 @@ def updatePackage(request, pk):
         return Response({
             'code': 200,
             'success': True,
-            'data': serializer.data,
+            'data': PackageSerializer(serializer.instance).data,
             'message': 'Package updated successfully'
         })
       else:
@@ -275,7 +287,8 @@ def updatePackage(request, pk):
             'code': 400,
             'success': False,
             'data': None,
-            'message': 'Bad Request'
+            'message': 'Invalid inputs',
+            'errors': serializer.errors
         })
     except Exception as e:
         print(e)

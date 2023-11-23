@@ -1,6 +1,7 @@
 #  import serializers
 from rest_framework import serializers
 from .models import ServiceMaster, Service, Package
+from core.serializers import CurrencySerializer
 
 class ServiceMasterSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(required=False)
@@ -36,7 +37,7 @@ class PackageSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     price = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
-    currency = serializers.CharField(required=False)
+    currency = CurrencySerializer(required=False)
     status = serializers.CharField(required=False)
     publish_date = serializers.DateTimeField(required=False)
     created_at = serializers.DateTimeField(required=False)
@@ -68,10 +69,9 @@ class ServicesSerializer(serializers.ModelSerializer):
     package = PackageSerializer(required=False)
     quantity = serializers.IntegerField(required=False)
     price = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
-    currency = serializers.CharField(required=False)
+    currency = CurrencySerializer(required=False)
     status = serializers.CharField(required=False)
-
-
+    created_at = serializers.DateTimeField(required=False)
     class Meta:
         model = Service
         fields = '__all__'
@@ -85,7 +85,7 @@ class CreateServicesSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(required=True, max_digits=10, decimal_places=2)
     currency = serializers.CharField(required=True)
     status = serializers.CharField(required=True)
-
+    created_at = serializers.DateTimeField(required=False)
     class Meta:
         model = Service
         fields = '__all__'
