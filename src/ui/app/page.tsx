@@ -24,10 +24,10 @@ export default function Home() {
   // Authenticate user based on cookie present on the browser
   const isAuthenticated = async () => {
     try {
-      const res = await axios.get(`https://127.0.0.1:8000/is-authenticated/`, {
+      await axios.get(`https://127.0.0.1:8000/is-authenticated/`, {
         withCredentials: true,
       });
-      setIsUserAuthenticated(res.data.isAuthenticated);
+      setIsUserAuthenticated(true);
     } catch (e) {
       setIsUserAuthenticated(false);
       console.log("Error while authenticating:", e);

@@ -9,6 +9,8 @@ from django.http import (
 from decouple import config
 from accounts.models import TwitterAccount
 import jwt, datetime
+from .authentication import JWTAuthentication
+from rest_framework.decorators import authentication_classes, api_view
 
 # Defines scope for OAuth2 with PKCE
 SCOPES = [
@@ -31,21 +33,11 @@ oauth2_user_handler = OAuth2UserHandler(
 )
 
 
+# Apply these authentication class wherever JWT authentication is necessary.
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
 def isAuthenticated(request):
-    token = request.COOKIES.get("jwt")
-    if not token:
-        return JsonResponse(
-            {"isAuthenticated": False, "message": "UnAuthenticated! No token found."}
-        )
-    try:
-        payload = jwt.decode(token, config("JWT_SECRET"), algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        return JsonResponse({"isAuthenticated": False, "message": "Token Expired!"})
-
-    # You now have validated the user and have the access_token
-    user = TwitterAccount.objects.filter(twitter_id=payload["id"])
-    print("payload === ", payload)
-    return JsonResponse({"isAuthenticated": True})
+    return HttpResponse({"User Authenticated!"})
 
 
 def logoutUser(request):
@@ -98,7 +90,7 @@ def twitterLoginCallback(request):
         # Creating a response object with JWT cookie
         payload = {
             "id": userData.id,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=1),
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=86400),
             "iat": datetime.datetime.utcnow(),
         }
 
