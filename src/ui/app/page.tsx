@@ -24,9 +24,12 @@ export default function Home() {
   // Authenticate user based on cookie present on the browser
   const isAuthenticated = async () => {
     try {
-      await axios.get(`https://127.0.0.1:8000/is-authenticated/`, {
-        withCredentials: true,
-      });
+      await axios.get(
+        process.env.NEXT_PUBLIC_BACKEND_URL + "is-authenticated/",
+        {
+          withCredentials: true,
+        }
+      );
       setIsUserAuthenticated(true);
     } catch (e) {
       setIsUserAuthenticated(false);
@@ -37,7 +40,7 @@ export default function Home() {
   const logout = async () => {
     try {
       // Deleting the cookie from the browser
-      await axios.get(`https://127.0.0.1:8000/logout/`, {
+      await axios.get(process.env.NEXT_PUBLIC_BACKEND_URL + "logout/", {
         withCredentials: true,
       });
       setIsUserAuthenticated(false);
@@ -49,7 +52,9 @@ export default function Home() {
   // Redirect the user to twitter authentication URL.
   const authTwitterUser = async () => {
     try {
-      const res = await axios.get(`https://127.0.0.1:8000/auth-twitter-user/`);
+      const res = await axios.get(
+        process.env.NEXT_PUBLIC_BACKEND_URL + "auth-twitter-user/"
+      );
       window.location.href = res.data.auth_url;
     } catch (e) {
       window.alert(e);
@@ -86,9 +91,6 @@ export default function Home() {
               <Button color="inherit" onClick={authTwitterUser}>
                 Login
               </Button>
-              {/* <Button color="inherit" onClick={setTempCookie}>
-                Temp Login
-              </Button> */}
             </>
           )}
         </Toolbar>
