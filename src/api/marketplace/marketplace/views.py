@@ -22,7 +22,7 @@ SCOPES = [
     "follows.write",
     "mute.read",
 ]
-callback_url = "https://127.0.0.1:8000/twitter-login-callback"
+callback_url = f"{config('SERVER')}twitter-login-callback"
 
 # This is OAuth2.0 PKCE authentication instance that'll be used to interact with Client for V2 version of API
 oauth2_user_handler = OAuth2UserHandler(
