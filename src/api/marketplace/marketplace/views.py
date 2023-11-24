@@ -78,7 +78,7 @@ def twitterLoginCallback(request):
 
             newUser.save()
         else:
-            existing_user.accessToken = access_token
+            existing_user.access_token = access_token
             existing_user.save()
 
         # Creating a response object with JWT cookie

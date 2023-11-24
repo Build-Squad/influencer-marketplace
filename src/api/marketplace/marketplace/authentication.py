@@ -14,7 +14,10 @@ class JWTAuthentication(BaseAuthentication):
 
         # Retrieve the corresponding user object
         try:
-            user = TwitterAccount.objects.filter(twitter_id=payload["id"]).first()
+            twitterUser = TwitterAccount.objects.filter(
+                twitter_id=payload["id"]
+            ).first()
         except TwitterAccount.DoesNotExist:
             raise exceptions.AuthenticationFailed("User does not exist")
-        return user, token
+        request.twitterUser = twitterUser
+        request.token = token
