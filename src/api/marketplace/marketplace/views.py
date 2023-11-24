@@ -8,9 +8,10 @@ from django.http import (
 )
 from decouple import config
 from accounts.models import TwitterAccount
-import jwt, datetime
+import datetime
 from .authentication import JWTAuthentication
 from rest_framework.decorators import authentication_classes, api_view
+from .services import JWTOperations
 
 # Defines scope for OAuth2 with PKCE
 SCOPES = [
@@ -42,14 +43,7 @@ def isAuthenticated(request):
 
 def logoutUser(request):
     response = HttpResponse("Token Deleted")
-    response.set_cookie(
-        "jwt",
-        "",
-        max_age=0,
-        secure=True,
-        httponly=True,
-        samesite="None",
-    )
+    response = JWTOperations.deleteJwtToken(res=response, cookie_name="jwt")
     return response
 
 
@@ -88,23 +82,17 @@ def twitterLoginCallback(request):
             existing_user.save()
 
         # Creating a response object with JWT cookie
+        response = HttpResponseRedirect("http://localhost:3000/")
+
+        # Payload for JWT token
         payload = {
             "id": userData.id,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=86400),
             "iat": datetime.datetime.utcnow(),
         }
 
-        token = jwt.encode(payload, config("JWT_SECRET"), algorithm="HS256")
-
-        response = HttpResponseRedirect("http://localhost:3000/")
-        response.set_cookie(
-            "jwt",
-            token,
-            max_age=86400,  # Expires after the day it is generated.
-            path="/",
-            secure=True,
-            httponly=True,
-            samesite="None",
+        response = JWTOperations.setJwtToken(
+            res=response, payload=payload, cookie_name="jwt"
         )
         return response
 
