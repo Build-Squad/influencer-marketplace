@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  backend:
+  api:
     build:
       context: ./src/api/marketplace
     ports:
@@ -15,15 +15,15 @@ services:
         target: /api/marketplace/venv
         consistency: cached
     depends_on:
-      - database
+      - psql
     environment:
       - POSTGRES_NAME=marketplace
-      - POSTGRES_USER=mp_user
+      - POSTGRES_USER=mp_dev
       - POSTGRES_PASSWORD="#h&{^52405F7"
       - DJANGO_SETTINGS_MODULE=marketplace.settings
       - PYTHONPATH=/api/marketplace
 
-  frontend:
+  ui:
     build:
       context: ./src/ui
     image: react:latest
@@ -41,13 +41,13 @@ services:
       - NODE_OPTIONS="--max-old-space-size=6024"
     command: yarn dev
     depends_on:
-      - backend
+      - api
 
-  database:
+  psql:
     image: postgres:latest
     environment:
       - POSTGRES_NAME=marketplace
-      - POSTGRES_USER=mp_user
+      - POSTGRES_USER=mp_dev
       - POSTGRES_PASSWORD="#h&{^52405F7"
     ports:
       - "5432:5432"
