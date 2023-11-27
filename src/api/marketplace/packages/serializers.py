@@ -16,6 +16,7 @@ class CreateServiceMasterSerializer(serializers.ModelSerializer):
         # fields = ('id', 'name', 'description', 'limit', 'type', 'created_at')
 
 class PackageSerializer(serializers.ModelSerializer):
+    currency = CurrencySerializer()
     class Meta:
         model = Package
         fields = '__all__'
@@ -28,8 +29,11 @@ class CreatePackageSerializer(serializers.ModelSerializer):
         # fields = ('id', 'influencer', 'name', 'description', 'price', 'currency', 'status', 'publish_date', 'created_at'
 
 class ServicesSerializer(serializers.ModelSerializer):
+    service_master = ServiceMasterSerializer()
+    package = PackageSerializer()
     class Meta:
         model = Service
+        # Add the package and service_master o
         fields = '__all__'
         # fields = ('id', 'service_master', 'package', 'quantity', 'price', 'currency', 'status'
 
