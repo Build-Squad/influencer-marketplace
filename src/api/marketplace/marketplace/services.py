@@ -81,3 +81,11 @@ def handleNotFound(resource_name):
         'message': f'{resource_name} not found',
         'errors': f'{resource_name} not found',
     }, status=status.HTTP_404_NOT_FOUND)
+
+def handleDeleteNotAllowed(resource_name):
+    return Response({
+        'isSuccess': False,
+        'data': None,
+        'message': f'{resource_name} cannot be deleted as it is being used in another resource',
+        'errors': f'{resource_name} cannot be deleted as it is being used in another resource',
+    }, status=status.HTTP_400_BAD_REQUEST)

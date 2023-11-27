@@ -1,4 +1,4 @@
-from marketplace.services import Pagination, handleServerException, handleBadRequest, handleNotFound
+from marketplace.services import Pagination, handleServerException, handleBadRequest, handleNotFound, handleDeleteNotAllowed
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from .models import Package, ServiceMaster, Service
 from core.models import Currency
 from accounts.models import User
+from django.core.exceptions import ValidationError
 from .serializers import ServiceMasterSerializer, CreateServiceMasterSerializer, ServicesSerializer, CreateServicesSerializer, PackageSerializer, CreatePackageSerializer
 
 # Service Master
@@ -83,7 +84,10 @@ class ServiceMasterDetail(APIView):
           serviceMaster = self.get_object(pk)
           if serviceMaster is None:
             return handleNotFound('Service Master')
-          serviceMaster.delete()
+          try:
+            serviceMaster.delete()
+          except ValidationError as e:
+            return handleDeleteNotAllowed('Service Master')
           return Response({
               'isSuccess': True,
               'data': None,
@@ -272,7 +276,10 @@ class PackageDetail(APIView):
           package = self.get_object(pk)
           if package is None:
             return handleNotFound('Package')
-          package.delete()
+          try:
+            package.delete()
+          except ValidationError as e:
+            return handleDeleteNotAllowed('Package')
           return Response({
               'isSuccess': True,
               'data': None,
