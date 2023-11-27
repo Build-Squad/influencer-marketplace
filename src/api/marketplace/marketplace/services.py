@@ -73,3 +73,11 @@ def handleBadRequest(e):
         'message': 'Bad Request',
         'errors': e,
     }, status=status.HTTP_400_BAD_REQUEST)
+
+def handleNotFound(resource_name):
+    return Response({
+        'isSuccess': False,
+        'data': None,
+        'message': f'{resource_name} not found',
+        'errors': f'{resource_name} not found',
+    }, status=status.HTTP_404_NOT_FOUND)

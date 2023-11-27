@@ -1,4 +1,4 @@
-from marketplace.services import Pagination, handleServerException, handleBadRequest
+from marketplace.services import Pagination, handleServerException, handleBadRequest, handleNotFound
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
@@ -18,7 +18,7 @@ class ServiceMasterList(APIView):
           return Response({
               'isSuccess': True,
               'data': serializer.data,
-              'message': 'All ServiceMaster retrieved successfully',
+              'message': 'All Service Master retrieved successfully',
               'pagination': pagination.getPageInfo()
           }, status=status.HTTP_200_OK)
         except Exception as e:
@@ -32,7 +32,7 @@ class ServiceMasterList(APIView):
             return Response({
                 'isSuccess': True,
                 'data': ServiceMasterSerializer(serializer.instance).data,
-                'message': 'ServiceMaster created successfully'
+                'message': 'Service Master created successfully'
             }, status=status.HTTP_201_CREATED)
           else:
             return handleBadRequest(serializer.errors)
@@ -42,18 +42,20 @@ class ServiceMasterList(APIView):
 class ServiceMasterDetail(APIView):
     def get_object(self, pk):
         try:
-            return ServiceMaster.objects.get(pk=pk)
+            return ServiceMaster.objects.get(pk=pk, deleted_at=None)
         except ServiceMaster.DoesNotExist:
-            raise Http404
+            return None
         
     def get(self, request, pk):
         try:
           serviceMaster = self.get_object(pk)
+          if serviceMaster is None:
+            return handleNotFound('ServiceMaster')
           serializer = ServiceMasterSerializer(serviceMaster)
           return Response({
               'isSuccess': True,
               'data': serializer.data,
-              'message': 'ServiceMaster retrieved successfully'
+              'message': 'Service Master retrieved successfully'
           }, status=status.HTTP_200_OK)
         except Exception as e:
             return handleServerException(e)
@@ -61,13 +63,15 @@ class ServiceMasterDetail(APIView):
     def put(self, request, pk):
         try:
           serviceMaster = self.get_object(pk)
+          if serviceMaster is None:
+            return handleNotFound('ServiceMaster')
           serializer = CreateServiceMasterSerializer(instance=serviceMaster, data=request.data)
           if serializer.is_valid():
             serializer.save()
             return Response({
                 'isSuccess': True,
                 'data': ServiceMasterSerializer(serializer.instance).data,
-                'message': 'ServiceMaster updated successfully'
+                'message': 'Service Master updated successfully'
             }, status=status.HTTP_200_OK)
           else:
             return handleBadRequest(serializer.errors)
@@ -77,11 +81,13 @@ class ServiceMasterDetail(APIView):
     def delete(self, request, pk):
         try:
           serviceMaster = self.get_object(pk)
+          if serviceMaster is None:
+            return handleNotFound('ServiceMaster')
           serviceMaster.delete()
           return Response({
               'isSuccess': True,
               'data': None,
-              'message': 'ServiceMaster deleted successfully'
+              'message': 'Service Master deleted successfully'
           }, status=status.HTTP_200_OK)
         except Exception as e:
             return handleServerException(e)
@@ -122,13 +128,15 @@ class ServiceList(APIView):
 class ServiceDetail(APIView):
     def get_object(self, pk):
         try:
-            return Service.objects.get(pk=pk)
+            return Service.objects.get(pk=pk, deleted_at=None)
         except Service.DoesNotExist:
-            raise Http404
+            return None
         
     def get(self, request, pk):
         try:
           service = self.get_object(pk)
+          if service is None:
+            return handleNotFound('Service')
           serializer = ServicesSerializer(service)
           return Response({
               'isSuccess': True,
@@ -141,6 +149,8 @@ class ServiceDetail(APIView):
     def put(self, request, pk):
         try:
           service = self.get_object(pk)
+          if service is None:
+            return handleNotFound('Service')
           serializer = CreateServicesSerializer(instance=service, data=request.data)
           if serializer.is_valid():
             service_master = ServiceMaster.objects.get(id=request.data['service_master'])
@@ -160,6 +170,8 @@ class ServiceDetail(APIView):
     def delete(self, request, pk):
         try:
           service = self.get_object(pk)
+          if service is None:
+            return handleNotFound('Service')
           service.delete()
           return Response({
               'isSuccess': True,
@@ -205,13 +217,15 @@ class PackageList(APIView):
 class PackageDetail(APIView):
     def get_object(self, pk):
         try:
-            return Package.objects.get(pk=pk)
+            return Package.objects.get(pk=pk, deleted_at=None)
         except Package.DoesNotExist:
-            raise Http404
+            return None
         
     def get(self, request, pk):
         try:
           package = self.get_object(pk)
+          if package is None:
+            return handleNotFound('Package')
           serializer = PackageSerializer(package)
           return Response({
               'isSuccess': True,
@@ -224,6 +238,8 @@ class PackageDetail(APIView):
     def put(self, request, pk):
         try:
           package = self.get_object(pk)
+          if package is None:
+            return handleNotFound('Package')
           serializer = CreatePackageSerializer(instance=package, data=request.data)
           if serializer.is_valid():
             influencer = User.objects.get(id=request.data['influencer'])
@@ -242,6 +258,8 @@ class PackageDetail(APIView):
     def delete(self, request, pk):
         try:
           package = self.get_object(pk)
+          if package is None:
+            return handleNotFound('Package')
           package.delete()
           return Response({
               'isSuccess': True,
