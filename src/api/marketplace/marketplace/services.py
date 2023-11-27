@@ -1,5 +1,7 @@
 import math
 from .serializers import PageSizeSerializer, PageNumberSerializer
+from rest_framework.response import Response
+from rest_framework import status
 
 class Pagination:
     def __init__(self, qs, request):
@@ -53,3 +55,21 @@ class Pagination:
             'current_page_number': self.getCurrentPageNumber(),
             'current_page_size': self.getCurrentPageSize()
         }
+
+def handleServerException(e):
+    print(e)
+    return Response({
+        'isSuccess': False,
+        'data': None,
+        'message': 'Internal Server Error',
+        'errors': e,
+    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def handleBadRequest(e):
+    print(e)
+    return Response({
+        'isSuccess': False,
+        'data': None,
+        'message': 'Bad Request',
+        'errors': e,
+    }, status=status.HTTP_400_BAD_REQUEST)
