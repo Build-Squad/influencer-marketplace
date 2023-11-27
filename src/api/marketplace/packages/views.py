@@ -112,9 +112,15 @@ class ServiceList(APIView):
         try:
           serializer = CreateServicesSerializer(data=request.data)
           if serializer.is_valid():
-            service_master = ServiceMaster.objects.get(id=request.data['service_master'])
+            try:
+              service_master = ServiceMaster.objects.get(id=request.data['service_master'], deleted_at=None)
+            except ServiceMaster.DoesNotExist:
+              return handleBadRequest('Service Master does not exist')
             currency = Currency.objects.get(id=request.data['currency'])
-            package = Package.objects.get(id=request.data['package'])
+            try:
+              package = Package.objects.get(id=request.data['package'], deleted_at=None)
+            except Package.DoesNotExist:
+              return handleBadRequest('Package does not exist')
             serializer.save(service_master=service_master, package=package, currency=currency)
             return Response({
                 'isSuccess': True,
@@ -153,9 +159,15 @@ class ServiceDetail(APIView):
             return handleNotFound('Service')
           serializer = CreateServicesSerializer(instance=service, data=request.data)
           if serializer.is_valid():
-            service_master = ServiceMaster.objects.get(id=request.data['service_master'])
+            try:
+              service_master = ServiceMaster.objects.get(id=request.data['service_master'], deleted_at=None)
+            except ServiceMaster.DoesNotExist:
+              return handleBadRequest('Service Master does not exist')
             currency = Currency.objects.get(id=request.data['currency'])
-            package = Package.objects.get(id=request.data['package'])
+            try:
+              package = Package.objects.get(id=request.data['package'], deleted_at=None)
+            except Package.DoesNotExist:
+              return handleBadRequest('Package does not exist')
             serializer.save(service_master=service_master, package=package, currency=currency)
             return Response({
                 'isSuccess': True,
