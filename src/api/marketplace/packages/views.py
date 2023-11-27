@@ -50,7 +50,7 @@ class ServiceMasterDetail(APIView):
         try:
           serviceMaster = self.get_object(pk)
           if serviceMaster is None:
-            return handleNotFound('ServiceMaster')
+            return handleNotFound('Service Master')
           serializer = ServiceMasterSerializer(serviceMaster)
           return Response({
               'isSuccess': True,
@@ -64,7 +64,7 @@ class ServiceMasterDetail(APIView):
         try:
           serviceMaster = self.get_object(pk)
           if serviceMaster is None:
-            return handleNotFound('ServiceMaster')
+            return handleNotFound('Service Master')
           serializer = CreateServiceMasterSerializer(instance=serviceMaster, data=request.data)
           if serializer.is_valid():
             serializer.save()
@@ -82,7 +82,7 @@ class ServiceMasterDetail(APIView):
         try:
           serviceMaster = self.get_object(pk)
           if serviceMaster is None:
-            return handleNotFound('ServiceMaster')
+            return handleNotFound('Service Master')
           serviceMaster.delete()
           return Response({
               'isSuccess': True,
