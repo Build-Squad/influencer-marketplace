@@ -7,13 +7,18 @@ from .models import Package, ServiceMaster, Service
 from core.models import Currency
 from accounts.models import User
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from .serializers import ServiceMasterSerializer, CreateServiceMasterSerializer, ServicesSerializer, CreateServicesSerializer, PackageSerializer, CreatePackageSerializer
 
 # Service Master
 class ServiceMasterList(APIView):
     def get(self, request):
         try:
-          serviceMaster = ServiceMaster.objects.filter(deleted_at=None)
+          search = request.GET.get('search', '')
+          order_by = request.GET.get('order_by', '-created_at')
+          serviceMaster = ServiceMaster.objects.filter(
+              Q(name__icontains=search) | Q(description__icontains=search),
+              deleted_at=None).order_by(order_by)
           pagination = Pagination(serviceMaster, request)
           serializer = ServiceMasterSerializer(pagination.getData(), many=True)
           return Response({
@@ -100,7 +105,12 @@ class ServiceMasterDetail(APIView):
 class ServiceList(APIView):
     def get(self, request):
         try:
-          service = Service.objects.filter(deleted_at=None)
+          search = request.GET.get('search', '')
+          order_by = request.GET.get('order_by', '-created_at')
+          service = Service.objects.filter(
+              Q(service_master__name__icontains=search) | Q(service_master__description__icontains=search) | Q(
+                  package__name__icontains=search) | Q(package__description__icontains=search),
+              deleted_at=None).order_by(order_by)
           pagination = Pagination(service, request)
           serializer = ServicesSerializer(pagination.getData(), many=True)
           return Response({
@@ -201,7 +211,11 @@ class ServiceDetail(APIView):
 class PackageList(APIView):
     def get(self, request):
         try:
-          package = Package.objects.filter(deleted_at=None)
+          search = request.GET.get('search', '')
+          order_by = request.GET.get('order_by', '-created_at')
+          package = Package.objects.filter(
+              Q(name__icontains=search) | Q(description__icontains=search),
+              deleted_at=None).order_by(order_by)
           pagination = Pagination(package, request)
           serializer = PackageSerializer(pagination.getData(), many=True)
           return Response({

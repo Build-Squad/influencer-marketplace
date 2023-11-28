@@ -20,7 +20,7 @@ from . import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('packages/', include('packages.urls')),
+    path('packages/', include('packages.urls'), name='packages'),
     path("auth-twitter-user/", views.authTwitterUser, name="auth-twitter-user"),
     path(
         "twitter-login-callback/",
