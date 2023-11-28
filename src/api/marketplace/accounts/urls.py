@@ -8,6 +8,8 @@ from .views import (
     AccountCategoryDetail,
     UserList,
     UserDetail,
+    BankAccountList,
+    BankAccountDetail
 )
 
 urlpatterns = [
@@ -26,5 +28,6 @@ urlpatterns = [
     path("user/", UserList.as_view(), name="user-list"),
     path("user/<uuid:pk>/", UserDetail.as_view(), name="user-detail"),
 
-
+    path("bank-account/", BankAccountList.as_view(), name="bank-account-list"),
+    path("bank-account/<uuid:pk>/", BankAccountDetail.as_view(), name="bank-account-detail"),
 ]

@@ -9,12 +9,13 @@ from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TwitterAccount, CategoryMaster, AccountCategory, User
+from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount
 from .serializers import (
     TwitterAccountSerializer,
     CategoryMasterSerializer,
     AccountCategorySerializer,
     UserSerializer,
+    BankAccountSerializer,
 )
 
 
@@ -342,7 +343,6 @@ class AccountCategoryDetail(APIView):
             return handleServerException(e)
 
 
-
 # User API-Endpoint
 # List-Create-API
 class UserList(APIView):
@@ -412,9 +412,7 @@ class UserDetail(APIView):
             user = self.get_object(pk)
             if user is None:
                 return handleNotFound("User")
-            serializer = UserSerializer(
-                instance=user, data=request.data
-            )
+            serializer = UserSerializer(instance=user, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -444,6 +442,112 @@ class UserDetail(APIView):
                     "isSuccess": True,
                     "data": None,
                     "message": "User deleted successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+# BankAccount API-Endpoint
+# List-Create-API
+class BankAccountList(APIView):
+    def get(self, request):
+        try:
+            bankAccount = BankAccount.objects.all()
+            pagination = Pagination(bankAccount, request)
+            serializer = BankAccountSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Bank Account retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def post(self, request):
+        try:
+            serializer = BankAccountSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": BankAccountSerializer(serializer.instance).data,
+                        "message": "Bank Account created successfully",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+# Retrieve-Update-Destroy API
+class BankAccountDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return BankAccount.objects.get(pk=pk)
+        except BankAccount.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        try:
+            bankAccount = self.get_object(pk)
+            if bankAccount is None:
+                return handleNotFound("Bank Account")
+            serializer = BankAccountSerializer(bankAccount)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Bank Account retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def put(self, request, pk):
+        try:
+            bankAccount = self.get_object(pk)
+            if bankAccount is None:
+                return handleNotFound("Bank Account")
+            serializer = BankAccountSerializer(instance=bankAccount, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": BankAccountSerializer(serializer.instance).data,
+                        "message": "Bank Account updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+    def delete(self, request, pk):
+        try:
+            bankAccount = self.get_object(pk)
+            if bankAccount is None:
+                return handleNotFound("Bank Account")
+            try:
+                bankAccount.delete()
+            except ValidationError as e:
+                return handleDeleteNotAllowed("Bank Account")
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Bank Account deleted successfully",
                 },
                 status=status.HTTP_200_OK,
             )
