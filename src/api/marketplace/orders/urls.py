@@ -12,6 +12,8 @@ from .views import (
     OrderMessageDetail,
     OrderMessageAttachmentList,
     OrderMessageAttachmentDetail,
+    TransactionList,
+    TransactionDetail
 )
 
 urlpatterns = [
@@ -32,4 +34,7 @@ urlpatterns = [
 
     path("order-message-attachment/", OrderMessageAttachmentList.as_view(), name="order-message-attachment-list"),
     path('order-message-attachment/<uuid:pk>/', OrderMessageAttachmentDetail.as_view(), name="order-message-attachment-details"),
+
+    path("transaction/", TransactionList.as_view(), name="transaction"),
+    path('transaction/<uuid:pk>/', TransactionDetail.as_view(), name="transaction"),
 ]

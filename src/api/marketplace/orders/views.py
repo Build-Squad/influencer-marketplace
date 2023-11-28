@@ -15,6 +15,7 @@ from .models import (
     OrderItemTracking,
     OrderMessage,
     OrderMessageAttachment,
+    Transaction
 )
 from .serializers import (
     OrderSerializer,
@@ -23,6 +24,7 @@ from .serializers import (
     OrderItemTrackingSerializer,
     OrderMessageSerializer,
     OrderMessageAttachmentSerializer,
+    TransactionSerializer
 )
 from rest_framework import status
 
@@ -660,7 +662,7 @@ class OrderMessageAttachmentDetail(APIView):
         try:
             orderMessageAttachment = self.get_object(pk)
             if orderMessageAttachment is None:
-                return handleNotFound("Order Message MessageAttachmentAttachment")
+                return handleNotFound("Order Message Attachment")
             try:
                 orderMessageAttachment.delete()
             except ValidationError as e:
@@ -670,6 +672,120 @@ class OrderMessageAttachmentDetail(APIView):
                     "isSuccess": True,
                     "data": None,
                     "message": "Order Message Attachment deleted successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+# ORDER-Message Attachment API-Endpoint
+# List-Create-API
+class TransactionList(APIView):
+    def get(self, request):
+        try:
+            orderMessageAttachment = OrderMessageAttachment.objects.all()
+            pagination = Pagination(orderMessageAttachment, request)
+            serializer = OrderMessageAttachmentSerializer(
+                pagination.getData(), many=True
+            )
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Order Message Attachment data retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def post(self, request):
+        try:
+            serializer = OrderMessageAttachmentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": OrderMessageAttachmentSerializer(
+                            serializer.instance
+                        ).data,
+                        "message": "Order Message Attachment data created successfully",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+# Retrieve-Update-Destroy API
+class TransactionDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Transaction.objects.get(pk=pk)
+        except Transaction.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        try:
+            transaction = self.get_object(pk)
+            if transaction is None:
+                return handleNotFound("transaction")
+            serializer = TransactionSerializer(transaction)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Transaction data retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def put(self, request, pk):
+        try:
+            transaction = self.get_object(pk)
+            if transaction is None:
+                return handleNotFound("transaction")
+            serializer = TransactionSerializer(
+                instance=transaction, data=request.data
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": TransactionSerializer(
+                            serializer.instance
+                        ).data,
+                        "message": "Transaction data updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+    def delete(self, request, pk):
+        try:
+            transaction = self.get_object(pk)
+            if transaction is None:
+                return handleNotFound("transaction")
+            try:
+                transaction.delete()
+            except ValidationError as e:
+                return handleDeleteNotAllowed("transaction")
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "transaction deleted successfully",
                 },
                 status=status.HTTP_200_OK,
             )
