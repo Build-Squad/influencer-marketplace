@@ -1,5 +1,18 @@
 from django.urls import path
-from .views import OrderList, OrderDetail, OrderItemList, OrderItemDetail, OrderAttachmentList, OrderAttachmentDetail, OrderItemTrackingList, OrderItemTrackingDetail, OrderMessageList, OrderMessageDetail
+from .views import (
+    OrderList,
+    OrderDetail,
+    OrderItemList,
+    OrderItemDetail,
+    OrderAttachmentList,
+    OrderAttachmentDetail,
+    OrderItemTrackingList,
+    OrderItemTrackingDetail,
+    OrderMessageList,
+    OrderMessageDetail,
+    OrderMessageAttachmentList,
+    OrderMessageAttachmentDetail,
+)
 
 urlpatterns = [
     path("order/", OrderList.as_view(), name="order-list"),
@@ -16,4 +29,7 @@ urlpatterns = [
 
     path("order-message/", OrderMessageList.as_view(), name="order-message-list"),
     path('order-message/<uuid:pk>/', OrderMessageDetail.as_view(), name="order-message-details"),
+
+    path("order-message-attachment/", OrderMessageAttachmentList.as_view(), name="order-message-attachment-list"),
+    path('order-message-attachment/<uuid:pk>/', OrderMessageAttachmentDetail.as_view(), name="order-message-attachment-details"),
 ]
