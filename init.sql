@@ -10,25 +10,17 @@ BEGIN
         WHERE rolname = 'mp_dev'
     ) THEN
         RAISE NOTICE 'Role "mp_dev" already exists. Skipping.';
-    ELSE
-        EXECUTE 'CREATE ROLE mp_dev LOGIN PASSWORD "#h&{^52405F7"';
-    END IF;
 
-    -- Check if database exists
-    SELECT 1 INTO db_exists
-    FROM pg_catalog.pg_database
-    WHERE datname = 'marketplace';
-
-    IF db_exists IS NULL THEN
-        -- Database doesn't exist, create it
-        EXECUTE 'CREATE DATABASE marketplace';
-        
-        -- Grant privileges
-        EXECUTE 'GRANT ALL PRIVILEGES ON DATABASE marketplace TO mp_dev';
     ELSE
-        RAISE NOTICE 'DB "marketplace" already exists. Skipping.';
+        EXECUTE 'CREATE ROLE mp_dev LOGIN PASSWORD xsdrt1768 WITH SUPERUSER';
     END IF;
+    EXECUTE 'ALTER ROLE mp_dev WITH SUPERUSER';   
 END $do$;
+
+SELECT 'CREATE DATABASE marketplace'
+WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_database WHERE datname = 'marketplace')
+
+-- EXECUTE 'ALTER DATABASE marketplace OWNER TO mp_dev';
 
 -- CREATE USER mp_dev WITH PASSWORD '#h&{^52405F7';
 -- ALTER USER mp_dev CREATEDB;

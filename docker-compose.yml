@@ -19,7 +19,7 @@ services:
     environment:
       - POSTGRES_NAME=marketplace
       - POSTGRES_USER=mp_dev
-      - POSTGRES_PASSWORD="#h&{^52405F7"
+      - POSTGRES_PASSWORD=xsdrt1768
       - DJANGO_SETTINGS_MODULE=marketplace.settings
       - PYTHONPATH=/api/marketplace
 
@@ -35,7 +35,7 @@ services:
         target: /ui
         consistency: cached
       - type: volume
-        target: /ui/gbs-plus/node_modules
+        target: /ui/node_modules
         consistency: cached
     environment:
       - NODE_OPTIONS="--max-old-space-size=6024"
@@ -48,7 +48,7 @@ services:
     environment:
       - POSTGRES_NAME=marketplace
       - POSTGRES_USER=mp_dev
-      - POSTGRES_PASSWORD="#h&{^52405F7"
+      - POSTGRES_PASSWORD=xsdrt1768
     ports:
       - "5432:5432"
     volumes:
