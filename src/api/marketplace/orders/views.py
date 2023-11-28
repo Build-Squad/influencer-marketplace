@@ -15,7 +15,8 @@ from .models import (
     OrderItemTracking,
     OrderMessage,
     OrderMessageAttachment,
-    Transaction
+    Transaction,
+    Review,
 )
 from .serializers import (
     OrderSerializer,
@@ -24,7 +25,8 @@ from .serializers import (
     OrderItemTrackingSerializer,
     OrderMessageSerializer,
     OrderMessageAttachmentSerializer,
-    TransactionSerializer
+    TransactionSerializer,
+    ReviewSerializer,
 )
 from rest_framework import status
 
@@ -679,7 +681,7 @@ class OrderMessageAttachmentDetail(APIView):
             return handleServerException(e)
 
 
-# ORDER-Message Attachment API-Endpoint
+# Transaction API-Endpoint
 # List-Create-API
 class TransactionList(APIView):
     def get(self, request):
@@ -752,17 +754,13 @@ class TransactionDetail(APIView):
             transaction = self.get_object(pk)
             if transaction is None:
                 return handleNotFound("transaction")
-            serializer = TransactionSerializer(
-                instance=transaction, data=request.data
-            )
+            serializer = TransactionSerializer(instance=transaction, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
-                        "data": TransactionSerializer(
-                            serializer.instance
-                        ).data,
+                        "data": TransactionSerializer(serializer.instance).data,
                         "message": "Transaction data updated successfully",
                     },
                     status=status.HTTP_200_OK,
@@ -786,6 +784,112 @@ class TransactionDetail(APIView):
                     "isSuccess": True,
                     "data": None,
                     "message": "transaction deleted successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+# Review API-Endpoint
+# List-Create-API
+class ReviewList(APIView):
+    def get(self, request):
+        try:
+            review = Review.objects.all()
+            pagination = Pagination(review, request)
+            serializer = ReviewSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Review retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def post(self, request):
+        try:
+            serializer = ReviewSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": ReviewSerializer(serializer.instance).data,
+                        "message": "Review data created successfully",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+# Retrieve-Update-Destroy API
+class ReviewDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Review.objects.get(pk=pk)
+        except Review.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        try:
+            review = self.get_object(pk)
+            if review is None:
+                return handleNotFound("review")
+            serializer = ReviewSerializer(review)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Review data retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def put(self, request, pk):
+        try:
+            review = self.get_object(pk)
+            if review is None:
+                return handleNotFound("review")
+            serializer = ReviewSerializer(instance=review, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": ReviewSerializer(serializer.instance).data,
+                        "message": "Review data updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+    def delete(self, request, pk):
+        try:
+            review = self.get_object(pk)
+            if review is None:
+                return handleNotFound("review")
+            try:
+                review.delete()
+            except ValidationError as e:
+                return handleDeleteNotAllowed("review")
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "review deleted successfully",
                 },
                 status=status.HTTP_200_OK,
             )
