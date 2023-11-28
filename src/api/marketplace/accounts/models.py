@@ -11,6 +11,8 @@ class TwitterAccount(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Twitter Account ID', default=uuid.uuid4, editable=False)
     twitter_id = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
+    user_name = models.CharField(max_length=100, blank=True, null=True)
+    access_token = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         db_table = "twitter_account"
@@ -56,7 +58,7 @@ class User(AbstractUser):
     otp = models.CharField(max_length=25, blank=True, null=True)
     otp_expiration = models.DateTimeField(blank=True, null=True)
     twitter_account = models.ForeignKey(TwitterAccount, related_name='user_twitter_account_id', on_delete=models.DO_NOTHING,
-                                         null=True)
+                                         null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [] 
