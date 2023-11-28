@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import OrderList, OrderDetail, OrderItemList, OrderItemDetail, OrderAttachmentList, OrderAttachmentDetail, OrderItemTrackingList, OrderItemTrackingDetail
+from .views import OrderList, OrderDetail, OrderItemList, OrderItemDetail, OrderAttachmentList, OrderAttachmentDetail, OrderItemTrackingList, OrderItemTrackingDetail, OrderMessageList, OrderMessageDetail
 
 urlpatterns = [
     path("order/", OrderList.as_view(), name="order-list"),
@@ -13,4 +13,7 @@ urlpatterns = [
 
     path("order-item-tracking/", OrderItemTrackingList.as_view(), name="order-item-tracking-list"),
     path('order-item-tracking/<uuid:pk>/', OrderItemTrackingDetail.as_view(), name="order-item-tracking-details"),
+
+    path("order-message/", OrderMessageList.as_view(), name="order-message-list"),
+    path('order-message/<uuid:pk>/', OrderMessageDetail.as_view(), name="order-message-details"),
 ]
