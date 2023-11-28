@@ -16,8 +16,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include
 from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path('packages/', include('packages.urls')),
+    path("auth-twitter-user/", views.authTwitterUser, name="auth-twitter-user"),
+    path(
+        "twitter-login-callback/",
+        views.twitterLoginCallback,
+        name="twitter-login-callback",
+    ),
+    path("is-authenticated/", views.isAuthenticated, name="is-authenticated"),
+    path("logout/", views.logoutUser, name="logout"),
 ]
