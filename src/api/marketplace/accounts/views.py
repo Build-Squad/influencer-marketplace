@@ -9,11 +9,12 @@ from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TwitterAccount, CategoryMaster, AccountCategory
+from .models import TwitterAccount, CategoryMaster, AccountCategory, User
 from .serializers import (
     TwitterAccountSerializer,
     CategoryMasterSerializer,
     AccountCategorySerializer,
+    UserSerializer,
 )
 
 
@@ -334,6 +335,115 @@ class AccountCategoryDetail(APIView):
                     "isSuccess": True,
                     "data": None,
                     "message": "Account Category deleted successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+
+# User API-Endpoint
+# List-Create-API
+class UserList(APIView):
+    def get(self, request):
+        try:
+            user = User.objects.all()
+            pagination = Pagination(user, request)
+            serializer = UserSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All User retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def post(self, request):
+        try:
+            serializer = UserSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": UserSerializer(serializer.instance).data,
+                        "message": "User created successfully",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+# Retrieve-Update-Destroy API
+class UserDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        try:
+            user = self.get_object(pk)
+            if user is None:
+                return handleNotFound("User")
+            serializer = UserSerializer(user)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "User retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    def put(self, request, pk):
+        try:
+            user = self.get_object(pk)
+            if user is None:
+                return handleNotFound("User")
+            serializer = UserSerializer(
+                instance=user, data=request.data
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": UserSerializer(serializer.instance).data,
+                        "message": "User updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+    def delete(self, request, pk):
+        try:
+            user = self.get_object(pk)
+            if user is None:
+                return handleNotFound("User")
+            try:
+                user.delete()
+            except ValidationError as e:
+                return handleDeleteNotAllowed("User")
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "User deleted successfully",
                 },
                 status=status.HTTP_200_OK,
             )

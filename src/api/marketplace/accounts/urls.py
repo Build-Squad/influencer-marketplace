@@ -1,5 +1,14 @@
 from django.urls import path
-from .views import TwitterAccountList, TwitterAccountDetail, CategoryMasterList, CategoryMasterDetail, AccountCategoryList, AccountCategoryDetail
+from .views import (
+    TwitterAccountList,
+    TwitterAccountDetail,
+    CategoryMasterList,
+    CategoryMasterDetail,
+    AccountCategoryList,
+    AccountCategoryDetail,
+    UserList,
+    UserDetail,
+)
 
 urlpatterns = [
     path("twitter-account/", TwitterAccountList.as_view(), name="twitter-account-list"),
@@ -12,6 +21,10 @@ urlpatterns = [
 
     path("account-category/", AccountCategoryList.as_view(), name="account-category-list"),
     path("account-category/<uuid:pk>/", AccountCategoryDetail.as_view(), name="account-category-detail"),
+
+
+    path("user/", UserList.as_view(), name="user-list"),
+    path("user/<uuid:pk>/", UserDetail.as_view(), name="user-detail"),
 
 
 ]
