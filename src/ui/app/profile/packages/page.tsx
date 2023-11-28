@@ -1,0 +1,265 @@
+"use client";
+
+import { getService } from "@/src/services/httpServices";
+import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import {
+  Autocomplete,
+  Box,
+  Card,
+  FormLabel,
+  Grid,
+  Pagination,
+  Slider,
+  TextField,
+  Typography,
+} from "@mui/material";
+import dayjs from "dayjs";
+import React, { useEffect } from "react";
+
+const sortOptions = [
+  {
+    value: "name",
+    label: "Name (A-Z)",
+  },
+  {
+    value: "-name",
+    label: "Name (Z-A)",
+  },
+  {
+    value: "created_at",
+    label: "Date (Oldest)",
+  },
+  {
+    value: "-created_at",
+    label: "Date (Newest)",
+  },
+  {
+    value: "price",
+    label: "Price (Lowest)",
+  },
+  {
+    value: "-price",
+    label: "Price (Highest)",
+  },
+  {
+    value: "publish_date",
+    label: "Publish Date (Oldest)",
+  },
+  {
+    value: "-publish_date",
+    label: "Publish Date (Newest)",
+  },
+];
+
+function valuetext(value: number) {
+  return `${value}°C`;
+}
+
+const Packages = () => {
+  const [packages, setPackages] = React.useState<PackageType[]>([]);
+  const [pagination, setPagination] = React.useState<PaginationType>({
+    total_data_count: 0,
+    total_page_count: 0,
+    current_page_number: 1,
+    current_page_size: 10,
+  });
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [search, setSearch] = React.useState<string>("");
+  const [order_by, setOrder_by] = React.useState<string>("-created_at");
+  const [value, setValue] = React.useState<number[]>([10, 30]);
+
+  const getPackages = async () => {
+    try {
+      setLoading(true);
+      const { message, data, isSuccess, errors } = await getService(
+        "packages/",
+        {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          search: search,
+          order_by: order_by,
+          price_gt: value[0],
+          price_lt: value[1],
+        }
+      );
+      if (isSuccess) {
+        setPackages(data?.data);
+        setPagination({
+          ...pagination,
+          total_data_count: data?.pagination?.total_data_count,
+          total_page_count: data?.pagination?.total_page_count,
+        });
+      } else {
+        console.log(errors);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePaginationChange = (
+    event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page_number: page,
+    }));
+  };
+
+  const handleSliderValueChange = (
+    event: Event,
+    newValue: number | number[]
+  ) => {
+    setValue(newValue as number[]);
+  };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      getPackages();
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [value]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      getPackages();
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  useEffect(() => {
+    getPackages();
+  }, [pagination.current_page_number, pagination.current_page_size, order_by]);
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        minWidth: "100%",
+      }}
+    >
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
+          <TextField
+            label="Search"
+            variant="outlined"
+            value={search}
+            onChange={(event: {
+              target: { value: React.SetStateAction<string> };
+            }) => setSearch(event.target.value)}
+            size="small"
+            fullWidth
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
+          <Autocomplete
+            disableClearable
+            disablePortal
+            id="sort"
+            options={sortOptions}
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Sort"
+                variant="outlined"
+                size="small"
+              />
+            )}
+            value={sortOptions.find((option) => option.value === order_by)}
+            onChange={(event, value) => {
+              setOrder_by(value?.value ? value.value : "-created_at");
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3} lg={3}>
+          <FormLabel component="legend">Price Range</FormLabel>
+          <Slider
+            getAriaLabel={() => "Price Range"}
+            value={value}
+            onChange={handleSliderValueChange}
+            valueLabelDisplay="auto"
+            getAriaValueText={valuetext}
+            min={0}
+            disableSwap
+          />
+        </Grid>
+        <Grid container spacing={2}>
+          {loading ? null : (
+            <>
+              {packages?.length === 0 ? (
+                <Grid item xs={12}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
+                    No Packages found
+                  </Typography>
+                </Grid>
+              ) : (
+                <>
+                  {packages.map((item: PackageType) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
+                      <Card
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          height: "100%",
+                          padding: 2,
+                        }}
+                      >
+                        <Typography variant="h6">
+                          Package: {item.name}
+                        </Typography>
+                        <Typography variant="body1">
+                          Description: {item.description}
+                        </Typography>
+                        <Typography variant="body1">
+                          Price: {item.currency.symbol} {item.price}
+                        </Typography>
+                        <Typography variant="body1">
+                          Publish Date:{" "}
+                          {dayjs(item.publish_date).format(DISPLAY_DATE_FORMAT)}
+                        </Typography>
+                        <Typography variant="body1">
+                          Status: {item.status}
+                        </Typography>
+                      </Card>
+                    </Grid>
+                  ))}
+                </>
+              )}
+            </>
+          )}
+        </Grid>
+        <Grid item xs={12}>
+          <Pagination
+            count={pagination.total_page_count}
+            page={pagination.current_page_number}
+            onChange={handlePaginationChange}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              my: 4,
+            }}
+            color="primary"
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+export default Packages;
