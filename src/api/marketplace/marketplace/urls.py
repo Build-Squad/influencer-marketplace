@@ -22,6 +22,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('packages/', include('packages.urls')),
     path('orders/', include('orders.urls')),
+    path('account/', include('accounts.urls')),
     path("auth-twitter-user/", views.authTwitterUser, name="auth-twitter-user"),
     path(
         "twitter-login-callback/",
