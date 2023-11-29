@@ -36,3 +36,8 @@
 /src/ui/*.tsbuildinfo
 /src/ui/next-env.d.ts
 .DS_Store
+src/api/marketplace/.idea/inspectionProfiles/profiles_settings.xml
+src/api/marketplace/.idea/marketplace.iml
+src/api/marketplace/.idea/misc.xml
+src/api/marketplace/.idea/vcs.xml
+src/api/marketplace/.idea/workspace.xml
