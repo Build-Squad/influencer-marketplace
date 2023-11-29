@@ -4,19 +4,21 @@ import instance from '../api/instance';
 const getService = async (url: string, params?: any) => {
   try {
     const response = await instance.get(url, { params });
-    if (response.status === 200) {
+    if (response.data?.isSuccess) {
       return {
-        isSuccess: response?.status === 200,
+        isSuccess: response?.data?.isSuccess,
         statusCode: response?.status,
         data: response?.data,
-        message: response?.data?.error,
+        message: response?.data?.message,
+        errors: response?.data?.errors,
       };
     } else {
       return {
-        isSuccess: false,
+        isSuccess: response?.data?.isSuccess,
         statusCode: response?.status,
         data: response?.data,
-        message: response?.data?.error,
+        message: response?.data?.message,
+        errors: response?.data?.errors,
       };
     }
   } catch (e: unknown) {
@@ -26,13 +28,15 @@ const getService = async (url: string, params?: any) => {
         statusCode: e?.response?.status,
         data: null,
         message: e?.response?.data?.error,
+        errors: null,
       };
     }
     return {
       isSuccess: false,
       statusCode: 500,
       data: null,
-      message: 'Something went wrong, please try again later',
+      message: "Something went wrong, please try again later",
+      errors: null,
     };
   } finally {
   }
@@ -41,29 +45,13 @@ const getService = async (url: string, params?: any) => {
 const postService = async (url: string, data: unknown, params?: any) => {
   try {
     const response = await instance.post(url, data, { params });
-    if (response.status === 200 || response.status === 204) {
-      return {
-        isSuccess: response?.status === 200 || response.status === 204,
-        statusCode: response?.status,
-        data: response?.data,
-        message: response?.data?.error,
-      };
-    } else {
-      if (response instanceof AxiosError) {
-        return {
-          isSuccess: false,
-          statusCode: response?.response?.status,
-          data: null,
-          message: response?.response?.data?.error,
-        };
-      }
-      return {
-        isSuccess: response?.status === 200,
-        statusCode: response?.status,
-        data: response?.data,
-        message: response?.data?.error,
-      };
-    }
+    return {
+      isSuccess: response?.data?.isSuccess,
+      statusCode: response?.status,
+      data: response?.data,
+      message: response?.data?.message,
+      errors: response?.data?.errors,
+    };
   } catch (e: unknown) {
     if (e instanceof AxiosError) {
       return {
@@ -71,44 +59,29 @@ const postService = async (url: string, data: unknown, params?: any) => {
         statusCode: e?.response?.status,
         data: null,
         message: e?.response?.data?.error,
+        errors: null,
       };
     }
     return {
       isSuccess: false,
       statusCode: 500,
       data: null,
-      message: 'Something went wrong, please try again later',
+      message: "Something went wrong, please try again later",
+      errors: null,
     };
-  } finally {
   }
 };
 
 const patchService = async (url: string, data: unknown, params?: any) => {
   try {
     const response = await instance.patch(url, data, { params });
-    if (response.status === 200) {
-      return {
-        isSuccess: response?.status === 200,
-        statusCode: response?.status,
-        data: response?.data,
-        message: response?.data?.error,
-      };
-    } else {
-      if (response instanceof AxiosError) {
-        return {
-          isSuccess: false,
-          statusCode: response?.response?.status,
-          data: null,
-          message: response?.response?.data?.error,
-        };
-      }
-      return {
-        isSuccess: response?.status === 200,
-        statusCode: response?.status,
-        data: response?.data,
-        message: response?.data?.error,
-      };
-    }
+    return {
+      isSuccess: response?.data?.isSuccess,
+      statusCode: response?.status,
+      data: response?.data,
+      message: response?.data?.message,
+      errors: response?.data?.errors,
+    };
   } catch (e: unknown) {
     if (e instanceof AxiosError) {
       return {
@@ -116,15 +89,16 @@ const patchService = async (url: string, data: unknown, params?: any) => {
         statusCode: e?.response?.status,
         data: null,
         message: e?.response?.data?.error,
+        errors: null,
       };
     }
     return {
       isSuccess: false,
       statusCode: 500,
       data: null,
-      message: 'Something went wrong, please try again later',
+      message: "Something went wrong, please try again later",
+      errors: null,
     };
-  } finally {
   }
 };
 
@@ -133,21 +107,13 @@ const deleteService = async (url: string) => {
     const response = await instance.delete(url, {
       withCredentials: true,
     });
-    if (response.status.toString().startsWith('2')) {
-      return {
-        isSuccess: response.status.toString().startsWith('2'),
-        statusCode: response?.status,
-        data: response?.data,
-        message: response?.data?.error,
-      };
-    } else {
-      return {
-        isSuccess: false,
-        statusCode: response?.status,
-        data: response?.data,
-        message: response?.data?.error,
-      };
-    }
+    return {
+      isSuccess: response?.data?.isSuccess,
+      statusCode: response?.status,
+      data: response?.data,
+      message: response?.data?.message,
+      errors: response?.data?.errors,
+    };
   } catch (e: unknown) {
     if (e instanceof AxiosError) {
       return {
@@ -155,15 +121,16 @@ const deleteService = async (url: string) => {
         statusCode: e?.response?.status,
         data: null,
         message: e?.response?.data?.error,
+        errors: null,
       };
     }
     return {
       isSuccess: false,
       statusCode: 500,
       data: null,
-      message: 'Something went wrong, please try again later',
+      message: "Something went wrong, please try again later",
+      errors: null,
     };
-  } finally {
   }
 };
 

@@ -61,7 +61,7 @@ class User(AbstractUser):
                                          null=True, blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [] 
+    REQUIRED_FIELDS = ['username']
     ordering = ('email',)
 
     class Meta:

@@ -27,12 +27,26 @@ SECRET_KEY = "o421)j72pveh$waa8u1(s7+%$)d3c_^yt4y6qshaww26ft0p-n"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "dev-api.xfluencer.io",
+    "3.9.194.155",
+    "localhost",
+]
 
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://dev.xfluencer.io",
+    "https://xfluencer.io",
+    "https://13.41.134.64"
+]
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:3000",
+    "https://dev.xfluencer.io",
+    "https://xfluencer.io",
+    "https://13.41.134.64"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -140,6 +154,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 AUTH_USER_MODEL = "accounts.User"
 ACCOUNT_AUTHENTICATION_METHOD = "email"

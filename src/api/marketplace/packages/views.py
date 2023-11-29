@@ -7,13 +7,18 @@ from .models import Package, ServiceMaster, Service
 from core.models import Currency
 from accounts.models import User
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from .serializers import ServiceMasterSerializer, CreateServiceMasterSerializer, ServicesSerializer, CreateServicesSerializer, PackageSerializer, CreatePackageSerializer
 
 # Service Master
 class ServiceMasterList(APIView):
     def get(self, request):
         try:
-          serviceMaster = ServiceMaster.objects.filter(deleted_at=None)
+          search = request.GET.get('search', '')
+          order_by = request.GET.get('order_by', '-created_at')
+          serviceMaster = ServiceMaster.objects.filter(
+              Q(name__icontains=search) | Q(description__icontains=search),
+              deleted_at=None).order_by(order_by)
           pagination = Pagination(serviceMaster, request)
           serializer = ServiceMasterSerializer(pagination.getData(), many=True)
           return Response({
@@ -100,15 +105,38 @@ class ServiceMasterDetail(APIView):
 class ServiceList(APIView):
     def get(self, request):
         try:
-          service = Service.objects.filter(deleted_at=None)
-          pagination = Pagination(service, request)
-          serializer = ServicesSerializer(pagination.getData(), many=True)
-          return Response({
-              'isSuccess': True,
-              'data': serializer.data,
-              'message': 'All Service retrieved successfully',
-              'pagination': pagination.getPageInfo()
-          }, status=status.HTTP_200_OK)
+            search = request.GET.get('search', '')
+            order_by = request.GET.get('order_by', '-created_at')
+            quantity_gt = request.GET.get('quantity_gt', None)
+            quantity_lt = request.GET.get('quantity_lt', None)
+            price_gt = request.GET.get('price_gt', None)
+            price_lt = request.GET.get('price_lt', None)
+
+            service = Service.objects.filter(
+                Q(service_master__name__icontains=search) | Q(
+                    package__name__icontains=search),
+                deleted_at=None
+            )
+
+            if quantity_gt is not None:
+                service = service.filter(quantity__gt=quantity_gt)
+            if quantity_lt is not None:
+                service = service.filter(quantity__lt=quantity_lt)
+            if price_gt is not None:
+                service = service.filter(price__gt=price_gt)
+            if price_lt is not None:
+                service = service.filter(price__lt=price_lt)
+
+            service = service.order_by(order_by)
+
+            pagination = Pagination(service, request)
+            serializer = ServicesSerializer(pagination.getData(), many=True)
+            return Response({
+                'isSuccess': True,
+                'data': serializer.data,
+                'message': 'All Services retrieved successfully',
+                'pagination': pagination.getPageInfo()
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             return handleServerException(e)
         
@@ -200,18 +228,34 @@ class ServiceDetail(APIView):
 # Package
 class PackageList(APIView):
     def get(self, request):
-        try:
-          package = Package.objects.filter(deleted_at=None)
-          pagination = Pagination(package, request)
-          serializer = PackageSerializer(pagination.getData(), many=True)
-          return Response({
-              'isSuccess': True,
-              'data': serializer.data,
-              'message': 'All Package retrieved successfully',
-              'pagination': pagination.getPageInfo()
-          }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return handleServerException(e)
+      try:
+        search = request.GET.get('search', '')
+        order_by = request.GET.get('order_by', '-created_at')
+        price_gt = request.GET.get('price_gt', None)
+        price_lt = request.GET.get('price_lt', None)
+
+        package = Package.objects.filter(
+            Q(name__icontains=search) | Q(description__icontains=search),
+            deleted_at=None
+        )
+
+        if price_gt is not None:
+            package = package.filter(price__gt=price_gt)
+        if price_lt is not None:
+            package = package.filter(price__lt=price_lt)
+
+        package = package.order_by(order_by)
+
+        pagination = Pagination(package, request)
+        serializer = PackageSerializer(pagination.getData(), many=True)
+        return Response({
+            'isSuccess': True,
+            'data': serializer.data,
+            'message': 'All Package retrieved successfully',
+            'pagination': pagination.getPageInfo()
+        }, status=status.HTTP_200_OK)
+      except Exception as e:
+        return handleServerException(e)
         
     def post(self, request):
         try:
