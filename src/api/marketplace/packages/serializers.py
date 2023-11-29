@@ -1,4 +1,5 @@
 #  import serializers
+from locale import currency
 from rest_framework import serializers
 from .models import ServiceMaster, Service, Package
 from core.serializers import CurrencySerializer
@@ -31,6 +32,7 @@ class CreatePackageSerializer(serializers.ModelSerializer):
 class ServicesSerializer(serializers.ModelSerializer):
     service_master = ServiceMasterSerializer()
     package = PackageSerializer()
+    currency = CurrencySerializer()
     class Meta:
         model = Service
         # Add the package and service_master o

@@ -15,6 +15,7 @@
     "@mui/icons-material": "^5.14.16",
     "@mui/material": "^5.14.17",
     "axios": "^1.6.1",
+    "dayjs": "^1.11.10",
     "dotenv": "^16.3.1",
     "next": "^14.0.1",
     "react": "^18",

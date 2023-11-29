@@ -81,8 +81,8 @@ class Pagination:
 
     def getTotalpageCount(self):
         try:
-            return math.ceil(self.getDataCount() / self.getCurrentPageSize())
-        except:
+            return math.ceil(self.getDataCount() / self.page_size)
+        except ZeroDivisionError:
             if self.getDataCount() == 0:
                 return 0
             else:
