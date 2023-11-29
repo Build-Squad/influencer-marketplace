@@ -58,7 +58,7 @@ def twitterLoginCallback(request):
     try:
         access_token_obj = oauth2_user_handler.fetch_token(authorization_response_url)
         access_token = access_token_obj["access_token"]
-        print("Access token fetched successfully: ", access_token)
+        # print("Access token fetched successfully: ", access_token)
 
         # Creating Twitter API tweepy V2 instance.
         client = Client(access_token)

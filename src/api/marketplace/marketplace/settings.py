@@ -29,7 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "dev-api.xfluencer.io",
-    "3.9.194.155"
+    "3.9.194.155",
+    "localhost",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
