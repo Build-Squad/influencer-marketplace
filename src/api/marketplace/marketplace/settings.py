@@ -27,7 +27,9 @@ SECRET_KEY = "o421)j72pveh$waa8u1(s7+%$)d3c_^yt4y6qshaww26ft0p-n"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "dev-api.xfluencer.io",
+]
 
 CORS_ALLOW_ALL_ORIGINS = False
 
