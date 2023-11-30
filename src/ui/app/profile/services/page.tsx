@@ -219,7 +219,7 @@ const Services = () => {
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={3}>
+        <Grid item xs={12} sm={6} md={3} lg={3} sx={{ px: 2 }}>
           <FormLabel component="legend">Price Range</FormLabel>
           <Slider
             getAriaLabel={() => "Price Range"}
@@ -231,7 +231,7 @@ const Services = () => {
             disableSwap
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={3}>
+        <Grid item xs={12} sm={6} md={3} lg={3} sx={{ px: 2 }}>
           <FormLabel component="legend">Quantity Range</FormLabel>
           <Slider
             getAriaLabel={() => "Quantity Range"}

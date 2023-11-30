@@ -113,9 +113,7 @@ const Packages = () => {
   const deletePackageItem = async (id: string) => {
     try {
       setDeleteLoading(true);
-      const { isSuccess, message } = await deleteService(
-        `/packages/service/${id}/`
-      );
+      const { isSuccess, message } = await deleteService(`/packages/${id}/`);
       if (isSuccess) {
         notification(message, "success");
         setRefreshPage(true);

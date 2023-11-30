@@ -9,4 +9,10 @@ export const theme = createTheme({
       main: "#000000",
     },
   },
+  typography: {
+    button: {
+      textTransform: "none",
+      fontSize: 14,
+    },
+  },
 });
