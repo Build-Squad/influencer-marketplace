@@ -255,7 +255,10 @@ const Services = () => {
                     justifyContent: "center",
                     alignItems: "center",
                   }}
-                  onClick={() => setOpenModal(true)}
+                  onClick={() => {
+                    setSelectedService(null);
+                    setOpenModal(true);
+                  }}
                 >
                   <Tooltip title="Add Package">
                     <Box>
@@ -327,6 +330,7 @@ const Services = () => {
                           onConfirm={() => {
                             deleteServiceItem(service.id);
                           }}
+                          loading={deleteLoading}
                         />
                       </Box>
                     </Box>
