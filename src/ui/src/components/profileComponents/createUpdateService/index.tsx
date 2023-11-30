@@ -25,8 +25,9 @@ type CreateUpdateServiceProps = {
   setRefreshPage: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const statusOptions = Object.values(PACKAGE_STATUS).map((status) => status);
-
+const statusOptions: any[] = Object.values(PACKAGE_STATUS).map(
+  (status) => status
+);
 const CreateUpdateService = ({
   serviceItem,
   open,
@@ -92,7 +93,7 @@ const CreateUpdateService = ({
   });
 
   React.useEffect(() => {
-    if (serviceItem) {
+    if (serviceItem && open) {
       formik.setFieldValue("service_master", serviceItem?.service_master?.id);
       formik.setFieldValue("service_masterObject", serviceItem?.service_master);
       formik.setFieldValue("package", serviceItem?.package?.id);
@@ -102,8 +103,14 @@ const CreateUpdateService = ({
       formik.setFieldValue("currencyObject", serviceItem?.currency);
       formik.setFieldValue("quantity", serviceItem?.quantity);
       formik.setFieldValue("status", serviceItem?.status);
+      const selectedOption = statusOptions.find(
+        (option) => option.value === serviceItem.status
+      );
+      formik.setFieldValue("statusObject", selectedOption);
+    } else {
+      formik.resetForm();
     }
-  }, [serviceItem]);
+  }, [serviceItem, open]);
 
   return (
     <CustomModal open={open} setOpen={setOpen}>
@@ -340,7 +347,6 @@ const CreateUpdateService = ({
               }}
             />
           </Grid>
-
           <Grid item xs={12} sm={6} md={4} lg={4}>
             <Autocomplete
               disableClearable
@@ -359,14 +365,15 @@ const CreateUpdateService = ({
                   size="small"
                 />
               )}
-              value={statusOptions.find(
-                (option) => option.value === formik.values.status
-              )}
+              value={
+                formik.values.statusObject ? formik.values.statusObject : null
+              }
               onChange={(event, value) => {
                 const selectedOption = statusOptions.find(
                   (option) => option.value === value?.value
                 );
                 formik.setFieldValue("status", selectedOption?.value || "");
+                formik.setFieldValue("statusObject", selectedOption);
               }}
             />
           </Grid>
