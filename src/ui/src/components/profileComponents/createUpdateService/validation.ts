@@ -11,6 +11,10 @@ interface ServiceFormType {
   currency: string;
   currencyObject?: CurrencyType | null;
   status: string;
+  statusObject?: {
+    value: string;
+    label: string;
+  } | null;
 }
 
 export const serviceFormSchema = object({
@@ -34,4 +38,5 @@ export const serviceFormInitialValues: ServiceFormType = {
   service_masterObject: null,
   packageObject: null,
   currencyObject: null,
+  statusObject: null,
 };

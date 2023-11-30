@@ -1,3 +1,5 @@
+import { FORM_DATE_FORMAT } from "@/src/utils/consts";
+import dayjs from "dayjs";
 import { object, number, string, ObjectSchema } from "yup";
 
 interface PackageFormType {
@@ -6,12 +8,14 @@ interface PackageFormType {
   description: string;
   price: number;
   currency: string;
+  currencyObject?: CurrencyType | null;
   status: string;
+  statusObject?: ConstSelectType | null;
   publish_date: string;
   influencer: string;
 }
 
-const packageFormSchema: ObjectSchema<PackageFormType> = object({
+const packageFormSchema = object({
   id: string().nullable(),
   name: string().required("Name is required"),
   description: string().required("Description is required"),
@@ -28,9 +32,11 @@ const packageFormInitialValues: PackageFormType = {
   description: "",
   price: 0,
   currency: "",
+  currencyObject: null,
   status: "",
   publish_date: "",
-  influencer: "",
+  influencer: "c8407ace-7220-4141-b048-ad9666359372",
+  statusObject: null,
 };
 
 export { packageFormSchema, packageFormInitialValues };
