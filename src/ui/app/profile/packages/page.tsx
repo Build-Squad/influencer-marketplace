@@ -11,10 +11,14 @@ import {
   Pagination,
   Slider,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import React, { useEffect } from "react";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import CreateUpdatePackage from "@/src/components/profileComponents/createUpdatePackage";
+import { notification } from "@/src/components/shared/notification";
 
 const sortOptions = [
   {
@@ -67,6 +71,7 @@ const Packages = () => {
   const [search, setSearch] = React.useState<string>("");
   const [order_by, setOrder_by] = React.useState<string>("-created_at");
   const [value, setValue] = React.useState<number[]>([10, 30]);
+  const [openModal, setOpenModal] = React.useState<boolean>(false);
 
   const getPackages = async () => {
     try {
@@ -83,6 +88,7 @@ const Packages = () => {
         }
       );
       if (isSuccess) {
+        notification(message);
         setPackages(data?.data);
         setPagination({
           ...pagination,
@@ -90,7 +96,7 @@ const Packages = () => {
           total_page_count: data?.pagination?.total_page_count,
         });
       } else {
-        console.log(errors);
+        notification(message, "error");
       }
     } finally {
       setLoading(false);
@@ -119,18 +125,13 @@ const Packages = () => {
       getPackages();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [value]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      getPackages();
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [search]);
-
-  useEffect(() => {
-    getPackages();
-  }, [pagination.current_page_number, pagination.current_page_size, order_by]);
+  }, [
+    search,
+    pagination.current_page_number,
+    pagination.current_page_size,
+    order_by,
+    value,
+  ]);
 
   return (
     <Box
@@ -195,52 +196,58 @@ const Packages = () => {
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              {packages?.length === 0 ? (
-                <Grid item xs={12}>
-                  <Typography
-                    variant="h6"
+              <Grid item xs={12} sm={6} md={4} lg={3}>
+                <Card
+                  sx={{
+                    height: "100%",
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  onClick={() => setOpenModal(true)}
+                >
+                  <Tooltip title="Add Package">
+                    <Box>
+                      <AddCircleOutlineIcon
+                        sx={{
+                          fontSize: 80,
+                          color: "secondary.main",
+                        }}
+                      />
+                      <Typography variant="body2">Add Package</Typography>
+                    </Box>
+                  </Tooltip>
+                </Card>
+              </Grid>
+              {packages.map((item: PackageType) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
+                  <Card
                     sx={{
                       display: "flex",
-                      justifyContent: "center",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      height: "100%",
+                      padding: 2,
                     }}
                   >
-                    No Packages found
-                  </Typography>
+                    <Typography variant="h6">Package: {item.name}</Typography>
+                    <Typography variant="body1">
+                      Description: {item.description}
+                    </Typography>
+                    <Typography variant="body1">
+                      Price: {item.currency.symbol} {item.price}
+                    </Typography>
+                    <Typography variant="body1">
+                      Publish Date:{" "}
+                      {dayjs(item.publish_date).format(DISPLAY_DATE_FORMAT)}
+                    </Typography>
+                    <Typography variant="body1">
+                      Status: {item.status}
+                    </Typography>
+                  </Card>
                 </Grid>
-              ) : (
-                <>
-                  {packages.map((item: PackageType) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
-                      <Card
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          height: "100%",
-                          padding: 2,
-                        }}
-                      >
-                        <Typography variant="h6">
-                          Package: {item.name}
-                        </Typography>
-                        <Typography variant="body1">
-                          Description: {item.description}
-                        </Typography>
-                        <Typography variant="body1">
-                          Price: {item.currency.symbol} {item.price}
-                        </Typography>
-                        <Typography variant="body1">
-                          Publish Date:{" "}
-                          {dayjs(item.publish_date).format(DISPLAY_DATE_FORMAT)}
-                        </Typography>
-                        <Typography variant="body1">
-                          Status: {item.status}
-                        </Typography>
-                      </Card>
-                    </Grid>
-                  ))}
-                </>
-              )}
+              ))}
             </>
           )}
         </Grid>
@@ -258,6 +265,7 @@ const Packages = () => {
           />
         </Grid>
       </Grid>
+      <CreateUpdatePackage open={openModal} setOpen={setOpenModal} />
     </Box>
   );
 };

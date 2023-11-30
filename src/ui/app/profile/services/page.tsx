@@ -10,9 +10,13 @@ import {
   Pagination,
   Slider,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
+import { notification } from "@/src/components/shared/notification";
 
 const sortOptions = [
   {
@@ -66,6 +70,7 @@ const Services = () => {
   const [order_by, setOrder_by] = React.useState<string>("-created_at");
   const [value, setValue] = React.useState<number[]>([10, 30]);
   const [quantityRange, setQuantityRange] = React.useState<number[]>([0, 20]);
+  const [openModal, setOpenModal] = React.useState<boolean>(false);
 
   const getServices = async () => {
     try {
@@ -84,6 +89,7 @@ const Services = () => {
         }
       );
       if (isSuccess) {
+        notification(message);
         setServices(data?.data);
         setPagination({
           ...pagination,
@@ -91,7 +97,7 @@ const Services = () => {
           total_page_count: data?.pagination?.total_page_count,
         });
       } else {
-        console.log(errors);
+        notification(message, "error");
       }
     } finally {
       setLoading(false);
@@ -127,25 +133,14 @@ const Services = () => {
       getServices();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [search]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      getServices();
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [value]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      getServices();
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [quantityRange]);
-
-  useEffect(() => {
-    getServices();
-  }, [pagination.current_page_number, pagination.current_page_size, order_by]);
+  }, [
+    quantityRange,
+    value,
+    search,
+    pagination.current_page_number,
+    pagination.current_page_size,
+    order_by,
+  ]);
 
   return (
     <Box
@@ -222,54 +217,62 @@ const Services = () => {
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              {services?.length === 0 ? (
-                <Grid item xs={12}>
-                  <Typography
-                    variant="h6"
+              <Grid item xs={12} sm={6} md={4} lg={3}>
+                <Card
+                  sx={{
+                    height: "100%",
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  onClick={() => setOpenModal(true)}
+                >
+                  <Tooltip title="Add Package">
+                    <Box>
+                      <AddCircleOutlineIcon
+                        sx={{
+                          fontSize: 80,
+                          color: "secondary.main",
+                        }}
+                      />
+                      <Typography variant="body2">Add Service</Typography>
+                    </Box>
+                  </Tooltip>
+                </Card>
+              </Grid>
+              {services.map((service) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={service.id}>
+                  <Card
                     sx={{
                       display: "flex",
-                      justifyContent: "center",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      height: "100%",
+                      padding: 2,
                     }}
                   >
-                    No Services found
-                  </Typography>
+                    <Typography variant="h6">
+                      Service: {service.service_master.name}
+                    </Typography>
+                    <Typography variant="body1">
+                      Description: {service.service_master.description}
+                    </Typography>
+                    <Typography variant="body1">
+                      Limit: {service.service_master.limit}
+                    </Typography>
+                    <Typography variant="body1">
+                      Type: {service.service_master.type}
+                    </Typography>
+                    <Typography variant="body1">
+                      Quantity: {service.quantity}
+                    </Typography>
+                    <Typography variant="body1">
+                      Price: {service.currency.symbol} {service.price}
+                    </Typography>
+                  </Card>
                 </Grid>
-              ) : (
-                <>
-                  {services.map((service) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={service.id}>
-                      <Card
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          height: "100%",
-                          padding: 2,
-                        }}
-                      >
-                        <Typography variant="h6">
-                          Service: {service.service_master.name}
-                        </Typography>
-                        <Typography variant="body1">
-                          Description: {service.service_master.description}
-                        </Typography>
-                        <Typography variant="body1">
-                          Limit: {service.service_master.limit}
-                        </Typography>
-                        <Typography variant="body1">
-                          Type: {service.service_master.type}
-                        </Typography>
-                        <Typography variant="body1">
-                          Quantity: {service.quantity}
-                        </Typography>
-                        <Typography variant="body1">
-                          Price: {service.currency.symbol} {service.price}
-                        </Typography>
-                      </Card>
-                    </Grid>
-                  ))}
-                </>
-              )}
+              ))}
             </>
           )}
         </Grid>
@@ -287,6 +290,7 @@ const Services = () => {
           />
         </Grid>
       </Grid>
+      <CreateUpdateService open={openModal} setOpen={setOpenModal} />
     </Box>
   );
 };
