@@ -14,3 +14,4 @@ django-cors-headers==4.3.1
 django-sslserver==0.22
 tweepy==4.14.0
 PyJWT==2.8.0
+drf-yasg==1.21.7
