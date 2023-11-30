@@ -28,7 +28,7 @@ SECRET_KEY = "o421)j72pveh$waa8u1(s7+%$)d3c_^yt4y6qshaww26ft0p-n"
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "127.0.0.1",
+    "localhost",
     "dev-api.xfluencer.io",
     "3.9.194.155",
     "localhost",

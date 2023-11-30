@@ -5,6 +5,7 @@
 /src/ui/.pnp
 /src/ui/.pnp.js
 /src/ui/.yarn/install-state.gz
+/data/db
 
 # testing
 /src/ui/coverage
