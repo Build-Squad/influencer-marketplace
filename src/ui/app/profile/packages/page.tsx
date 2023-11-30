@@ -1,6 +1,6 @@
 "use client";
 
-import { getService } from "@/src/services/httpServices";
+import { deleteService, getService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 import {
   Autocomplete,
@@ -8,6 +8,7 @@ import {
   Card,
   FormLabel,
   Grid,
+  IconButton,
   Pagination,
   Slider,
   TextField,
@@ -19,6 +20,9 @@ import React, { useEffect } from "react";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CreateUpdatePackage from "@/src/components/profileComponents/createUpdatePackage";
 import { notification } from "@/src/components/shared/notification";
+import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditIcon from "@mui/icons-material/Edit";
 
 const sortOptions = [
   {
@@ -65,13 +69,17 @@ const Packages = () => {
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 10,
+    current_page_size: 11,
   });
   const [loading, setLoading] = React.useState<boolean>(true);
   const [search, setSearch] = React.useState<string>("");
   const [order_by, setOrder_by] = React.useState<string>("-created_at");
-  const [value, setValue] = React.useState<number[]>([10, 30]);
+  const [value, setValue] = React.useState<number[]>([0, 100]);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
+  const [refreshPage, setRefreshPage] = React.useState<boolean>(false);
+  const [selectedPackage, setSelectedPackage] =
+    React.useState<PackageType | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState<boolean>(false);
 
   const getPackages = async () => {
     try {
@@ -88,7 +96,6 @@ const Packages = () => {
         }
       );
       if (isSuccess) {
-        notification(message);
         setPackages(data?.data);
         setPagination({
           ...pagination,
@@ -100,6 +107,23 @@ const Packages = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deletePackageItem = async (id: string) => {
+    try {
+      setDeleteLoading(true);
+      const { isSuccess, message } = await deleteService(
+        `/packages/service/${id}/`
+      );
+      if (isSuccess) {
+        notification(message, "success");
+        setRefreshPage(true);
+      } else {
+        notification(message, "error");
+      }
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -119,6 +143,13 @@ const Packages = () => {
   ) => {
     setValue(newValue as number[]);
   };
+
+  useEffect(() => {
+    if (refreshPage) {
+      getPackages();
+      setRefreshPage(false);
+    }
+  }, [refreshPage]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -205,7 +236,10 @@ const Packages = () => {
                     justifyContent: "center",
                     alignItems: "center",
                   }}
-                  onClick={() => setOpenModal(true)}
+                  onClick={() => {
+                    setSelectedPackage(null);
+                    setOpenModal(true);
+                  }}
                 >
                   <Tooltip title="Add Package">
                     <Box>
@@ -231,7 +265,54 @@ const Packages = () => {
                       padding: 2,
                     }}
                   >
-                    <Typography variant="h6">Package: {item.name}</Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography variant="h6">Package: {item.name}</Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Tooltip title="Edit">
+                          <IconButton
+                            onClick={() => {
+                              setSelectedPackage(item);
+                              setOpenModal(true);
+                            }}
+                          >
+                            <EditIcon
+                              sx={{
+                                fontSize: 16,
+                              }}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                        <ConfirmDelete
+                          deleteElement={
+                            <IconButton>
+                              <DeleteOutlineIcon
+                                sx={{
+                                  fontSize: 16,
+                                }}
+                                color="error"
+                              />
+                            </IconButton>
+                          }
+                          title={item.name}
+                          onConfirm={() => {
+                            deletePackageItem(item.id);
+                          }}
+                          loading={deleteLoading}
+                        />
+                      </Box>
+                    </Box>
                     <Typography variant="body1">
                       Description: {item.description}
                     </Typography>
@@ -265,7 +346,12 @@ const Packages = () => {
           />
         </Grid>
       </Grid>
-      <CreateUpdatePackage open={openModal} setOpen={setOpenModal} />
+      <CreateUpdatePackage
+        open={openModal}
+        setOpen={setOpenModal}
+        setRefreshPage={setRefreshPage}
+        packageItem={selectedPackage}
+      />
     </Box>
   );
 };
