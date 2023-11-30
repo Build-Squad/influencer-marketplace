@@ -1,12 +1,13 @@
 "use client";
 
-import { getService } from "@/src/services/httpServices";
+import { deleteService, getService } from "@/src/services/httpServices";
 import {
   Autocomplete,
   Box,
   Card,
   FormLabel,
   Grid,
+  IconButton,
   Pagination,
   Slider,
   TextField,
@@ -17,16 +18,11 @@ import React, { useEffect } from "react";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
 import { notification } from "@/src/components/shared/notification";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
 
 const sortOptions = [
-  {
-    value: "name",
-    label: "Name (A-Z)",
-  },
-  {
-    value: "-name",
-    label: "Name (Z-A)",
-  },
   {
     value: "created_at",
     label: "Date (Oldest)",
@@ -63,14 +59,18 @@ const Services = () => {
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 10,
+    current_page_size: 11,
   });
   const [loading, setLoading] = React.useState<boolean>(true);
   const [search, setSearch] = React.useState<string>("");
   const [order_by, setOrder_by] = React.useState<string>("-created_at");
-  const [value, setValue] = React.useState<number[]>([10, 30]);
-  const [quantityRange, setQuantityRange] = React.useState<number[]>([0, 20]);
+  const [value, setValue] = React.useState<number[]>([0, 100]);
+  const [quantityRange, setQuantityRange] = React.useState<number[]>([0, 100]);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
+  const [refreshPage, setRefreshPage] = React.useState<boolean>(false);
+  const [selectedService, setSelectedService] =
+    React.useState<ServiceType | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState<boolean>(false);
 
   const getServices = async () => {
     try {
@@ -89,7 +89,6 @@ const Services = () => {
         }
       );
       if (isSuccess) {
-        notification(message);
         setServices(data?.data);
         setPagination({
           ...pagination,
@@ -101,6 +100,23 @@ const Services = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteServiceItem = async (id: string) => {
+    try {
+      setDeleteLoading(true);
+      const { isSuccess, message } = await deleteService(
+        `/packages/service/${id}/`
+      );
+      if (isSuccess) {
+        notification(message, "success");
+        setRefreshPage(true);
+      } else {
+        notification(message, "error");
+      }
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -129,6 +145,13 @@ const Services = () => {
   };
 
   useEffect(() => {
+    if (refreshPage) {
+      getServices();
+      setRefreshPage(false);
+    }
+  }, [refreshPage]);
+
+  useEffect(() => {
     const timeout = setTimeout(() => {
       getServices();
     }, 500);
@@ -141,6 +164,12 @@ const Services = () => {
     pagination.current_page_size,
     order_by,
   ]);
+
+  useEffect(() => {
+    if (!openModal) {
+      setSelectedService(null);
+    }
+  }, [openModal]);
 
   return (
     <Box
@@ -252,9 +281,55 @@ const Services = () => {
                       padding: 2,
                     }}
                   >
-                    <Typography variant="h6">
-                      Service: {service.service_master.name}
-                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography variant="h6">
+                        Service: {service.service_master.name}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Tooltip title="Edit">
+                          <IconButton
+                            onClick={() => {
+                              setSelectedService(service);
+                              setOpenModal(true);
+                            }}
+                          >
+                            <EditIcon
+                              sx={{
+                                fontSize: 16,
+                              }}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                        <ConfirmDelete
+                          deleteElement={
+                            <IconButton>
+                              <DeleteOutlineIcon
+                                sx={{
+                                  fontSize: 16,
+                                }}
+                                color="error"
+                              />
+                            </IconButton>
+                          }
+                          title={"Service"}
+                          onConfirm={() => {
+                            deleteServiceItem(service.id);
+                          }}
+                        />
+                      </Box>
+                    </Box>
                     <Typography variant="body1">
                       Description: {service.service_master.description}
                     </Typography>
@@ -290,7 +365,12 @@ const Services = () => {
           />
         </Grid>
       </Grid>
-      <CreateUpdateService open={openModal} setOpen={setOpenModal} />
+      <CreateUpdateService
+        open={openModal}
+        setOpen={setOpenModal}
+        setRefreshPage={setRefreshPage}
+        serviceItem={selectedService}
+      />
     </Box>
   );
 };
