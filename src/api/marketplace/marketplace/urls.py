@@ -18,9 +18,30 @@ from django.urls import include
 from django.urls import path
 from . import views
 
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="XFluencer API Documentation",
+        default_version="v1",
+        description="",
+    ),
+    public=True,
+    permission_classes=[],
+)
+
+
 urlpatterns = [
+    path(
+        "api/docs/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
     path("admin/", admin.site.urls),
-    path('packages/', include('packages.urls'), name='packages'),
+    path('packages/', include('packages.urls')),
+    path('orders/', include('orders.urls')),
+    path('account/', include('accounts.urls')),
     path("auth-twitter-user/", views.authTwitterUser, name="auth-twitter-user"),
     path(
         "twitter-login-callback/",
