@@ -55,7 +55,7 @@ class Pagination:
         self.page_data = self.qs[i:j]
 
     def setValidPagination(self):
-        print(self.page_size, self.page_number)
+        # print(self.page_size, self.page_number)
         page_size = PageSizeSerializer(data={'page_size': self.page_size})
         page_number = PageNumberSerializer(data={'page_number': self.page_number})
         if not page_size.is_valid():
@@ -81,8 +81,8 @@ class Pagination:
 
     def getTotalpageCount(self):
         try:
-            return math.ceil(self.getDataCount() / self.getCurrentPageSize())
-        except:
+            return math.ceil(self.getDataCount() / self.page_size)
+        except ZeroDivisionError:
             if self.getDataCount() == 0:
                 return 0
             else:
@@ -97,7 +97,7 @@ class Pagination:
         }
 
 def handleServerException(e):
-    print(e)
+    # print(e)
     return Response({
         'isSuccess': False,
         'data': None,
@@ -106,7 +106,7 @@ def handleServerException(e):
     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def handleBadRequest(e):
-    print(e)
+    # print(e)
     return Response({
         'isSuccess': False,
         'data': None,
