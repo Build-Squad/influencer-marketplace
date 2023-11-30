@@ -17,22 +17,29 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { FormikValues, useFormik } from "formik";
-import React from "react";
+import React, { useEffect } from "react";
 import { packageFormInitialValues, packageFormSchema } from "./validation";
 import CustomModal from "../../shared/customModal";
+import { notification } from "../../shared/notification";
+import CustomAutoComplete from "../../shared/customAutoComplete";
+import dayjs from "dayjs";
 
 type CreateUpdatePackageProps = {
-  packageItem?: PackageType;
+  packageItem?: PackageType | null;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setRefreshPage: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const statusOptions = Object.values(PACKAGE_STATUS).map((status) => status);
+const statusOptions: any[] = Object.values(PACKAGE_STATUS).map(
+  (status) => status
+);
 
 const CreateUpdatePackage = ({
   packageItem,
   open,
   setOpen,
+  setRefreshPage,
 }: CreateUpdatePackageProps) => {
   const [loading, setLoading] = React.useState<boolean>(false);
 
@@ -40,14 +47,16 @@ const CreateUpdatePackage = ({
     try {
       setLoading(true);
       const { message, data, errors, isSuccess } = await putService(
-        `/packages/${packageItem?.id}`,
+        `/packages/${packageItem?.id}/`,
         values
       );
       if (isSuccess) {
-        console.log("Package updated successfully");
+        notification(message);
+        setRefreshPage(true);
+        formik.resetForm();
         setOpen(false);
       } else {
-        console.log(errors);
+        notification(message, "error");
       }
     } finally {
       setLoading(false);
@@ -58,14 +67,16 @@ const CreateUpdatePackage = ({
     try {
       setLoading(true);
       const { message, data, errors, isSuccess } = await postService(
-        "/packages",
+        "/packages/",
         values
       );
       if (isSuccess) {
-        console.log("Package created successfully");
+        notification(message);
+        setRefreshPage(true);
+        formik.resetForm();
         setOpen(false);
       } else {
-        console.log(errors);
+        notification(message, "error");
       }
     } finally {
       setLoading(false);
@@ -83,6 +94,25 @@ const CreateUpdatePackage = ({
     },
     validationSchema: packageFormSchema,
   });
+
+  useEffect(() => {
+    if (packageItem && open) {
+      formik.setFieldValue("name", packageItem.name);
+      formik.setFieldValue("description", packageItem.description);
+      formik.setFieldValue("price", packageItem.price);
+      formik.setFieldValue("currency", packageItem.currency.id);
+      formik.setFieldValue("currencyObject", packageItem.currency);
+      formik.setFieldValue("status", packageItem.status);
+      const selectedOption = statusOptions.find(
+        (option) => option.value === packageItem.status
+      );
+      formik.setFieldValue("statusObject", selectedOption);
+      formik.setFieldValue("publish_date", dayjs(packageItem.publish_date));
+    } else {
+      formik.resetForm();
+      formik.setFieldValue("publish_date", dayjs());
+    }
+  }, [packageItem, open]);
 
   return (
     <CustomModal open={open} setOpen={setOpen}>
@@ -166,6 +196,64 @@ const CreateUpdatePackage = ({
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={4}>
+              <CustomAutoComplete
+                apiEndpoint="/core/currency"
+                label="Currency"
+                placeholder="Search Currency"
+                value={formik.values.currencyObject}
+                onChange={(value) => {
+                  if (typeof value === "object" && value) {
+                    if ("id" in value) {
+                      formik.setFieldValue("currency", value?.id);
+                      formik.setFieldValue("currencyObject", value);
+                    } else {
+                      formik.setFieldValue("currency", null);
+                      formik.setFieldValue("currencyObject", null);
+                    }
+                  } else {
+                    formik.setFieldValue("currency", null);
+                    formik.setFieldValue("currencyObject", null);
+                  }
+                }}
+                onClear={() => {
+                  formik.setFieldValue("currency", null);
+                }}
+                helperText={
+                  formik.touched.currency && formik.errors.currency
+                    ? formik.errors.currency
+                    : " "
+                }
+                error={
+                  formik.touched.currency && Boolean(formik.errors.currency)
+                }
+                sx={{
+                  width: "100%",
+                }}
+                getOptionLabel={(option) => {
+                  if (typeof option === "object" && option) {
+                    if ("name" in option) {
+                      return option.name as string;
+                    } else {
+                      return "";
+                    }
+                  } else {
+                    return "";
+                  }
+                }}
+                isOptionEqualToValue={(option, value) => {
+                  if (typeof option === "object" && option) {
+                    if ("id" in option) {
+                      return option.id === value;
+                    } else {
+                      return false;
+                    }
+                  } else {
+                    return false;
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4} lg={4}>
               <Autocomplete
                 disableClearable
                 disablePortal
@@ -183,14 +271,15 @@ const CreateUpdatePackage = ({
                     size="small"
                   />
                 )}
-                value={statusOptions.find(
-                  (option) => option.value === formik.values.status
-                )}
+                value={
+                  formik.values.statusObject ? formik.values.statusObject : null
+                }
                 onChange={(event, value) => {
                   const selectedOption = statusOptions.find(
                     (option) => option.value === value?.value
                   );
                   formik.setFieldValue("status", selectedOption?.value || "");
+                  formik.setFieldValue("statusObject", selectedOption);
                 }}
               />
             </Grid>
