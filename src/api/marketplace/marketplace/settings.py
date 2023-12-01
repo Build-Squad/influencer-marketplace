@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 from decouple import config
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -83,6 +86,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "marketplace.middleware.SentryCaptureExceptionMiddleware",
 ]
 
 ROOT_URLCONF = "marketplace.urls"
@@ -110,7 +114,7 @@ WSGI_APPLICATION = "marketplace.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         "NAME": config("DB_NAME"),
         "USER": config("DB_USER"),
         "PASSWORD": config("DB_PASSWORD"),
@@ -136,6 +140,15 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+sentry_sdk.init(
+    dsn=config("SENTRY_DSN"),
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+    integrations=[DjangoIntegration()],
+    enable_tracing=True,
+    send_default_pii=True
+)
 
 
 # Internationalization
