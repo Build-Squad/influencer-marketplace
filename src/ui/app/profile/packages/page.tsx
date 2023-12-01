@@ -229,6 +229,7 @@ const Packages = () => {
                 <Card
                   sx={{
                     height: "100%",
+                    minHeight: 150,
                     cursor: "pointer",
                     display: "flex",
                     justifyContent: "center",
