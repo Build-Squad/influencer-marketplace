@@ -8,6 +8,7 @@ from marketplace.services import (
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
 from .models import (
     Order,
     OrderItem,
@@ -51,6 +52,7 @@ class OrderList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderSerializer)
     def post(self, request):
         try:
             serializer = OrderSerializer(data=request.data)
@@ -95,6 +97,8 @@ class OrderDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+    @swagger_auto_schema(request_body=OrderSerializer)
     def put(self, request, pk):
         try:
             order = self.get_object(pk)
@@ -144,7 +148,7 @@ class OrderItemList(APIView):
         try:
             orderItems = OrderItem.objects.all()
             pagination = Pagination(orderItems, request)
-            serializer = OrderSerializer(pagination.getData(), many=True)
+            serializer = OrderItemSerializer(pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -157,6 +161,7 @@ class OrderItemList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderItemSerializer)
     def post(self, request):
         try:
             serializer = OrderItemSerializer(data=request.data)
@@ -201,6 +206,7 @@ class OrderItemDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderItemSerializer)
     def put(self, request, pk):
         try:
             orderItem = self.get_object(pk)
@@ -263,6 +269,7 @@ class OrderAttachmentList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderAttachmentSerializer)
     def post(self, request):
         try:
             serializer = OrderAttachmentSerializer(data=request.data)
@@ -307,12 +314,13 @@ class OrderAttachmentDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderAttachmentSerializer)
     def put(self, request, pk):
         try:
             orderAttachment = self.get_object(pk)
             if orderAttachment is None:
                 return handleNotFound("Order Attachment")
-            serializer = OrderItemSerializer(
+            serializer = OrderAttachmentSerializer(
                 instance=orderAttachment, data=request.data
             )
             if serializer.is_valid():
@@ -371,6 +379,7 @@ class OrderItemTrackingList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderItemTrackingSerializer)
     def post(self, request):
         try:
             serializer = OrderItemTrackingSerializer(data=request.data)
@@ -415,6 +424,7 @@ class OrderItemTrackingDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderItemTrackingSerializer)
     def put(self, request, pk):
         try:
             orderItemTracking = self.get_object(pk)
@@ -479,6 +489,7 @@ class OrderMessageList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderMessageSerializer)
     def post(self, request):
         try:
             serializer = OrderMessageSerializer(data=request.data)
@@ -488,7 +499,7 @@ class OrderMessageList(APIView):
                     {
                         "isSuccess": True,
                         "data": OrderMessageSerializer(serializer.instance).data,
-                        "message": "Order Item Tracking data created successfully",
+                        "message": "Order Message data created successfully",
                     },
                     status=status.HTTP_201_CREATED,
                 )
@@ -523,6 +534,7 @@ class OrderMessageDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderMessageSerializer)
     def put(self, request, pk):
         try:
             orderMessage = self.get_object(pk)
@@ -589,6 +601,7 @@ class OrderMessageAttachmentList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=OrderMessageAttachmentSerializer)
     def post(self, request):
         try:
             serializer = OrderMessageAttachmentSerializer(data=request.data)
@@ -634,7 +647,8 @@ class OrderMessageAttachmentDetail(APIView):
             )
         except Exception as e:
             return handleServerException(e)
-
+    
+    @swagger_auto_schema(request_body=OrderMessageAttachmentSerializer)
     def put(self, request, pk):
         try:
             orderMessageAttachment = self.get_object(pk)
@@ -686,16 +700,16 @@ class OrderMessageAttachmentDetail(APIView):
 class TransactionList(APIView):
     def get(self, request):
         try:
-            orderMessageAttachment = OrderMessageAttachment.objects.all()
-            pagination = Pagination(orderMessageAttachment, request)
-            serializer = OrderMessageAttachmentSerializer(
+            transaction = Transaction.objects.all()
+            pagination = Pagination(transaction, request)
+            serializer = TransactionSerializer(
                 pagination.getData(), many=True
             )
             return Response(
                 {
                     "isSuccess": True,
                     "data": serializer.data,
-                    "message": "All Order Message Attachment data retrieved successfully",
+                    "message": "All Transaction data retrieved successfully",
                     "pagination": pagination.getPageInfo(),
                 },
                 status=status.HTTP_200_OK,
@@ -703,18 +717,19 @@ class TransactionList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=TransactionSerializer)
     def post(self, request):
         try:
-            serializer = OrderMessageAttachmentSerializer(data=request.data)
+            serializer = TransactionSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
-                        "data": OrderMessageAttachmentSerializer(
+                        "data": TransactionSerializer(
                             serializer.instance
                         ).data,
-                        "message": "Order Message Attachment data created successfully",
+                        "message": "Transaction data created successfully",
                     },
                     status=status.HTTP_201_CREATED,
                 )
@@ -749,6 +764,7 @@ class TransactionDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=TransactionSerializer)
     def put(self, request, pk):
         try:
             transaction = self.get_object(pk)
@@ -811,6 +827,7 @@ class ReviewList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=ReviewSerializer)
     def post(self, request):
         try:
             serializer = ReviewSerializer(data=request.data)
@@ -855,6 +872,7 @@ class ReviewDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=ReviewSerializer)
     def put(self, request, pk):
         try:
             review = self.get_object(pk)

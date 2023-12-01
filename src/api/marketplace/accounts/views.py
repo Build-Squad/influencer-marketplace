@@ -5,6 +5,7 @@ from marketplace.services import (
     handleNotFound,
     handleDeleteNotAllowed,
 )
+from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -39,6 +40,7 @@ class TwitterAccountList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=TwitterAccountSerializer)
     def post(self, request):
         try:
             serializer = TwitterAccountSerializer(data=request.data)
@@ -83,6 +85,7 @@ class TwitterAccountDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=TwitterAccountSerializer)
     def put(self, request, pk):
         try:
             twitterAccount = self.get_object(pk)
@@ -147,6 +150,7 @@ class CategoryMasterList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=CategoryMasterSerializer)
     def post(self, request):
         try:
             serializer = CategoryMasterSerializer(data=request.data)
@@ -191,6 +195,7 @@ class CategoryMasterDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=CategoryMasterSerializer)
     def put(self, request, pk):
         try:
             categoryMaster = self.get_object(pk)
@@ -255,6 +260,7 @@ class AccountCategoryList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=AccountCategorySerializer)
     def post(self, request):
         try:
             serializer = AccountCategorySerializer(data=request.data)
@@ -299,6 +305,7 @@ class AccountCategoryDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=AccountCategorySerializer)
     def put(self, request, pk):
         try:
             accountCategory = self.get_object(pk)
@@ -363,6 +370,7 @@ class UserList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=UserSerializer)
     def post(self, request):
         try:
             serializer = UserSerializer(data=request.data)
@@ -407,6 +415,7 @@ class UserDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=UserSerializer)
     def put(self, request, pk):
         try:
             user = self.get_object(pk)
@@ -469,6 +478,7 @@ class BankAccountList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=BankAccountSerializer)
     def post(self, request):
         try:
             serializer = BankAccountSerializer(data=request.data)
@@ -513,6 +523,7 @@ class BankAccountDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    @swagger_auto_schema(request_body=BankAccountSerializer)
     def put(self, request, pk):
         try:
             bankAccount = self.get_object(pk)
