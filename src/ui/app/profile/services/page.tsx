@@ -1,28 +1,28 @@
 "use client";
 
-import { getService } from "@/src/services/httpServices";
+import { deleteService, getService } from "@/src/services/httpServices";
 import {
   Autocomplete,
   Box,
   Card,
   FormLabel,
   Grid,
+  IconButton,
   Pagination,
   Slider,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
+import { notification } from "@/src/components/shared/notification";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
 
 const sortOptions = [
-  {
-    value: "name",
-    label: "Name (A-Z)",
-  },
-  {
-    value: "-name",
-    label: "Name (Z-A)",
-  },
   {
     value: "created_at",
     label: "Date (Oldest)",
@@ -59,13 +59,18 @@ const Services = () => {
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 10,
+    current_page_size: 11,
   });
   const [loading, setLoading] = React.useState<boolean>(true);
   const [search, setSearch] = React.useState<string>("");
   const [order_by, setOrder_by] = React.useState<string>("-created_at");
-  const [value, setValue] = React.useState<number[]>([10, 30]);
-  const [quantityRange, setQuantityRange] = React.useState<number[]>([0, 20]);
+  const [value, setValue] = React.useState<number[]>([0, 100]);
+  const [quantityRange, setQuantityRange] = React.useState<number[]>([0, 100]);
+  const [openModal, setOpenModal] = React.useState<boolean>(false);
+  const [refreshPage, setRefreshPage] = React.useState<boolean>(false);
+  const [selectedService, setSelectedService] =
+    React.useState<ServiceType | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState<boolean>(false);
 
   const getServices = async () => {
     try {
@@ -91,10 +96,27 @@ const Services = () => {
           total_page_count: data?.pagination?.total_page_count,
         });
       } else {
-        console.log(errors);
+        notification(message, "error");
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteServiceItem = async (id: string) => {
+    try {
+      setDeleteLoading(true);
+      const { isSuccess, message } = await deleteService(
+        `/packages/service/${id}/`
+      );
+      if (isSuccess) {
+        notification(message, "success");
+        setRefreshPage(true);
+      } else {
+        notification(message, "error");
+      }
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -123,29 +145,31 @@ const Services = () => {
   };
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    if (refreshPage) {
       getServices();
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [search]);
+      setRefreshPage(false);
+    }
+  }, [refreshPage]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       getServices();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [value]);
+  }, [
+    quantityRange,
+    value,
+    search,
+    pagination.current_page_number,
+    pagination.current_page_size,
+    order_by,
+  ]);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      getServices();
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [quantityRange]);
-
-  useEffect(() => {
-    getServices();
-  }, [pagination.current_page_number, pagination.current_page_size, order_by]);
+    if (!openModal) {
+      setSelectedService(null);
+    }
+  }, [openModal]);
 
   return (
     <Box
@@ -195,7 +219,7 @@ const Services = () => {
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={3}>
+        <Grid item xs={12} sm={6} md={3} lg={3} sx={{ px: 2 }}>
           <FormLabel component="legend">Price Range</FormLabel>
           <Slider
             getAriaLabel={() => "Price Range"}
@@ -207,7 +231,7 @@ const Services = () => {
             disableSwap
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={3}>
+        <Grid item xs={12} sm={6} md={3} lg={3} sx={{ px: 2 }}>
           <FormLabel component="legend">Quantity Range</FormLabel>
           <Slider
             getAriaLabel={() => "Quantity Range"}
@@ -222,54 +246,113 @@ const Services = () => {
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              {services?.length === 0 ? (
-                <Grid item xs={12}>
-                  <Typography
-                    variant="h6"
+              <Grid item xs={12} sm={6} md={4} lg={3}>
+                <Card
+                  sx={{
+                    height: "100%",
+                    minHeight: 150,
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  onClick={() => {
+                    setSelectedService(null);
+                    setOpenModal(true);
+                  }}
+                >
+                  <Tooltip title="Add Package">
+                    <Box>
+                      <AddCircleOutlineIcon
+                        sx={{
+                          fontSize: 80,
+                          color: "secondary.main",
+                        }}
+                      />
+                      <Typography variant="body2">Add Service</Typography>
+                    </Box>
+                  </Tooltip>
+                </Card>
+              </Grid>
+              {services.map((service) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={service.id}>
+                  <Card
                     sx={{
                       display: "flex",
-                      justifyContent: "center",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      height: "100%",
+                      padding: 2,
                     }}
                   >
-                    No Services found
-                  </Typography>
-                </Grid>
-              ) : (
-                <>
-                  {services.map((service) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={service.id}>
-                      <Card
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography variant="h6">
+                        Service: {service.service_master.name}
+                      </Typography>
+                      <Box
                         sx={{
                           display: "flex",
-                          flexDirection: "column",
                           justifyContent: "space-between",
-                          height: "100%",
-                          padding: 2,
+                          alignItems: "center",
                         }}
                       >
-                        <Typography variant="h6">
-                          Service: {service.service_master.name}
-                        </Typography>
-                        <Typography variant="body1">
-                          Description: {service.service_master.description}
-                        </Typography>
-                        <Typography variant="body1">
-                          Limit: {service.service_master.limit}
-                        </Typography>
-                        <Typography variant="body1">
-                          Type: {service.service_master.type}
-                        </Typography>
-                        <Typography variant="body1">
-                          Quantity: {service.quantity}
-                        </Typography>
-                        <Typography variant="body1">
-                          Price: {service.currency.symbol} {service.price}
-                        </Typography>
-                      </Card>
-                    </Grid>
-                  ))}
-                </>
-              )}
+                        <Tooltip title="Edit">
+                          <IconButton
+                            onClick={() => {
+                              setSelectedService(service);
+                              setOpenModal(true);
+                            }}
+                          >
+                            <EditIcon
+                              sx={{
+                                fontSize: 16,
+                              }}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                        <ConfirmDelete
+                          deleteElement={
+                            <IconButton>
+                              <DeleteOutlineIcon
+                                sx={{
+                                  fontSize: 16,
+                                }}
+                                color="error"
+                              />
+                            </IconButton>
+                          }
+                          title={"Service"}
+                          onConfirm={() => {
+                            deleteServiceItem(service.id);
+                          }}
+                          loading={deleteLoading}
+                        />
+                      </Box>
+                    </Box>
+                    <Typography variant="body1">
+                      Description: {service.service_master.description}
+                    </Typography>
+                    <Typography variant="body1">
+                      Limit: {service.service_master.limit}
+                    </Typography>
+                    <Typography variant="body1">
+                      Type: {service.service_master.type}
+                    </Typography>
+                    <Typography variant="body1">
+                      Quantity: {service.quantity}
+                    </Typography>
+                    <Typography variant="body1">
+                      Price: {service.currency.symbol} {service.price}
+                    </Typography>
+                  </Card>
+                </Grid>
+              ))}
             </>
           )}
         </Grid>
@@ -287,6 +370,12 @@ const Services = () => {
           />
         </Grid>
       </Grid>
+      <CreateUpdateService
+        open={openModal}
+        setOpen={setOpenModal}
+        setRefreshPage={setRefreshPage}
+        serviceItem={selectedService}
+      />
     </Box>
   );
 };

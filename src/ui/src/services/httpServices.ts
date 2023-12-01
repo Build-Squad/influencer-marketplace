@@ -72,6 +72,36 @@ const postService = async (url: string, data: unknown, params?: any) => {
   }
 };
 
+const putService = async (url: string, data: unknown, params?: any) => {
+  try {
+    const response = await instance.put(url, data, { params });
+    return {
+      isSuccess: response?.data?.isSuccess,
+      statusCode: response?.status,
+      data: response?.data,
+      message: response?.data?.message,
+      errors: response?.data?.errors,
+    };
+  } catch (e: unknown) {
+    if (e instanceof AxiosError) {
+      return {
+        isSuccess: false,
+        statusCode: e?.response?.status,
+        data: null,
+        message: e?.response?.data?.error,
+        errors: null,
+      };
+    }
+    return {
+      isSuccess: false,
+      statusCode: 500,
+      data: null,
+      message: "Something went wrong, please try again later",
+      errors: null,
+    };
+  }
+};
+
 const patchService = async (url: string, data: unknown, params?: any) => {
   try {
     const response = await instance.patch(url, data, { params });
@@ -134,9 +164,4 @@ const deleteService = async (url: string) => {
   }
 };
 
-export {
-  getService,
-  postService,
-  deleteService,
-  patchService,
-};
+export { getService, postService, deleteService, patchService, putService };
