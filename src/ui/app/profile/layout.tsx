@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Grid, Typography, Tabs, Tab } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import React, { useEffect } from "react";
 
 const tabs = [
@@ -18,9 +18,24 @@ const tabs = [
 const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
   const [tab, setTab] = React.useState<string>("services");
   const router = useRouter();
+  const pathname = usePathname();
+  const seearchParams = useSearchParams();
 
   useEffect(() => {
-    router.push(`/profile/${tab}`);
+    const urlTab = pathname.split("/")[2]; // assuming the tab is the third part of the URL
+    if (urlTab && tabs.some((t) => t.value === urlTab)) {
+      if (urlTab !== tab) {
+        setTab(urlTab);
+      }
+    } else {
+      setTab(tabs[0].value);
+    }
+  }, [pathname, router]);
+
+  useEffect(() => {
+    if (tab) {
+      router.push(`/profile/${tab}`);
+    }
   }, [tab]);
 
   return (
