@@ -38,7 +38,7 @@ jobs:
           source venv/bin/activate
           pip3 install -r requirements.txt
           python3 manage.py migrate
-          pgrep gunicorn | xargs sudo kill -9
+          pgrep gunicorn | xargs kill -9
           gunicorn -w 4 marketplace.wsgi:application
           
     - name: Remove Github Actions IP from security group
