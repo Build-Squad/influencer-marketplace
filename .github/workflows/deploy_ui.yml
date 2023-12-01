@@ -1,4 +1,4 @@
-name: Deploy API
+name: Deploy UI
 
 on:
   push:
@@ -27,19 +27,18 @@ jobs:
       uses: appleboy/ssh-action@master
       continue-on-error: false
       with:
-        host: ${{ secrets.DEVSERVER }}
+        host: ${{ secrets.DEVSERVER_UI }}
         username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SECRETKEY }}
+        key: ${{ secrets.SECRETKEY_UI }}
         command_timeout: 50m
         script: |
           cd xfluencer/influencer-marketplace
           git pull
-          cd src/api/marketplace
-          source venv/bin/activate
-          pip3 install -r requirements.txt
-          python3 manage.py migrate
-          pgrep gunicorn | xargs sudo kill -9
-          gunicorn -w 4 marketplace.wsgi:application
+          cd src/ui
+          npm run build
+          sudo service nginx restart 
+          pm2 stop marketplace
+          pm2 start npm --name marketplace -- start
           
     - name: Remove Github Actions IP from security group
       if: always()
