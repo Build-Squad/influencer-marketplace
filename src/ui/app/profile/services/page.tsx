@@ -96,7 +96,10 @@ const Services = () => {
           total_page_count: data?.pagination?.total_page_count,
         });
       } else {
-        notification(message, "error");
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
       }
     } finally {
       setLoading(false);
@@ -113,7 +116,10 @@ const Services = () => {
         notification(message, "success");
         setRefreshPage(true);
       } else {
-        notification(message, "error");
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
       }
     } finally {
       setDeleteLoading(false);

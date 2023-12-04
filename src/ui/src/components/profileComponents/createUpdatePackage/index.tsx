@@ -56,7 +56,10 @@ const CreateUpdatePackage = ({
         formik.resetForm();
         setOpen(false);
       } else {
-        notification(message, "error");
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
       }
     } finally {
       setLoading(false);
@@ -76,7 +79,10 @@ const CreateUpdatePackage = ({
         formik.resetForm();
         setOpen(false);
       } else {
-        notification(message, "error");
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
       }
     } finally {
       setLoading(false);
