@@ -1,11 +1,14 @@
+"use client";
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ThemeRegistry from "./ThemeRegistry";
+import { SnackbarProvider } from "notistack";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: "Influencer Marketplace",
   description: "Influencer Marketplace",
 };
@@ -18,7 +21,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ThemeRegistry options={{ key: "mui-theme" }}>{children}</ThemeRegistry>
+        <SnackbarProvider
+          maxSnack={5}
+          autoHideDuration={2000}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          preventDuplicate
+        >
+          <ThemeRegistry options={{ key: "mui-theme" }}>
+            {children}
+          </ThemeRegistry>
+        </SnackbarProvider>
       </body>
     </html>
   );

@@ -52,3 +52,8 @@ type ServiceType = {
   deleted_at: string | null;
   currency: CurrencyType;
 };
+
+type ConstSelectType = {
+  value: string;
+  label: string;
+} | null;
