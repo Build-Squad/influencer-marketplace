@@ -36,8 +36,7 @@ jobs:
           git pull
           cd src/ui
           npm install
-          npm run build
-          sudo service nginx restart 
+          npm run build 
           pm2 stop marketplace
           pm2 start npm --name marketplace -- start
           
