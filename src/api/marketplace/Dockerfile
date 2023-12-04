@@ -1,5 +1,5 @@
 # pull the official base image
-FROM python:3
+FROM python:3.11.6
 
 # set work directory
 WORKDIR /api
@@ -9,9 +9,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install dependencies
-RUN pip install --upgrade pip 
 COPY ./requirements.txt /api/
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
 
 # copy project
 COPY . /api
@@ -19,4 +19,4 @@ COPY . /api
 # Make ports available for dev
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runsslserver", "0.0.0.0:8000"]
