@@ -1,5 +1,5 @@
 # pull the official base image
-FROM python:3
+FROM python:3.10.11
 
 # set work directory
 WORKDIR /api
@@ -19,4 +19,4 @@ COPY . /api
 # Make ports available for dev
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runsslserver", "0.0.0.0:8000"]
