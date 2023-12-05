@@ -12,6 +12,8 @@ import {
 import axios from "axios";
 import Image from "next/image";
 import { Menu } from "@mui/icons-material/";
+import { postService } from "@/src/services/httpServices";
+import { notification } from "@/src/components/shared/notification";
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
@@ -50,14 +52,29 @@ export default function Home() {
   };
 
   // Redirect the user to twitter authentication URL.
+  // const authTwitterUser = async () => {
+  //   try {
+  //     const res = await axios.get(
+  //       process.env.NEXT_PUBLIC_BACKEND_URL + "auth-twitter-user/"
+  //     );
+  //     window.location.href = res.data.auth_url;
+  //   } catch (e) {
+  //     window.alert(e);
+  //   }
+  // };
+
   const authTwitterUser = async () => {
-    try {
-      const res = await axios.get(
-        process.env.NEXT_PUBLIC_BACKEND_URL + "auth-twitter-user/"
-      );
-      window.location.href = res.data.auth_url;
-    } catch (e) {
-      window.alert(e);
+    const { isSuccess, data, message } = await postService(
+      "account/twitter-auth/",
+      {
+        role: "influecer",
+      }
+    );
+    if (isSuccess) {
+      console.log(data);
+      window.location.href = data;
+    } else {
+      notification(message ? message : "Something went wrong", "error");
     }
   };
 
