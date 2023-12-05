@@ -8,7 +8,7 @@ const getService = async (url: string, params?: any) => {
       return {
         isSuccess: response?.data?.isSuccess,
         statusCode: response?.status,
-        data: response?.data,
+        data: response?.data?.data,
         message: response?.data?.message,
         errors: response?.data?.errors,
       };
@@ -16,7 +16,7 @@ const getService = async (url: string, params?: any) => {
       return {
         isSuccess: response?.data?.isSuccess,
         statusCode: response?.status,
-        data: response?.data,
+        data: response?.data?.data,
         message: response?.data?.message,
         errors: response?.data?.errors,
       };
@@ -48,7 +48,7 @@ const postService = async (url: string, data: unknown, params?: any) => {
     return {
       isSuccess: response?.data?.isSuccess,
       statusCode: response?.status,
-      data: response?.data,
+      data: response?.data?.data,
       message: response?.data?.message,
       errors: response?.data?.errors,
     };
@@ -78,7 +78,7 @@ const putService = async (url: string, data: unknown, params?: any) => {
     return {
       isSuccess: response?.data?.isSuccess,
       statusCode: response?.status,
-      data: response?.data,
+      data: response?.data?.data,
       message: response?.data?.message,
       errors: response?.data?.errors,
     };
@@ -108,7 +108,7 @@ const patchService = async (url: string, data: unknown, params?: any) => {
     return {
       isSuccess: response?.data?.isSuccess,
       statusCode: response?.status,
-      data: response?.data,
+      data: response?.data?.data,
       message: response?.data?.message,
       errors: response?.data?.errors,
     };
@@ -140,7 +140,7 @@ const deleteService = async (url: string) => {
     return {
       isSuccess: response?.data?.isSuccess,
       statusCode: response?.status,
-      data: response?.data,
+      data: response?.data?.data,
       message: response?.data?.message,
       errors: response?.data?.errors,
     };
