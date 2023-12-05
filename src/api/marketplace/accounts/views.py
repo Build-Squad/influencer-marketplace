@@ -10,18 +10,65 @@ from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount
+from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
 from .serializers import (
     TwitterAccountSerializer,
     CategoryMasterSerializer,
     AccountCategorySerializer,
     UserSerializer,
     BankAccountSerializer,
+    TwitterAuthSerializer,
+    RoleSerializer
 )
+from .services import TwitterAuthenticationService
 
 
 # Twitter account API-Endpoint
 # List-Create-API
+
+class RoleList(APIView):
+    def get(self, request):
+        try:
+            role = Role.objects.all()
+            pagination = Pagination(role, request)
+            serializer = RoleSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Roles retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class RoleDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Role.objects.get(pk=pk)
+        except Role.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        try:
+            role = self.get_object(pk)
+            if role is None:
+                return handleNotFound("Role")
+            serializer = RoleSerializer(role)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Role retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
 class TwitterAccountList(APIView):
     def get(self, request):
         try:
@@ -563,4 +610,29 @@ class BankAccountDetail(APIView):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
+            return handleServerException(e)
+
+
+class TwitterAuth(APIView):
+
+    @swagger_auto_schema(request_body=TwitterAuthSerializer)
+    def post(self, request):
+        try:
+            serializer = TwitterAuthSerializer(data=request.data)
+            if serializer.is_valid():
+                role = serializer.data.get('role')
+                twitter_auth_service = TwitterAuthenticationService()
+                auth_url = twitter_auth_service.get_twitter_oauth_url(role)
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": auth_url,
+                        "message": "Twitter Auth URL generated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            pass
             return handleServerException(e)

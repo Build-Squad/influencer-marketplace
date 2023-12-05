@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount
+from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
 
 
 class TwitterAccountSerializer(serializers.ModelSerializer):
@@ -29,4 +29,14 @@ class UserSerializer(serializers.ModelSerializer):
 class BankAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
+        fields = "__all__"
+
+
+class TwitterAuthSerializer(serializers.Serializer):
+    role = serializers.CharField(max_length=100)
+
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
         fields = "__all__"
