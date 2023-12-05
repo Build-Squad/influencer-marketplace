@@ -63,9 +63,8 @@ def twitterLoginCallback(request):
         # Creating Twitter API tweepy V2 instance.
         client = Client(access_token)
 
-        userData = client.get_me(user_auth=False).data
-
-        # Checking if the user with the ID already exists in our database
+        userData = client.get_me(user_auth=False, user_fields=[
+                                 "description", "profile_image_url", "public_metrics", "verified"]).data
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
         if existing_user is None:
@@ -74,6 +73,13 @@ def twitterLoginCallback(request):
                 name=userData.name,
                 user_name=userData.username,
                 access_token=access_token,
+                description=userData.description,
+                profile_image_url=userData.profile_image_url,
+                followers_count=userData.public_metrics["followers_count"],
+                following_count=userData.public_metrics["following_count"],
+                tweet_count=userData.public_metrics["tweet_count"],
+                listed_count=userData.public_metrics["listed_count"],
+                verified=userData.verified,
             )
 
             newUser.save()
