@@ -13,9 +13,19 @@ class TwitterAccount(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     user_name = models.CharField(max_length=100, blank=True, null=True)
     access_token = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    profile_image_url = models.CharField(max_length=255, blank=True, null=True)
+    followers_count = models.IntegerField(blank=True, null=True)
+    following_count = models.IntegerField(blank=True, null=True)
+    tweet_count = models.IntegerField(blank=True, null=True)
+    listed_count = models.IntegerField(blank=True, null=True)
+    verified = models.BooleanField(default=False, blank=True, null=True)
 
     class Meta:
         db_table = "twitter_account"
+
+    def __str__(self):
+        return self.name
 
 class CategoryMaster(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Category Master ID', default=uuid.uuid4, editable=False)
@@ -75,7 +85,8 @@ class User(AbstractUser):
 
 class BankAccount(models.Model):
     
-    id = models.UUIDField(primary_key=True, verbose_name='Account Category ID', default=uuid.uuid4, editable=False)
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Bank Account ID', default=uuid.uuid4, editable=False)
     influencer = models.ForeignKey(User, related_name='bank_acc_influencer_id', on_delete=SET_NULL, null=True)
     account_holder_name = models.CharField(max_length=150, blank=True, null=True)
     account_number = models.CharField(max_length=50, blank=True, null=True)
