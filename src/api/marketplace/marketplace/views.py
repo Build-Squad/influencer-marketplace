@@ -7,7 +7,7 @@ from django.http import (
     HttpResponseRedirect,
 )
 from decouple import config
-from accounts.models import TwitterAccount
+from accounts.models import Role, TwitterAccount, User
 import datetime
 from .authentication import JWTAuthentication
 from rest_framework.decorators import authentication_classes, api_view
@@ -83,6 +83,18 @@ def twitterLoginCallback(request):
             )
 
             newUser.save()
+            role = Role.objects.get(name="influencer")
+
+            new_user_account = User.objects.create(
+                email="abc@gmaol.com",
+                first_name=userData.name,
+                last_name=userData.name,
+                status="active",
+                role=role,
+                twitter_account=newUser,
+                username=userData.username,
+            )
+            new_user_account.save()
         else:
             existing_user.access_token = access_token
             existing_user.save()
