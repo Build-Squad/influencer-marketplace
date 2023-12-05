@@ -1,3 +1,4 @@
+import stat
 from django.shortcuts import redirect
 from tweepy import Client, OAuth2UserHandler
 from django.http import (
@@ -83,7 +84,9 @@ def twitterLoginCallback(request):
             )
 
             newUser.save()
-            role = Role.objects.get(name="influencer")
+            # from the request parameter, get the role of the user
+            role_name = request.GET.get("role")
+            role = Role.objects.get(name=role_name)
 
             new_user_account = User.objects.create(
                 email="abc@gmaol.com",

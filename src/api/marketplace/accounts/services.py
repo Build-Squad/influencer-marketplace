@@ -16,7 +16,14 @@ class TwitterAuthenticationService:
             "mute.read",
         ]
 
-        self.callback_url = f"{config('SERVER')}twitter-login-callback"
+        self.USER_FIELDS = [
+            "description",
+            "profile_image_url",
+            "public_metrics",
+            "verified",
+        ]
+
+        self.callback_url = f"{config('SERVER')}account/twitter-auth"
 
         # This is OAuth2.0 PKCE authentication instance that'll be used to interact with Client for V2 version of API
         self.oauth2_user_handler = OAuth2UserHandler(
@@ -26,9 +33,8 @@ class TwitterAuthenticationService:
             client_secret=config("CLIENT_SECRET"),
         )
 
-    def get_twitter_oauth_url(self, role):
+    def get_twitter_oauth_url(self):
         auth_url = self.oauth2_user_handler.get_authorization_url()
-        auth_url += f"&role={role}"
         return auth_url
 
     def get_twitter_access_token(self, authorization_response_url):
@@ -37,10 +43,13 @@ class TwitterAuthenticationService:
         access_token = access_token_obj["access_token"]
         return access_token
 
-    def get_twitter_client_data(self):
-        access_token = self.get_twitter_access_token()
+    def get_twitter_client_data(self, request):
+        authorization_response_url = request.build_absolute_uri()
+        access_token = self.get_twitter_access_token(
+            authorization_response_url)
         client = Client(access_token)
-        userData = client.get_me(user_auth=False).data
+        userData = client.get_me(
+            user_auth=False, user_fields=self.USER_FIELDS).data
         return userData
 
     def get_jwt_payload(self, twitter_user):

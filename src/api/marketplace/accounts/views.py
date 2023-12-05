@@ -1,9 +1,11 @@
+from http.client import HTTPResponse
 from marketplace.services import (
     Pagination,
     handleServerException,
     handleBadRequest,
     handleNotFound,
     handleDeleteNotAllowed,
+    JWTOperations
 )
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ValidationError
@@ -21,6 +23,10 @@ from .serializers import (
     RoleSerializer
 )
 from .services import TwitterAuthenticationService
+from django.http import HttpResponseRedirect
+from decouple import config
+from django.shortcuts import redirect
+
 
 
 # Twitter account API-Endpoint
@@ -615,14 +621,73 @@ class BankAccountDetail(APIView):
 
 class TwitterAuth(APIView):
 
+    def get_object(self, twitter_id):
+        try:
+            return TwitterAccount.objects.get(twitter_id=twitter_id)
+        except TwitterAccount.DoesNotExist:
+            return None
+
+    def get(self, request):
+        print("-------------------------Reached GET call-------------------------")
+        try:
+            twitter_auth_service = TwitterAuthenticationService()
+            user_data = twitter_auth_service.get_twitter_client_data(request)
+            twitter_account = self.get_object(user_data.id)
+            print("-------------------------Reached Twitter Account-------------------------")
+            if twitter_account:
+                twitter_account.access_token = twitter_auth_service.get_twitter_access_token(
+                    request.build_absolute_uri())
+                twitter_account.save()
+
+            else:
+                twitter_account = TwitterAccount.objects.create(
+                    twitter_id=user_data.id,
+                    name=user_data.name,
+                    user_name=user_data.username,
+                    access_token=twitter_auth_service.get_twitter_access_token(
+                        request.build_absolute_uri()),
+                    description=user_data.description,
+                    profile_image_url=user_data.profile_image_url,
+                    followers_count=user_data.public_metrics["followers_count"],
+                    following_count=user_data.public_metrics["following_count"],
+                    tweet_count=user_data.public_metrics["tweet_count"],
+                    listed_count=user_data.public_metrics["listed_count"],
+                    verified=user_data.verified,
+                )
+                twitter_account.save()
+                role = Role.objects.get(name=request.GET.get("role"))
+                new_user_account = User.objects.create(
+                    email=None,
+                    first_name=user_data.name,
+                    last_name=user_data.name,
+                    status="active",
+                    role=role,
+                    twitter_account=twitter_account,
+                    username=user_data.username,
+                )
+                new_user_account.save()
+
+            # What would be the best way to set the token and get the user back to the frontend
+            # response = HttpResponseRedirect(config('FRONT_END_URL'))
+            # jwt_operations = JWTOperations()
+            # jwt_operations.setJwtToken(response=response, cookie_name="jwt",
+            #                            payload=twitter_auth_service.get_jwt_payload(twitter_account))
+
+            response = HTTPResponse()
+            response['Location'] = config('FRONT_END_URL')
+            response.status_code = 302
+            # response.set_cookie('jwt', JWTOperations().generateJwtToken(
+            #     twitter_auth_service.get_jwt_payload(twitter_account)))
+            return response
+        except Exception as e:
+            return handleServerException(e)
     @swagger_auto_schema(request_body=TwitterAuthSerializer)
     def post(self, request):
         try:
             serializer = TwitterAuthSerializer(data=request.data)
             if serializer.is_valid():
-                role = serializer.data.get('role')
                 twitter_auth_service = TwitterAuthenticationService()
-                auth_url = twitter_auth_service.get_twitter_oauth_url(role)
+                auth_url = twitter_auth_service.get_twitter_oauth_url()
                 return Response(
                     {
                         "isSuccess": True,
@@ -631,8 +696,8 @@ class TwitterAuth(APIView):
                     },
                     status=status.HTTP_200_OK,
                 )
+
             else:
-                return handleBadRequest(serializer.errors)
+                return handleBadRequest("Invalid Request")
         except Exception as e:
-            pass
             return handleServerException(e)
