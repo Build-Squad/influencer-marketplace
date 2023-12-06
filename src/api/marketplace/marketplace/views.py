@@ -40,12 +40,9 @@ oauth2_user_handler = OAuth2UserHandler(
 @api_view(["GET"])
 @authentication_classes([JWTAuthentication])
 def isAuthenticated(request):
-
     # Get the user id from the decoded token.
-    print("--------------------------------- Request ---------------------------------", request)
     user = request.user_account
 
-    print("--------------------------------- User ---------------------------------", user)
     # If user is not found, return 401.
     if user is None:
         HttpResponse({
@@ -56,11 +53,13 @@ def isAuthenticated(request):
         return JsonResponse({
             "message": "User is authenticated",
             "data": {
-                "id": user.id,
-                "username": user.username,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                },
                 "twitter_account": {
                     "id": user.twitter_account.id,
                     "twitter_id": user.twitter_account.twitter_id,
@@ -74,7 +73,8 @@ def isAuthenticated(request):
                     "listed_count": user.twitter_account.listed_count,
                     "verified": user.twitter_account.verified,
                 }
-            }
+            },
+            "isSuccess": True,
         })
 
 
@@ -95,9 +95,7 @@ def twitterLoginCallback(request):
     try:
         access_token_obj = oauth2_user_handler.fetch_token(authorization_response_url)
         access_token = access_token_obj["access_token"]
-        # print("Access token fetched successfully: ", access_token)
 
-        # Creating Twitter API tweepy V2 instance.
         client = Client(access_token)
 
         userData = client.get_me(user_auth=False, user_fields=[
@@ -148,7 +146,7 @@ def twitterLoginCallback(request):
             twitter_account=current_twitter_user).first()
 
         # Creating a response object with JWT cookie
-        response = HttpResponsePermanentRedirect(config('FRONT_END_URL'))
+        response = HttpResponseRedirect(config('FRONT_END_URL'))
 
         # Convert the UUID to string
         user_id = str(current_user.id)
@@ -159,11 +157,8 @@ def twitterLoginCallback(request):
             "iat": datetime.datetime.utcnow(),
         }
         # Set the JWT token in the response object
-        token = jwt.encode(payload, config("JWT_SECRET"), algorithm="HS256")
-
-        # After redirecting to the frontend, set the JWT token in the cookie.
-        response.set_cookie(key='jwt', value=token, httponly=True,
-                            secure=True, samesite='None', expires=86400, path='/')
+        response = JWTOperations.setJwtToken(
+            res=response, cookie_name="jwt", payload=payload)
 
         return response
 
