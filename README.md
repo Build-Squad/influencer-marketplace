@@ -27,3 +27,28 @@ The instructions for running the back-end are in the README.md file in the api f
 
 Back End can be found here:    
 ``` cd src/api/marketplace ```
+
+Docker 
+
+Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+• Docker installed on your machine.
+
+Clone the repository -
+git clone project_name
+
+Change into the project directory -
+cd influencer-marketplace
+
+Build the Docker image -
+docker compose up —build
+
+Create env file based on .env.example (both ui and api) -
+cp .env.example .env
+
+To start the app -
+docker-compose up
+
+To stop the app -
+docker-compose down

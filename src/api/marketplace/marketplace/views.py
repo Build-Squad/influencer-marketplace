@@ -82,7 +82,7 @@ def twitterLoginCallback(request):
             existing_user.save()
 
         # Creating a response object with JWT cookie
-        response = HttpResponseRedirect("http://localhost:3000/")
+        response = HttpResponseRedirect(config('FRONT_END_URL'))
 
         # Payload for JWT token
         payload = {
