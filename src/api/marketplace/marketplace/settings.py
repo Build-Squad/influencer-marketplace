@@ -168,8 +168,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_URL = "/static/"
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# web accessible folder
+STATIC_ROOT = '/home/xidev/xfluencer/influencer-marketplace/src/api/marketplace/static/'
+# URL prefix for static files.
+STATIC_URL = 'static/'
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+  'django.contrib.staticfiles.finders.FileSystemFinder',
+  'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 AUTH_USER_MODEL = "accounts.User"
 ACCOUNT_AUTHENTICATION_METHOD = "email"
