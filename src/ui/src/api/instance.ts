@@ -4,7 +4,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const instance = axios.create({
   baseURL: BASE_URL,
-  withCredentials : true
 });
 
 // Add an interceptor that checks if the response has a code of 401, then log the user out and throw him at /login
