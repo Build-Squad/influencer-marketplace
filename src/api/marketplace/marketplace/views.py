@@ -84,34 +84,44 @@ def twitterLoginCallback(request):
             )
 
             newUser.save()
-            # from the request parameter, get the role of the user
-            role_name = request.GET.get("role")
-            role = Role.objects.get(name=role_name)
-
-            new_user_account = User.objects.create(
-                email="abc@gmaol.com",
-                first_name=userData.name,
-                last_name=userData.name,
-                status="active",
-                role=role,
-                twitter_account=newUser,
-                username=userData.username,
-            )
-            new_user_account.save()
         else:
             existing_user.access_token = access_token
             existing_user.save()
 
+        current_twitter_user = TwitterAccount.objects.filter(
+            twitter_id=userData.id
+        ).first()
+        existing_user_account = User.objects.filter(
+            twitter_account=current_twitter_user
+        ).first()
+
+        if existing_user_account is None:
+            new_user_account = User.objects.create(
+                username=userData.username,
+                email=userData.username + "@xfluencer.com",
+                first_name=userData.name,
+                twitter_account_id=current_twitter_user.id,
+                role=Role.objects.filter(name="influencer").first(),
+            )
+            new_user_account.save()
+        else:
+            existing_user_account.last_login = datetime.datetime.now()
+            existing_user_account.save()
+
+        current_user = User.objects.filter(
+            twitter_account=current_twitter_user).first()
+
         # Creating a response object with JWT cookie
         response = HttpResponseRedirect(config('FRONT_END_URL'))
 
+        # Convert the UUID to string
+        user_id = str(current_user.id)
         # Payload for JWT token
         payload = {
-            "id": userData.id,
+            "id": user_id,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=86400),
             "iat": datetime.datetime.utcnow(),
         }
-
         response = JWTOperations.setJwtToken(
             res=response, payload=payload, cookie_name="jwt"
         )
