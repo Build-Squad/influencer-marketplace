@@ -49,7 +49,10 @@ const CreateUpdateService = ({
         setRefreshPage(true);
         setOpen(false);
       } else {
-        notification(message, "error");
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
       }
     } catch (error) {
       console.log(error);
@@ -71,7 +74,10 @@ const CreateUpdateService = ({
         setRefreshPage(true);
         setOpen(false);
       } else {
-        notification(message, "error");
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
       }
     } catch (error) {
       console.log(error);

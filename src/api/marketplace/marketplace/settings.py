@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 from decouple import config
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -83,6 +86,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "marketplace.middleware.SentryCaptureExceptionMiddleware",
 ]
 
 ROOT_URLCONF = "marketplace.urls"
@@ -110,7 +114,7 @@ WSGI_APPLICATION = "marketplace.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         "NAME": config("DB_NAME"),
         "USER": config("DB_USER"),
         "PASSWORD": config("DB_PASSWORD"),
@@ -137,6 +141,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+sentry_sdk.init(
+    dsn=config("SENTRY_DSN"),
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+    integrations=[DjangoIntegration()],
+    enable_tracing=True,
+    send_default_pii=True
+)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
@@ -155,8 +168,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_URL = "/static/"
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# web accessible folder
+STATIC_ROOT = '/home/xidev/xfluencer/influencer-marketplace/src/api/marketplace/static/'
+# URL prefix for static files.
+STATIC_URL = 'static/'
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+  'django.contrib.staticfiles.finders.FileSystemFinder',
+  'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 AUTH_USER_MODEL = "accounts.User"
 ACCOUNT_AUTHENTICATION_METHOD = "email"
