@@ -35,7 +35,7 @@ const packageFormInitialValues: PackageFormType = {
   currencyObject: null,
   status: "",
   publish_date: "",
-  influencer: "c8407ace-7220-4141-b048-ad9666359372",
+  influencer: "542aea90-5991-49bc-aa4d-002589c00094",
   statusObject: null,
 };
 
