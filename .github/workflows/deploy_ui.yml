@@ -35,8 +35,10 @@ jobs:
           cd xfluencer/influencer-marketplace
           git pull
           cd src/ui
+          npm cache clean -f
           npm install
           npm run build 
+          sudo systemctl restart nginx
           pm2 stop marketplace
           pm2 start npm --name marketplace -- start
           
