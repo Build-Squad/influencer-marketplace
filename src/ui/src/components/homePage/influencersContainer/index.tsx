@@ -150,8 +150,8 @@ export default function InfluencersContainer({}: Props) {
         justifyContent={"center"}
         alignItems={"center"}
       >
-        {topInfluencers.map((inf) => {
-          return <InfluencersCards influencer={inf} />;
+        {topInfluencers.map((inf, index) => {
+          return <InfluencersCards influencer={inf} key={index} />;
         })}
       </Grid>
     </>
