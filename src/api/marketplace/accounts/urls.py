@@ -13,9 +13,12 @@ from .views import (
     TwitterAuth,
     RoleList,
     RoleDetail,
+    UserAuth
 )
 
 urlpatterns = [
+    path("", UserAuth.as_view(), name="user-auth"),
+
     path("role/", RoleList.as_view(), name="role-list"),
     path("role/<uuid:pk>/", RoleDetail.as_view(), name="role-detail"),
 

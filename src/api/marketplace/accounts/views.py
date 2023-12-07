@@ -1,4 +1,5 @@
 from http.client import HTTPResponse
+from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
     handleServerException,
@@ -17,6 +18,7 @@ from .serializers import (
     TwitterAccountSerializer,
     CategoryMasterSerializer,
     AccountCategorySerializer,
+    UserCreateSerializer,
     UserSerializer,
     BankAccountSerializer,
     TwitterAuthSerializer,
@@ -423,10 +425,10 @@ class UserList(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    @swagger_auto_schema(request_body=UserSerializer)
+    @swagger_auto_schema(request_body=UserCreateSerializer)
     def post(self, request):
         try:
-            serializer = UserSerializer(data=request.data)
+            serializer = UserCreateSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -468,13 +470,13 @@ class UserDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    @swagger_auto_schema(request_body=UserSerializer)
+    @swagger_auto_schema(request_body=UserCreateSerializer)
     def put(self, request, pk):
         try:
             user = self.get_object(pk)
             if user is None:
                 return handleNotFound("User")
-            serializer = UserSerializer(instance=user, data=request.data)
+            serializer = UserCreateSerializer(instance=user, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -700,4 +702,34 @@ class TwitterAuth(APIView):
             else:
                 return handleBadRequest("Invalid Request")
         except Exception as e:
+            return handleServerException(e)
+
+
+class UserAuth(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        try:
+            user = request.user_account
+            serializer = UserSerializer(user)
+            if user:
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": serializer.data,
+                        "message": "User retrieved successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "data": None,
+                        "message": "User not found",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            print(e)
             return handleServerException(e)
