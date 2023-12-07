@@ -42,13 +42,17 @@ const CreateUpdatePackage = ({
   setRefreshPage,
 }: CreateUpdatePackageProps) => {
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [influecerId, setInfluencerId] = React.useState<string | null>(null);
 
   const updatePackage = async (values: FormikValues) => {
     try {
       setLoading(true);
       const { message, data, errors, isSuccess } = await putService(
         `/packages/${packageItem?.id}/`,
-        values
+        {
+          ...values,
+          influencer: influecerId,
+        }
       );
       if (isSuccess) {
         notification(message);
@@ -71,7 +75,10 @@ const CreateUpdatePackage = ({
       setLoading(true);
       const { message, data, errors, isSuccess } = await postService(
         "/packages/",
-        values
+        {
+          ...values,
+          influencer: influecerId,
+        }
       );
       if (isSuccess) {
         notification(message);
@@ -119,6 +126,14 @@ const CreateUpdatePackage = ({
       formik.setFieldValue("publish_date", dayjs());
     }
   }, [packageItem, open]);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const userObject = JSON.parse(user);
+      setInfluencerId(userObject?.user?.id);
+    }
+  }, []);
 
   return (
     <CustomModal open={open} setOpen={setOpen}>
