@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Box,
-  Typography,
-  Toolbar,
-  AppBar,
-  IconButton,
-  Button,
-} from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import axios from "axios";
+import Navbar from "@/src/components/homePage/navbar";
 import Image from "next/image";
 import { Menu } from "@mui/icons-material/";
 import {
@@ -17,6 +11,8 @@ import {
   postService,
 } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import Banner from "@/src/components/homePage/banner";
+import InfluencersContainer from "@/src/components/homePage/influencersContainer";
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
@@ -84,46 +80,68 @@ export default function Home() {
 
   return (
     <Box>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <Menu />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            XFluencer
-          </Typography>
-          {isUserAuthenticated ? (
-            <>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                User Authenticated
-              </Typography>
-              <Button color="inherit" onClick={logout}>
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button color="inherit" onClick={authTwitterUser}>
-                Login
-              </Button>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
+      <Navbar
+        authTwitterUser={authTwitterUser}
+        logout={logout}
+        isUserAuthenticated={isUserAuthenticated}
+      />
       <Box
         sx={{
+          border: "1px solid #000",
+          background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+          display: "flex",
+          alignItems: "center",
+          flexDirection: "column",
           position: "relative",
-          width: "100%",
-          height: "93vh",
         }}
       >
-        <Image src={"/twitter.jpeg"} fill={true} alt="bgimg" />
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "flex-end",
+            columnGap: "4px",
+            mt: 3,
+          }}
+        >
+          <Image src={"/Star.png"} width="34" height="34" alt="bgimg" />
+          <Typography variant="body1">
+            Strategically Match Your Business with Twitter's Finest Influencers.
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            width: "40%",
+            textAlign: "center",
+            mt: 1,
+            display: "flex",
+            alignItems: "flex-end",
+            columnGap: "8px",
+            position: "relative",
+            marginBottom: "120px",
+          }}
+        >
+          <Typography variant="h4" fontWeight={"bold"}>
+            Connecting Businesses with X Influencers for maximum impact
+          </Typography>
+          <Image
+            src={"/Arrow Right.png"}
+            width="68"
+            height="24"
+            alt="bgimg"
+            style={{ position: "absolute", left: "100%", bottom: 0 }}
+          />
+        </Box>
+
+        <Banner />
+      </Box>
+      <Box
+        sx={{
+          marginTop: "120px",
+          marginX: "40px",
+        }}
+      >
+        <InfluencersContainer />
       </Box>
     </Box>
   );
