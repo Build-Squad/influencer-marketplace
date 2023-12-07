@@ -9,10 +9,21 @@ from .views import (
     UserList,
     UserDetail,
     BankAccountList,
-    BankAccountDetail
+    BankAccountDetail,
+    TwitterAuth,
+    RoleList,
+    RoleDetail,
+    UserAuth
 )
 
 urlpatterns = [
+    path("", UserAuth.as_view(), name="user-auth"),
+
+    path("role/", RoleList.as_view(), name="role-list"),
+    path("role/<uuid:pk>/", RoleDetail.as_view(), name="role-detail"),
+
+    path("twitter-auth/", TwitterAuth.as_view(), name="twitter-auth"),
+
     path("twitter-account/", TwitterAccountList.as_view(), name="twitter-account-list"),
     path("twitter-account/<uuid:pk>/", TwitterAccountDetail.as_view(), name="twitter-account-detail"),
 

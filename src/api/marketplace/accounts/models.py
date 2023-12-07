@@ -13,9 +13,19 @@ class TwitterAccount(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     user_name = models.CharField(max_length=100, blank=True, null=True)
     access_token = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    profile_image_url = models.CharField(max_length=255, blank=True, null=True)
+    followers_count = models.IntegerField(blank=True, null=True)
+    following_count = models.IntegerField(blank=True, null=True)
+    tweet_count = models.IntegerField(blank=True, null=True)
+    listed_count = models.IntegerField(blank=True, null=True)
+    verified = models.BooleanField(default=False, blank=True, null=True)
 
     class Meta:
         db_table = "twitter_account"
+
+    def __str__(self):
+        return self.name
 
 class CategoryMaster(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Category Master ID', default=uuid.uuid4, editable=False)
@@ -35,6 +45,15 @@ class AccountCategory(models.Model):
     class Meta:
         db_table = "account_category"                       
 
+
+class Role(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Role ID', default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "role"
+
 class User(AbstractUser):
 
     STATUS_CHOICES = (
@@ -42,17 +61,14 @@ class User(AbstractUser):
         ('inactive', 'inactive')
     )
 
-    ROLE_CHOICES = (
-        ('business_owner', 'business_owner'),
-        ('influencer', 'influencer')
-    )
 
     id = models.UUIDField(primary_key=True, verbose_name='User ID', default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES, max_length=25, blank=True, null=True)
-    role = models.CharField(choices=ROLE_CHOICES, max_length=50, blank=True)
+    role = models.ForeignKey(
+        Role, related_name='user_role_id', on_delete=models.PROTECT, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True, blank=True)
     otp = models.CharField(max_length=25, blank=True, null=True)
@@ -69,7 +85,8 @@ class User(AbstractUser):
 
 class BankAccount(models.Model):
     
-    id = models.UUIDField(primary_key=True, verbose_name='Account Category ID', default=uuid.uuid4, editable=False)
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Bank Account ID', default=uuid.uuid4, editable=False)
     influencer = models.ForeignKey(User, related_name='bank_acc_influencer_id', on_delete=SET_NULL, null=True)
     account_holder_name = models.CharField(max_length=150, blank=True, null=True)
     account_number = models.CharField(max_length=50, blank=True, null=True)

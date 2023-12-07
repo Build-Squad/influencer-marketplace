@@ -5,6 +5,12 @@ import { Box, Typography } from "@mui/material";
 import axios from "axios";
 import Navbar from "@/src/components/homePage/navbar";
 import Image from "next/image";
+import { Menu } from "@mui/icons-material/";
+import {
+  getServicewithCredentials,
+  postService,
+} from "@/src/services/httpServices";
+import { notification } from "@/src/components/shared/notification";
 import Banner from "@/src/components/homePage/banner";
 import InfluencersContainer from "@/src/components/homePage/influencersContainer";
 
@@ -55,6 +61,21 @@ export default function Home() {
       window.alert(e);
     }
   };
+
+  // const authTwitterUser = async () => {
+  //   const { isSuccess, data, message } = await postService(
+  //     "account/twitter-auth/",
+  //     {
+  //       role: "influecer",
+  //     }
+  //   );
+  //   if (isSuccess) {
+  //     console.log(data);
+  //     window.location.href = data;
+  //   } else {
+  //     notification(message ? message : "Something went wrong", "error");
+  //   }
+  // };
 
   return (
     <Box>

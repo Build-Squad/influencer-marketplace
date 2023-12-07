@@ -1,6 +1,6 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
-from accounts.models import TwitterAccount
+from accounts.models import User
 from .services import JWTOperations
 
 class JWTAuthentication(BaseAuthentication):
@@ -14,10 +14,10 @@ class JWTAuthentication(BaseAuthentication):
 
         # Retrieve the corresponding user object
         try:
-            twitterUser = TwitterAccount.objects.filter(
-                twitter_id=payload["id"]
+            userAccount = User.objects.filter(
+                id=payload["id"]
             ).first()
-        except TwitterAccount.DoesNotExist:
+        except userAccount.DoesNotExist:
             raise exceptions.AuthenticationFailed("User does not exist")
-        request.twitterUser = twitterUser
+        request.user_account = userAccount
         request.token = token
