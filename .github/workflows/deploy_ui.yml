@@ -35,6 +35,9 @@ jobs:
           cd xfluencer/influencer-marketplace
           git pull
           cd src/ui
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm use 14
           npm cache clean -f
           npm install
           npm run build 
