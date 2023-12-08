@@ -37,9 +37,9 @@ class CategoryMaster(models.Model):
 
 class AccountCategory(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Account Category ID', default=uuid.uuid4, editable=False)
-    twitter_account = models.ForeignKey(TwitterAccount, related_name='cat_twitter_account_id', on_delete=models.DO_NOTHING,
+    twitter_account = models.ForeignKey(TwitterAccount, related_name='cat_twitter_account_id', on_delete=SET_NULL,
                                          null=True)
-    category = models.ForeignKey(CategoryMaster, related_name='cat_category_master_id', on_delete=models.DO_NOTHING,
+    category = models.ForeignKey(CategoryMaster, related_name='cat_category_master_id', on_delete=SET_NULL,
                                          null=True)
 
     class Meta:
@@ -68,12 +68,12 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES, max_length=25, blank=True, null=True)
     role = models.ForeignKey(
-        Role, related_name='user_role_id', on_delete=models.PROTECT, null=True, blank=True)
+        Role, related_name='user_role_id', on_delete=SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True, blank=True)
     otp = models.CharField(max_length=25, blank=True, null=True)
     otp_expiration = models.DateTimeField(blank=True, null=True)
-    twitter_account = models.ForeignKey(TwitterAccount, related_name='user_twitter_account_id', on_delete=models.DO_NOTHING,
+    twitter_account = models.ForeignKey(TwitterAccount, related_name='user_twitter_account_id', on_delete=SET_NULL,
                                          null=True, blank=True)
 
     USERNAME_FIELD = 'email'
