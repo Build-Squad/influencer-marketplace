@@ -25,12 +25,14 @@ export default function Home() {
   // Authenticate user based on cookie present on the browser
   const isAuthenticated = async () => {
     try {
-      await axios.get(
-        process.env.NEXT_PUBLIC_BACKEND_URL + "is-authenticated/",
-        {
-          withCredentials: true,
-        }
+      const { isSuccess, data, message } = await getServicewithCredentials(
+        "account/"
       );
+      if (isSuccess) {
+        localStorage.setItem("user", JSON.stringify(data));
+      } else {
+        notification(message ? message : "Something went wrong", "error");
+      }
       setIsUserAuthenticated(true);
     } catch (e) {
       setIsUserAuthenticated(false);
