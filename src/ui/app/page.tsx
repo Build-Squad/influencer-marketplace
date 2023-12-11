@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
-import axios from "axios";
-import Navbar from "@/src/components/homePage/navbar";
-import Image from "next/image";
-import { Menu } from "@mui/icons-material/";
-import {
-  getServicewithCredentials,
-  postService,
-} from "@/src/services/httpServices";
-import { notification } from "@/src/components/shared/notification";
 import Banner from "@/src/components/homePage/banner";
 import InfluencersContainer from "@/src/components/homePage/influencersContainer";
+import Navbar from "@/src/components/homePage/navbar";
+import { getServicewithCredentials } from "@/src/services/httpServices";
+import { Box, Typography } from "@mui/material";
+import axios from "axios";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
@@ -32,6 +27,8 @@ export default function Home() {
         setIsUserAuthenticated(true);
         localStorage.setItem("user", JSON.stringify(data));
       } else {
+        setIsUserAuthenticated(false);
+        localStorage.clear();
       }
     } catch (e) {
       setIsUserAuthenticated(false);
