@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import axios from "axios";
-import Navbar from "@/src/components/homePage/navbar";
-import Banner from "@/src/components/homePage/banner";
-import InfluencersContainer from "@/src/components/homePage/influencersContainer";
-import GuideContainer from "@/src/components/homePage/guideContainer";
-import AnalyticsContainer from "@/src/components/homePage/analyticsContainer";
-import HomePageFooter from "@/src/components/homePage/homePageFooter";
+import Navbar from "./components/navbar";
+import Banner from "./components/banner";
+import InfluencersContainer from "./components/influencersContainer";
+import GuideContainer from "./components/guideContainer";
+import AnalyticsContainer from "./components/analyticsContainer";
+import HomePageFooter from "./components/homePageFooter";
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
