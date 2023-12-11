@@ -37,46 +37,6 @@ oauth2_user_handler = OAuth2UserHandler(
 
 
 # Apply these authentication class wherever JWT authentication is necessary.
-@api_view(["GET"])
-@authentication_classes([JWTAuthentication])
-def isAuthenticated(request):
-    # Get the user id from the decoded token.
-    user = request.user_account
-
-    # If user is not found, return 401.
-    if user is None:
-        HttpResponse({
-            "message": "Unauthorized",
-            "error": "User not found"
-        }, status=401)
-    else:
-        return JsonResponse({
-            "message": "User is authenticated",
-            "data": {
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
-                },
-                "twitter_account": {
-                    "id": user.twitter_account.id,
-                    "twitter_id": user.twitter_account.twitter_id,
-                    "name": user.twitter_account.name,
-                    "user_name": user.twitter_account.user_name,
-                    "description": user.twitter_account.description,
-                    "profile_image_url": user.twitter_account.profile_image_url,
-                    "followers_count": user.twitter_account.followers_count,
-                    "following_count": user.twitter_account.following_count,
-                    "tweet_count": user.twitter_account.tweet_count,
-                    "listed_count": user.twitter_account.listed_count,
-                    "verified": user.twitter_account.verified,
-                }
-            },
-            "isSuccess": True,
-        })
-
 
 def logoutUser(request):
     response = HttpResponse("Token Deleted")

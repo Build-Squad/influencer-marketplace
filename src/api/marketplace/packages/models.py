@@ -47,6 +47,7 @@ class ServiceMaster(models.Model):
     type = models.CharField(choices=TYPE_CHOICES, max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    is_duration_based = models.BooleanField(default=False)
 
     class Meta:
         db_table = "service_master" 
@@ -68,6 +69,8 @@ class Service(models.Model):
     status = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
     class Meta:
         db_table = "service"   
 

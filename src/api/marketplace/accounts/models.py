@@ -75,6 +75,7 @@ class User(AbstractUser):
     otp_expiration = models.DateTimeField(blank=True, null=True)
     twitter_account = models.ForeignKey(TwitterAccount, related_name='user_twitter_account_id', on_delete=SET_NULL,
                                          null=True, blank=True)
+    jwt = models.CharField(max_length=255, blank=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

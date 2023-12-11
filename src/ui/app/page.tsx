@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
-import axios from "axios";
-import Navbar from "@/src/components/homePage/navbar";
-import Image from "next/image";
-import { Menu } from "@mui/icons-material/";
-import {
-  getServicewithCredentials,
-  postService,
-} from "@/src/services/httpServices";
-import { notification } from "@/src/components/shared/notification";
 import Banner from "@/src/components/homePage/banner";
 import InfluencersContainer from "@/src/components/homePage/influencersContainer";
+import Navbar from "@/src/components/homePage/navbar";
+import { getServicewithCredentials } from "@/src/services/httpServices";
+import { Box, Typography } from "@mui/material";
+import axios from "axios";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
@@ -25,15 +20,16 @@ export default function Home() {
   // Authenticate user based on cookie present on the browser
   const isAuthenticated = async () => {
     try {
-      const res = await axios.get(
-        process.env.NEXT_PUBLIC_BACKEND_URL + "is-authenticated/",
-        {
-          withCredentials: true,
-        }
+      const { isSuccess, data, message } = await getServicewithCredentials(
+        "account/"
       );
-      console.log("User is authenticated:", res);
-      localStorage.setItem("user", JSON.stringify(res?.data?.data));
-      setIsUserAuthenticated(true);
+      if (isSuccess) {
+        setIsUserAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(data));
+      } else {
+        setIsUserAuthenticated(false);
+        localStorage.clear();
+      }
     } catch (e) {
       setIsUserAuthenticated(false);
     }
@@ -62,21 +58,6 @@ export default function Home() {
       window.alert(e);
     }
   };
-
-  // const authTwitterUser = async () => {
-  //   const { isSuccess, data, message } = await postService(
-  //     "account/twitter-auth/",
-  //     {
-  //       role: "influecer",
-  //     }
-  //   );
-  //   if (isSuccess) {
-  //     console.log(data);
-  //     window.location.href = data;
-  //   } else {
-  //     notification(message ? message : "Something went wrong", "error");
-  //   }
-  // };
 
   return (
     <Box>

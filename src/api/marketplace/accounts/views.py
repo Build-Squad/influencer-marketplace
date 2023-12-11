@@ -630,12 +630,10 @@ class TwitterAuth(APIView):
             return None
 
     def get(self, request):
-        print("-------------------------Reached GET call-------------------------")
         try:
             twitter_auth_service = TwitterAuthenticationService()
             user_data = twitter_auth_service.get_twitter_client_data(request)
             twitter_account = self.get_object(user_data.id)
-            print("-------------------------Reached Twitter Account-------------------------")
             if twitter_account:
                 twitter_account.access_token = twitter_auth_service.get_twitter_access_token(
                     request.build_absolute_uri())
@@ -731,5 +729,4 @@ class UserAuth(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
         except Exception as e:
-            print(e)
             return handleServerException(e)
