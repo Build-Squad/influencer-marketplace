@@ -4,15 +4,11 @@ import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import axios from "axios";
 import Navbar from "@/src/components/homePage/navbar";
-import Image from "next/image";
-import { Menu } from "@mui/icons-material/";
-import {
-  getServicewithCredentials,
-  postService,
-} from "@/src/services/httpServices";
-import { notification } from "@/src/components/shared/notification";
 import Banner from "@/src/components/homePage/banner";
 import InfluencersContainer from "@/src/components/homePage/influencersContainer";
+import GuideContainer from "@/src/components/homePage/guideContainer";
+import AnalyticsContainer from "@/src/components/homePage/analyticsContainer";
+import HomePageFooter from "@/src/components/homePage/homePageFooter";
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
@@ -80,69 +76,33 @@ export default function Home() {
 
   return (
     <Box>
+      {/* Navigation */}
       <Navbar
         authTwitterUser={authTwitterUser}
         logout={logout}
         isUserAuthenticated={isUserAuthenticated}
       />
-      <Box
-        sx={{
-          border: "1px solid #000",
-          background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "column",
-          position: "relative",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "flex-end",
-            columnGap: "4px",
-            mt: 3,
-          }}
-        >
-          <Image src={"/Star.png"} width="34" height="34" alt="bgimg" />
-          <Typography variant="body1">
-            Strategically Match Your Business with Twitter's Finest Influencers.
-          </Typography>
-        </Box>
 
-        <Box
-          sx={{
-            width: "40%",
-            textAlign: "center",
-            mt: 1,
-            display: "flex",
-            alignItems: "flex-end",
-            columnGap: "8px",
-            position: "relative",
-            marginBottom: "120px",
-          }}
-        >
-          <Typography variant="h4" fontWeight={"bold"}>
-            Connecting Businesses with X Influencers for maximum impact
-          </Typography>
-          <Image
-            src={"/Arrow Right.png"}
-            width="68"
-            height="24"
-            alt="bgimg"
-            style={{ position: "absolute", left: "100%", bottom: 0 }}
-          />
-        </Box>
+      {/* Filter's container */}
+      <Banner />
 
-        <Banner />
-      </Box>
-      <Box
-        sx={{
-          marginTop: "120px",
-          marginX: "40px",
-        }}
-      >
+      {/* Influencers section */}
+      <Box sx={{ marginTop: "120px", marginX: "40px", textAlign: "center" }}>
         <InfluencersContainer />
       </Box>
+
+      {/* Guide section */}
+      <Box sx={{ marginTop: "84px", textAlign: "center" }}>
+        <GuideContainer />
+      </Box>
+
+      {/* Analytics section */}
+      <Box sx={{ marginTop: "24px", textAlign: "center" }}>
+        <AnalyticsContainer />
+      </Box>
+
+      {/* Footer */}
+      <HomePageFooter />
     </Box>
   );
 }
