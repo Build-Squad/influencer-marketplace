@@ -44,3 +44,23 @@ class CreateServicesSerializer(serializers.ModelSerializer):
         model = Service
         fields = '__all__'
         # fields = ('id', 'service_master', 'package', 'quantity', 'price', 'currency', 'status'
+
+    def validate(self, data):
+        service_master = data.get('service_master')
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+
+        # If service_master is just the ID, retrieve the ServiceMaster instance
+        if isinstance(service_master, int):
+            service_master = ServiceMaster.objects.get(id=service_master)
+
+        if service_master.is_duration_based:
+            if start_date is None or end_date is None:
+                raise serializers.ValidationError(
+                    "Start date and end date cannot be empty")
+        else:
+            if start_date is not None or end_date is not None:
+                raise serializers.ValidationError(
+                    "Service Master is not duration based. Start date and end date should be empty")
+
+        return data
