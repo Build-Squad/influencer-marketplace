@@ -1,12 +1,9 @@
-import jwt
 from django.shortcuts import redirect
 from tweepy import Client, OAuth2UserHandler
 from django.http import (
     JsonResponse,
-    HttpResponseBadRequest,
     HttpResponse,
     HttpResponseRedirect,
-    HttpResponsePermanentRedirect
 )
 from decouple import config
 from accounts.models import Role, TwitterAccount, User
@@ -45,37 +42,36 @@ def isAuthenticated(request):
 
     # If user is not found, return 401.
     if user is None:
-        HttpResponse({
-            "message": "Unauthorized",
-            "error": "User not found"
-        }, status=401)
+        HttpResponse({"message": "Unauthorized", "error": "User not found"}, status=401)
     else:
-        return JsonResponse({
-            "message": "User is authenticated",
-            "data": {
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
+        return JsonResponse(
+            {
+                "message": "User is authenticated",
+                "data": {
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                        "email": user.email,
+                    },
+                    "twitter_account": {
+                        "id": user.twitter_account.id,
+                        "twitter_id": user.twitter_account.twitter_id,
+                        "name": user.twitter_account.name,
+                        "user_name": user.twitter_account.user_name,
+                        "description": user.twitter_account.description,
+                        "profile_image_url": user.twitter_account.profile_image_url,
+                        "followers_count": user.twitter_account.followers_count,
+                        "following_count": user.twitter_account.following_count,
+                        "tweet_count": user.twitter_account.tweet_count,
+                        "listed_count": user.twitter_account.listed_count,
+                        "verified": user.twitter_account.verified,
+                    },
                 },
-                "twitter_account": {
-                    "id": user.twitter_account.id,
-                    "twitter_id": user.twitter_account.twitter_id,
-                    "name": user.twitter_account.name,
-                    "user_name": user.twitter_account.user_name,
-                    "description": user.twitter_account.description,
-                    "profile_image_url": user.twitter_account.profile_image_url,
-                    "followers_count": user.twitter_account.followers_count,
-                    "following_count": user.twitter_account.following_count,
-                    "tweet_count": user.twitter_account.tweet_count,
-                    "listed_count": user.twitter_account.listed_count,
-                    "verified": user.twitter_account.verified,
-                }
-            },
-            "isSuccess": True,
-        })
+                "isSuccess": True,
+            }
+        )
 
 
 def logoutUser(request):
@@ -98,8 +94,15 @@ def twitterLoginCallback(request):
 
         client = Client(access_token)
 
-        userData = client.get_me(user_auth=False, user_fields=[
-                                 "description", "profile_image_url", "public_metrics", "verified"]).data
+        userData = client.get_me(
+            user_auth=False,
+            user_fields=[
+                "description",
+                "profile_image_url",
+                "public_metrics",
+                "verified",
+            ],
+        ).data
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
         if existing_user is None:
@@ -142,11 +145,12 @@ def twitterLoginCallback(request):
             existing_user_account.last_login = datetime.datetime.now()
             existing_user_account.save()
 
-        current_user = User.objects.filter(
-            twitter_account=current_twitter_user).first()
+        current_user = User.objects.filter(twitter_account=current_twitter_user).first()
 
         # Creating a response object with JWT cookie
-        response = HttpResponseRedirect(config('FRONT_END_URL'))
+        response = HttpResponseRedirect(
+            config("FRONT_END_URL") + "?authenticationStatus=success"
+        )
 
         # Convert the UUID to string
         user_id = str(current_user.id)
@@ -158,10 +162,12 @@ def twitterLoginCallback(request):
         }
         # Set the JWT token in the response object
         response = JWTOperations.setJwtToken(
-            res=response, cookie_name="jwt", payload=payload)
+            res=response, cookie_name="jwt", payload=payload
+        )
 
         return response
 
     except Exception as e:
-        return HttpResponseBadRequest(f"Error fetching access token: {str(e)}")
-
+        return HttpResponseRedirect(
+            config("FRONT_END_URL") + "?authenticationStatus=error"
+        )

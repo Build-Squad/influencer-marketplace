@@ -9,11 +9,31 @@ import InfluencersContainer from "./components/influencersContainer";
 import GuideContainer from "./components/guideContainer";
 import AnalyticsContainer from "./components/analyticsContainer";
 import HomePageFooter from "./components/homePageFooter";
+import SnackbarComp from "@/src/components/shared/snackBarComp";
+import { AlertColor } from "@mui/material/Alert";
+import {
+  LOGIN_STATUS_SUCCESS,
+  LOGIN_STATUS_FAILED,
+  LOGOUT_SUCCESS,
+} from "@/src/utils/consts";
+import { useSearchParams } from "next/navigation";
+
+type loginStatusType = {
+  status: AlertColor | string;
+  message: string;
+};
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
 
-  // Check if the cookie is present and is valid or not
+  // Snackbar only if the user tries to login/signup
+  const [loginStatus, setloginStatus] = useState<loginStatusType>({
+    status: "",
+    message: "",
+  });
+  const params = useSearchParams();
+
+  // Check if the cookie is present & login status.
   useEffect(() => {
     isAuthenticated();
   }, []);
@@ -27,11 +47,24 @@ export default function Home() {
           withCredentials: true,
         }
       );
-      console.log("User is authenticated:", res);
       localStorage.setItem("user", JSON.stringify(res?.data?.data));
       setIsUserAuthenticated(true);
     } catch (e) {
       setIsUserAuthenticated(false);
+    }
+    
+    // Checking login status after redirecting back from authentication.
+    try {
+      const status = params.get("authenticationStatus");
+      if (status) {
+        setloginStatus({
+          status: status,
+          message:
+            status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
+        });
+      }
+    } catch (e) {
+      console.log("Error while checking login status");
     }
   };
 
@@ -42,6 +75,10 @@ export default function Home() {
         withCredentials: true,
       });
       setIsUserAuthenticated(false);
+      setloginStatus({
+        status: "success",
+        message: LOGOUT_SUCCESS,
+      });
     } catch (e) {
       console.log("Error while logging out: ", e);
     }
@@ -82,27 +119,36 @@ export default function Home() {
         logout={logout}
         isUserAuthenticated={isUserAuthenticated}
       />
-
       {/* Filter's container */}
       <Banner />
-
       {/* Influencers section */}
       <Box sx={{ marginTop: "120px", marginX: "40px", textAlign: "center" }}>
         <InfluencersContainer />
       </Box>
-
       {/* Guide section */}
       <Box sx={{ marginTop: "84px", textAlign: "center" }}>
         <GuideContainer />
       </Box>
-
       {/* Analytics section */}
       <Box sx={{ marginTop: "24px", textAlign: "center" }}>
         <AnalyticsContainer />
       </Box>
-
       {/* Footer */}
       <HomePageFooter />
+      {/* Snack bar to notify user about loggin status */}
+
+      {loginStatus.status ? (
+        <SnackbarComp
+          variant={loginStatus.status}
+          message={<>{loginStatus.message}</>}
+          updateParentState={() => {
+            setloginStatus({
+              status: "",
+              message: "",
+            });
+          }}
+        />
+      ) : null}
     </Box>
   );
 }
