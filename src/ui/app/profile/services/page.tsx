@@ -89,7 +89,7 @@ const Services = () => {
         }
       );
       if (isSuccess) {
-        setServices(data?.data);
+        setServices(data);
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,
@@ -280,7 +280,7 @@ const Services = () => {
                   </Tooltip>
                 </Card>
               </Grid>
-              {services.map((service) => (
+              {services?.map((service) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={service.id}>
                   <Card
                     sx={{

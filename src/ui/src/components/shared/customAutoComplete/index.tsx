@@ -53,7 +53,7 @@ const CustomAutoComplete = ({
         page_number: pagination.current_page_number,
       });
       if (isSuccess) {
-        setOptions([...options, ...data.data]);
+        setOptions([...options, ...data]);
       }
     } catch (error) {
       console.error("Failed to fetch options:", error);

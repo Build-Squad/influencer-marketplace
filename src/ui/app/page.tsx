@@ -36,7 +36,6 @@ export default function Home() {
       setIsUserAuthenticated(true);
     } catch (e) {
       setIsUserAuthenticated(false);
-      console.log("Error while authenticating:", e);
     }
   };
 

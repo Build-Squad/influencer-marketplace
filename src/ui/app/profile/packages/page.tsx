@@ -96,7 +96,7 @@ const Packages = () => {
         }
       );
       if (isSuccess) {
-        setPackages(data?.data);
+        setPackages(data);
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,
@@ -259,7 +259,7 @@ const Packages = () => {
                   </Tooltip>
                 </Card>
               </Grid>
-              {packages.map((item: PackageType) => (
+              {packages?.map((item: PackageType) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
                   <Card
                     sx={{
