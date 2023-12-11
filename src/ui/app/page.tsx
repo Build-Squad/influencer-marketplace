@@ -29,11 +29,10 @@ export default function Home() {
         "account/"
       );
       if (isSuccess) {
+        setIsUserAuthenticated(true);
         localStorage.setItem("user", JSON.stringify(data));
       } else {
-        notification(message ? message : "Something went wrong", "error");
       }
-      setIsUserAuthenticated(true);
     } catch (e) {
       setIsUserAuthenticated(false);
     }
@@ -62,21 +61,6 @@ export default function Home() {
       window.alert(e);
     }
   };
-
-  // const authTwitterUser = async () => {
-  //   const { isSuccess, data, message } = await postService(
-  //     "account/twitter-auth/",
-  //     {
-  //       role: "influecer",
-  //     }
-  //   );
-  //   if (isSuccess) {
-  //     console.log(data);
-  //     window.location.href = data;
-  //   } else {
-  //     notification(message ? message : "Something went wrong", "error");
-  //   }
-  // };
 
   return (
     <Box>
