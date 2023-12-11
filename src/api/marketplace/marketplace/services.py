@@ -1,3 +1,4 @@
+import time
 import jwt
 from decouple import config
 from rest_framework import exceptions
@@ -12,11 +13,11 @@ class JWTOperations:
     def getPayload(req, cookie_name):
         token = req.COOKIES.get(cookie_name)
         if not token:
-            raise exceptions.AuthenticationFailed("JWT Token not present in the request!")
+            raise exceptions.AuthenticationFailed("User is not logged in")
         try:
             payload = jwt.decode(token, config("JWT_SECRET"), algorithms=["HS256"])
         except jwt.DecodeError:
-            raise exceptions.AuthenticationFailed("Invalid JWT token")
+            raise exceptions("Invalid JWT token")
         return payload, token
 
     def setJwtToken(res, payload, cookie_name):
@@ -43,6 +44,9 @@ class JWTOperations:
         )
         return res
 
+    def isTokenExpired(payload):
+        return payload.get("exp") < int(time.time())
+
 class Pagination:
     def __init__(self, qs, request):
         self.qs = qs
@@ -55,7 +59,6 @@ class Pagination:
         self.page_data = self.qs[i:j]
 
     def setValidPagination(self):
-        # print(self.page_size, self.page_number)
         page_size = PageSizeSerializer(data={'page_size': self.page_size})
         page_number = PageNumberSerializer(data={'page_number': self.page_number})
         if not page_size.is_valid():
@@ -96,8 +99,8 @@ class Pagination:
             'current_page_size': self.getCurrentPageSize()
         }
 
+
 def handleServerException(e):
-    # print(e)
     return Response({
         'isSuccess': False,
         'data': None,
@@ -105,8 +108,8 @@ def handleServerException(e):
         'errors': e,
     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 def handleBadRequest(e):
-    # print(e)
     return Response({
         'isSuccess': False,
         'data': None,
