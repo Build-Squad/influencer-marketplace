@@ -29,5 +29,4 @@ class JWTAuthentication(BaseAuthentication):
             request.user_account = userAccount
             request.token = token
         except Exception as e:
-            print("Error", e)
             raise exceptions.AuthenticationFailed(e)

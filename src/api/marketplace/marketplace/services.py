@@ -6,10 +6,15 @@ import math
 from .serializers import PageSizeSerializer, PageNumberSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.mail import send_mail
 
 
 # JWT cookie related operations
 class JWTOperations:
+    def generateToken(self, payload):
+        token = jwt.encode(payload, config("JWT_SECRET"), algorithm="HS256")
+        return token
+
     def getPayload(req, cookie_name):
         token = req.COOKIES.get(cookie_name)
         if not token:
@@ -105,7 +110,7 @@ def handleServerException(e):
         'isSuccess': False,
         'data': None,
         'message': 'Internal Server Error',
-        'errors': e,
+        # 'errors': e,
     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -114,7 +119,7 @@ def handleBadRequest(e):
         'isSuccess': False,
         'data': None,
         'message': 'Bad Request',
-        'errors': e,
+        # 'errors': e,
     }, status=status.HTTP_400_BAD_REQUEST)
 
 def handleNotFound(resource_name):
@@ -132,3 +137,12 @@ def handleDeleteNotAllowed(resource_name):
         'message': f'{resource_name} cannot be deleted as it is being used in another resource',
         'errors': f'{resource_name} cannot be deleted as it is being used in another resource',
     }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmailService:
+    # Send via django.core.mail.send_mail
+    def sendEmail(self, subject, message, from_email, recipient_list):
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+        except Exception as e:
+            pass
