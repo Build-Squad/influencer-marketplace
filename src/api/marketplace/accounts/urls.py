@@ -1,5 +1,7 @@
 from django.urls import path
 from .views import (
+    OTPAuth,
+    OTPVerification,
     TwitterAccountList,
     TwitterAccountDetail,
     CategoryMasterList,
@@ -13,7 +15,8 @@ from .views import (
     TwitterAuth,
     RoleList,
     RoleDetail,
-    UserAuth
+    UserAuth,
+    EmailVerification
 )
 
 urlpatterns = [
@@ -41,4 +44,9 @@ urlpatterns = [
 
     path("bank-account/", BankAccountList.as_view(), name="bank-account-list"),
     path("bank-account/<uuid:pk>/", BankAccountDetail.as_view(), name="bank-account-detail"),
+
+    path("otp/", OTPAuth.as_view(), name="otp-auth"),
+    path("otp/verify/", OTPVerification.as_view(), name="otp-verify"),
+
+    path("email-verify/", EmailVerification.as_view(), name="email-verify"),
 ]
