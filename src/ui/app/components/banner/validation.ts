@@ -1,9 +1,9 @@
 import { object, number, string, array } from "yup";
 
 interface BannerFilterType {
-  language: LanguageType | null;
-  serviceType: ServiceMasterType | null;
-  category: CategoryMasterType | null;
+  languages: Array<LanguageType>;
+  serviceTypes: Array<ServiceMasterType>;
+  categories: Array<CategoryMasterType>;
   upperPriceLimit: number | null;
   lowerPriceLimit: number | null;
   upperFollowerLimit: number | null;
@@ -20,9 +20,9 @@ const BannerFilterSchema = object({
 });
 
 const BannerFilterInitialValues: BannerFilterType = {
-  language: null,
-  serviceType: null,
-  category: null,
+  languages: [],
+  serviceTypes: [],
+  categories: [],
   upperPriceLimit: 100,
   lowerPriceLimit: 0,
   upperFollowerLimit: 50000,

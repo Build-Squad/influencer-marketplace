@@ -85,8 +85,9 @@ export default function Banner({}: Props) {
       >
         <form onSubmit={formik.handleSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={4} sm={4} md={2} lg={2}>
+            <Grid item xs={4} sm={4} md={2} lg={2} sx={{ mb: 2 }}>
               <CustomAutoComplete
+                isMulti={true}
                 sx={{
                   ".MuiInputBase-root": {
                     borderRadius: "24px",
@@ -94,22 +95,13 @@ export default function Banner({}: Props) {
                 }}
                 apiEndpoint="/core/language"
                 label="Language"
-                placeholder="Select Language"
-                value={formik.values.language}
+                value={formik.values.languages}
                 onChange={(value: any) => {
-                  formik.setFieldValue("language", value);
+                  formik.setFieldValue("languages", value);
                 }}
                 onClear={() => {
-                  formik.setFieldValue("language", null);
+                  formik.setFieldValue("languages", []);
                 }}
-                helperText={
-                  formik.touched.language && formik.errors.language
-                    ? formik.errors.language
-                    : " "
-                }
-                error={
-                  formik.touched.language && Boolean(formik.errors.language)
-                }
                 getOptionLabel={(option) => {
                   if (typeof option === "object" && option) {
                     if ("langEnglishName" in option) {
@@ -121,21 +113,11 @@ export default function Banner({}: Props) {
                     return "";
                   }
                 }}
-                isOptionEqualToValue={(option, value) => {
-                  if (typeof option === "object" && option) {
-                    if ("id" in option) {
-                      return option.id === value;
-                    } else {
-                      return false;
-                    }
-                  } else {
-                    return false;
-                  }
-                }}
               />
             </Grid>
             <Grid item xs={4} sm={4} md={2} lg={2}>
               <CustomAutoComplete
+                isMulti={true}
                 sx={{
                   ".MuiInputBase-root": {
                     borderRadius: "24px",
@@ -143,18 +125,13 @@ export default function Banner({}: Props) {
                 }}
                 apiEndpoint="/packages/servicemaster"
                 label="Type of service"
-                placeholder="Select type of Service"
-                value={formik.values.serviceType}
+                value={formik.values.serviceTypes}
                 onChange={(value: any) => {
-                  formik.setFieldValue("serviceType", value);
+                  formik.setFieldValue("serviceTypes", value);
                 }}
                 onClear={() => {
-                  formik.setFieldValue("serviceType", null);
+                  formik.setFieldValue("serviceTypes", null);
                 }}
-                error={
-                  formik.touched.serviceType &&
-                  Boolean(formik.errors.serviceType)
-                }
                 getOptionLabel={(option) => {
                   if (typeof option === "object" && option) {
                     if ("name" in option) {
@@ -166,21 +143,11 @@ export default function Banner({}: Props) {
                     return "";
                   }
                 }}
-                isOptionEqualToValue={(option, value) => {
-                  if (typeof option === "object" && option) {
-                    if ("id" in option) {
-                      return option.id === value;
-                    } else {
-                      return false;
-                    }
-                  } else {
-                    return false;
-                  }
-                }}
               />
             </Grid>
             <Grid item xs={4} sm={4} md={2} lg={2}>
               <CustomAutoComplete
+                isMulti={true}
                 sx={{
                   ".MuiInputBase-root": {
                     borderRadius: "24px",
@@ -188,17 +155,13 @@ export default function Banner({}: Props) {
                 }}
                 apiEndpoint="/account/category-master"
                 label="Category"
-                placeholder="Select Category"
-                value={formik.values.category}
+                value={formik.values.categories}
                 onChange={(value: any) => {
-                  formik.setFieldValue("category", value);
+                  formik.setFieldValue("categories", value);
                 }}
                 onClear={() => {
-                  formik.setFieldValue("category", null);
+                  formik.setFieldValue("categories", null);
                 }}
-                error={
-                  formik.touched.category && Boolean(formik.errors.category)
-                }
                 getOptionLabel={(option) => {
                   if (typeof option === "object" && option) {
                     if ("name" in option) {
@@ -208,17 +171,6 @@ export default function Banner({}: Props) {
                     }
                   } else {
                     return "";
-                  }
-                }}
-                isOptionEqualToValue={(option, value) => {
-                  if (typeof option === "object" && option) {
-                    if ("id" in option) {
-                      return option.id === value;
-                    } else {
-                      return false;
-                    }
-                  } else {
-                    return false;
                   }
                 }}
               />
