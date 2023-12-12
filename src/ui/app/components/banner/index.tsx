@@ -204,7 +204,7 @@ export default function Banner({}: Props) {
                 }}
               />
             </Grid>
-            <span style={{ marginTop: "16px", marginLeft: "8px" }}>-</span>
+            <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
             <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
               <TextField
                 sx={{
@@ -264,7 +264,7 @@ export default function Banner({}: Props) {
                 }}
               />
             </Grid>
-            <span style={{ marginTop: "16px", marginLeft: "8px" }}>-</span>
+            <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
             <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
               <TextField
                 sx={{
