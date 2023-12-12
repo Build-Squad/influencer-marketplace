@@ -1,6 +1,7 @@
 from http.client import HTTPResponse
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
+    EmailService,
     Pagination,
     handleServerException,
     handleBadRequest,
@@ -749,7 +750,15 @@ class OTPAuth(APIView):
                     user.otp = otp
                     user.otp_expiration = otp_expiration
                     user.save()
-                    # TODO: Send OTP
+
+                    email_service = EmailService()
+                    email_service.sendEmail(
+                        "OTP for login to Xfluencer",
+                        f"Your OTP is {otp}",
+                        config("EMAIL_HOST_USER"),
+                        [request.data["email"]],
+                    )
+
                     return Response(
                         {
                             "isSuccess": True,
@@ -848,7 +857,6 @@ class EmailVerification(APIView):
             user_account = request.user_account
             user = self.get_object(user_account.id)
             if user:
-                # Send email
                 if user.email_verified_at:
                     return Response(
                         {
@@ -863,7 +871,15 @@ class EmailVerification(APIView):
                 user.otp = otp
                 user.otp_expiration = otp_expiration
                 user.save()
-                # TODO: Send OTP
+
+                email_service = EmailService()
+                email_service.sendEmail(
+                    "OTP for email verification",
+                    f"Your OTP is {otp}",
+                    config("EMAIL_HOST_USER"),
+                    [user.email],
+                )
+
                 return Response(
                     {
                         "isSuccess": True,
