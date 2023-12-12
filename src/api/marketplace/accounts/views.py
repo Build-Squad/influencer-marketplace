@@ -751,13 +751,13 @@ class OTPAuth(APIView):
                     user.otp_expiration = otp_expiration
                     user.save()
 
-                    email_service = EmailService()
-                    email_service.sendEmail(
-                        "OTP for login to Xfluencer",
-                        f"Your OTP is {otp}",
-                        config("EMAIL_HOST_USER"),
-                        [request.data["email"]],
-                    )
+                    # email_service = EmailService()
+                    # email_service.sendEmail(
+                    #     "OTP for login to Xfluencer",
+                    #     f"Your OTP is {otp}",
+                    #     config("EMAIL_HOST_USER"),
+                    #     [request.data["email"]],
+                    # )
 
                     return Response(
                         {
@@ -872,13 +872,13 @@ class EmailVerification(APIView):
                 user.otp_expiration = otp_expiration
                 user.save()
 
-                email_service = EmailService()
-                email_service.sendEmail(
-                    "OTP for email verification",
-                    f"Your OTP is {otp}",
-                    config("EMAIL_HOST_USER"),
-                    [user.email],
-                )
+                # email_service = EmailService()
+                # email_service.sendEmail(
+                #     "OTP for email verification",
+                #     f"Your OTP is {otp}",
+                #     config("EMAIL_HOST_USER"),
+                #     [user.email],
+                # )
 
                 return Response(
                     {
