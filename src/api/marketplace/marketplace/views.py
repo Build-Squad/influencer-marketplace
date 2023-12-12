@@ -1,12 +1,9 @@
-import jwt
 from django.shortcuts import redirect
 from tweepy import Client, OAuth2UserHandler
 from django.http import (
     JsonResponse,
-    HttpResponseBadRequest,
     HttpResponse,
     HttpResponseRedirect,
-    HttpResponsePermanentRedirect
 )
 from decouple import config
 from accounts.models import Role, TwitterAccount, User
@@ -58,8 +55,15 @@ def twitterLoginCallback(request):
 
         client = Client(access_token)
 
-        userData = client.get_me(user_auth=False, user_fields=[
-                                 "description", "profile_image_url", "public_metrics", "verified"]).data
+        userData = client.get_me(
+            user_auth=False,
+            user_fields=[
+                "description",
+                "profile_image_url",
+                "public_metrics",
+                "verified",
+            ],
+        ).data
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
         if existing_user is None:
@@ -102,11 +106,12 @@ def twitterLoginCallback(request):
             existing_user_account.last_login = datetime.datetime.now()
             existing_user_account.save()
 
-        current_user = User.objects.filter(
-            twitter_account=current_twitter_user).first()
+        current_user = User.objects.filter(twitter_account=current_twitter_user).first()
 
         # Creating a response object with JWT cookie
-        response = HttpResponseRedirect(config('FRONT_END_URL'))
+        response = HttpResponseRedirect(
+            config("FRONT_END_URL") + "?authenticationStatus=success"
+        )
 
         # Convert the UUID to string
         user_id = str(current_user.id)
@@ -118,10 +123,12 @@ def twitterLoginCallback(request):
         }
         # Set the JWT token in the response object
         response = JWTOperations.setJwtToken(
-            res=response, cookie_name="jwt", payload=payload)
+            res=response, cookie_name="jwt", payload=payload
+        )
 
         return response
 
     except Exception as e:
-        return HttpResponseBadRequest(f"Error fetching access token: {str(e)}")
-
+        return HttpResponseRedirect(
+            config("FRONT_END_URL") + "?authenticationStatus=error"
+        )

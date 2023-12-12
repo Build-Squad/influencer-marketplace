@@ -1,4 +1,4 @@
-import { Box, Typography, Grid } from "@mui/material";
+import { Typography, Grid } from "@mui/material";
 import React, { useState } from "react";
 import InfluencersCards from "./influencersCards";
 import { TopInfluencersType } from "./types";
@@ -133,20 +133,19 @@ export default function InfluencersContainer({}: Props) {
     useState<TopInfluencersType[]>(dummyData);
   return (
     <>
-      <Typography variant="h5">Top Influencers</Typography>
+      <Typography variant="h5" fontWeight={"bold"}>Top Influencers</Typography>
       <Typography
         variant="subtitle1"
         sx={{
           color: "#505050",
         }}
       >
-        Lorem ipsum dolor sit amet consectetur. Lacinia nisi aliquet nulla
-        ornare amet.
+        Dive into the future of the web with top influencers.
       </Typography>
       <Grid
         container
         spacing={3}
-        mt={4}
+        mt={0}
         justifyContent={"center"}
         alignItems={"center"}
       >

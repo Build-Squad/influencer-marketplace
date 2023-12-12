@@ -43,6 +43,10 @@ export default function Navbar({
               color: "black",
               border: "1px solid black",
               borderRadius: "20px",
+              "&:hover": {
+                backgroundColor: "inherit",
+                border: "1px solid black",
+              },
             }}
           >
             For Influencer
@@ -54,62 +58,54 @@ export default function Navbar({
               color: "white",
               border: "1px solid black",
               borderRadius: "20px",
+              "&:hover": {
+                backgroundColor: "black",
+                border: "1px solid black",
+              },
             }}
           >
             For Business
           </Button>
         </Box>
         <Box sx={{ width: "33%", textAlign: "right" }}>
+          <Button color="inherit" sx={{ fontSize: "16px" }}>
+            Why XFluence
+          </Button>
+          <Button color="inherit" sx={{ fontSize: "16px" }}>
+            How it works
+          </Button>
+          <Button color="inherit" sx={{ fontSize: "16px" }}>
+            About
+          </Button>
           {isUserAuthenticated ? (
-            <>
-              <Button color="inherit" sx={{ fontSize: "12px" }}>
-                Why XFluence
-              </Button>
-              <Button color="inherit" sx={{ fontSize: "12px" }}>
-                How it works
-              </Button>
-              <Button color="inherit" sx={{ fontSize: "12px" }}>
-                About
-              </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
+            <Button
+              variant="outlined"
+              sx={{
+                background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                color: "black",
+                border: "1px solid black",
+                borderRadius: "20px",
+                "&:hover": {
                   border: "1px solid black",
-                  borderRadius: "20px",
-                }}
-                onClick={logout}
-              >
-                Logout
-              </Button>
-            </>
+                },
+              }}
+              onClick={logout}
+            >
+              Logout
+            </Button>
           ) : (
-            <>
-              <Button color="inherit" sx={{ fontSize: "12px" }}>
-                Why XFluence
-              </Button>
-              <Button color="inherit" sx={{ fontSize: "12px" }}>
-                How it works
-              </Button>
-              <Button color="inherit" sx={{ fontSize: "12px" }}>
-                About
-              </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
-                  border: "1px solid black",
-                  borderRadius: "20px",
-                }}
-                onClick={authTwitterUser}
-              >
-                Login
-              </Button>
-            </>
+            <Button
+              variant="outlined"
+              sx={{
+                background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                color: "black",
+                border: "1px solid black",
+                borderRadius: "20px",
+              }}
+              onClick={authTwitterUser}
+            >
+              Login
+            </Button>
           )}
         </Box>
       </Toolbar>

@@ -1,24 +1,46 @@
 "use client";
 
-import Banner from "@/src/components/homePage/banner";
-import InfluencersContainer from "@/src/components/homePage/influencersContainer";
-import Navbar from "@/src/components/homePage/navbar";
-import { getServicewithCredentials } from "@/src/services/httpServices";
+import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import axios from "axios";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import Navbar from "./components/navbar";
+import Banner from "./components/banner";
+import InfluencersContainer from "./components/influencersContainer";
+import GuideContainer from "./components/guideContainer";
+import AnalyticsContainer from "./components/analyticsContainer";
+import HomePageFooter from "./components/homePageFooter";
+import SnackbarComp from "@/src/components/shared/snackBarComp";
+import { AlertColor } from "@mui/material/Alert";
+import { getServicewithCredentials } from "@/src/services/httpServices";
+import {
+  LOGIN_STATUS_SUCCESS,
+  LOGIN_STATUS_FAILED,
+  LOGOUT_SUCCESS,
+} from "@/src/utils/consts";
+import { useSearchParams } from "next/navigation";
+
+type loginStatusType = {
+  status: AlertColor | string;
+  message: string;
+};
 
 export default function Home() {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
 
-  // Check if the cookie is present and is valid or not
+  // Snackbar only if the user tries to login/signup
+  const [loginStatus, setloginStatus] = useState<loginStatusType>({
+    status: "",
+    message: "",
+  });
+  const params = useSearchParams();
+
+  // Check if the cookie is present & login status.
   useEffect(() => {
     isAuthenticated();
   }, []);
 
-  // Authenticate user based on cookie present on the browser
   const isAuthenticated = async () => {
+    // Authenticate user based on cookie present on the browser
     try {
       const { isSuccess, data, message } = await getServicewithCredentials(
         "account/"
@@ -33,6 +55,20 @@ export default function Home() {
     } catch (e) {
       setIsUserAuthenticated(false);
     }
+
+    // Checking login status after redirecting back from authentication.
+    try {
+      const status = params.get("authenticationStatus");
+      if (status) {
+        setloginStatus({
+          status: status,
+          message:
+            status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
+        });
+      }
+    } catch (e) {
+      console.log("Error while checking login status");
+    }
   };
 
   const logout = async () => {
@@ -42,6 +78,10 @@ export default function Home() {
         withCredentials: true,
       });
       setIsUserAuthenticated(false);
+      setloginStatus({
+        status: "success",
+        message: LOGOUT_SUCCESS,
+      });
     } catch (e) {
       console.log("Error while logging out: ", e);
     }
@@ -61,69 +101,42 @@ export default function Home() {
 
   return (
     <Box>
+      {/* Navigation */}
       <Navbar
         authTwitterUser={authTwitterUser}
         logout={logout}
         isUserAuthenticated={isUserAuthenticated}
       />
-      <Box
-        sx={{
-          border: "1px solid #000",
-          background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "column",
-          position: "relative",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "flex-end",
-            columnGap: "4px",
-            mt: 3,
-          }}
-        >
-          <Image src={"/Star.png"} width="34" height="34" alt="bgimg" />
-          <Typography variant="body1">
-            Strategically Match Your Business with Twitter's Finest Influencers.
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            width: "40%",
-            textAlign: "center",
-            mt: 1,
-            display: "flex",
-            alignItems: "flex-end",
-            columnGap: "8px",
-            position: "relative",
-            marginBottom: "120px",
-          }}
-        >
-          <Typography variant="h4" fontWeight={"bold"}>
-            Connecting Businesses with X Influencers for maximum impact
-          </Typography>
-          <Image
-            src={"/Arrow Right.png"}
-            width="68"
-            height="24"
-            alt="bgimg"
-            style={{ position: "absolute", left: "100%", bottom: 0 }}
-          />
-        </Box>
-
-        <Banner />
-      </Box>
-      <Box
-        sx={{
-          marginTop: "120px",
-          marginX: "40px",
-        }}
-      >
+      {/* Filter's container */}
+      <Banner />
+      {/* Influencers section */}
+      <Box sx={{ marginTop: "120px", marginX: "40px", textAlign: "center" }}>
         <InfluencersContainer />
       </Box>
+      {/* Guide section */}
+      <Box sx={{ marginTop: "84px", textAlign: "center" }}>
+        <GuideContainer />
+      </Box>
+      {/* Analytics section */}
+      <Box sx={{ marginTop: "24px", textAlign: "center" }}>
+        <AnalyticsContainer />
+      </Box>
+      {/* Footer */}
+      <HomePageFooter />
+      {/* Snack bar to notify user about loggin status */}
+
+      {loginStatus.status ? (
+        <SnackbarComp
+          variant={loginStatus.status}
+          message={<>{loginStatus.message}</>}
+          updateParentState={() => {
+            setloginStatus({
+              status: "",
+              message: "",
+            });
+          }}
+        />
+      ) : null}
     </Box>
   );
 }
