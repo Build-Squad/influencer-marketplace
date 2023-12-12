@@ -11,6 +11,7 @@ import AnalyticsContainer from "./components/analyticsContainer";
 import HomePageFooter from "./components/homePageFooter";
 import SnackbarComp from "@/src/components/shared/snackBarComp";
 import { AlertColor } from "@mui/material/Alert";
+import { getServicewithCredentials } from "@/src/services/httpServices";
 import {
   LOGIN_STATUS_SUCCESS,
   LOGIN_STATUS_FAILED,
@@ -41,14 +42,16 @@ export default function Home() {
   const isAuthenticated = async () => {
     // Authenticate user based on cookie present on the browser
     try {
-      const res = await axios.get(
-        process.env.NEXT_PUBLIC_BACKEND_URL + "is-authenticated/",
-        {
-          withCredentials: true,
-        }
+      const { isSuccess, data, message } = await getServicewithCredentials(
+        "account/"
       );
-      localStorage.setItem("user", JSON.stringify(res?.data?.data));
-      setIsUserAuthenticated(true);
+      if (isSuccess) {
+        setIsUserAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(data));
+      } else {
+        setIsUserAuthenticated(false);
+        localStorage.clear();
+      }
     } catch (e) {
       setIsUserAuthenticated(false);
     }
@@ -95,21 +98,6 @@ export default function Home() {
       window.alert(e);
     }
   };
-
-  // const authTwitterUser = async () => {
-  //   const { isSuccess, data, message } = await postService(
-  //     "account/twitter-auth/",
-  //     {
-  //       role: "influecer",
-  //     }
-  //   );
-  //   if (isSuccess) {
-  //     console.log(data);
-  //     window.location.href = data;
-  //   } else {
-  //     notification(message ? message : "Something went wrong", "error");
-  //   }
-  // };
 
   return (
     <Box>

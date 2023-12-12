@@ -5,24 +5,22 @@ import { FORM_DATE_FORMAT, PACKAGE_STATUS } from "@/src/utils/consts";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Autocomplete,
-  Box,
   Button,
   Grid,
   IconButton,
-  Modal,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import dayjs from "dayjs";
 import { FormikValues, useFormik } from "formik";
 import React, { useEffect } from "react";
-import { packageFormInitialValues, packageFormSchema } from "./validation";
+import CustomAutoComplete from "../../shared/customAutoComplete";
 import CustomModal from "../../shared/customModal";
 import { notification } from "../../shared/notification";
-import CustomAutoComplete from "../../shared/customAutoComplete";
-import dayjs from "dayjs";
+import { packageFormInitialValues, packageFormSchema } from "./validation";
 
 type CreateUpdatePackageProps = {
   packageItem?: PackageType | null;

@@ -33,6 +33,7 @@ type ServiceMasterType = {
   type: string;
   created_at: string;
   deleted_at: string | null;
+  is_duration_based: boolean;
 };
 
 type PackageType = {
@@ -58,6 +59,8 @@ type ServiceType = {
   created_at: string;
   deleted_at: string | null;
   currency: CurrencyType;
+  start_date: null | string;
+  end_date: null | string;
 };
 
 type ConstSelectType = {
