@@ -736,6 +736,18 @@ class UserAuth(APIView):
 
 
 class OTPAuth(APIView):
+
+    def get_or_create_user(self, email):
+        try:
+            return User.objects.get(email=email)
+        except User.DoesNotExist:
+            user = User.objects.create(
+                email=email,
+                role=Role.objects.get(name="business_owner"),
+                username=email,
+            )
+            user.save()
+            return user
     @swagger_auto_schema(request_body=OTPAuthenticationSerializer)
     def post(self, request):
         try:
@@ -743,7 +755,7 @@ class OTPAuth(APIView):
 
             if serializer.is_valid():
                 # If user exists, send OTP
-                user = User.objects.get(email=request.data["email"])
+                user = self.get_or_create_user(request.data["email"])
                 otp_service = OTPAuthenticationService()
                 otp, otp_expiration = otp_service.generateOTP()
                 if user:
@@ -751,13 +763,13 @@ class OTPAuth(APIView):
                     user.otp_expiration = otp_expiration
                     user.save()
 
-                    # email_service = EmailService()
-                    # email_service.sendEmail(
-                    #     "OTP for login to Xfluencer",
-                    #     f"Your OTP is {otp}",
-                    #     config("EMAIL_HOST_USER"),
-                    #     [request.data["email"]],
-                    # )
+                    email_service = EmailService()
+                    email_service.sendEmail(
+                        "OTP for login to Xfluencer",
+                        f"Your OTP is {otp}",
+                        config("EMAIL_HOST_USER"),
+                        [request.data["email"]],
+                    )
 
                     return Response(
                         {
@@ -775,7 +787,6 @@ class OTPAuth(APIView):
                             "data": None,
                             "message": "User not found",
                         },
-                        status=status.HTTP_404_NOT_FOUND,
                     )
             else:
                 return handleBadRequest(serializer.errors)
@@ -809,6 +820,10 @@ class OTPVerification(APIView):
                 otp_service = OTPAuthenticationService()
                 is_valid = otp_service.validateOTP(request.data["otp"], user)
                 if is_valid:
+                    # If user is logging in for the first time, set email_verified_at to current time
+                    if user.email_verified_at is None:
+                        user.email_verified_at = datetime.datetime.now()
+                        user.save()
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
@@ -872,13 +887,13 @@ class EmailVerification(APIView):
                 user.otp_expiration = otp_expiration
                 user.save()
 
-                # email_service = EmailService()
-                # email_service.sendEmail(
-                #     "OTP for email verification",
-                #     f"Your OTP is {otp}",
-                #     config("EMAIL_HOST_USER"),
-                #     [user.email],
-                # )
+                email_service = EmailService()
+                email_service.sendEmail(
+                    "OTP for email verification",
+                    f"Your OTP is {otp}",
+                    config("EMAIL_HOST_USER"),
+                    [user.email],
+                )
 
                 return Response(
                     {

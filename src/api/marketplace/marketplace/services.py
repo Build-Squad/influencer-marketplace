@@ -145,4 +145,4 @@ class EmailService:
         try:
             send_mail(subject, message, from_email, recipient_list)
         except Exception as e:
-            raise e
+            pass
