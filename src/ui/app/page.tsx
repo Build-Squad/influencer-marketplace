@@ -38,8 +38,8 @@ export default function Home() {
     isAuthenticated();
   }, []);
 
-  // Authenticate user based on cookie present on the browser
   const isAuthenticated = async () => {
+    // Authenticate user based on cookie present on the browser
     try {
       const res = await axios.get(
         process.env.NEXT_PUBLIC_BACKEND_URL + "is-authenticated/",
@@ -52,7 +52,7 @@ export default function Home() {
     } catch (e) {
       setIsUserAuthenticated(false);
     }
-    
+
     // Checking login status after redirecting back from authentication.
     try {
       const status = params.get("authenticationStatus");

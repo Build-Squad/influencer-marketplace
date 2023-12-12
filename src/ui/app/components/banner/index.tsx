@@ -109,8 +109,8 @@ export default function Banner({}: Props) {
               error={formik.touched.language && Boolean(formik.errors.language)}
               getOptionLabel={(option) => {
                 if (typeof option === "object" && option) {
-                  if ("name" in option) {
-                    return option.name as string;
+                  if ("langEnglishName" in option) {
+                    return option.langEnglishName as string;
                   } else {
                     return "";
                   }
@@ -138,7 +138,7 @@ export default function Banner({}: Props) {
                   borderRadius: "24px",
                 },
               }}
-              apiEndpoint="/core/services"
+              apiEndpoint="/packages/servicemaster"
               label="Type of service"
               placeholder="Select type of Service"
               value={formik.values.serviceType}
@@ -182,7 +182,7 @@ export default function Banner({}: Props) {
                   borderRadius: "24px",
                 },
               }}
-              apiEndpoint="/core/category"
+              apiEndpoint="/account/category-master"
               label="Category"
               placeholder="Select Category"
               value={formik.values.category}

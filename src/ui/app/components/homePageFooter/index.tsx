@@ -28,9 +28,10 @@ const HomePageFooter = () => {
       {/** Column 1 */}
       <Grid item xs={12} sm={6} md={4} lg={4}>
         <Typography sx={styles.footerText}>
-          Lorem ipsum dolor sit amet consectetur. Nec mattis maecenas euismod
-          sit purus eget ac congue. Molestie amet cursus gravida dui
-          pellentesque. Urna duis lacus suscipit bibendum.
+          XFluencer: Where influencers monetize tweets, likes, and retweets, and
+          businesses effortlessly discover and purchase impactful social media
+          services on Twitter. Bridging the gap for seamless collaborations.
+          Elevate your Twitter presence with XFluencer.
         </Typography>
         <Typography sx={styles.copyright}>
           © 2020, All Rights Reserved

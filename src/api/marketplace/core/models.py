@@ -21,3 +21,13 @@ class Currency(models.Model):
 
     class Meta:
         db_table = "currency"
+
+
+class Language(models.Model):
+    id = models.UUIDField(primary_key=True, verbose_name='Language', default=uuid.uuid4, editable=False)
+    langCode = models.CharField(max_length=100, blank=True, null=True)
+    langEnglishName = models.CharField(max_length=100, blank=True, null=True)
+    langNativeName = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        db_table = "language"

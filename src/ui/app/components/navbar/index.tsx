@@ -43,6 +43,10 @@ export default function Navbar({
               color: "black",
               border: "1px solid black",
               borderRadius: "20px",
+              "&:hover": {
+                backgroundColor: "inherit",
+                border: "1px solid black",
+              },
             }}
           >
             For Influencer
@@ -54,6 +58,10 @@ export default function Navbar({
               color: "white",
               border: "1px solid black",
               borderRadius: "20px",
+              "&:hover": {
+                backgroundColor: "black",
+                border: "1px solid black",
+              },
             }}
           >
             For Business
@@ -79,6 +87,9 @@ export default function Navbar({
                   color: "black",
                   border: "1px solid black",
                   borderRadius: "20px",
+                  "&:hover": {
+                    border: "1px solid black",
+                  },
                 }}
                 onClick={logout}
               >
