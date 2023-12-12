@@ -1,5 +1,10 @@
 import React from "react";
-import { Grid, Typography } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
+import Image from "next/image";
+import Facebook from "@/public/svg/Facebook.svg";
+import Instgram from "@/public/svg/Instgram.svg";
+import X from "@/public/svg/X.svg";
+import LinkedIn from "@/public/svg/LinkedIn.svg";
 
 const styles = {
   container: {
@@ -72,12 +77,22 @@ const HomePageFooter = () => {
       {/** Column 4 */}
       <Grid item xs={12} sm={6} md={2} lg={2}>
         <Typography sx={styles.accountLinks}>Contact</Typography>
-        {[
-          "Follow us on social media",
-          "Careers",
-          "Need Help?",
-          "help@xfluencer.io",
-        ].map((link) => (
+
+        <Typography sx={{ mt: 2 }}>Follow us on social media</Typography>
+
+        <Box sx={{ mb: 2, display: "flex", columnGap: "4px" }}>
+          {[X, Facebook, Instgram, LinkedIn].map((icon, index) => (
+            <Image
+              key={index}
+              src={icon}
+              height={30}
+              width={30}
+              alt={`Social Icon ${index + 1}`}
+            />
+          ))}
+        </Box>
+
+        {["Careers", "Need Help?", "help@xfluencer.io"].map((link) => (
           <Typography key={link}>{link}</Typography>
         ))}
       </Grid>
