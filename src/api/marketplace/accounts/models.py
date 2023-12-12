@@ -73,6 +73,7 @@ class User(AbstractUser):
     last_login = models.DateTimeField(auto_now=True, blank=True)
     otp = models.CharField(max_length=25, blank=True, null=True)
     otp_expiration = models.DateTimeField(blank=True, null=True)
+    email_verified_at = models.DateTimeField(blank=True, null=True)
     twitter_account = models.ForeignKey(TwitterAccount, related_name='user_twitter_account_id', on_delete=SET_NULL,
                                          null=True, blank=True)
     jwt = models.CharField(max_length=255, blank=True, null=True)
