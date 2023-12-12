@@ -50,3 +50,16 @@ class BankAccountSerializer(serializers.ModelSerializer):
 
 class TwitterAuthSerializer(serializers.Serializer):
     role = serializers.CharField(max_length=100)
+
+
+class OTPAuthenticationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class OTPVerificationSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    email = serializers.EmailField()
+
+
+class EmailVerificationSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)

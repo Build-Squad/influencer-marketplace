@@ -1,6 +1,7 @@
 from http.client import HTTPResponse
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
+    EmailService,
     Pagination,
     handleServerException,
     handleBadRequest,
@@ -15,6 +16,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
 from .serializers import (
+    OTPAuthenticationSerializer,
+    OTPVerificationSerializer,
     TwitterAccountSerializer,
     CategoryMasterSerializer,
     AccountCategorySerializer,
@@ -22,12 +25,12 @@ from .serializers import (
     UserSerializer,
     BankAccountSerializer,
     TwitterAuthSerializer,
-    RoleSerializer
+    RoleSerializer,
+    EmailVerificationSerializer
 )
-from .services import TwitterAuthenticationService
-from django.http import HttpResponseRedirect
+from .services import OTPAuthenticationService, TwitterAuthenticationService
 from decouple import config
-from django.shortcuts import redirect
+import datetime
 
 
 
@@ -728,5 +731,224 @@ class UserAuth(APIView):
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class OTPAuth(APIView):
+    @swagger_auto_schema(request_body=OTPAuthenticationSerializer)
+    def post(self, request):
+        try:
+            serializer = OTPAuthenticationSerializer(data=request.data)
+
+            if serializer.is_valid():
+                # If user exists, send OTP
+                user = User.objects.get(email=request.data["email"])
+                otp_service = OTPAuthenticationService()
+                otp, otp_expiration = otp_service.generateOTP()
+                if user:
+                    user.otp = otp
+                    user.otp_expiration = otp_expiration
+                    user.save()
+
+                    # email_service = EmailService()
+                    # email_service.sendEmail(
+                    #     "OTP for login to Xfluencer",
+                    #     f"Your OTP is {otp}",
+                    #     config("EMAIL_HOST_USER"),
+                    #     [request.data["email"]],
+                    # )
+
+                    return Response(
+                        {
+                            "isSuccess": True,
+                            "data": None,
+                            "message": "OTP sent successfully",
+                            "otp": otp,
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "User not found",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class OTPVerification(APIView):
+    def get_object(self, email):
+        try:
+            return User.objects.get(email=email)
+        except User.DoesNotExist:
+            return None
+
+    @swagger_auto_schema(request_body=OTPVerificationSerializer)
+    # Login user if OTP is valid
+    def post(self, request):
+        try:
+            serializer = OTPVerificationSerializer(data=request.data)
+            if serializer.is_valid():
+                user = self.get_object(request.data["email"])
+                if user is None:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "User not found",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+                otp_service = OTPAuthenticationService()
+                is_valid = otp_service.validateOTP(request.data["otp"], user)
+                if is_valid:
+                    jwt_operations = JWTOperations()
+                    user_id = str(user.id)
+                    payload = {
+                        "id": user_id,
+                        "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=86400),
+                        "iat": datetime.datetime.utcnow(),
+                    }
+                    response = Response()  # Create a new Response instance
+                    token = jwt_operations.generateToken(payload)
+                    response.set_cookie(
+                        'jwt', token, max_age=86400, path="/", secure=True, httponly=True, samesite="None")
+                    response.data = {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Logged in successfully",
+                    }
+                    response.status_code = status.HTTP_200_OK
+                    return response
+                else:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "OTP is invalid",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class EmailVerification(APIView):
+    # A GET request to this endpoint will extract the user id from the JWT and check if the user exists and then send an email to the user
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return None
+
+    def get(self, request):
+        try:
+            user_account = request.user_account
+            user = self.get_object(user_account.id)
+            if user:
+                if user.email_verified_at:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Email already verified",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                otp_service = OTPAuthenticationService()
+                otp, otp_expiration = otp_service.generateOTP()
+                user.otp = otp
+                user.otp_expiration = otp_expiration
+                user.save()
+
+                # email_service = EmailService()
+                # email_service.sendEmail(
+                #     "OTP for email verification",
+                #     f"Your OTP is {otp}",
+                #     config("EMAIL_HOST_USER"),
+                #     [user.email],
+                # )
+
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Email sent successfully",
+                        "otp": otp,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "data": None,
+                        "message": "User not found",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return handleServerException(e)
+
+    @swagger_auto_schema(request_body=EmailVerificationSerializer)
+    def post(self, request):
+        try:
+            serializer = EmailVerificationSerializer(data=request.data)
+            if serializer.is_valid():
+                user_account = request.user_account
+                user = self.get_object(user_account.id)
+                if user is None:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "User not found",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+                otp_service = OTPAuthenticationService()
+                is_valid = otp_service.validateOTP(request.data["otp"], user)
+                if is_valid:
+                    if user.email_verified_at:
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "data": None,
+                                "message": "Email already verified",
+                            },
+                            status=status.HTTP_200_OK,
+                        )
+                    user.email_verified_at = datetime.datetime.now()
+                    user.save()
+                    return Response(
+                        {
+                            "isSuccess": True,
+                            "data": None,
+                            "message": "Email verified successfully",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "OTP is invalid",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+            else:
+                return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)
