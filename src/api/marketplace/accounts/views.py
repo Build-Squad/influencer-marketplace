@@ -820,8 +820,10 @@ class OTPVerification(APIView):
                 otp_service = OTPAuthenticationService()
                 is_valid = otp_service.validateOTP(request.data["otp"], user)
                 if is_valid:
-                    user.email_verified_at = datetime.datetime.now()
-                    user.save()
+                    # If user is logging in for the first time, set email_verified_at to current time
+                    if user.email_verified_at is None:
+                        user.email_verified_at = datetime.datetime.now()
+                        user.save()
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
