@@ -18,6 +18,13 @@ type CurrencyType = {
   country: CountryType;
 };
 
+type LanguageType = {
+  id: string;
+  langCode: string;
+  langEnglishName: string;
+  langNativeName: string;
+};
+
 type ServiceMasterType = {
   id: string;
   name: string;
@@ -57,3 +64,9 @@ type ConstSelectType = {
   value: string;
   label: string;
 } | null;
+
+type CategoryMasterType = {
+  id: string;
+  name: string;
+  description: string;
+};
