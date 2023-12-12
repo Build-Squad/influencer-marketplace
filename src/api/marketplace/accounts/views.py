@@ -736,6 +736,18 @@ class UserAuth(APIView):
 
 
 class OTPAuth(APIView):
+
+    def get_or_create_user(self, email):
+        try:
+            return User.objects.get(email=email)
+        except User.DoesNotExist:
+            user = User.objects.create(
+                email=email,
+                role=Role.objects.get(name="business_owner"),
+                username=email,
+            )
+            user.save()
+            return user
     @swagger_auto_schema(request_body=OTPAuthenticationSerializer)
     def post(self, request):
         try:
@@ -743,7 +755,7 @@ class OTPAuth(APIView):
 
             if serializer.is_valid():
                 # If user exists, send OTP
-                user = User.objects.get(email=request.data["email"])
+                user = self.get_or_create_user(request.data["email"])
                 otp_service = OTPAuthenticationService()
                 otp, otp_expiration = otp_service.generateOTP()
                 if user:
@@ -775,7 +787,6 @@ class OTPAuth(APIView):
                             "data": None,
                             "message": "User not found",
                         },
-                        status=status.HTTP_404_NOT_FOUND,
                     )
             else:
                 return handleBadRequest(serializer.errors)
