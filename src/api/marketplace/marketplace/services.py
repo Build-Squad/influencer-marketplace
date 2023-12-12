@@ -10,6 +10,10 @@ from rest_framework import status
 
 # JWT cookie related operations
 class JWTOperations:
+    def generateToken(self, payload):
+        token = jwt.encode(payload, config("JWT_SECRET"), algorithm="HS256")
+        return token
+
     def getPayload(req, cookie_name):
         token = req.COOKIES.get(cookie_name)
         if not token:
