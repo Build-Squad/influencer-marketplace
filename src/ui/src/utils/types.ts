@@ -73,3 +73,40 @@ type CategoryMasterType = {
   name: string;
   description: string;
 };
+
+type RoleType = {
+  id: string;
+  name: string;
+};
+
+type TwitterAccountType = {
+  description: string;
+  followers_count: number;
+  following_count: number;
+  id: string;
+  listed_count: number;
+  name: string;
+  profile_image_url: string;
+  tweet_count: number;
+  twitter_id: string;
+  user_name: string;
+  verified: boolean;
+  location: string | null;
+  url: string | null;
+  joined_at: string | null;
+};
+
+type UserType = {
+  id: string;
+  date_joined: string;
+  email: string | null;
+  email_verified_at: string | null;
+  first_name: string | null;
+  joined_at: string;
+  last_login: string | null;
+  last_name: string | null;
+  status: string | null;
+  username: string | null;
+  role: RoleType;
+  twitter_account: TwitterAccountType | null;
+};
