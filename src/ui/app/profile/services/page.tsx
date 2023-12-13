@@ -1,57 +1,21 @@
 "use client";
 
+import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
+import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
+import { notification } from "@/src/components/shared/notification";
 import { deleteService, getService } from "@/src/services/httpServices";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
-  Autocomplete,
   Box,
+  Button,
   Card,
-  FormLabel,
   Grid,
-  IconButton,
   Pagination,
-  Slider,
-  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
-import { notification } from "@/src/components/shared/notification";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
-
-const sortOptions = [
-  {
-    value: "created_at",
-    label: "Date (Oldest)",
-  },
-  {
-    value: "-created_at",
-    label: "Date (Newest)",
-  },
-  {
-    value: "price",
-    label: "Price (Lowest)",
-  },
-  {
-    value: "-price",
-    label: "Price (Highest)",
-  },
-  {
-    value: "quantity",
-    label: "Quantity (Lowest)",
-  },
-  {
-    value: "-quantity",
-    label: "Quantity (Highest)",
-  },
-];
-
-function valuetext(value: number) {
-  return `${value}°C`;
-}
 
 const Services = () => {
   const [services, setServices] = React.useState<ServiceType[]>([]);
@@ -59,13 +23,9 @@ const Services = () => {
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 11,
+    current_page_size: 5,
   });
   const [loading, setLoading] = React.useState<boolean>(true);
-  const [search, setSearch] = React.useState<string>("");
-  const [order_by, setOrder_by] = React.useState<string>("-created_at");
-  const [value, setValue] = React.useState<number[]>([0, 100]);
-  const [quantityRange, setQuantityRange] = React.useState<number[]>([0, 100]);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [refreshPage, setRefreshPage] = React.useState<boolean>(false);
   const [selectedService, setSelectedService] =
@@ -80,12 +40,6 @@ const Services = () => {
         {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
-          search: search,
-          order_by: order_by,
-          quantity_gt: quantityRange[0],
-          quantity_lt: quantityRange[1],
-          price_gt: value[0],
-          price_lt: value[1],
         }
       );
       if (isSuccess) {
@@ -136,20 +90,6 @@ const Services = () => {
     }));
   };
 
-  const handleSliderValueChange = (
-    event: Event,
-    newValue: number | number[]
-  ) => {
-    setValue(newValue as number[]);
-  };
-
-  const handleQuantityRangeChange = (
-    event: Event,
-    newValue: number | number[]
-  ) => {
-    setQuantityRange(newValue as number[]);
-  };
-
   useEffect(() => {
     if (refreshPage) {
       getServices();
@@ -158,18 +98,8 @@ const Services = () => {
   }, [refreshPage]);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      getServices();
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [
-    quantityRange,
-    value,
-    search,
-    pagination.current_page_number,
-    pagination.current_page_size,
-    order_by,
-  ]);
+    getServices();
+  }, [pagination.current_page_number, pagination.current_page_size]);
 
   useEffect(() => {
     if (!openModal) {
@@ -185,74 +115,10 @@ const Services = () => {
       }}
     >
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={3} lg={3}>
-          <TextField
-            label="Search"
-            variant="outlined"
-            value={search}
-            onChange={(event: {
-              target: { value: React.SetStateAction<string> };
-            }) => setSearch(event.target.value)}
-            size="small"
-            fullWidth
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={3}>
-          <Autocomplete
-            disableClearable
-            disablePortal
-            id="sort"
-            options={sortOptions}
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Sort"
-                variant="outlined"
-                size="small"
-              />
-            )}
-            value={sortOptions.find((option) => option.value === order_by)}
-            onChange={(event, value) => {
-              setOrder_by(value?.value ? value.value : "-created_at");
-            }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={3} sx={{ px: 2 }}>
-          <FormLabel component="legend">Price Range</FormLabel>
-          <Slider
-            getAriaLabel={() => "Price Range"}
-            value={value}
-            onChange={handleSliderValueChange}
-            valueLabelDisplay="auto"
-            getAriaValueText={valuetext}
-            min={0}
-            disableSwap
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={3} sx={{ px: 2 }}>
-          <FormLabel component="legend">Quantity Range</FormLabel>
-          <Slider
-            getAriaLabel={() => "Quantity Range"}
-            value={quantityRange}
-            onChange={handleQuantityRangeChange}
-            valueLabelDisplay="auto"
-            getAriaValueText={valuetext}
-            min={0}
-            disableSwap
-          />
-        </Grid>
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Grid item xs={12} sm={6} md={4} lg={4}>
                 <Card
                   sx={{
                     height: "100%",
@@ -261,6 +127,8 @@ const Services = () => {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
+                    borderRadius: "16px",
+                    boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
                   }}
                   onClick={() => {
                     setSelectedService(null);
@@ -281,14 +149,21 @@ const Services = () => {
                 </Card>
               </Grid>
               {services?.map((service) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={service.id}>
+                <Grid item xs={12} sm={6} md={4} lg={4} key={service.id}>
                   <Card
                     sx={{
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
-                      height: "100%",
+                      minHeight: 150,
                       padding: 2,
+                      borderRadius: "16px",
+                      boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setSelectedService(service);
+                      setOpenModal(true);
                     }}
                   >
                     <Box
@@ -299,63 +174,69 @@ const Services = () => {
                       }}
                     >
                       <Typography variant="h6">
-                        Service: {service.service_master.name}
+                        {service.service_master.name}
                       </Typography>
                       <Box
                         sx={{
                           display: "flex",
-                          justifyContent: "space-between",
                           alignItems: "center",
                         }}
                       >
-                        <Tooltip title="Edit">
-                          <IconButton
-                            onClick={() => {
-                              setSelectedService(service);
-                              setOpenModal(true);
-                            }}
-                          >
-                            <EditIcon
-                              sx={{
-                                fontSize: 16,
-                              }}
-                            />
-                          </IconButton>
-                        </Tooltip>
-                        <ConfirmDelete
-                          deleteElement={
-                            <IconButton>
-                              <DeleteOutlineIcon
-                                sx={{
-                                  fontSize: 16,
-                                }}
-                                color="error"
-                              />
-                            </IconButton>
-                          }
-                          title={"Service"}
-                          onConfirm={() => {
-                            deleteServiceItem(service.id);
+                        <Typography variant="body1">
+                          {service.currency.symbol} {service.price}
+                        </Typography>
+                        <Box
+                          onClick={(e) => {
+                            e.stopPropagation();
                           }}
-                          loading={deleteLoading}
-                        />
+                        >
+                          <ConfirmDelete
+                            sx={{
+                              ml: 1,
+                            }}
+                            onConfirm={() => deleteServiceItem(service.id)}
+                            title="Service"
+                            loading={deleteLoading}
+                            deleteElement={<DeleteOutlineIcon color="error" />}
+                          />
+                        </Box>
                       </Box>
                     </Box>
-                    <Typography variant="body1">
-                      Description: {service.service_master.description}
+                    <Typography variant="body2">
+                      {service.service_master.description}
                     </Typography>
-                    <Typography variant="body1">
-                      Limit: {service.service_master.limit}
-                    </Typography>
-                    <Typography variant="body1">
-                      Type: {service.service_master.type}
-                    </Typography>
-                    <Typography variant="body1">
-                      Quantity: {service.quantity}
-                    </Typography>
-                    <Typography variant="body1">
-                      Price: {service.currency.symbol} {service.price}
-                    </Typography>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        sx={{
+                          borderRadius: "20px",
+                          mx: 2,
+                        }}
+                        fullWidth
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        sx={{
+                          borderRadius: "20px",
+                          mx: 2,
+                        }}
+                        fullWidth
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        Buy Now
+                      </Button>
+                    </Box>
                   </Card>
                 </Grid>
               ))}
@@ -372,7 +253,8 @@ const Services = () => {
               justifyContent: "center",
               my: 4,
             }}
-            color="primary"
+            color="secondary"
+            shape="rounded"
           />
         </Grid>
       </Grid>
