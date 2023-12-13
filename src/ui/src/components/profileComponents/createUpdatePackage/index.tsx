@@ -129,7 +129,7 @@ const CreateUpdatePackage = ({
     const user = localStorage.getItem("user");
     if (user) {
       const userObject = JSON.parse(user);
-      setInfluencerId(userObject?.user?.id);
+      setInfluencerId(userObject?.id);
     }
   }, []);
 
