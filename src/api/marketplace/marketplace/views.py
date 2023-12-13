@@ -3,6 +3,7 @@ from tweepy import Client, OAuth2UserHandler
 from django.http import (
     JsonResponse,
     HttpResponse,
+    HttpResponseBadRequest,
     HttpResponseRedirect,
 )
 from decouple import config
@@ -34,6 +35,7 @@ oauth2_user_handler = OAuth2UserHandler(
 
 
 # Apply these authentication class wherever JWT authentication is necessary.
+
 
 def logoutUser(request):
     response = HttpResponse("Token Deleted")
@@ -152,6 +154,4 @@ def twitterLoginCallback(request):
         return response
 
     except Exception as e:
-        return HttpResponseRedirect(
-            config("FRONT_END_URL") + "?authenticationStatus=error"
-        )
+        return HttpResponseBadRequest(f"Error fetching access token: {str(e)}")

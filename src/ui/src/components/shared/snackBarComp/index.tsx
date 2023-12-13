@@ -7,11 +7,21 @@ export default function SnackbarComp({
   message = <></>,
   updateParentState,
 }: {
-  variant: AlertColor;
+  variant: AlertColor | string;
   message: React.ReactElement;
   updateParentState?: () => void;
 }) {
   const [open, setOpen] = React.useState(true);
+
+  const validVariant: AlertColor = [
+    "success",
+    "info",
+    "warning",
+    "error",
+  ].includes(variant as AlertColor)
+    ? (variant as AlertColor)
+    : "info";
+
   const handleClose = (
     event?: React.SyntheticEvent | Event,
     reason?: string
@@ -34,7 +44,7 @@ export default function SnackbarComp({
         },
       }}
     >
-      <MuiAlert elevation={6} severity={variant} sx={{ width: "100%" }}>
+      <MuiAlert elevation={6} severity={validVariant} sx={{ width: "100%" }}>
         {message}
       </MuiAlert>
     </Snackbar>
