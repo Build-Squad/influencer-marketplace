@@ -20,6 +20,7 @@ interface Props {
   loading?: boolean;
   hide?: boolean;
   deleteElement: React.ReactNode;
+  sx?: any;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -37,10 +38,15 @@ export const ConfirmDelete: React.FC<Props> = ({
   loading,
   hide = false,
   deleteElement,
+  sx,
 }) => {
   const [open, setOpen] = React.useState<boolean>(false);
   return (
-    <Box>
+    <Box
+      sx={{
+        ...sx,
+      }}
+    >
       <Tooltip title="Delete">
         <Box onClick={() => setOpen(true)}>{deleteElement}</Box>
       </Tooltip>
