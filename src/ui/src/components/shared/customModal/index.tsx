@@ -23,6 +23,19 @@ const customStyle = {
 };
 
 const CustomModal = ({ open, setOpen, children }: CustomModalProps) => {
+  // On pressing escape key, close the modal
+  React.useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, [setOpen]);
+
   return (
     <Modal
       open={open}
