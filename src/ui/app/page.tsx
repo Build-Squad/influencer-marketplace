@@ -47,7 +47,7 @@ export default function Home() {
       );
       if (isSuccess) {
         setIsUserAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(data));
+        localStorage.setItem("user", JSON.stringify(data?.data));
       } else {
         setIsUserAuthenticated(false);
         localStorage.clear();

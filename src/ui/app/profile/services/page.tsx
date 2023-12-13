@@ -43,7 +43,7 @@ const Services = () => {
         }
       );
       if (isSuccess) {
-        setServices(data);
+        setServices(data?.data);
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,

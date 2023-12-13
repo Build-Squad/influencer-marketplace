@@ -43,7 +43,7 @@ const Packages = () => {
         }
       );
       if (isSuccess) {
-        setPackages(data);
+        setPackages(data?.data);
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,
@@ -96,11 +96,12 @@ const Packages = () => {
   }, [refreshPage]);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      getPackages();
-    }, 500);
-    return () => clearTimeout(timeout);
+    getPackages();
   }, [pagination.current_page_number, pagination.current_page_size]);
+
+  useEffect(() => {
+    console.log(pagination);
+  }, [pagination]);
 
   return (
     <Box
