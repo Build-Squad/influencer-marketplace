@@ -660,7 +660,7 @@ class TwitterAuth(APIView):
                 twitter_account.save()
                 role = Role.objects.get(name=request.GET.get("role"))
                 new_user_account = User.objects.create(
-                    email=None,
+                    username=user_data.username,
                     first_name=user_data.name,
                     last_name=user_data.name,
                     status="active",

@@ -63,7 +63,8 @@ class User(AbstractUser):
 
 
     id = models.UUIDField(primary_key=True, verbose_name='User ID', default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(blank=True, null=True)
+    username = models.CharField(max_length=100, unique=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES, max_length=25, blank=True, null=True)
@@ -78,12 +79,13 @@ class User(AbstractUser):
                                          null=True, blank=True)
     jwt = models.CharField(max_length=255, blank=True, null=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
     ordering = ('email',)
 
     class Meta:
         db_table = "user"
+
+    def __str__(self):
+        return self.username
 
 class BankAccount(models.Model):
     
