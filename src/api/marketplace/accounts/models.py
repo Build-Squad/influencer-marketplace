@@ -20,6 +20,9 @@ class TwitterAccount(models.Model):
     tweet_count = models.IntegerField(blank=True, null=True)
     listed_count = models.IntegerField(blank=True, null=True)
     verified = models.BooleanField(default=False, blank=True, null=True)
+    joined_at = models.DateTimeField()
+    location = models.CharField(max_length=255, blank=True, null=True)
+    url = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         db_table = "twitter_account"
