@@ -2,7 +2,7 @@ name: Deploy API
 
 on:
   push:
-    branches: [ main1 ]   
+    branches: [ main ]   
 jobs:
   deploy:
     runs-on: ubuntu-latest

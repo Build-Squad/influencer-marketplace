@@ -4,7 +4,7 @@ import Image from "next/image";
 import Facebook from "@/public/svg/Facebook.svg";
 import Instgram from "@/public/svg/Instgram.svg";
 import X from "@/public/svg/X.svg";
-import LinkedIn from "@/public/svg/LinkedIn.svg";
+import LinkedIn from "@/public/svg/Linkedin.svg";
 
 const styles = {
   container: {
