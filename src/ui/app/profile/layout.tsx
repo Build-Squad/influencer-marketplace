@@ -70,10 +70,10 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <Box
               sx={{
-                backgroundImage: "url(/bannerProfile.png)",
+                backgroundImage: "url(/profileBanner.png)",
                 border: "1px solid #000",
                 display: "flex",
-                minHeight: "220px",
+                minHeight: "200px",
                 width: "100%",
                 flexDirection: "column",
                 "@media (max-width: 991px)": {
@@ -99,7 +99,7 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
                       display: "flex",
                       maxWidth: "100%",
                       flexDirection: "column",
-                      mt: "-100px",
+                      mt: "-120px",
                     }}
                   >
                     <Avatar

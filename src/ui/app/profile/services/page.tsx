@@ -1,5 +1,6 @@
 "use client";
 
+import CheckoutModal from "@/src/components/checkoutModal";
 import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
 import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
 import { notification } from "@/src/components/shared/notification";
@@ -18,6 +19,9 @@ import {
 import React, { useEffect } from "react";
 
 const Services = () => {
+  const [checkedOutServices, setCheckedOutServices] = React.useState<
+    ServiceType[]
+  >([]);
   const [services, setServices] = React.useState<ServiceType[]>([]);
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
@@ -218,6 +222,7 @@ const Services = () => {
                         fullWidth
                         onClick={(e) => {
                           e.stopPropagation();
+                          setCheckedOutServices((prev) => [...prev, service]);
                         }}
                       >
                         Add to Cart
@@ -232,6 +237,7 @@ const Services = () => {
                         fullWidth
                         onClick={(e) => {
                           e.stopPropagation();
+                          setCheckedOutServices((prev) => [...prev, service]);
                         }}
                       >
                         Buy Now
@@ -263,6 +269,14 @@ const Services = () => {
         setOpen={setOpenModal}
         setRefreshPage={setRefreshPage}
         serviceItem={selectedService}
+      />
+      <CheckoutModal
+        open={checkedOutServices.length > 0}
+        handleClose={() => {
+          setCheckedOutServices([]);
+        }}
+        serviceItems={checkedOutServices}
+        packageItems={[]}
       />
     </Box>
   );

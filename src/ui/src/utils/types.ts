@@ -110,3 +110,9 @@ type UserType = {
   role: RoleType;
   twitter_account: TwitterAccountType | null;
 };
+
+type ServiceCheckOutType = {
+  serviceItem: ServiceType;
+  quantity: number;
+  price: number;
+};
