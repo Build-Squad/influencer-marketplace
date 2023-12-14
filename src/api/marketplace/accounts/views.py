@@ -666,7 +666,6 @@ class TwitterAuth(APIView):
                     status="active",
                     role=role,
                     twitter_account=twitter_account,
-                    username=user_data.username,
                 )
                 new_user_account.save()
 
