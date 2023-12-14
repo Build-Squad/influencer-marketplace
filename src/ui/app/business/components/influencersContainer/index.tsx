@@ -1,3 +1,4 @@
+"use client";
 import { Typography, Grid } from "@mui/material";
 import React, { useState } from "react";
 import InfluencersCards from "./influencersCards";
@@ -133,7 +134,9 @@ export default function InfluencersContainer({}: Props) {
     useState<TopInfluencersType[]>(dummyData);
   return (
     <>
-      <Typography variant="h5" fontWeight={"bold"}>Top Influencers</Typography>
+      <Typography variant="h5" fontWeight={"bold"}>
+        Top Influencers
+      </Typography>
       <Typography
         variant="subtitle1"
         sx={{

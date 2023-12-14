@@ -1,6 +1,7 @@
 import React from "react";
 import { Toolbar, AppBar, Button, Box } from "@mui/material";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 
 type Props = {
   authTwitterUser: () => {};
@@ -13,6 +14,9 @@ export default function Navbar({
   logout,
   isUserAuthenticated,
 }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   return (
     <AppBar position="static" sx={{ backgroundColor: "white" }}>
       <Toolbar
@@ -37,31 +41,25 @@ export default function Navbar({
           }}
         >
           <Button
-            variant="outlined"
+            variant={pathname.includes("influencer") ? "contained" : "outlined"}
+            color="secondary"
             sx={{
-              backgroundColor: "white",
-              color: "black",
-              border: "1px solid black",
               borderRadius: "20px",
-              "&:hover": {
-                backgroundColor: "inherit",
-                border: "1px solid black",
-              },
+            }}
+            onClick={() => {
+              router.push("/influencer");
             }}
           >
             For Influencer
           </Button>
           <Button
-            variant="outlined"
+            variant={pathname.includes("business") ? "contained" : "outlined"}
+            color="secondary"
             sx={{
-              backgroundColor: "black",
-              color: "white",
-              border: "1px solid black",
               borderRadius: "20px",
-              "&:hover": {
-                backgroundColor: "black",
-                border: "1px solid black",
-              },
+            }}
+            onClick={() => {
+              router.push("/business");
             }}
           >
             For Business

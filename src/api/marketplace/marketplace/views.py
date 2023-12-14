@@ -110,7 +110,7 @@ def twitterLoginCallback(request):
 
         # Creating a response object with JWT cookie
         response = HttpResponseRedirect(
-            config("FRONT_END_URL") + "?authenticationStatus=success"
+            config("FRONT_END_URL") + "business/?authenticationStatus=success"
         )
 
         # Convert the UUID to string
@@ -130,5 +130,5 @@ def twitterLoginCallback(request):
 
     except Exception as e:
         return HttpResponseRedirect(
-            config("FRONT_END_URL") + "?authenticationStatus=error"
+            config("FRONT_END_URL") + "business/?authenticationStatus=error"
         )

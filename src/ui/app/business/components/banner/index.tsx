@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import CustomAutoComplete from "@/src/components/shared/customAutoComplete";
 import { FormikValues, useFormik } from "formik";
