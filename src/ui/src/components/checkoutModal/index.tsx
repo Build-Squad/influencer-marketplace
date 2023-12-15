@@ -36,22 +36,33 @@ const CheckoutModal = ({
     }
     const services: ServiceCheckOutType[] = [];
     serviceItems.forEach((item) => {
+      const quantity = 1;
       // If the service is already in the array, then just increase the quantity
       const index = services.findIndex(
         (service) => service.serviceItem.id === item.id
       );
       if (index !== -1) {
         services[index].quantity += 1;
+        services[index].price =
+          services[index].serviceItem.price * services[index].quantity;
         return;
       }
       services.push({
         serviceItem: item,
-        quantity: item.quantity,
+        quantity: quantity,
         price: item.price,
       });
     });
     setCheckedOutServices(services);
   }, [serviceItems]);
+
+  useEffect(() => {
+    if (checkedOutServices.length === 0) {
+      setCheckedOutServices([]);
+      handleClose && handleClose();
+      return;
+    }
+  }, [checkedOutServices]);
 
   return (
     <Box
@@ -59,11 +70,6 @@ const CheckoutModal = ({
         display: open ? "block" : "none",
       }}
     >
-      {/* A modal that appears at the bottom left of the page */}
-      {/* It will show the items that the user has selected */}
-      {/* It will also show the total price */}
-      {/* It will have a button to checkout */}
-
       <Box
         sx={{
           position: "fixed",
@@ -162,6 +168,16 @@ const CheckoutModal = ({
                                 item.serviceItem.id === service.serviceItem.id
                               ) {
                                 item.quantity = Math.max(item.quantity - 1, 0);
+                                item.price =
+                                  item.serviceItem.price * item.quantity;
+                                if (item.quantity === 0) {
+                                  const index = services.findIndex(
+                                    (service) =>
+                                      service.serviceItem.id ===
+                                      item.serviceItem.id
+                                  );
+                                  services.splice(index, 1);
+                                }
                               }
                             });
 
@@ -190,6 +206,8 @@ const CheckoutModal = ({
                                 item.serviceItem.id === service.serviceItem.id
                               ) {
                                 item.quantity += 1;
+                                item.price =
+                                  item.serviceItem.price * item.quantity;
                               }
                             });
 
@@ -205,6 +223,24 @@ const CheckoutModal = ({
                     </TableCell>
                   </TableRow>
                 ))}
+                <TableRow>
+                  {/* Total */}
+                  <TableCell
+                    sx={{
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Total
+                  </TableCell>
+                  <TableCell></TableCell>
+                  <TableCell>
+                    {checkedOutServices.reduce(
+                      (acc, cur) => acc + cur.price,
+                      0
+                    )}{" "}
+                    {checkedOutServices[0]?.serviceItem.currency.symbol}
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </Box>
