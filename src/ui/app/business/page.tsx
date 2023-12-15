@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import Banner from "./components/banner";
 import InfluencersContainer from "./components/influencersContainer";
 import GuideContainer from "./components/guideContainer";
-import AnalyticsContainer from "./components/analyticsContainer";
+import AnalyticsContainer from "../components/analyticsContainer";
 import HomePageFooter from "./components/homePageFooter";
 
 export default function BusinessHome() {

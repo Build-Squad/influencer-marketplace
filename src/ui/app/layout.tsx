@@ -1,21 +1,22 @@
 "use client";
 
+import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
 import ThemeRegistry from "./ThemeRegistry";
 import { SnackbarProvider } from "notistack";
 import { useEffect, useState } from "react";
 import { loginStatusType } from "./utils/types";
 import { useSearchParams } from "next/navigation";
 import { getServicewithCredentials } from "@/src/services/httpServices";
+import axios from "axios";
+import Navbar from "./components/navbar";
+import SnackbarComp from "@/src/components/shared/snackBarComp";
 import {
   LOGIN_STATUS_SUCCESS,
   LOGIN_STATUS_FAILED,
   LOGOUT_SUCCESS,
 } from "@/src/utils/consts";
-import axios from "axios";
-import Navbar from "./components/navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 

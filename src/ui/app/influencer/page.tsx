@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { Fragment } from "react";
+import Banner from "./components/banner";
+import AnalyticsContainer from "../components/analyticsContainer";
 
-type Props = {}
+type Props = {};
 
 export default function Influencer({}: Props) {
   return (
-    <div></div>
-  )
+    <Fragment>
+      <Banner />
+      <AnalyticsContainer />
+    </Fragment>
+  );
 }

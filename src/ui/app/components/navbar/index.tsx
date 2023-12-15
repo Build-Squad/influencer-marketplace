@@ -18,7 +18,7 @@ export default function Navbar({
   const pathname = usePathname();
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "white" }}>
+    <AppBar position="static" sx={{ boxShadow: "none" }}>
       <Toolbar
         component="nav"
         sx={{ display: "flex", justifyContent: "space-between" }}
