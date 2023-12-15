@@ -121,7 +121,6 @@ def twitterLoginCallback(request):
         if existing_user_account is None:
             new_user_account = User.objects.create(
                 username=userData.username,
-                email=userData.username + "@xfluencer.com",
                 first_name=userData.name,
                 twitter_account_id=current_twitter_user.id,
                 role=Role.objects.filter(name="influencer").first(),
