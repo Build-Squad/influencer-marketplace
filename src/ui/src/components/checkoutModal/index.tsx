@@ -57,12 +57,12 @@ const CheckoutModal = ({
   }, [serviceItems]);
 
   useEffect(() => {
-    if (checkedOutServices.length === 0) {
+    if (checkedOutServices.length === 0 && open) {
       setCheckedOutServices([]);
       handleClose && handleClose();
       return;
     }
-  }, [checkedOutServices]);
+  }, [checkedOutServices, open]);
 
   return (
     <Box
