@@ -18,7 +18,14 @@ import {
 } from "@mui/material";
 import React, { useEffect } from "react";
 
-const Services = () => {
+const Services = ({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) => {
+  const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [checkedOutServices, setCheckedOutServices] = React.useState<
     ServiceType[]
   >([]);
@@ -44,6 +51,7 @@ const Services = () => {
         {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
+          influencer: decodeURIComponent(params.id),
         }
       );
       if (isSuccess) {
@@ -111,6 +119,12 @@ const Services = () => {
     }
   }, [openModal]);
 
+  useEffect(() => {
+    if (localStorage.getItem("user")) {
+      setCurrentUser(JSON.parse(localStorage.getItem("user") || "{}"));
+    }
+  }, []);
+
   return (
     <Box
       sx={{
@@ -122,36 +136,40 @@ const Services = () => {
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              <Grid item xs={12} sm={6} md={4} lg={4}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    minHeight: 150,
-                    cursor: "pointer",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: "16px",
-                    boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-                  }}
-                  onClick={() => {
-                    setSelectedService(null);
-                    setOpenModal(true);
-                  }}
-                >
-                  <Tooltip title="Add Package">
-                    <Box>
-                      <AddCircleOutlineIcon
-                        sx={{
-                          fontSize: 80,
-                          color: "secondary.main",
-                        }}
-                      />
-                      <Typography variant="body2">Add Service</Typography>
-                    </Box>
-                  </Tooltip>
-                </Card>
-              </Grid>
+              {decodeURIComponent(params.id).includes(
+                currentUser?.id ? currentUser?.id : ""
+              ) && (
+                <Grid item xs={12} sm={6} md={4} lg={4}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      minHeight: 150,
+                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: "16px",
+                      boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
+                    }}
+                    onClick={() => {
+                      setSelectedService(null);
+                      setOpenModal(true);
+                    }}
+                  >
+                    <Tooltip title="Add Package">
+                      <Box>
+                        <AddCircleOutlineIcon
+                          sx={{
+                            fontSize: 80,
+                            color: "secondary.main",
+                          }}
+                        />
+                        <Typography variant="body2">Add Service</Typography>
+                      </Box>
+                    </Tooltip>
+                  </Card>
+                </Grid>
+              )}
               {services?.map((service) => (
                 <Grid item xs={12} sm={6} md={4} lg={4} key={service.id}>
                   <Card
@@ -189,21 +207,25 @@ const Services = () => {
                         <Typography variant="body1">
                           {service.currency.symbol} {service.price}
                         </Typography>
-                        <Box
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                        >
-                          <ConfirmDelete
-                            sx={{
-                              ml: 1,
+                        {service.package.influencer === currentUser?.id && (
+                          <Box
+                            onClick={(e) => {
+                              e.stopPropagation();
                             }}
-                            onConfirm={() => deleteServiceItem(service.id)}
-                            title="Service"
-                            loading={deleteLoading}
-                            deleteElement={<DeleteOutlineIcon color="error" />}
-                          />
-                        </Box>
+                          >
+                            <ConfirmDelete
+                              sx={{
+                                ml: 1,
+                              }}
+                              onConfirm={() => deleteServiceItem(service.id)}
+                              title="Service"
+                              loading={deleteLoading}
+                              deleteElement={
+                                <DeleteOutlineIcon color="error" />
+                              }
+                            />
+                          </Box>
+                        )}
                       </Box>
                     </Box>
                     <Typography variant="body2">
@@ -224,6 +246,9 @@ const Services = () => {
                           e.stopPropagation();
                           setCheckedOutServices((prev) => [...prev, service]);
                         }}
+                        disabled={
+                          service.package.influencer === currentUser?.id
+                        }
                       >
                         Add to Cart
                       </Button>
@@ -239,6 +264,9 @@ const Services = () => {
                           e.stopPropagation();
                           setCheckedOutServices((prev) => [...prev, service]);
                         }}
+                        disabled={
+                          service.package.influencer === currentUser?.id
+                        }
                       >
                         Buy Now
                       </Button>

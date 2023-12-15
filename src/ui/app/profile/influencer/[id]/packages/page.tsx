@@ -17,7 +17,14 @@ import {
 } from "@mui/material";
 import React, { useEffect } from "react";
 
-const Packages = () => {
+const Packages = ({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) => {
+  const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [packages, setPackages] = React.useState<PackageType[]>([]);
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
@@ -40,6 +47,7 @@ const Packages = () => {
         {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
+          influencer: decodeURIComponent(params.id),
         }
       );
       if (isSuccess) {
@@ -100,8 +108,10 @@ const Packages = () => {
   }, [pagination.current_page_number, pagination.current_page_size]);
 
   useEffect(() => {
-    console.log(pagination);
-  }, [pagination]);
+    if (localStorage.getItem("user")) {
+      setCurrentUser(JSON.parse(localStorage.getItem("user") || "{}"));
+    }
+  }, []);
 
   return (
     <Box
@@ -114,36 +124,40 @@ const Packages = () => {
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              <Grid item xs={12} sm={6} md={4} lg={4}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    minHeight: 150,
-                    cursor: "pointer",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: "16px",
-                    boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-                  }}
-                  onClick={() => {
-                    setSelectedPackage(null);
-                    setOpenModal(true);
-                  }}
-                >
-                  <Tooltip title="Add Package">
-                    <Box>
-                      <AddCircleOutlineIcon
-                        sx={{
-                          fontSize: 80,
-                          color: "secondary.main",
-                        }}
-                      />
-                      <Typography variant="body2">Add Package</Typography>
-                    </Box>
-                  </Tooltip>
-                </Card>
-              </Grid>
+              {decodeURIComponent(params.id).includes(
+                currentUser?.id ? currentUser?.id : ""
+              ) && (
+                <Grid item xs={12} sm={6} md={4} lg={4}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      minHeight: 150,
+                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: "16px",
+                      boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
+                    }}
+                    onClick={() => {
+                      setSelectedPackage(null);
+                      setOpenModal(true);
+                    }}
+                  >
+                    <Tooltip title="Add Package">
+                      <Box>
+                        <AddCircleOutlineIcon
+                          sx={{
+                            fontSize: 80,
+                            color: "secondary.main",
+                          }}
+                        />
+                        <Typography variant="body2">Add Package</Typography>
+                      </Box>
+                    </Tooltip>
+                  </Card>
+                </Grid>
+              )}
               {packages?.map((item: PackageType) => (
                 <Grid item xs={12} sm={6} md={4} lg={4} key={item.id}>
                   <Card
@@ -179,21 +193,25 @@ const Packages = () => {
                         <Typography variant="body1">
                           {item.currency.symbol} {item.price}
                         </Typography>
-                        <Box
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                        >
-                          <ConfirmDelete
-                            sx={{
-                              ml: 1,
+                        {item.influencer === currentUser?.id && (
+                          <Box
+                            onClick={(e) => {
+                              e.stopPropagation();
                             }}
-                            onConfirm={() => deletePackageItem(item.id)}
-                            title="Package"
-                            loading={deleteLoading}
-                            deleteElement={<DeleteOutlineIcon color="error" />}
-                          />
-                        </Box>
+                          >
+                            <ConfirmDelete
+                              sx={{
+                                ml: 1,
+                              }}
+                              onConfirm={() => deletePackageItem(item.id)}
+                              title="Package"
+                              loading={deleteLoading}
+                              deleteElement={
+                                <DeleteOutlineIcon color="error" />
+                              }
+                            />
+                          </Box>
+                        )}
                       </Box>
                     </Box>
                     <Typography variant="body2">{item.description}</Typography>
@@ -211,6 +229,7 @@ const Packages = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                         }}
+                        disabled={item.influencer === currentUser?.id}
                       >
                         Add to Cart
                       </Button>
@@ -225,6 +244,7 @@ const Packages = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                         }}
+                        disabled={item.influencer === currentUser?.id}
                       >
                         Buy Now
                       </Button>
