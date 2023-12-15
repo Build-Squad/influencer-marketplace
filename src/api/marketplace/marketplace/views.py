@@ -64,6 +64,9 @@ def twitterLoginCallback(request):
                 "profile_image_url",
                 "public_metrics",
                 "verified",
+                "created_at",
+                "location",
+                "url"
             ],
         ).data
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
@@ -81,11 +84,31 @@ def twitterLoginCallback(request):
                 tweet_count=userData.public_metrics["tweet_count"],
                 listed_count=userData.public_metrics["listed_count"],
                 verified=userData.verified,
+                joined_at=userData.created_at,
+                location=userData.location,
+                url=userData.url
             )
 
             newUser.save()
         else:
             existing_user.access_token = access_token
+            # Update the user data
+            existing_user.name = userData.name
+            existing_user.user_name = userData.username
+            existing_user.description = userData.description
+            existing_user.profile_image_url = userData.profile_image_url
+            existing_user.followers_count = userData.public_metrics[
+                "followers_count"
+            ]
+            existing_user.following_count = userData.public_metrics[
+                "following_count"
+            ]
+            existing_user.tweet_count = userData.public_metrics["tweet_count"]
+            existing_user.listed_count = userData.public_metrics["listed_count"]
+            existing_user.verified = userData.verified
+            existing_user.joined_at = userData.created_at
+            existing_user.location = userData.location
+            existing_user.url = userData.url
             existing_user.save()
 
         current_twitter_user = TwitterAccount.objects.filter(

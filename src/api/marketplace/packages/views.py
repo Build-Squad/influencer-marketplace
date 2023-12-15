@@ -147,6 +147,7 @@ class ServiceList(APIView):
             quantity_lt = request.GET.get("quantity_lt", None)
             price_gt = request.GET.get("price_gt", None)
             price_lt = request.GET.get("price_lt", None)
+            influencer = request.GET.get("influencer", None)
 
             service = Service.objects.filter(
                 Q(service_master__name__icontains=search)
@@ -162,6 +163,8 @@ class ServiceList(APIView):
                 service = service.filter(price__gt=price_gt)
             if price_lt is not None:
                 service = service.filter(price__lt=price_lt)
+            if influencer is not None:
+                service = service.filter(package__influencer=influencer)
 
             service = service.order_by(order_by)
 
@@ -301,6 +304,7 @@ class PackageList(APIView):
             order_by = request.GET.get("order_by", "-created_at")
             price_gt = request.GET.get("price_gt", None)
             price_lt = request.GET.get("price_lt", None)
+            influencer = request.GET.get("influencer", None)
 
             package = Package.objects.filter(
                 Q(name__icontains=search) | Q(description__icontains=search),
@@ -311,6 +315,8 @@ class PackageList(APIView):
                 package = package.filter(price__gt=price_gt)
             if price_lt is not None:
                 package = package.filter(price__lt=price_lt)
+            if influencer is not None:
+                package = package.filter(influencer=influencer)
 
             package = package.order_by(order_by)
 
