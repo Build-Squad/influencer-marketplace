@@ -59,6 +59,7 @@ export default function Banner({}: Props) {
               columnGap: "8px",
               alignItems: "center",
               marginTop: "80px",
+              marginBottom: "40px",
             }}
           >
             {["Post", "Repost", "Thread"].map((it, index) => (
@@ -76,9 +77,10 @@ export default function Banner({}: Props) {
             </Typography>
           </Box>
         </Grid>
-        <Grid item xs={12} sm={7} md={7} lg={7}>
+        <Grid item xs={12} sm={7} md={7} lg={7} sx={{ position: "relative" }}>
           <Image
             src={Influencer_Banner}
+            fill
             style={{ width: "100%" }}
             alt={"Influencer Banner"}
           />

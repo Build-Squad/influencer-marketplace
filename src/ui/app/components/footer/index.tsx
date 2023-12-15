@@ -27,7 +27,7 @@ const styles = {
   },
 };
 
-const HomePageFooter = () => {
+const Footer = () => {
   return (
     <Grid container justifyContent="space-between" sx={styles.container}>
       {/** Column 1 */}
@@ -100,4 +100,4 @@ const HomePageFooter = () => {
   );
 };
 
-export default HomePageFooter;
+export default Footer;

@@ -3,7 +3,7 @@ import Banner from "./components/banner";
 import InfluencersContainer from "./components/influencersContainer";
 import GuideContainer from "./components/guideContainer";
 import AnalyticsContainer from "../components/analyticsContainer";
-import HomePageFooter from "./components/homePageFooter";
+import Footer from "../components/footer";
 
 export default function BusinessHome() {
   return (
@@ -23,7 +23,7 @@ export default function BusinessHome() {
         <AnalyticsContainer />
       </Box>
       {/* Footer */}
-      <HomePageFooter />
+      <Footer />
     </Box>
   );
 }
