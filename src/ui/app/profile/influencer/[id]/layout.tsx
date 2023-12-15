@@ -24,14 +24,23 @@ const tabs = [
   },
 ];
 
-const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
+const ProfileLayout = ({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: {
+    id: string;
+  };
+}) => {
   const [tab, setTab] = React.useState<string>("services");
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const urlTab = pathname.split("/")[2]; // assuming the tab is the third part of the URL
+    const urlTab = pathname.split("/")[4]; // assuming the tab is the third part of the URL
+    console.log("urlTab", urlTab);
     if (urlTab && tabs.some((t) => t.value === urlTab)) {
       if (urlTab !== tab) {
         setTab(urlTab);
@@ -43,7 +52,7 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (tab) {
-      router.push(`/profile/${tab}`);
+      router.push(`/profile/influencer/${params.id}/${tab}`);
     }
   }, [tab]);
 

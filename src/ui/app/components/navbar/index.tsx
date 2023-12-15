@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Toolbar, AppBar, Button, Box } from "@mui/material";
 import Image from "next/image";
 
@@ -13,6 +13,17 @@ export default function Navbar({
   logout,
   isUserAuthenticated,
 }: Props) {
+  const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
+
+  useEffect(() => {
+    if (isUserAuthenticated) {
+      const user = localStorage.getItem("user");
+      if (user) {
+        setCurrentUser(JSON.parse(user));
+      }
+    }
+  }, [isUserAuthenticated]);
+
   return (
     <AppBar position="static" sx={{ backgroundColor: "white" }}>
       <Toolbar
@@ -78,21 +89,33 @@ export default function Navbar({
             About
           </Button>
           {isUserAuthenticated ? (
-            <Button
-              variant="outlined"
-              sx={{
-                background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                color: "black",
-                border: "1px solid black",
-                borderRadius: "20px",
-                "&:hover": {
+            <>
+              <Button
+                color="inherit"
+                sx={{ fontSize: "16px" }}
+                onClick={() => {
+                  window.location.href = `/profile/influencer/${currentUser?.id}}/services`;
+                }}
+              >
+                Profile
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+                  background:
+                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                  color: "black",
                   border: "1px solid black",
-                },
-              }}
-              onClick={logout}
-            >
-              Logout
-            </Button>
+                  borderRadius: "20px",
+                  "&:hover": {
+                    border: "1px solid black",
+                  },
+                }}
+                onClick={logout}
+              >
+                Logout
+              </Button>
+            </>
           ) : (
             <Button
               variant="outlined"

@@ -26,7 +26,7 @@ const CheckoutModal = ({
   handleClose,
 }: CheckoutModalProps) => {
   const [checkedOutServices, setCheckedOutServices] = React.useState<
-    ServiceCheckOutType[]
+    Array<ServiceCheckOutType>
   >([]);
 
   useEffect(() => {
@@ -156,13 +156,16 @@ const CheckoutModal = ({
                           }}
                           onClick={() => {
                             const services = [...checkedOutServices];
-                            const index = services.findIndex(
-                              (item) =>
+
+                            services.forEach((item) => {
+                              if (
                                 item.serviceItem.id === service.serviceItem.id
-                            );
-                            if (index !== -1) {
-                              services[index].quantity -= 1;
-                            }
+                              ) {
+                                item.quantity = Math.max(item.quantity - 1, 0);
+                              }
+                            });
+
+                            setCheckedOutServices(services);
                           }}
                         >
                           -
@@ -181,14 +184,16 @@ const CheckoutModal = ({
                           }}
                           onClick={() => {
                             const services = [...checkedOutServices];
-                            const index = services.findIndex(
-                              (item) =>
+
+                            services.forEach((item) => {
+                              if (
                                 item.serviceItem.id === service.serviceItem.id
-                            );
-                            if (index !== -1) {
-                              services[index].quantity += 1;
-                              setCheckedOutServices(services);
-                            }
+                              ) {
+                                item.quantity += 1;
+                              }
+                            });
+
+                            setCheckedOutServices(services);
                           }}
                         >
                           +
