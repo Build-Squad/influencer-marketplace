@@ -1,3 +1,4 @@
+"use client";
 import React, { Fragment } from "react";
 import Influencer_Banner from "@/public/svg/Influencer_Banner.svg";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
@@ -5,10 +6,12 @@ import Arrow from "@/public/svg/Arrow.svg";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import Image from "next/image";
 import { ArrowCircleRightOutlined } from "@mui/icons-material";
+import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 
 type Props = {};
 
 export default function Banner({}: Props) {
+  const { startTwitterAuthentication } = useTwitterAuth();
   return (
     <Fragment>
       <Grid
@@ -48,6 +51,7 @@ export default function Banner({}: Props) {
               fontSize: "16px",
             }}
             size="large"
+            onClick={startTwitterAuthentication}
             endIcon={<ArrowCircleRightOutlined />}
           >
             Connect with X
