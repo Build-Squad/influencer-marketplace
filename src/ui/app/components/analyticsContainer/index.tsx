@@ -36,6 +36,8 @@ const AnalyticsContainer = () => (
     justifyContent="center"
     alignItems="center"
     sx={{
+      m: 0,
+      width: "100%",
       padding: "24px 40px",
       borderRadius: "32px 32px 0px 0px",
       border: "1px solid #000",

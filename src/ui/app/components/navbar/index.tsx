@@ -1,31 +1,30 @@
 import React, { useEffect } from "react";
 import { Toolbar, AppBar, Button, Box } from "@mui/material";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 
 type Props = {
-  authTwitterUser: () => {};
+  authUser: () => {};
   logout: () => {};
-  isUserAuthenticated: Boolean;
+  loginStatus: Boolean;
 };
 
-export default function Navbar({
-  authTwitterUser,
-  logout,
-  isUserAuthenticated,
-}: Props) {
+export default function Navbar({ authUser, logout, loginStatus }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
 
   useEffect(() => {
-    if (isUserAuthenticated) {
+    if (loginStatus) {
       const user = localStorage.getItem("user");
       if (user) {
         setCurrentUser(JSON.parse(user));
       }
     }
-  }, [isUserAuthenticated]);
+  }, [loginStatus]);
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "white" }}>
+    <AppBar position="static" sx={{ boxShadow: "none" }}>
       <Toolbar
         component="nav"
         sx={{ display: "flex", justifyContent: "space-between" }}
@@ -48,31 +47,25 @@ export default function Navbar({
           }}
         >
           <Button
-            variant="outlined"
+            variant={pathname.includes("influencer") ? "contained" : "outlined"}
+            color="secondary"
             sx={{
-              backgroundColor: "white",
-              color: "black",
-              border: "1px solid black",
               borderRadius: "20px",
-              "&:hover": {
-                backgroundColor: "inherit",
-                border: "1px solid black",
-              },
+            }}
+            onClick={() => {
+              router.push("/influencer");
             }}
           >
             For Influencer
           </Button>
           <Button
-            variant="outlined"
+            variant={pathname.includes("business") ? "contained" : "outlined"}
+            color="secondary"
             sx={{
-              backgroundColor: "black",
-              color: "white",
-              border: "1px solid black",
               borderRadius: "20px",
-              "&:hover": {
-                backgroundColor: "black",
-                border: "1px solid black",
-              },
+            }}
+            onClick={() => {
+              router.push("/business");
             }}
           >
             For Business
@@ -88,7 +81,7 @@ export default function Navbar({
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             About
           </Button>
-          {isUserAuthenticated ? (
+          {loginStatus ? (
             <>
               <Button
                 color="inherit"
@@ -125,7 +118,7 @@ export default function Navbar({
                 border: "1px solid black",
                 borderRadius: "20px",
               }}
-              onClick={authTwitterUser}
+              onClick={authUser}
             >
               Login
             </Button>
