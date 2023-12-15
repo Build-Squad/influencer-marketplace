@@ -4,15 +4,15 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 
 type Props = {
-  authTwitterUser: () => {};
+  authUser: () => {};
   logout: () => {};
-  isUserAuthenticated: Boolean;
+  loginStatus: Boolean;
 };
 
 export default function Navbar({
-  authTwitterUser,
+  authUser,
   logout,
-  isUserAuthenticated,
+  loginStatus,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -75,7 +75,7 @@ export default function Navbar({
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             About
           </Button>
-          {isUserAuthenticated ? (
+          {loginStatus ? (
             <Button
               variant="outlined"
               sx={{
@@ -100,7 +100,7 @@ export default function Navbar({
                 border: "1px solid black",
                 borderRadius: "20px",
               }}
-              onClick={authTwitterUser}
+              onClick={authUser}
             >
               Login
             </Button>

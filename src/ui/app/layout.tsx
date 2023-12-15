@@ -8,15 +8,10 @@ import { SnackbarProvider } from "notistack";
 import { useEffect, useState } from "react";
 import { loginStatusType } from "./utils/types";
 import { useSearchParams } from "next/navigation";
-import { getServicewithCredentials } from "@/src/services/httpServices";
-import axios from "axios";
 import Navbar from "./components/navbar";
 import SnackbarComp from "@/src/components/shared/snackBarComp";
-import {
-  LOGIN_STATUS_SUCCESS,
-  LOGIN_STATUS_FAILED,
-  LOGOUT_SUCCESS,
-} from "@/src/utils/consts";
+import useTwitterAuth from "@/src/hooks/useTwitterAuth";
+import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,79 +25,31 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
-
+  const params = useSearchParams();
   // Snackbar only if the user tries to login/signup
   const [loginStatus, setLoginStatus] = useState<loginStatusType>({
     status: "",
     message: "",
   });
-  const params = useSearchParams();
 
-  // Check if the cookie is present & login status.
+  // Twitter authentication hook
+  const {
+    isTwitterUserLoggedIn,
+    startTwitterAuthentication,
+    logoutTwitterUser,
+  } = useTwitterAuth();
+
   useEffect(() => {
-    isAuthenticated();
-  }, []);
-
-  const isAuthenticated = async () => {
-    // Authenticate user based on cookie present on the browser
-    try {
-      const { isSuccess, data, message } = await getServicewithCredentials(
-        "account/"
-      );
-      if (isSuccess) {
-        setIsUserAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(data));
-      } else {
-        setIsUserAuthenticated(false);
-        localStorage.clear();
-      }
-    } catch (e) {
-      setIsUserAuthenticated(false);
-    }
-
-    // Checking login status after redirecting back from authentication.
-    try {
-      const status = params.get("authenticationStatus");
-      if (status) {
-        setLoginStatus({
-          status: status,
-          message:
-            status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
-        });
-      }
-    } catch (e) {
-      console.log("Error while checking login status");
-    }
-  };
-
-  const logout = async () => {
-    try {
-      // Deleting the cookie from the browser
-      await axios.get(process.env.NEXT_PUBLIC_BACKEND_URL + "logout/", {
-        withCredentials: true,
-      });
-      setIsUserAuthenticated(false);
+    const status = params.get("authenticationStatus");
+    if (status) {
       setLoginStatus({
-        status: "success",
-        message: LOGOUT_SUCCESS,
+        status,
+        message:
+          status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
       });
-    } catch (e) {
-      console.log("Error while logging out: ", e);
     }
-  };
+  }, [isTwitterUserLoggedIn]);
 
-  // Redirect the user to twitter authentication URL.
-  const authTwitterUser = async () => {
-    try {
-      const res = await axios.get(
-        process.env.NEXT_PUBLIC_BACKEND_URL + "auth-twitter-user/"
-      );
-      window.location.href = res.data.auth_url;
-    } catch (e) {
-      window.alert(e);
-    }
-  };
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -117,9 +64,9 @@ export default function RootLayout({
         >
           <ThemeRegistry options={{ key: "mui-theme" }}>
             <Navbar
-              authTwitterUser={authTwitterUser}
-              logout={logout}
-              isUserAuthenticated={isUserAuthenticated}
+              authUser={startTwitterAuthentication}
+              logout={logoutTwitterUser}
+              loginStatus={isTwitterUserLoggedIn}
             />
             {children}
             {loginStatus.status ? (
