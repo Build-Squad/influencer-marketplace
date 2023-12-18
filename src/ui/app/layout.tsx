@@ -12,6 +12,7 @@ import Navbar from "./components/navbar";
 import SnackbarComp from "@/src/components/shared/snackBarComp";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
+import EmailLoginModal from "@/src/components/emailLoginModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,11 +33,14 @@ export default function RootLayout({
     message: "",
   });
 
+  const [emailOpen, setEmailOpen] = useState<boolean>(false);
+
   // Twitter authentication hook
   const {
     isTwitterUserLoggedIn,
     startTwitterAuthentication,
     logoutTwitterUser,
+    checkTwitterUserAuthentication,
   } = useTwitterAuth();
 
   useEffect(() => {
@@ -49,6 +53,12 @@ export default function RootLayout({
       });
     }
   }, [isTwitterUserLoggedIn]);
+
+  useEffect(() => {
+    if (!emailOpen) {
+      checkTwitterUserAuthentication();
+    }
+  }, [emailOpen]);
 
   return (
     <html lang="en">
@@ -67,6 +77,7 @@ export default function RootLayout({
               authUser={startTwitterAuthentication}
               logout={logoutTwitterUser}
               loginStatus={isTwitterUserLoggedIn}
+              setEmailOpen={setEmailOpen}
             />
             {children}
             {loginStatus.status ? (
@@ -81,6 +92,7 @@ export default function RootLayout({
                 }}
               />
             ) : null}
+            <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
           </ThemeRegistry>
         </SnackbarProvider>
       </body>

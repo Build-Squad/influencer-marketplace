@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { getServicewithCredentials } from "../services/httpServices";
+import { notification } from "../components/shared/notification";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -27,6 +28,7 @@ export default function useTwitterAuth() {
   const logoutTwitterUser = async () => {
     try {
       await axios.get(`${BACKEND_URL}logout/`, { withCredentials: true });
+      notification("Logged out successfully");
       setTwitterUserLoggedIn(false);
     } catch (error) {
       console.error("Error during logout:", error);
