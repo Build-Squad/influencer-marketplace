@@ -52,7 +52,7 @@ const ProfileLayout = ({
 
   useEffect(() => {
     if (tab) {
-      router.push(`/profile/influencer/${params.id}/${tab}`);
+      router.push(`/influencer/profile/${params.id}/${tab}`);
     }
   }, [tab]);
 

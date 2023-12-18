@@ -87,7 +87,7 @@ export default function Navbar({ authUser, logout, loginStatus }: Props) {
                 color="inherit"
                 sx={{ fontSize: "16px" }}
                 onClick={() => {
-                  window.location.href = `/profile/influencer/${currentUser?.id}}/services`;
+                  window.location.href = `/influencer/profile/${currentUser?.id}}/services`;
                 }}
               >
                 Profile
