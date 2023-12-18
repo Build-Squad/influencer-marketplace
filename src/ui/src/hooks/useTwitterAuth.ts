@@ -39,7 +39,7 @@ export default function useTwitterAuth() {
       const { isSuccess, data } = await getServicewithCredentials("account/");
       if (isSuccess) {
         setTwitterUserLoggedIn(true);
-        localStorage.setItem("user", JSON.stringify(data));
+        localStorage.setItem("user", JSON.stringify(data?.data));
       } else {
         setTwitterUserLoggedIn(false);
         localStorage.clear();
