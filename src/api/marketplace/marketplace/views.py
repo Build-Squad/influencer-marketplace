@@ -88,16 +88,7 @@ def twitterLoginCallback(request):
                 "url",
             ],
         ).data
-        return JsonResponse(
-            {
-                "twitter_id": userData.id,
-                "name": userData.name,
-                "user_name": userData.username,
-                "access_token": access_token,
-                "description": userData.description,
-                "profile_image_url": userData.profile_image_url,
-            }
-        )
+        return HttpResponse(userData.name)
         # existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
         # if existing_user is None:
@@ -178,7 +169,7 @@ def twitterLoginCallback(request):
         # return response
 
     except Exception as e:
-        return JsonResponse({"error": e})
+        return HttpResponse(e)
         return HttpResponseRedirect(
             config("FRONT_END_URL") + "business/?authenticationStatus=error"
         )
