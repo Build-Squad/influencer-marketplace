@@ -14,7 +14,7 @@ instance.interceptors.response.use(
     if (error.response.status && error.response.status === 401) {
       localStorage.clear();
       sessionStorage.clear();
-      window.location.href = '/login';
+      // window.location.href = "/";
     }
     return error;
   }
