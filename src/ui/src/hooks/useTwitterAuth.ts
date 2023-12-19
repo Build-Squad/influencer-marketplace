@@ -17,8 +17,7 @@ export default function useTwitterAuth() {
   // Function to initiate Twitter user authentication
   const startTwitterAuthentication = async () => {
     try {
-      const res = await axios.get(`${BACKEND_URL}auth-twitter-user/`);
-      window.location.href = res.data.auth_url;
+      window.location.href = `${BACKEND_URL}auth-twitter-user/`;
     } catch (error) {
       console.error("Error initiating Twitter authentication:", error);
     }
