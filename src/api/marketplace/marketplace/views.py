@@ -33,6 +33,7 @@ oauth2_user_handler = OAuth2UserHandler(
     client_secret=config("CLIENT_SECRET"),
 )
 
+
 def logoutUser(request):
     response = HttpResponse("Token Deleted")
     response = JWTOperations.deleteJwtToken(res=response, cookie_name="jwt")
@@ -43,9 +44,25 @@ def authTwitterUser(request):
     auth_url = oauth2_user_handler.get_authorization_url()
     return HttpResponseRedirect(auth_url)
 
+
 def twitterLoginCallback(request):
     authorization_response_url = request.build_absolute_uri()
+    try:
+        # Authenticate User
+        authentication_result = authenticateUser(authorization_response_url)
+        userData = authentication_result["userData"]
+        access_token = authentication_result["access_token"]
+        # Create JWT and send response
+        return createJWT(userData, access_token)
+    except Exception as e:
+        print("Error in twitterLoginCallback -", e)
+        return HttpResponseRedirect(
+            config("FRONT_END_URL") + "business/?authenticationStatus=error"
+        )
 
+
+# Helper functions
+def authenticateUser(authorization_response_url):
     try:
         access_token_obj = oauth2_user_handler.fetch_token(authorization_response_url)
         access_token = access_token_obj["access_token"]
@@ -64,8 +81,21 @@ def twitterLoginCallback(request):
                 "url",
             ],
         ).data
+        print("Twitter User Authenticated", userData)
+        return {"userData": userData, "access_token": access_token}
+
+    except Exception as e:
+        print("Error authenticating User -", e)
+        return HttpResponseRedirect(
+            config("FRONT_END_URL") + "business/?authenticationStatus=error"
+        )
+
+
+def createUser(userData, access_token):
+    try:
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
+        # Operations for twitter user account
         if existing_user is None:
             newUser = TwitterAccount.objects.create(
                 twitter_id=userData.id,
@@ -102,6 +132,7 @@ def twitterLoginCallback(request):
             existing_user.url = userData.url
             existing_user.save()
 
+        # Operations for Main User account
         current_twitter_user = TwitterAccount.objects.filter(
             twitter_id=userData.id
         ).first()
@@ -122,10 +153,23 @@ def twitterLoginCallback(request):
             existing_user_account.save()
 
         current_user = User.objects.filter(twitter_account=current_twitter_user).first()
+        print("User Successfully created/updated")
+        return current_user
+    except Exception as e:
+        print("Error creating/updating user account -", e)
+        return HttpResponseRedirect(
+            config("FRONT_END_URL") + "business/?authenticationStatus=error"
+        )
+
+
+def createJWT(userData, access_token):
+    try:
+        # Creating/Updating twitter and user table
+        current_user = createUser(userData, access_token)
 
         # Creating a response object with JWT cookie
-        response = HttpResponseRedirect(
-            config("FRONT_END_URL") + "business/?authenticationStatus=success"
+        response = redirect(
+            f"{config('FRONT_END_URL')}business/?authenticationStatus=success"
         )
 
         # Convert the UUID to string
@@ -138,13 +182,12 @@ def twitterLoginCallback(request):
         }
         # Set the JWT token in the response object
         response = JWTOperations.setJwtToken(
-            res=response, cookie_name="jwt", payload=payload
+            response, cookie_name="jwt", payload=payload
         )
-
+        print("JWT created successfully")
         return response
-
     except Exception as e:
-        print("Error while logging in - ", e)
-        return HttpResponseRedirect(
-            config("FRONT_END_URL") + "business/?authenticationStatus=error"
+        print("Error while creating jwt - ", e)
+        return redirect(
+            f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
         )
