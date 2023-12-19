@@ -1,3 +1,4 @@
+from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
     handleServerException,
@@ -182,10 +183,14 @@ class ServiceList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=CreateServicesSerializer)
     def post(self, request):
         try:
-            serializer = CreateServicesSerializer(data=request.data)
+            print(request)
+            user_role = request.user_account.role
+            serializer = CreateServicesSerializer(
+                data=request.data, context={'request': request})
             if serializer.is_valid():
                 try:
                     service_master = ServiceMaster.objects.get(
@@ -193,15 +198,17 @@ class ServiceList(APIView):
                     )
                 except ServiceMaster.DoesNotExist:
                     return handleBadRequest("Service Master does not exist")
-                currency = Currency.objects.get(id=request.data["currency"])
                 try:
-                    package = Package.objects.get(
-                        id=request.data["package"], deleted_at=None
-                    )
-                except Package.DoesNotExist:
-                    return handleBadRequest("Package does not exist")
+                    currency = Currency.objects.get(
+                        id=request.data["currency"])
+                except Currency.DoesNotExist:
+                    return handleBadRequest("Currency does not exist")
+
+                if user_role.name != "influencer":
+                    return handleBadRequest("Only influencers can create packages")
+
                 serializer.save(
-                    service_master=service_master, package=package, currency=currency
+                    service_master=service_master, currency=currency
                 )
                 return Response(
                     {
@@ -334,12 +341,16 @@ class PackageList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=CreatePackageSerializer)
     def post(self, request):
         try:
             serializer = CreatePackageSerializer(data=request.data)
             if serializer.is_valid():
-                influencer = User.objects.get(id=request.data["influencer"])
+                user_account = request.user_account
+                if user_account is None:
+                    return handleBadRequest("User does not exist")
+                influencer = user_account
                 currency = Currency.objects.get(id=request.data["currency"])
                 serializer.save(influencer=influencer, currency=currency)
                 return Response(

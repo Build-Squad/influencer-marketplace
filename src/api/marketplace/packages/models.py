@@ -12,6 +12,11 @@ from core.models import Country
 from django.core.exceptions import ValidationError
 
 class Package(models.Model):
+    TYPE_CHOICES = (
+        ('package', 'package'),
+        ('service', 'service')
+    )
+
     id = models.UUIDField(primary_key=True, verbose_name='Package', default=uuid.uuid4, editable=False)
     influencer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='created_by_user', on_delete=SET_NULL, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -22,6 +27,8 @@ class Package(models.Model):
     publish_date = models.DateTimeField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    type = models.CharField(choices=TYPE_CHOICES,
+                            max_length=50, default='package')
 
     class Meta:
         db_table = "package" 
@@ -47,7 +54,6 @@ class ServiceMaster(models.Model):
     type = models.CharField(choices=TYPE_CHOICES, max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
-    is_duration_based = models.BooleanField(default=False)
 
     class Meta:
         db_table = "service_master" 
@@ -69,8 +75,7 @@ class Service(models.Model):
     status = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
-    start_date = models.DateTimeField(blank=True, null=True)
-    end_date = models.DateTimeField(blank=True, null=True)
+    is_duration_based = models.BooleanField(default=False)
     class Meta:
         db_table = "service"   
 
