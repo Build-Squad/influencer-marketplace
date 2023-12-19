@@ -1,8 +1,21 @@
 "use client";
-import { Typography, Grid } from "@mui/material";
+import { Box, Grid, Pagination, Typography } from "@mui/material";
+import { useFormik } from "formik";
 import React, { useState } from "react";
-import InfluencersCards from "./influencersCards";
-import { TopInfluencersType } from "./types";
+import { ExploreFilterInitialValues, ExploreFilterSchema } from "./validation";
+import ExploreFilters from "./components/exploreFilters";
+import Footer from "@/src/components/shared/footer";
+import InfluencersCards from "../components/influencersContainer/influencersCards";
+
+type TopInfluencersType = {
+  name: string;
+  twitterUsername: string;
+  profileUrl: string;
+  services: string[];
+  location: string;
+  minPrice: number;
+  maxPrice: number;
+};
 
 type Props = {};
 
@@ -89,33 +102,78 @@ const dummyData: Array<TopInfluencersType> = [
   },
 ];
 
-export default function InfluencersContainer({}: Props) {
+export default function Explore({}: Props) {
   const [topInfluencers, setTopInfluencers] =
     useState<TopInfluencersType[]>(dummyData);
+
+  const [pagination, setPagination] = React.useState<PaginationType>({
+    total_data_count: 0,
+    total_page_count: 10,
+    current_page_number: 1,
+    current_page_size: 5,
+  });
+  const formik = useFormik({
+    initialValues: ExploreFilterInitialValues,
+    onSubmit: (values) => {
+      console.log(values);
+    },
+    validationSchema: ExploreFilterSchema,
+  });
+
+  const handlePaginationChange = (
+    event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page_number: page,
+    }));
+  };
   return (
     <>
-      <Typography variant="h5" fontWeight={"bold"}>
-        Top Influencers
-      </Typography>
-      <Typography
-        variant="subtitle1"
+      {/* Filters section */}
+      <Box
         sx={{
-          color: "#505050",
+          mt: 2,
+          p: 3,
+          background: `url(/ExplorePage.png) center / cover`,
         }}
       >
-        Dive into the future of the web with top influencers.
-      </Typography>
-      <Grid
-        container
-        spacing={3}
-        mt={0}
-        justifyContent={"center"}
-        alignItems={"center"}
-      >
-        {topInfluencers.map((inf, index) => {
-          return <InfluencersCards influencer={inf} key={index} />;
-        })}
-      </Grid>
+        <ExploreFilters formik={formik} />
+      </Box>
+
+      {/* Top Influencers section */}
+      <Box sx={{ px: 3, py: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "baseline", columnGap: "8px" }}>
+          <Typography variant="h5">Top Matches</Typography> -
+          <Typography variant="subtitle1" sx={{ fontStyle: "italic" }}>
+            20 Results
+          </Typography>
+        </Box>
+        <Grid
+          container
+          spacing={3}
+          mt={0}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          {topInfluencers.map((inf, index) => {
+            return <InfluencersCards influencer={inf} key={index} />;
+          })}
+        </Grid>
+        <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>
+          <Pagination
+            shape="rounded"
+            color="secondary"
+            count={pagination.total_page_count}
+            page={pagination.current_page_number}
+            onChange={handlePaginationChange}
+          />
+        </Box>
+      </Box>
+
+      {/* Footer Section */}
+      <Footer />
     </>
   );
 }

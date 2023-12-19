@@ -52,6 +52,7 @@ export default function GuideContainer({}: Props) {
           display: "flex",
           justifyContent: "space-between",
           padding: "64px 72px",
+          flexWrap: "wrap",
         }}
       >
         {WORKING_STEPS.map((step) => (
