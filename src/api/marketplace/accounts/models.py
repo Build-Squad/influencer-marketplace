@@ -20,6 +20,9 @@ class TwitterAccount(models.Model):
     tweet_count = models.IntegerField(blank=True, null=True)
     listed_count = models.IntegerField(blank=True, null=True)
     verified = models.BooleanField(default=False, blank=True, null=True)
+    joined_at = models.DateTimeField(blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    url = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         db_table = "twitter_account"
@@ -37,9 +40,9 @@ class CategoryMaster(models.Model):
 
 class AccountCategory(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Account Category ID', default=uuid.uuid4, editable=False)
-    twitter_account = models.ForeignKey(TwitterAccount, related_name='cat_twitter_account_id', on_delete=models.DO_NOTHING,
+    twitter_account = models.ForeignKey(TwitterAccount, related_name='cat_twitter_account_id', on_delete=SET_NULL,
                                          null=True)
-    category = models.ForeignKey(CategoryMaster, related_name='cat_category_master_id', on_delete=models.DO_NOTHING,
+    category = models.ForeignKey(CategoryMaster, related_name='cat_category_master_id', on_delete=SET_NULL,
                                          null=True)
 
     class Meta:
@@ -63,25 +66,29 @@ class User(AbstractUser):
 
 
     id = models.UUIDField(primary_key=True, verbose_name='User ID', default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(blank=True, null=True)
+    username = models.CharField(max_length=100, unique=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES, max_length=25, blank=True, null=True)
     role = models.ForeignKey(
-        Role, related_name='user_role_id', on_delete=models.PROTECT, null=True, blank=True)
+        Role, related_name='user_role_id', on_delete=SET_NULL, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True, blank=True)
     otp = models.CharField(max_length=25, blank=True, null=True)
     otp_expiration = models.DateTimeField(blank=True, null=True)
-    twitter_account = models.ForeignKey(TwitterAccount, related_name='user_twitter_account_id', on_delete=models.DO_NOTHING,
+    email_verified_at = models.DateTimeField(blank=True, null=True)
+    twitter_account = models.ForeignKey(TwitterAccount, related_name='user_twitter_account_id', on_delete=SET_NULL,
                                          null=True, blank=True)
+    jwt = models.CharField(max_length=255, blank=True, null=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
     ordering = ('email',)
 
     class Meta:
         db_table = "user"
+
+    def __str__(self):
+        return self.username
 
 class BankAccount(models.Model):
     

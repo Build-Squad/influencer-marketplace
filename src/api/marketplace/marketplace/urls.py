@@ -49,6 +49,5 @@ urlpatterns = [
         views.twitterLoginCallback,
         name="twitter-login-callback",
     ),
-    path("is-authenticated/", views.isAuthenticated, name="is-authenticated"),
     path("logout/", views.logoutUser, name="logout"),
 ]

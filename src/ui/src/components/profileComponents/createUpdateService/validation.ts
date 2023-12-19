@@ -11,6 +11,8 @@ interface ServiceFormType {
   currency: string;
   currencyObject?: CurrencyType | null;
   status: string;
+  start_date?: null | string;
+  end_date?: null | string;
   statusObject?: {
     value: string;
     label: string;
@@ -39,4 +41,6 @@ export const serviceFormInitialValues: ServiceFormType = {
   packageObject: null,
   currencyObject: null,
   statusObject: null,
+  start_date: null,
+  end_date: null,
 };

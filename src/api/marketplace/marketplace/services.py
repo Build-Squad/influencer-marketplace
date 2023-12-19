@@ -1,3 +1,4 @@
+import time
 import jwt
 from decouple import config
 from rest_framework import exceptions
@@ -5,18 +6,23 @@ import math
 from .serializers import PageSizeSerializer, PageNumberSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.mail import send_mail
 
 
 # JWT cookie related operations
 class JWTOperations:
+    def generateToken(self, payload):
+        token = jwt.encode(payload, config("JWT_SECRET"), algorithm="HS256")
+        return token
+
     def getPayload(req, cookie_name):
         token = req.COOKIES.get(cookie_name)
         if not token:
-            raise exceptions.AuthenticationFailed("JWT Token not present in the request!")
+            raise exceptions.AuthenticationFailed("User is not logged in")
         try:
             payload = jwt.decode(token, config("JWT_SECRET"), algorithms=["HS256"])
         except jwt.DecodeError:
-            raise exceptions.AuthenticationFailed("Invalid JWT token")
+            raise exceptions("Invalid JWT token")
         return payload, token
 
     def setJwtToken(res, payload, cookie_name):
@@ -43,6 +49,9 @@ class JWTOperations:
         )
         return res
 
+    def isTokenExpired(payload):
+        return payload.get("exp") < int(time.time())
+
 class Pagination:
     def __init__(self, qs, request):
         self.qs = qs
@@ -55,7 +64,6 @@ class Pagination:
         self.page_data = self.qs[i:j]
 
     def setValidPagination(self):
-        # print(self.page_size, self.page_number)
         page_size = PageSizeSerializer(data={'page_size': self.page_size})
         page_number = PageNumberSerializer(data={'page_number': self.page_number})
         if not page_size.is_valid():
@@ -96,22 +104,22 @@ class Pagination:
             'current_page_size': self.getCurrentPageSize()
         }
 
+
 def handleServerException(e):
-    # print(e)
     return Response({
         'isSuccess': False,
         'data': None,
         'message': 'Internal Server Error',
-        'errors': e,
+        # 'errors': e,
     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 def handleBadRequest(e):
-    # print(e)
     return Response({
         'isSuccess': False,
         'data': None,
         'message': 'Bad Request',
-        'errors': e,
+        # 'errors': e,
     }, status=status.HTTP_400_BAD_REQUEST)
 
 def handleNotFound(resource_name):
@@ -129,3 +137,12 @@ def handleDeleteNotAllowed(resource_name):
         'message': f'{resource_name} cannot be deleted as it is being used in another resource',
         'errors': f'{resource_name} cannot be deleted as it is being used in another resource',
     }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmailService:
+    # Send via django.core.mail.send_mail
+    def sendEmail(self, subject, message, from_email, recipient_list):
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+        except Exception as e:
+            pass

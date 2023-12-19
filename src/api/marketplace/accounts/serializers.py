@@ -20,21 +20,20 @@ class AccountCategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = "__all__"
+
+
 class UserSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(read_only=True)
-    username = serializers.CharField(read_only=True)
-    email = serializers.EmailField(read_only=True)
-    first_name = serializers.CharField(read_only=True)
-    last_name = serializers.CharField(read_only=True)
-    status = serializers.CharField(read_only=True)
-    joined_at = serializers.DateTimeField(read_only=True)
-    last_login = serializers.DateTimeField(read_only=True)
-    role = serializers.CharField(read_only=True)
     twitter_account = TwitterAccountSerializer(read_only=True)
+    role = RoleSerializer(read_only=True)
 
     class Meta:
         model = User
-        fields = "__all__"
+        exclude = ("password", "otp", "otp_expiration", "is_superuser",
+                   "is_staff", "is_active", "groups", "user_permissions")
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -53,7 +52,14 @@ class TwitterAuthSerializer(serializers.Serializer):
     role = serializers.CharField(max_length=100)
 
 
-class RoleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Role
-        fields = "__all__"
+class OTPAuthenticationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class OTPVerificationSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    email = serializers.EmailField()
+
+
+class EmailVerificationSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)

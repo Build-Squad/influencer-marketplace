@@ -7,6 +7,7 @@ type CustomModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
+  sx?: any;
 };
 
 const customStyle = {
@@ -22,7 +23,20 @@ const customStyle = {
   borderRadius: 4,
 };
 
-const CustomModal = ({ open, setOpen, children }: CustomModalProps) => {
+const CustomModal = ({ open, setOpen, children, sx }: CustomModalProps) => {
+  // On pressing escape key, close the modal
+  React.useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, [setOpen]);
+
   return (
     <Modal
       open={open}
@@ -31,7 +45,14 @@ const CustomModal = ({ open, setOpen, children }: CustomModalProps) => {
       disableEnforceFocus
       disablePortal
     >
-      <Box sx={customStyle}>{children}</Box>
+      <Box
+        sx={{
+          ...customStyle,
+          ...sx,
+        }}
+      >
+        {children}
+      </Box>
     </Modal>
   );
 };

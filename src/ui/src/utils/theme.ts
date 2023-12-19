@@ -15,4 +15,13 @@ export const theme = createTheme({
       fontSize: 14,
     },
   },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#fff",
+        },
+      },
+    },
+  },
 });

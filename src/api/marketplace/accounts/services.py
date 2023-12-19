@@ -1,6 +1,7 @@
 from tweepy import Client, OAuth2UserHandler
 from decouple import config
 import datetime
+from random import randint
 
 
 class TwitterAuthenticationService:
@@ -59,3 +60,27 @@ class TwitterAuthenticationService:
             "iat": datetime.datetime.utcnow(),
         }
         return payload
+
+
+class OTPAuthenticationService:
+    def __init__(self):
+        pass
+
+    def generateOTP(self):
+        try:
+            otp = randint(100000, 999999)
+            otp_expiration = datetime.datetime.now(
+                datetime.timezone.utc) + datetime.timedelta(seconds=300)
+            return otp, otp_expiration
+        except Exception as e:
+            raise e
+
+    def validateOTP(self, otp, user):
+        try:
+            otp = int(otp)
+            user_otp = int(user.otp)
+            if user_otp == otp and user.otp_expiration > datetime.datetime.now(datetime.timezone.utc):
+                return True
+            return False
+        except Exception as e:
+            raise e

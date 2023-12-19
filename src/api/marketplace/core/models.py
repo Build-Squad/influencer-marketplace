@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from django.db.models import SET_NULL
 
 
 class Country(models.Model):
@@ -15,8 +16,18 @@ class Currency(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Currency', default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, blank=True, null=True)
     symbol = models.CharField(max_length=100, blank=True, null=True)
-    country = models.ForeignKey(Country, related_name='currency_country_id', on_delete=models.DO_NOTHING,
+    country = models.ForeignKey(Country, related_name='currency_country_id', on_delete=SET_NULL,
                                          null=True)
 
     class Meta:
         db_table = "currency"
+
+
+class Language(models.Model):
+    id = models.UUIDField(primary_key=True, verbose_name='Language', default=uuid.uuid4, editable=False)
+    langCode = models.CharField(max_length=100, blank=True, null=True)
+    langEnglishName = models.CharField(max_length=100, blank=True, null=True)
+    langNativeName = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        db_table = "language"

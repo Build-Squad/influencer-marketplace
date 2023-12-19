@@ -47,6 +47,7 @@ class ServiceMaster(models.Model):
     type = models.CharField(choices=TYPE_CHOICES, max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    is_duration_based = models.BooleanField(default=False)
 
     class Meta:
         db_table = "service_master" 
@@ -60,14 +61,16 @@ class ServiceMaster(models.Model):
 
 class Service(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Service', default=uuid.uuid4, editable=False)
-    service_master = models.ForeignKey(ServiceMaster, related_name='service_master_id', on_delete=models.PROTECT, null=True)
-    package = models.ForeignKey(Package, related_name='service_package_id', on_delete=models.PROTECT, null=True)
+    service_master = models.ForeignKey(ServiceMaster, related_name='service_master_id', on_delete=SET_NULL, null=True)
+    package = models.ForeignKey(Package, related_name='service_package_id', on_delete=SET_NULL, null=True)
     quantity = models.IntegerField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='service_currency_id', on_delete=SET_NULL, null=True)
     status = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
     class Meta:
         db_table = "service"   
 

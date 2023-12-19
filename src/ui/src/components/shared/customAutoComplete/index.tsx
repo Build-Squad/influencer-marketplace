@@ -8,7 +8,7 @@ type CustomAutoCompleteProps = {
   apiEndpoint: string;
   label?: string;
   placeholder?: string;
-  value?: unknown;
+  value?: any;
   onChange?: (value: unknown) => void;
   onClear?: () => void;
   helperText?: string;
@@ -18,6 +18,7 @@ type CustomAutoCompleteProps = {
   type?: string;
   getOptionLabel?: (option: unknown) => string;
   isOptionEqualToValue?: (option: unknown, value: unknown) => boolean;
+  isMulti?: Boolean;
 };
 
 const CustomAutoComplete = ({
@@ -34,6 +35,7 @@ const CustomAutoComplete = ({
   type,
   getOptionLabel,
   isOptionEqualToValue,
+  isMulti = false,
 }: CustomAutoCompleteProps) => {
   const [selected, setSelected] = React.useState<unknown>(null); // This is the value that is selected from the options[]
   const [options, setOptions] = React.useState<unknown[]>([]);
@@ -53,7 +55,7 @@ const CustomAutoComplete = ({
         page_number: pagination.current_page_number,
       });
       if (isSuccess) {
-        setOptions([...options, ...data]);
+        setOptions([...options, ...data?.data]);
       }
     } catch (error) {
       console.error("Failed to fetch options:", error);
@@ -103,7 +105,7 @@ const CustomAutoComplete = ({
 
   // If value is not undefined, then we need to check if the value is there in the options, if not then we need to add the value to the options
   React.useEffect(() => {
-    if (value) {
+    if (value && !isMulti) {
       const found = options.find((option) => option === value);
       if (!found) {
         setOptions([...options, value]);
@@ -112,7 +114,35 @@ const CustomAutoComplete = ({
     }
   }, [value]);
 
-  return (
+  return isMulti ? (
+    <Autocomplete
+      multiple={true}
+      value={value}
+      options={options}
+      sx={sx}
+      getOptionLabel={getOptionLabel}
+      inputValue={search}
+      onInputChange={handleSearch}
+      renderInput={(params) => {
+        return (
+          <TextField
+            {...params}
+            label={label}
+            helperText={helperText}
+            error={error}
+            disabled={disabled}
+            type={type}
+            size="small"
+            sx={{
+              height: "100%",
+            }}
+          />
+        );
+      }}
+      onChange={(event, value) => handleSelect(value)}
+      onScroll={handleScroll}
+    />
+  ) : (
     <Autocomplete
       value={value}
       id="custom-input-demo"
