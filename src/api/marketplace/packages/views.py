@@ -248,30 +248,17 @@ class ServiceDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=CreateServicesSerializer)
     def put(self, request, pk):
         try:
             service = self.get_object(pk)
             if service is None:
                 return handleNotFound("Service")
-            serializer = CreateServicesSerializer(instance=service, data=request.data)
+            serializer = CreateServicesSerializer(
+                instance=service, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
-                try:
-                    service_master = ServiceMaster.objects.get(
-                        id=request.data["service_master"], deleted_at=None
-                    )
-                except ServiceMaster.DoesNotExist:
-                    return handleBadRequest("Service Master does not exist")
-                currency = Currency.objects.get(id=request.data["currency"])
-                try:
-                    package = Package.objects.get(
-                        id=request.data["package"], deleted_at=None
-                    )
-                except Package.DoesNotExist:
-                    return handleBadRequest("Package does not exist")
-                serializer.save(
-                    service_master=service_master, package=package, currency=currency
-                )
+                serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
