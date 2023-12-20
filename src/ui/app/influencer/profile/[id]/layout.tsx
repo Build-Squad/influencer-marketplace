@@ -229,40 +229,44 @@ const ProfileLayout = ({
                         </Link>
                       </Typography>
                     )}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        mt: 2,
-                      }}
-                    >
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        startIcon={<TelegramIcon />}
+                    {!decodeURIComponent(params.id).includes(
+                      currentUser?.id ? currentUser?.id : ""
+                    ) && (
+                      <Box
                         sx={{
-                          borderRadius: "20px",
-                          mx: 2,
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          mt: 2,
                         }}
-                        fullWidth
                       >
-                        Message
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        startIcon={<BookmarkIcon />}
-                        sx={{
-                          borderRadius: "20px",
-                          mx: 2,
-                        }}
-                        fullWidth
-                      >
-                        Save
-                      </Button>
-                    </Box>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          startIcon={<TelegramIcon />}
+                          sx={{
+                            borderRadius: "20px",
+                            mx: 2,
+                          }}
+                          fullWidth
+                        >
+                          Message
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          startIcon={<BookmarkIcon />}
+                          sx={{
+                            borderRadius: "20px",
+                            mx: 2,
+                          }}
+                          fullWidth
+                        >
+                          Save
+                        </Button>
+                      </Box>
+                    )}
                     <Box
                       sx={{
                         display: "flex",
