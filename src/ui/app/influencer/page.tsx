@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import Banner from "./components/banner";
 import AnalyticsContainer from "../components/analyticsContainer";
-import Footer from "../components/footer";
+import Footer from "@/src/components/shared/footer";
 import { Box, Typography } from "@mui/material";
 
 type Props = {};

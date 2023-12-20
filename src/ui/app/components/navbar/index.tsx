@@ -82,6 +82,15 @@ export default function Navbar({
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             Why XFluence
           </Button>
+          <Button
+            color="inherit"
+            sx={{ fontSize: "16px" }}
+            onClick={() => {
+              router.push("/business/explore");
+            }}
+          >
+            Explore
+          </Button>
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             How it works
           </Button>

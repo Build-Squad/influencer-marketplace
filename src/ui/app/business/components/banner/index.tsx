@@ -1,19 +1,21 @@
 "use client";
 import React from "react";
-import CustomAutoComplete from "@/src/components/shared/customAutoComplete";
-import { FormikValues, useFormik } from "formik";
-import { Box, Grid, TextField, Button, Typography } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import { BannerFilterSchema, BannerFilterInitialValues } from "./validation";
 import Image from "next/image";
 import Arrow from "@/public/svg/Arrow.svg";
 import Star from "@/public/svg/Star.svg";
+import FiltersComponent from "@/src/components/shared/filtersComponent";
+import { useFormik } from "formik";
 
 type Props = {};
 
 export default function Banner({}: Props) {
   const formik = useFormik({
     initialValues: BannerFilterInitialValues,
-    onSubmit: (values) => {},
+    onSubmit: (values) => {
+      console.log(values);
+    },
     validationSchema: BannerFilterSchema,
   });
   return (
@@ -87,247 +89,46 @@ export default function Banner({}: Props) {
         <form onSubmit={formik.handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={4} sm={4} md={2} lg={2} sx={{ mb: 2 }}>
-              <CustomAutoComplete
-                isMulti={true}
-                sx={{
-                  ".MuiInputBase-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-                apiEndpoint="/core/language"
-                label="Language"
-                value={formik.values.languages}
-                onChange={(value: any) => {
-                  formik.setFieldValue("languages", value);
-                }}
-                onClear={() => {
-                  formik.setFieldValue("languages", []);
-                }}
-                getOptionLabel={(option) => {
-                  if (typeof option === "object" && option) {
-                    if ("langEnglishName" in option) {
-                      return option.langEnglishName as string;
-                    } else {
-                      return "";
-                    }
-                  } else {
-                    return "";
-                  }
-                }}
-              />
+              <FiltersComponent formik={formik} type={"LANGUAGE"} />
             </Grid>
             <Grid item xs={4} sm={4} md={2} lg={2}>
-              <CustomAutoComplete
-                isMulti={true}
-                sx={{
-                  ".MuiInputBase-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-                apiEndpoint="/packages/servicemaster"
-                label="Type of service"
-                value={formik.values.serviceTypes}
-                onChange={(value: any) => {
-                  formik.setFieldValue("serviceTypes", value);
-                }}
-                onClear={() => {
-                  formik.setFieldValue("serviceTypes", null);
-                }}
-                getOptionLabel={(option) => {
-                  if (typeof option === "object" && option) {
-                    if ("name" in option) {
-                      return option.name as string;
-                    } else {
-                      return "";
-                    }
-                  } else {
-                    return "";
-                  }
-                }}
-              />
+              <FiltersComponent formik={formik} type={"SERVICES"} />
             </Grid>
             <Grid item xs={4} sm={4} md={2} lg={2}>
-              <CustomAutoComplete
-                isMulti={true}
-                sx={{
-                  ".MuiInputBase-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-                apiEndpoint="/account/category-master"
-                label="Category"
-                value={formik.values.categories}
-                onChange={(value: any) => {
-                  formik.setFieldValue("categories", value);
-                }}
-                onClear={() => {
-                  formik.setFieldValue("categories", null);
-                }}
-                getOptionLabel={(option) => {
-                  if (typeof option === "object" && option) {
-                    if ("name" in option) {
-                      return option.name as string;
-                    } else {
-                      return "";
-                    }
-                  } else {
-                    return "";
-                  }
-                }}
-              />
+              <FiltersComponent formik={formik} type={"CATEGORIES"} />
             </Grid>
             <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
-              <TextField
-                sx={{
-                  ".MuiInputBase-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-                fullWidth
-                name="lowerPriceLimit"
-                label="Min. Price($)"
-                value={formik.values.lowerPriceLimit}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={
-                  formik.touched.lowerPriceLimit &&
-                  Boolean(formik.errors.lowerPriceLimit)
-                }
-                helperText={
-                  formik.touched.lowerPriceLimit &&
-                  formik.errors.lowerPriceLimit
-                }
-                variant="outlined"
-                size="small"
-                type="number"
-                inputProps={{
-                  min: 0,
-                }}
+              <FiltersComponent
+                formik={formik}
+                type={"PRICE"}
+                data={{ name: "lowerPriceLimit", label: "Min. Price($)" }}
               />
             </Grid>
             <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
             <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
-              <TextField
-                sx={{
-                  ".MuiInputBase-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-                fullWidth
-                name="upperPriceLimit"
-                label="Max. Price($)"
-                value={formik.values.upperPriceLimit}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={
-                  formik.touched.upperPriceLimit &&
-                  Boolean(formik.errors.upperPriceLimit)
-                }
-                helperText={
-                  formik.touched.upperPriceLimit &&
-                  formik.errors.upperPriceLimit
-                }
-                variant="outlined"
-                size="small"
-                type="number"
-                inputProps={{
-                  min: 0,
-                }}
+              <FiltersComponent
+                formik={formik}
+                type={"PRICE"}
+                data={{ name: "upperPriceLimit", label: "Max. Price($)" }}
               />
             </Grid>
             <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
-              <TextField
-                sx={{
-                  ".MuiInputBase-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-                fullWidth
-                id="lowerFollowerLimit"
-                name="lowerFollowerLimit"
-                label="Min. Followers"
-                value={formik.values.lowerFollowerLimit}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={
-                  formik.touched.lowerFollowerLimit &&
-                  Boolean(formik.errors.lowerFollowerLimit)
-                }
-                helperText={
-                  formik.touched.lowerFollowerLimit &&
-                  formik.errors.lowerFollowerLimit
-                }
-                variant="outlined"
-                size="small"
-                type="number"
-                inputProps={{
-                  min: 0,
-                }}
+              <FiltersComponent
+                formik={formik}
+                type={"FOLLOWERS"}
+                data={{ name: "lowerFollowerLimit", label: "Min. Followers" }}
               />
             </Grid>
             <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
             <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
-              <TextField
-                sx={{
-                  ".MuiInputBase-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-                fullWidth
-                id="upperFollowerLimit"
-                name="upperFollowerLimit"
-                label="Max. Followers"
-                value={formik.values.upperFollowerLimit}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={
-                  formik.touched.upperFollowerLimit &&
-                  Boolean(formik.errors.upperFollowerLimit)
-                }
-                helperText={
-                  formik.touched.upperFollowerLimit &&
-                  formik.errors.upperFollowerLimit
-                }
-                variant="outlined"
-                size="small"
-                type="number"
-                inputProps={{
-                  min: 0,
-                }}
+              <FiltersComponent
+                formik={formik}
+                type={"FOLLOWERS"}
+                data={{ name: "upperPriceLimit", label: "Max. Followers" }}
               />
             </Grid>
           </Grid>
-          <TextField
-            name="searchString"
-            value={formik.values.searchString}
-            onChange={formik.handleChange}
-            sx={{
-              ".MuiInputBase-root": {
-                borderRadius: "24px",
-              },
-            }}
-            fullWidth
-            id="standard-bare"
-            variant="outlined"
-            placeholder="Search Influencers by Category or Username"
-            InputProps={{
-              endAdornment: (
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="secondary"
-                  sx={{
-                    borderRadius: "28px",
-                    fontWeight: "bold",
-                    px: 4,
-                  }}
-                  onClick={() => {}}
-                >
-                  Search
-                </Button>
-              ),
-            }}
-          />
+          <FiltersComponent formik={formik} type={"SEARCH"} />
         </form>
       </Box>
     </Box>
