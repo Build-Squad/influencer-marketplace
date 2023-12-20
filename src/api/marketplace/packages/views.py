@@ -345,14 +345,14 @@ class PackageList(APIView):
     @swagger_auto_schema(request_body=CreatePackageSerializer)
     def post(self, request):
         try:
-            serializer = CreatePackageSerializer(data=request.data)
+            serializer = CreatePackageSerializer(
+                data=request.data, context={'request': request})
             if serializer.is_valid():
                 user_account = request.user_account
                 if user_account is None:
                     return handleBadRequest("User does not exist")
                 influencer = user_account
-                currency = Currency.objects.get(id=request.data["currency"])
-                serializer.save(influencer=influencer, currency=currency)
+                serializer.save(influencer=influencer)
                 return Response(
                     {
                         "isSuccess": True,
@@ -400,8 +400,7 @@ class PackageDetail(APIView):
             serializer = CreatePackageSerializer(instance=package, data=request.data)
             if serializer.is_valid():
                 influencer = User.objects.get(id=request.data["influencer"])
-                currency = Currency.objects.get(id=request.data["currency"])
-                serializer.save(influencer=influencer, currency=currency)
+                serializer.save(influencer=influencer)
                 return Response(
                     {
                         "isSuccess": True,
