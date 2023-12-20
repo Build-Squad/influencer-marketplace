@@ -49,13 +49,14 @@ const CreateUpdateService = ({
         price: values.price,
         currency: values.currency,
         package: {
-          name: values.service_masterObject?.name,
+          name: values?.name,
           description: values.description,
-          price: values.price,
-          currency: values.currency,
+          status: values.status,
+          publish_date: values.publish_date,
         },
         status: values.status,
-        publish_date: values.publish_date,
+        platform_fees: PLATFORM_FEE,
+        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(2),
       };
       const { message, data, errors, isSuccess } = await putService(
         `/packages/service/${serviceItem?.id}/`,
@@ -92,6 +93,8 @@ const CreateUpdateService = ({
           publish_date: values.publish_date,
         },
         status: values.status,
+        platform_fees: PLATFORM_FEE,
+        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(2),
       };
       const { message, data, errors, isSuccess } = await postService(
         "/packages/service/",
@@ -140,6 +143,7 @@ const CreateUpdateService = ({
       );
       formik.setFieldValue("statusObject", selectedOption);
       formik.setFieldValue("description", serviceItem?.package?.description);
+      formik.setFieldValue("name", serviceItem?.package?.name);
     } else {
       formik.resetForm();
     }
@@ -203,7 +207,7 @@ const CreateUpdateService = ({
                       formik.touched.service_master &&
                       formik.errors.service_master
                         ? formik.errors.service_master
-                        : " "
+                        : ""
                     }
                     error={
                       formik.touched.service_master &&
@@ -211,7 +215,6 @@ const CreateUpdateService = ({
                     }
                     sx={{
                       width: "100%",
-                      borderRadius: 8,
                       "& .MuiOutlinedInput-root": {
                         borderRadius: 8,
                       },
@@ -350,7 +353,7 @@ const CreateUpdateService = ({
                     helperText={
                       formik.touched.currency && formik.errors.currency
                         ? formik.errors.currency
-                        : " "
+                        : ""
                     }
                     error={
                       formik.touched.currency && Boolean(formik.errors.currency)
@@ -384,6 +387,8 @@ const CreateUpdateService = ({
                       }
                     }}
                   />
+                </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={12}>
                   <FormLabel component="legend">Your Price</FormLabel>
                   <TextField
                     fullWidth
@@ -442,8 +447,9 @@ const CreateUpdateService = ({
                       Platform Fee ({PLATFORM_FEE}%)
                     </Typography>
                     <Typography variant="body1">
-                      {formik.values.currencyObject?.symbol}
-                      {((formik.values.price * PLATFORM_FEE) / 100).toFixed(2)}
+                      {((formik.values.price * PLATFORM_FEE) / 100).toFixed(2) +
+                        " "}{" "}
+                      {formik?.values?.currencyObject?.symbol}
                     </Typography>
                   </Box>
                 </Grid>
@@ -459,10 +465,10 @@ const CreateUpdateService = ({
                       Final Price for Buyer
                     </Typography>
                     <Typography variant="body1">
-                      {formik.values.currencyObject?.symbol}
                       {(formik.values.price * (1 + PLATFORM_FEE / 100)).toFixed(
                         2
-                      )}
+                      ) + " "}
+                      {formik.values.currencyObject?.symbol}
                     </Typography>
                   </Box>
                 </Grid>
