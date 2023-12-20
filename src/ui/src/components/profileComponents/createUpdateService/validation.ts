@@ -10,6 +10,7 @@ interface ServiceFormType {
   description: string;
   status: string;
   publish_date?: string | null;
+  name: string;
 }
 
 export const serviceFormSchema = object({
@@ -18,6 +19,7 @@ export const serviceFormSchema = object({
   price: number().required("Price is required"),
   currency: string().required("Currency is required"),
   description: string().required("Description is required"),
+  name: string().required("Name is required"),
 });
 
 export const serviceFormInitialValues: ServiceFormType = {
@@ -30,4 +32,5 @@ export const serviceFormInitialValues: ServiceFormType = {
   description: "",
   status: "",
   publish_date: null,
+  name: "",
 };

@@ -86,7 +86,7 @@ const CreateUpdateService = ({
         price: values.price,
         currency: values.currency,
         package: {
-          name: values.service_masterObject?.name,
+          name: values?.name,
           description: values.description,
           status: values.status,
           publish_date: values.publish_date,
@@ -180,18 +180,24 @@ const CreateUpdateService = ({
                         if ("id" in value) {
                           formik.setFieldValue("service_master", value?.id);
                           formik.setFieldValue("service_masterObject", value);
+                          if ("name" in value) {
+                            formik.setFieldValue("name", value?.name);
+                          }
                         } else {
                           formik.setFieldValue("service_master", null);
                           formik.setFieldValue("service_masterObject", null);
+                          formik.setFieldValue("name", "");
                         }
                       } else {
                         formik.setFieldValue("service_master", null);
                         formik.setFieldValue("service_masterObject", null);
+                        formik.setFieldValue("name", "");
                       }
                     }}
                     onClear={() => {
                       formik.setFieldValue("service_master", null);
                       formik.setFieldValue("service_masterObject", null);
+                      formik.setFieldValue("name", "");
                     }}
                     helperText={
                       formik.touched.service_master &&
@@ -235,6 +241,28 @@ const CreateUpdateService = ({
                   />
                 </Grid>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
+                  <FormLabel component="legend">Name</FormLabel>
+                  <TextField
+                    fullWidth
+                    id="name"
+                    placeholder="Enter Name of your service"
+                    name="name"
+                    value={formik.values?.name}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched?.name && Boolean(formik.errors?.name)}
+                    helperText={formik.touched?.name && formik.errors?.name}
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 4,
+                      },
+                    }}
+                    disabled={!formik.values.service_masterObject}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12} md={12} lg={12}>
                   <FormLabel component="legend">Description</FormLabel>
                   <TextField
                     fullWidth
@@ -266,11 +294,12 @@ const CreateUpdateService = ({
                   <Grid item xs={12} sm={12} md={12} lg={12}>
                     <FormLabel component="legend">Published On</FormLabel>
                     <Typography variant="body1">
-                      {dayjs(serviceItem?.package?.publish_date)?.format(DISPLAY_DATE_FORMAT)}
+                      {dayjs(serviceItem?.package?.publish_date)?.format(
+                        DISPLAY_DATE_FORMAT
+                      )}
                     </Typography>
                   </Grid>
                 )}
-                
               </Grid>
             </Grid>
             <Grid

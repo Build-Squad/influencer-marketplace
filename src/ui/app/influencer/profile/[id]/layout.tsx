@@ -18,10 +18,10 @@ const tabs = [
     value: "services",
     label: "Services",
   },
-  {
-    value: "packages",
-    label: "Packages",
-  },
+  // {
+  //   value: "packages",
+  //   label: "Packages",
+  // },
 ];
 
 const ProfileLayout = ({
