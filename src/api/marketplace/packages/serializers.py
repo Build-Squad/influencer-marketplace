@@ -53,3 +53,9 @@ class CreateServicesSerializer(serializers.ModelSerializer):
         package = Package.objects.create(**package_data)
         service = Service.objects.create(package=package, **validated_data)
         return service
+
+    def update(self, instance, validated_data):
+        package_data = validated_data.pop('package', {})
+        package_data['influencer'] = self.context['request'].user_account
+        Package.objects.filter(id=instance.package.id).update(**package_data)
+        return super().update(instance, validated_data)
