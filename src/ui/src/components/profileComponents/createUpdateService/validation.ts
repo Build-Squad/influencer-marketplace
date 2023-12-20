@@ -4,43 +4,30 @@ interface ServiceFormType {
   id?: string | null;
   service_master: string;
   service_masterObject?: ServiceMasterType | null;
-  package: string;
-  packageObject?: PackageType | null;
-  quantity: number;
   price: number;
   currency: string;
   currencyObject?: CurrencyType | null;
+  description: string;
   status: string;
-  start_date?: null | string;
-  end_date?: null | string;
-  statusObject?: {
-    value: string;
-    label: string;
-  } | null;
+  publish_date?: string | null;
 }
 
 export const serviceFormSchema = object({
   id: string().nullable(),
   service_master: string().required("Service master is required"),
-  package: string().required("Package is required"),
-  quantity: number().required("Quantity is required"),
   price: number().required("Price is required"),
   currency: string().required("Currency is required"),
-  status: string().required("Status is required"),
+  description: string().required("Description is required"),
 });
 
 export const serviceFormInitialValues: ServiceFormType = {
   id: null,
   service_master: "",
-  package: "",
-  quantity: 0,
   price: 0,
   currency: "",
-  status: "",
   service_masterObject: null,
-  packageObject: null,
   currencyObject: null,
-  statusObject: null,
-  start_date: null,
-  end_date: null,
+  description: "",
+  status: "",
+  publish_date: null,
 };
