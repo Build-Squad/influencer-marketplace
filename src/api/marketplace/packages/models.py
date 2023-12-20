@@ -17,18 +17,22 @@ class Package(models.Model):
         ('service', 'service')
     )
 
+    STATUS_CHOICES = (
+        ('draft', 'draft'),
+        ('published', 'published'),
+    )
+
     id = models.UUIDField(primary_key=True, verbose_name='Package', default=uuid.uuid4, editable=False)
     influencer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='created_by_user', on_delete=SET_NULL, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    currency = models.ForeignKey(Currency, related_name='package_currency_id', on_delete=SET_NULL, null=True)
-    status = models.CharField(max_length=100, blank=True, null=True)
-    publish_date = models.DateTimeField(blank=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='draft')
+    publish_date = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
     type = models.CharField(choices=TYPE_CHOICES,
-                            max_length=50, default='package')
+                            max_length=50, default='service')
 
     class Meta:
         db_table = "package" 
