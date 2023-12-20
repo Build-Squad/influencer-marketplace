@@ -10,6 +10,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
+  ButtonGroup,
   Card,
   Chip,
   FormLabel,
@@ -29,9 +30,7 @@ const Services = ({
     id: string;
   };
 }) => {
-  const PLATFORM_FEE = process.env.NEXT_PUBLIC_PLATFORM_FEE
-    ? Number(process.env.NEXT_PUBLIC_PLATFORM_FEE)
-    : 5;
+  const [type, setType] = React.useState<string | null>(null);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [checkedOutServices, setCheckedOutServices] = React.useState<
     ServiceType[]
@@ -59,6 +58,7 @@ const Services = ({
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
           influencer: decodeURIComponent(params.id),
+          status: type,
         }
       );
       if (isSuccess) {
@@ -118,7 +118,7 @@ const Services = ({
 
   useEffect(() => {
     getServices();
-  }, [pagination.current_page_number, pagination.current_page_size]);
+  }, [pagination.current_page_number, pagination.current_page_size, type]);
 
   useEffect(() => {
     if (!openModal) {
@@ -140,6 +140,48 @@ const Services = ({
       }}
     >
       <Grid container spacing={2}>
+        <ButtonGroup
+          variant="contained"
+          aria-label="outlined primary button group"
+          sx={{
+            mb: 2,
+            borderRadius: 8,
+          }}
+        >
+          <Button
+            variant={type === null ? "contained" : "outlined"}
+            color="secondary"
+            onClick={() => {
+              setType(null);
+            }}
+            sx={{
+              borderRadius: "20px 0px 0px 20px",
+            }}
+          >
+            All
+          </Button>
+          <Button
+            variant={type === "published" ? "contained" : "outlined"}
+            color="secondary"
+            onClick={() => {
+              setType("published");
+            }}
+          >
+            Published
+          </Button>
+          <Button
+            variant={type === "draft" ? "contained" : "outlined"}
+            color="secondary"
+            onClick={() => {
+              setType("draft");
+            }}
+            sx={{
+              borderRadius: "0px 20px 20px 0px",
+            }}
+          >
+            Draft
+          </Button>
+        </ButtonGroup>
         <Grid container spacing={2}>
           {loading ? null : (
             <>

@@ -149,6 +149,7 @@ class ServiceList(APIView):
             price_gt = request.GET.get("price_gt", None)
             price_lt = request.GET.get("price_lt", None)
             influencer = request.GET.get("influencer", None)
+            package_status = request.GET.get("status", None)
 
             service = Service.objects.filter(
                 Q(service_master__name__icontains=search)
@@ -166,6 +167,8 @@ class ServiceList(APIView):
                 service = service.filter(price__lt=price_lt)
             if influencer is not None:
                 service = service.filter(package__influencer=influencer)
+            if package_status is not None:
+                service = service.filter(package__status=package_status)
 
             service = service.order_by(order_by)
 
