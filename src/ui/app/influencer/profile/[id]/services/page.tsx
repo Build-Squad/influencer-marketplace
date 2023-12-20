@@ -220,7 +220,7 @@ const Services = ({
                             mr: 2,
                           }}
                         >
-                          {service.service_master.name}
+                          {service?.package?.name}
                         </Typography>
                         {service.package.influencer === currentUser?.id && (
                           <Chip
@@ -328,8 +328,7 @@ const Services = ({
                               sx={{ fontWeight: "bold" }}
                               variant="body1"
                             >
-                              {service?.currency?.symbol}
-                              {service?.price}
+                              {service?.price + " " + service?.currency?.symbol}
                             </Typography>
                           </Box>
                           <Box
@@ -350,11 +349,9 @@ const Services = ({
                               sx={{ fontWeight: "bold" }}
                               variant="body1"
                             >
-                              {service?.currency?.symbol}
-                              {(
-                                service?.price *
-                                (1 + PLATFORM_FEE / 100)
-                              ).toFixed(2)}
+                              {service?.platform_price +
+                                " " +
+                                service?.currency?.symbol}
                             </Typography>
                           </Box>
                         </Box>
