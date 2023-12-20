@@ -3,6 +3,8 @@ from locale import currency
 from rest_framework import serializers
 from .models import ServiceMaster, Service, Package
 from core.serializers import CurrencySerializer
+from uuid import UUID
+
 
 class ServiceMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,17 +19,16 @@ class CreateServiceMasterSerializer(serializers.ModelSerializer):
         # fields = ('id', 'name', 'description', 'limit', 'type', 'created_at')
 
 class PackageSerializer(serializers.ModelSerializer):
-    currency = CurrencySerializer()
     class Meta:
         model = Package
         fields = '__all__'
         # fields = ('id', 'influencer', 'name', 'description', 'price', 'currency', 'status', 'publish_date', 'created_at'
 
+
 class CreatePackageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Package
         fields = '__all__'
-        # fields = ('id', 'influencer', 'name', 'description', 'price', 'currency', 'status', 'publish_date', 'created_at'
 
 class ServicesSerializer(serializers.ModelSerializer):
     service_master = ServiceMasterSerializer()
