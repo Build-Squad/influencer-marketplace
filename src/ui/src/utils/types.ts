@@ -61,6 +61,8 @@ type ServiceType = {
   currency: CurrencyType;
   start_date: null | string;
   end_date: null | string;
+  platoform_fees: string;
+  platform_price: string;
 };
 
 type ConstSelectType = {
