@@ -36,13 +36,11 @@ jobs:
           git pull
           cd src/api/marketplace
           source venv/bin/activate
-          pgrep gunicorn | xargs kill -9
           pip3 install -r requirements.txt
           python3 manage.py migrate
           python3 manage.py collectstatic -link --noinput
           sudo systemctl restart nginx
-          pgrep gunicorn | xargs kill -9
-          gunicorn -w 4 marketplace.wsgi:application
+          sudo supervisorctl restart marketplace
           
     - name: Remove Github Actions IP from security group
       if: always()
