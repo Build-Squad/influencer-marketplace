@@ -87,7 +87,7 @@ def authenticateUser(authorization_response_url):
     except Exception as e:
         print("Error authenticating User -", e)
         return HttpResponseRedirect(
-            config("FRONT_END_URL") + "business/?authenticationStatus=error"
+            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
         )
 
 
@@ -158,7 +158,7 @@ def createUser(userData, access_token):
     except Exception as e:
         print("Error creating/updating user account -", e)
         return HttpResponseRedirect(
-            config("FRONT_END_URL") + "business/?authenticationStatus=error"
+            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
         )
 
 
@@ -169,7 +169,7 @@ def createJWT(userData, access_token):
 
         # Creating a response object with JWT cookie
         response = redirect(
-            f"{config('FRONT_END_URL')}business/?authenticationStatus=success"
+            f"{config('FRONT_END_URL')}influencer/?authenticationStatus=success"
         )
 
         # Convert the UUID to string
@@ -189,5 +189,5 @@ def createJWT(userData, access_token):
     except Exception as e:
         print("Error while creating jwt - ", e)
         return redirect(
-            f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+            f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
         )

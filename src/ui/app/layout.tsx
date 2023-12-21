@@ -53,6 +53,8 @@ export default function RootLayout({
         message:
           status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
       });
+    }
+    if (isTwitterUserLoggedIn && status == "success") {
       setCategoryOpen(true);
     }
   }, [isTwitterUserLoggedIn]);
