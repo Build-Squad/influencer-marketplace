@@ -228,225 +228,241 @@ const Services = ({
                   </Card>
                 </Grid>
               )}
-              {services?.map((service) => (
-                <Grid item xs={12} sm={6} md={4} lg={4} key={service.id}>
-                  <Card
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: 250,
-                      maxHeight: 250,
-                      overflow: "auto",
-                      padding: 2,
-                      borderRadius: "16px",
-                      boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-                    }}
-                  >
-                    <Box
+              {services?.map((service) => {
+                // Attach the platform_price to the service object
+                // It will be price + price * (platform_fee / 100)
+                // Take care of type conversion
+                service.platform_price = (
+                  parseFloat(service.price.toString()) +
+                  parseFloat(service.price.toString()) *
+                    (parseFloat(service.platform_fees.toString()) / 100)
+                ).toString();
+                return (
+                  <Grid item xs={12} sm={6} md={4} lg={4} key={service.id}>
+                    <Card
                       sx={{
                         display: "flex",
+                        flexDirection: "column",
                         justifyContent: "space-between",
-                        alignItems: "center",
+                        minHeight: 250,
+                        maxHeight: 250,
+                        overflow: "auto",
+                        padding: 2,
+                        borderRadius: "16px",
+                        boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
                       }}
                     >
                       <Box
                         sx={{
                           display: "flex",
-                        }}
-                      >
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: "bold",
-                            mr: 2,
-                          }}
-                        >
-                          {service?.package?.name}
-                        </Typography>
-                        {service.package.influencer === currentUser?.id && (
-                          <Chip
-                            label={
-                              service?.package?.status.charAt(0).toUpperCase() +
-                              service?.package?.status.slice(1)
-                            }
-                            color="secondary"
-                            variant={
-                              service.status === "draft" ? "filled" : "outlined"
-                            }
-                          />
-                        )}
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
+                          justifyContent: "space-between",
                           alignItems: "center",
                         }}
                       >
-                        {service.package.influencer === currentUser?.id && (
-                          <Box
+                        <Box
+                          sx={{
+                            display: "flex",
+                          }}
+                        >
+                          <Typography
+                            variant="h6"
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
+                              fontWeight: "bold",
+                              mr: 2,
                             }}
                           >
-                            <Tooltip title="Edit">
-                              <IconButton
-                                color="info"
-                                size="small"
-                                sx={{
-                                  backgroundColor: "secondary.main",
-                                }}
-                                onClick={() => {
-                                  setSelectedService(service);
-                                  setOpenModal(true);
-                                }}
-                                disableRipple
-                                disableFocusRipple
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <ConfirmDelete
+                            {service?.package?.name}
+                          </Typography>
+                          {service.package.influencer === currentUser?.id && (
+                            <Chip
+                              label={
+                                service?.package?.status
+                                  .charAt(0)
+                                  .toUpperCase() +
+                                service?.package?.status.slice(1)
+                              }
+                              color="secondary"
+                              variant={
+                                service.status === "draft"
+                                  ? "filled"
+                                  : "outlined"
+                              }
+                            />
+                          )}
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          {service.package.influencer === currentUser?.id && (
+                            <Box
                               sx={{
-                                ml: 1,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
-                              onConfirm={() => deleteServiceItem(service.id)}
-                              title="Service"
-                              loading={deleteLoading}
-                              deleteElement={
+                            >
+                              <Tooltip title="Edit">
                                 <IconButton
                                   color="info"
                                   size="small"
                                   sx={{
                                     backgroundColor: "secondary.main",
                                   }}
+                                  onClick={() => {
+                                    setSelectedService(service);
+                                    setOpenModal(true);
+                                  }}
                                   disableRipple
                                   disableFocusRipple
                                 >
-                                  <DeleteIcon />
+                                  <EditIcon />
                                 </IconButton>
-                              }
-                            />
+                              </Tooltip>
+                              <ConfirmDelete
+                                sx={{
+                                  ml: 1,
+                                }}
+                                onConfirm={() => deleteServiceItem(service.id)}
+                                title="Service"
+                                loading={deleteLoading}
+                                deleteElement={
+                                  <IconButton
+                                    color="info"
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: "secondary.main",
+                                    }}
+                                    disableRipple
+                                    disableFocusRipple
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                }
+                              />
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
+                      <Typography variant="body2" sx={{ my: 2 }}>
+                        {service.package.description}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        {service.package.influencer === currentUser?.id ? (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "row",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              width: "100%",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                              }}
+                            >
+                              <FormLabel
+                                sx={{
+                                  color: "grey",
+                                }}
+                              >
+                                Your Price
+                              </FormLabel>
+                              <Typography
+                                sx={{ fontWeight: "bold" }}
+                                variant="body1"
+                              >
+                                {service?.price +
+                                  " " +
+                                  service?.currency?.symbol}
+                              </Typography>
+                            </Box>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-end",
+                              }}
+                            >
+                              <FormLabel
+                                sx={{
+                                  color: "grey",
+                                }}
+                              >
+                                Final Price for Business
+                              </FormLabel>
+                              <Typography
+                                sx={{ fontWeight: "bold" }}
+                                variant="body1"
+                              >
+                                {service?.platform_price +
+                                  " " +
+                                  service?.currency?.symbol}
+                              </Typography>
+                            </Box>
                           </Box>
+                        ) : (
+                          <>
+                            <Button
+                              variant="outlined"
+                              color="secondary"
+                              sx={{
+                                borderRadius: "20px",
+                                mx: 2,
+                              }}
+                              fullWidth
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCheckedOutServices((prev) => [
+                                  ...prev,
+                                  service,
+                                ]);
+                              }}
+                              disabled={
+                                service.package.influencer === currentUser?.id
+                              }
+                            >
+                              Add to Cart
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="secondary"
+                              sx={{
+                                borderRadius: "20px",
+                                mx: 2,
+                              }}
+                              fullWidth
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCheckedOutServices((prev) => [
+                                  ...prev,
+                                  service,
+                                ]);
+                              }}
+                              disabled={
+                                service.package.influencer === currentUser?.id
+                              }
+                            >
+                              Buy Now
+                            </Button>
+                          </>
                         )}
                       </Box>
-                    </Box>
-                    <Typography variant="body2" sx={{ my: 2 }}>
-                      {service.package.description}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      {service.package.influencer === currentUser?.id ? (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            width: "100%",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-start",
-                            }}
-                          >
-                            <FormLabel
-                              sx={{
-                                color: "grey",
-                              }}
-                            >
-                              Your Price
-                            </FormLabel>
-                            <Typography
-                              sx={{ fontWeight: "bold" }}
-                              variant="body1"
-                            >
-                              {service?.price + " " + service?.currency?.symbol}
-                            </Typography>
-                          </Box>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                            }}
-                          >
-                            <FormLabel
-                              sx={{
-                                color: "grey",
-                              }}
-                            >
-                              Final Price for Business
-                            </FormLabel>
-                            <Typography
-                              sx={{ fontWeight: "bold" }}
-                              variant="body1"
-                            >
-                              {service?.platform_price +
-                                " " +
-                                service?.currency?.symbol}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      ) : (
-                        <>
-                          <Button
-                            variant="outlined"
-                            color="secondary"
-                            sx={{
-                              borderRadius: "20px",
-                              mx: 2,
-                            }}
-                            fullWidth
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCheckedOutServices((prev) => [
-                                ...prev,
-                                service,
-                              ]);
-                            }}
-                            disabled={
-                              service.package.influencer === currentUser?.id
-                            }
-                          >
-                            Add to Cart
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            sx={{
-                              borderRadius: "20px",
-                              mx: 2,
-                            }}
-                            fullWidth
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCheckedOutServices((prev) => [
-                                ...prev,
-                                service,
-                              ]);
-                            }}
-                            disabled={
-                              service.package.influencer === currentUser?.id
-                            }
-                          >
-                            Buy Now
-                          </Button>
-                        </>
-                      )}
-                    </Box>
-                  </Card>
-                </Grid>
-              ))}
+                    </Card>
+                  </Grid>
+                );
+              })}
             </>
           )}
         </Grid>

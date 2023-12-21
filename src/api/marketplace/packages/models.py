@@ -58,6 +58,7 @@ class ServiceMaster(models.Model):
     type = models.CharField(choices=TYPE_CHOICES, max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    is_duration_based = models.BooleanField(default=False)
 
     class Meta:
         db_table = "service_master" 
@@ -78,23 +79,12 @@ class Service(models.Model):
     currency = models.ForeignKey(Currency, related_name='service_currency_id', on_delete=SET_NULL, null=True)
     platform_fees = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True)
-    platform_price = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
-    is_duration_based = models.BooleanField(default=False)
     class Meta:
         db_table = "service"   
 
     def delete (self, *args, **kwargs):
         self.deleted_at = timezone.now()
         self.save()
-
-      
-
-
-
-
-
-
