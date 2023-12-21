@@ -46,8 +46,8 @@ const AnalyticsContainer = () => (
     }}
   >
     <AnalyticsItem value="15 M" subtitle="Total Influencer’s on X" />
-    <AnalyticsItem value="500 K" subtitle="Influencers Database on Xfluence" />
-    <AnalyticsItem value="2 M" subtitle="Avg. following of a XInfluencer" />
+    <AnalyticsItem value="500 K" subtitle="Influencers Database on Xfluencer" />
+    <AnalyticsItem value="2 M" subtitle="Avg. following of a Xfluencer" />
     <Grid item xs={12} sm={12} md={3} lg={3}>
       <Typography variant="h4" fontWeight="bold">
         15 M

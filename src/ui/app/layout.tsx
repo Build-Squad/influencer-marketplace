@@ -13,6 +13,7 @@ import SnackbarComp from "@/src/components/shared/snackBarComp";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
 import EmailLoginModal from "@/src/components/emailLoginModal";
+import CategorySelectionModal from "@/src/components/categorySelectionModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({
   });
 
   const [emailOpen, setEmailOpen] = useState<boolean>(false);
+  const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
 
   // Twitter authentication hook
   const {
@@ -51,6 +53,9 @@ export default function RootLayout({
         message:
           status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
       });
+    }
+    if (isTwitterUserLoggedIn && status == "success") {
+      setCategoryOpen(true);
     }
   }, [isTwitterUserLoggedIn]);
 
@@ -93,6 +98,10 @@ export default function RootLayout({
               />
             ) : null}
             <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
+            <CategorySelectionModal
+              open={categoryOpen}
+              setOpen={setCategoryOpen}
+            />
           </ThemeRegistry>
         </SnackbarProvider>
       </body>

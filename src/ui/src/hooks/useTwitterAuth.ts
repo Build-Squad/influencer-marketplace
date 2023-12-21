@@ -29,6 +29,7 @@ export default function useTwitterAuth() {
       await axios.get(`${BACKEND_URL}logout/`, { withCredentials: true });
       notification("Logged out successfully");
       setTwitterUserLoggedIn(false);
+      localStorage.clear();
     } catch (error) {
       console.error("Error during logout:", error);
     }
