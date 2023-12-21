@@ -57,7 +57,7 @@ def twitterLoginCallback(request):
     except Exception as e:
         print("Error in twitterLoginCallback -", e)
         return HttpResponseRedirect(
-            config("FRONT_END_URL") + "business/?authenticationStatus=error"
+            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
         )
 
 

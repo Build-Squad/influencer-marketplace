@@ -80,7 +80,7 @@ export default function Navbar({
         </Box>
         <Box sx={{ width: "33%", textAlign: "right" }}>
           <Button color="inherit" sx={{ fontSize: "16px" }}>
-            Why XFluence
+            Why XFluencer
           </Button>
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             How it works
@@ -111,7 +111,16 @@ export default function Navbar({
                     border: "1px solid black",
                   },
                 }}
-                onClick={logout}
+                onClick={() => {
+                  logout();
+                  if (pathname.includes("influencer")) {
+                    router.push("/influencer");
+                  } else if (pathname.includes("business")) {
+                    router.push("/business");
+                  } else {
+                    router.push("/");
+                  }
+                }}
               >
                 Logout
               </Button>
