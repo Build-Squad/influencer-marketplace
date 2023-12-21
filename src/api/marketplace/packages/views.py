@@ -1,3 +1,4 @@
+from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
     handleServerException,
@@ -148,6 +149,7 @@ class ServiceList(APIView):
             price_gt = request.GET.get("price_gt", None)
             price_lt = request.GET.get("price_lt", None)
             influencer = request.GET.get("influencer", None)
+            package_status = request.GET.get("status", None)
 
             service = Service.objects.filter(
                 Q(service_master__name__icontains=search)
@@ -165,6 +167,8 @@ class ServiceList(APIView):
                 service = service.filter(price__lt=price_lt)
             if influencer is not None:
                 service = service.filter(package__influencer=influencer)
+            if package_status is not None:
+                service = service.filter(package__status=package_status)
 
             service = service.order_by(order_by)
 
@@ -182,10 +186,14 @@ class ServiceList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=CreateServicesSerializer)
     def post(self, request):
         try:
-            serializer = CreateServicesSerializer(data=request.data)
+            print(request)
+            user_role = request.user_account.role
+            serializer = CreateServicesSerializer(
+                data=request.data, context={'request': request})
             if serializer.is_valid():
                 try:
                     service_master = ServiceMaster.objects.get(
@@ -193,15 +201,17 @@ class ServiceList(APIView):
                     )
                 except ServiceMaster.DoesNotExist:
                     return handleBadRequest("Service Master does not exist")
-                currency = Currency.objects.get(id=request.data["currency"])
                 try:
-                    package = Package.objects.get(
-                        id=request.data["package"], deleted_at=None
-                    )
-                except Package.DoesNotExist:
-                    return handleBadRequest("Package does not exist")
+                    currency = Currency.objects.get(
+                        id=request.data["currency"])
+                except Currency.DoesNotExist:
+                    return handleBadRequest("Currency does not exist")
+
+                if user_role.name != "influencer":
+                    return handleBadRequest("Only influencers can create packages")
+
                 serializer.save(
-                    service_master=service_master, package=package, currency=currency
+                    service_master=service_master, currency=currency
                 )
                 return Response(
                     {
@@ -241,30 +251,17 @@ class ServiceDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=CreateServicesSerializer)
     def put(self, request, pk):
         try:
             service = self.get_object(pk)
             if service is None:
                 return handleNotFound("Service")
-            serializer = CreateServicesSerializer(instance=service, data=request.data)
+            serializer = CreateServicesSerializer(
+                instance=service, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
-                try:
-                    service_master = ServiceMaster.objects.get(
-                        id=request.data["service_master"], deleted_at=None
-                    )
-                except ServiceMaster.DoesNotExist:
-                    return handleBadRequest("Service Master does not exist")
-                currency = Currency.objects.get(id=request.data["currency"])
-                try:
-                    package = Package.objects.get(
-                        id=request.data["package"], deleted_at=None
-                    )
-                except Package.DoesNotExist:
-                    return handleBadRequest("Package does not exist")
-                serializer.save(
-                    service_master=service_master, package=package, currency=currency
-                )
+                serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
@@ -334,14 +331,18 @@ class PackageList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=CreatePackageSerializer)
     def post(self, request):
         try:
-            serializer = CreatePackageSerializer(data=request.data)
+            serializer = CreatePackageSerializer(
+                data=request.data, context={'request': request})
             if serializer.is_valid():
-                influencer = User.objects.get(id=request.data["influencer"])
-                currency = Currency.objects.get(id=request.data["currency"])
-                serializer.save(influencer=influencer, currency=currency)
+                user_account = request.user_account
+                if user_account is None:
+                    return handleBadRequest("User does not exist")
+                influencer = user_account
+                serializer.save(influencer=influencer)
                 return Response(
                     {
                         "isSuccess": True,
@@ -389,8 +390,7 @@ class PackageDetail(APIView):
             serializer = CreatePackageSerializer(instance=package, data=request.data)
             if serializer.is_valid():
                 influencer = User.objects.get(id=request.data["influencer"])
-                currency = Currency.objects.get(id=request.data["currency"])
-                serializer.save(influencer=influencer, currency=currency)
+                serializer.save(influencer=influencer)
                 return Response(
                     {
                         "isSuccess": True,
