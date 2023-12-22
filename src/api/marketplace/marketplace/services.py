@@ -106,7 +106,6 @@ class Pagination:
 
 
 def handleServerException(e):
-    print(e)
     return Response({
         'isSuccess': False,
         'data': None,
@@ -120,7 +119,6 @@ def handleBadRequest(e):
         'isSuccess': False,
         'data': None,
         'message': 'Bad Request',
-        'errors': e,
     }, status=status.HTTP_400_BAD_REQUEST)
 
 def handleNotFound(resource_name):
