@@ -1,4 +1,5 @@
 from http.client import HTTPResponse
+from urllib import request
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     EmailService,
@@ -16,6 +17,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
 from .serializers import (
+    CreateAccountCategorySerializer,
+    DeleteAccountCategorySerializer,
     OTPAuthenticationSerializer,
     OTPVerificationSerializer,
     TwitterAccountSerializer,
@@ -301,9 +304,24 @@ class CategoryMasterDetail(APIView):
 # Account Category API-Endpoint
 # List-Create-API
 class AccountCategoryList(APIView):
+    def get_object(self, pk):
+        try:
+            return AccountCategory.objects.get(pk=pk)
+        except AccountCategory.DoesNotExist:
+            return None
+
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         try:
-            accountCategory = AccountCategory.objects.all()
+            # If no twitter_account_id is provided, try for the logged in user
+            twitter_account_id = request.GET.get("twitter_account_id")
+            if twitter_account_id is None:
+                twitter_account_id = request.user_account.twitter_account.id
+            if twitter_account_id is None:
+                return handleBadRequest("Twitter Account ID is required")
+            accountCategory = AccountCategory.objects.filter(
+                twitter_account_id=twitter_account_id
+            )
             pagination = Pagination(accountCategory, request)
             serializer = AccountCategorySerializer(pagination.getData(), many=True)
             return Response(
@@ -318,10 +336,13 @@ class AccountCategoryList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=AccountCategorySerializer)
     def post(self, request):
         try:
-            serializer = AccountCategorySerializer(data=request.data)
+            serializer = CreateAccountCategorySerializer(data=request.data,
+                                                         context={'request': request})
+
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -331,6 +352,36 @@ class AccountCategoryList(APIView):
                         "message": "Account Category created successfully",
                     },
                     status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=DeleteAccountCategorySerializer)
+    def delete(self, request):
+        try:
+            serializer = DeleteAccountCategorySerializer(data=request.data)
+            if serializer.is_valid():
+                account_category_ids = serializer.validated_data['account_category_ids']
+                print(account_category_ids)
+                for account_category_id in account_category_ids:
+                    account_category = self.get_object(account_category_id)
+                    if account_category is None:
+                        return handleBadRequest("Account Category ID is invalid")
+                    try:
+                        account_category.delete()
+                    except ValidationError as e:
+                        return handleDeleteNotAllowed("Account Category")
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Account Categories deleted successfully",
+                    },
+                    status=status.HTTP_200_OK,
                 )
             else:
                 return handleBadRequest(serializer.errors)
