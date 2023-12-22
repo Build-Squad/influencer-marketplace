@@ -12,6 +12,7 @@ import {
   Button,
   Chip,
   Grid,
+  IconButton,
   Link,
   Typography,
 } from "@mui/material";
@@ -20,6 +21,8 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import NextLink from "next/link";
+import EditIcon from "@mui/icons-material/Edit";
+import CategorySelectionModal from "@/src/components/categorySelectionModal";
 
 const tabs = [
   {
@@ -43,6 +46,10 @@ const ProfileLayout = ({
 }) => {
   const [tab, setTab] = React.useState<string>("services");
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
+  const [userAccountCategories, setUserAccountCategories] = React.useState<
+    AccountCategoryType[]
+  >([]);
+  const [categoryOpen, setCategoryOpen] = React.useState<boolean>(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -82,6 +89,11 @@ const ProfileLayout = ({
   useEffect(() => {
     if (localStorage.getItem("user")) {
       setCurrentUser(JSON.parse(localStorage.getItem("user") || "{}"));
+    }
+    if (localStorage.getItem("category")) {
+      setUserAccountCategories(
+        JSON.parse(localStorage.getItem("category") || "{}")
+      );
     }
   }, []);
 
@@ -375,6 +387,51 @@ const ProfileLayout = ({
                           {currentUser?.twitter_account?.description}
                         </Typography>
                       </Box>
+                      <Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                          >
+                            Categories
+                          </Typography>
+                          <IconButton
+                            onClick={() => {
+                              setCategoryOpen(true);
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {userAccountCategories.map((category) => (
+                            <Chip
+                              key={category.id}
+                              label={category.category.name}
+                              sx={{
+                                borderRadius: "20px",
+                                m: 1,
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
                     </Box>
                   </Box>
                 </Box>
@@ -409,6 +466,14 @@ const ProfileLayout = ({
           </Grid>
         </Grid>
       </Grid>
+      <CategorySelectionModal
+        open={categoryOpen}
+        setOpen={setCategoryOpen}
+        addedCategoryObjects={userAccountCategories}
+        addedCategories={userAccountCategories.map(
+          (category) => category.category.id
+        )}
+      />
     </Box>
   );
 };
