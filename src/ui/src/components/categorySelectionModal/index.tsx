@@ -136,11 +136,15 @@ export default function CategorySelectionModal({
 
   const onSubmit = async () => {
     try {
-      const saveCategoriesResponse = await saveCategories();
       const deleteCategoriesResponse = await deleteCategories();
-      if (saveCategoriesResponse && deleteCategoriesResponse) {
-        notification("Categories saved successfully", "success");
-        setOpen(false);
+      if (deleteCategoriesResponse) {
+        const saveCategoriesResponse = await saveCategories();
+        if (saveCategoriesResponse && deleteCategoriesResponse) {
+          notification("Categories saved successfully", "success");
+          setOpen(false);
+        } else {
+          notification("Something went wrong", "error");
+        }
       } else {
         notification("Something went wrong", "error");
       }
@@ -169,21 +173,36 @@ export default function CategorySelectionModal({
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Image src={Star_Coloured} alt={"Coloured Start"} height={30} />
             <Typography variant="h5" sx={{ ml: 2, fontWeight: "bold" }}>
-              {addedCategories && addedCategories?.length > 0
-                ? "Update Categories"
-                : "Let's set up your Account"}
+              Select your categories
             </Typography>
           </Box>
         </Grid>
         <Grid item xs={12}>
-          <FormLabel
+          <Box
             sx={{
-              fontWeight: "bold",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
               my: 2,
             }}
           >
-            I create content about...
-          </FormLabel>
+            <FormLabel
+              sx={{
+                fontWeight: "bold",
+              }}
+            >
+              I create content about...
+            </FormLabel>
+            <FormLabel>
+              {
+                allCategoryMasters?.filter(
+                  (categoryMaster: AccountCategoryExtendedType) =>
+                    categoryMaster.selected
+                ).length
+              }
+              /{allCategoryMasters?.length} selected
+            </FormLabel>
+          </Box>
           <TextField
             fullWidth
             placeholder="Search category"

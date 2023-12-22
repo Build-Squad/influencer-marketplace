@@ -23,6 +23,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import NextLink from "next/link";
 import EditIcon from "@mui/icons-material/Edit";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
+import { getServicewithCredentials } from "@/src/services/httpServices";
 
 const tabs = [
   {
@@ -53,6 +54,25 @@ const ProfileLayout = ({
   const router = useRouter();
   const pathname = usePathname();
 
+  const getUserCategories = async () => {
+    try {
+      const { isSuccess, data } = await getServicewithCredentials(
+        "account/account-category/"
+      );
+      if (isSuccess) {
+        if (data?.data?.length > 0) {
+          localStorage.setItem("category", JSON.stringify(data?.data));
+          setUserAccountCategories(data?.data);
+        } else if (data?.data?.length === 0) {
+          localStorage.removeItem("category");
+          setUserAccountCategories([]);
+        }
+      }
+    } catch (error) {
+      console.error("Error during account setup check:", error);
+    }
+  };
+
   const chips = [
     {
       label: "Followers",
@@ -70,7 +90,6 @@ const ProfileLayout = ({
 
   useEffect(() => {
     const urlTab = pathname.split("/")[4]; // assuming the tab is the third part of the URL
-    console.log("urlTab", urlTab);
     if (urlTab && tabs.some((t) => t.value === urlTab)) {
       if (urlTab !== tab) {
         setTab(urlTab);
@@ -85,6 +104,12 @@ const ProfileLayout = ({
       router.push(`/influencer/profile/${params.id}/${tab}`);
     }
   }, [tab]);
+
+  useEffect(() => {
+    if (!categoryOpen) {
+      getUserCategories();
+    }
+  }, [categoryOpen]);
 
   useEffect(() => {
     if (localStorage.getItem("user")) {
@@ -401,7 +426,7 @@ const ProfileLayout = ({
                               fontWeight: "bold",
                             }}
                           >
-                            Categories
+                            {`Categories (${userAccountCategories.length})`}
                           </Typography>
                           <IconButton
                             onClick={() => {
@@ -420,6 +445,9 @@ const ProfileLayout = ({
                             flexWrap: "wrap",
                           }}
                         >
+                          {userAccountCategories.length === 0 && (
+                            <Typography>No Categories Added</Typography>
+                          )}
                           {userAccountCategories.map((category) => (
                             <Chip
                               key={category.id}

@@ -58,7 +58,12 @@ export default function RootLayout({
   }, [isTwitterUserLoggedIn]);
 
   useEffect(() => {
-    if (isTwitterUserLoggedIn && !isAccountSsetupComplete) {
+    const status = params.get("authenticationStatus");
+    if (
+      isTwitterUserLoggedIn &&
+      !isAccountSsetupComplete &&
+      status === "success"
+    ) {
       setCategoryOpen(true);
     }
   }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
