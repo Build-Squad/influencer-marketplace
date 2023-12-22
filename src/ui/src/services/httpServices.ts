@@ -208,6 +208,39 @@ const deleteService = async (url: string) => {
   }
 };
 
+const bulkDeleteService = async (url: string, data: unknown) => {
+  try {
+    const response = await instance.delete(url, {
+      data,
+      withCredentials: true,
+    });
+    return {
+      isSuccess: response?.data?.isSuccess,
+      statusCode: response?.status,
+      data: response?.data,
+      message: response?.data?.message,
+      errors: response?.data?.errors,
+    };
+  } catch (e: unknown) {
+    if (e instanceof AxiosError) {
+      return {
+        isSuccess: false,
+        statusCode: e?.response?.status,
+        data: null,
+        message: e?.response?.data?.error,
+        errors: null,
+      };
+    }
+    return {
+      isSuccess: false,
+      statusCode: 500,
+      data: null,
+      message: "Something went wrong, please try again later",
+      errors: null,
+    };
+  }
+};
+
 export {
   getService,
   postService,
@@ -215,4 +248,5 @@ export {
   patchService,
   putService,
   getServicewithCredentials,
+  bulkDeleteService,
 };
