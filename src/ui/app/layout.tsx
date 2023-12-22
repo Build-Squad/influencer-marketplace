@@ -43,6 +43,7 @@ export default function RootLayout({
     startTwitterAuthentication,
     logoutTwitterUser,
     checkTwitterUserAuthentication,
+    isAccountSsetupComplete,
   } = useTwitterAuth();
 
   useEffect(() => {
@@ -54,10 +55,13 @@ export default function RootLayout({
           status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
       });
     }
-    if (isTwitterUserLoggedIn && status == "success") {
+  }, [isTwitterUserLoggedIn]);
+
+  useEffect(() => {
+    if (isTwitterUserLoggedIn && !isAccountSsetupComplete) {
       setCategoryOpen(true);
     }
-  }, [isTwitterUserLoggedIn]);
+  }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
 
   useEffect(() => {
     if (!emailOpen) {
