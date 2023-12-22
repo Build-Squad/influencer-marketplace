@@ -6,7 +6,15 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import VerifiedIcon from "@mui/icons-material/Verified";
-import { Avatar, Box, Button, Grid, Link, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Grid,
+  Link,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -37,6 +45,21 @@ const ProfileLayout = ({
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  const chips = [
+    {
+      label: "Followers",
+      attribute: currentUser?.twitter_account?.followers_count,
+    },
+    {
+      label: "Following",
+      attribute: currentUser?.twitter_account?.following_count,
+    },
+    {
+      label: "Tweets",
+      attribute: currentUser?.twitter_account?.tweet_count,
+    },
+  ];
 
   useEffect(() => {
     const urlTab = pathname.split("/")[4]; // assuming the tab is the third part of the URL
@@ -271,25 +294,18 @@ const ProfileLayout = ({
                       sx={{
                         display: "flex",
                         flexDirection: "column",
-                        mt: 2,
                         p: 2,
                       }}
                     >
                       <Box
                         sx={{
                           display: "flex",
-                          flexDirection: "row",
+                          flexDirection: "column",
                           alignItems: "center",
                           justifyContent: "space-between",
                         }}
                       >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Joined Twitter On
-                        </Typography>
+                        <Typography>Joined Twitter On</Typography>
                         <Typography
                           sx={{
                             fontWeight: "bold",
@@ -303,7 +319,7 @@ const ProfileLayout = ({
                       <Box
                         sx={{
                           display: "flex",
-                          flexDirection: "row",
+                          flexDirection: "column",
                           alignItems: "center",
                           justifyContent: "space-between",
                         }}
@@ -327,72 +343,25 @@ const ProfileLayout = ({
                       </Box>
                       <Box
                         sx={{
+                          flexWrap: "wrap",
                           display: "flex",
                           flexDirection: "row",
                           alignItems: "center",
-                          justifyContent: "space-between",
+                          justifyContent: "center",
                         }}
                       >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Followers
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {currentUser?.twitter_account?.followers_count}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Following
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {currentUser?.twitter_account?.following_count}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Tweets
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {currentUser?.twitter_account?.tweet_count}
-                        </Typography>
+                        {chips.map((chip) => (
+                          <Chip
+                            key={chip.attribute}
+                            label={`${chip.attribute ? chip.attribute : 0} ${
+                              chip.label
+                            }`}
+                            sx={{
+                              borderRadius: "20px",
+                              m: 1,
+                            }}
+                          />
+                        ))}
                       </Box>
                       <Box>
                         <Typography
@@ -417,21 +386,24 @@ const ProfileLayout = ({
                   }}
                 >
                   {tabs.map((item) => (
-                    <Button
-                      key={item.value}
-                      variant={item.value == tab ? "contained" : "outlined"}
-                      color="secondary"
-                      sx={{
-                        borderRadius: "20px",
-                        mr: 2,
-                      }}
-                      onClick={() => setTab(item.value)}
-                    >
+                    // <Button
+                    //   key={item.value}
+                    //   variant={item.value == tab ? "contained" : "outlined"}
+                    //   color="secondary"
+                    //   sx={{
+                    //     borderRadius: "20px",
+                    //     mr: 2,
+                    //   }}
+                    //   onClick={() => setTab(item.value)}
+                    // >
+                    //   {item.label}
+                    // </Button>
+                    <Typography variant="h4" key={item.value}>
                       {item.label}
-                    </Button>
+                    </Typography>
                   ))}
                 </Box>
-                <Box sx={{ p: 2, m: 2 }}>{children}</Box>
+                <Box sx={{ p: 2 }}>{children}</Box>
               </Grid>
             </Grid>
           </Grid>
