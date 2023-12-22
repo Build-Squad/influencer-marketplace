@@ -5,6 +5,7 @@ import { DISPLAY_DATE_FORMAT, PACKAGE_STATUS } from "@/src/utils/consts";
 import {
   Box,
   Button,
+  Divider,
   FormLabel,
   Grid,
   TextField,
@@ -322,7 +323,6 @@ const CreateUpdateService = ({
                 spacing={2}
                 sx={{
                   p: 4,
-                  minHeight: "50vh",
                 }}
               >
                 <Grid item xs={12} sm={12} md={12} lg={12}>
@@ -389,7 +389,7 @@ const CreateUpdateService = ({
                   />
                 </Grid>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
-                  <FormLabel component="legend">Your Price</FormLabel>
+                  <FormLabel component="legend">Paid to You</FormLabel>
                   <TextField
                     fullWidth
                     id="price"
@@ -426,16 +426,7 @@ const CreateUpdateService = ({
                   />
                 </Grid>
 
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  md={12}
-                  lg={12}
-                  sx={{
-                    borderBottom: "1px solid #e0e0e0",
-                  }}
-                >
+                <Grid item xs={12} sm={12} md={12} lg={12}>
                   <Box
                     sx={{
                       display: "flex",
@@ -452,6 +443,12 @@ const CreateUpdateService = ({
                       {formik?.values?.currencyObject?.symbol}
                     </Typography>
                   </Box>
+                  <Divider
+                    sx={{
+                      width: "100%",
+                      mt: 2,
+                    }}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                   <Box
@@ -461,9 +458,7 @@ const CreateUpdateService = ({
                       justifyContent: "space-between",
                     }}
                   >
-                    <Typography variant="body1">
-                      Final Price for Buyer
-                    </Typography>
+                    <Typography variant="body1">Listing Price</Typography>
                     <Typography variant="body1">
                       {(formik.values.price * (1 + PLATFORM_FEE / 100)).toFixed(
                         2
@@ -473,7 +468,16 @@ const CreateUpdateService = ({
                   </Box>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid
+                  item
+                  xs={6}
+                  sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    width: "100%",
+                    p: 4,
+                  }}
+                >
                   <Button
                     color="secondary"
                     variant="outlined"

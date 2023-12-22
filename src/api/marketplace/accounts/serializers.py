@@ -1,4 +1,6 @@
+from unicodedata import category
 from rest_framework import serializers
+from uuid import UUID
 from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
 
 
@@ -13,12 +15,41 @@ class CategoryMasterSerializer(serializers.ModelSerializer):
         model = CategoryMaster
         fields = "__all__"
 
-
 class AccountCategorySerializer(serializers.ModelSerializer):
+    category = CategoryMasterSerializer(read_only=True)
     class Meta:
         model = AccountCategory
         fields = "__all__"
 
+
+class CreateAccountCategorySerializer(serializers.ModelSerializer):
+    category_ids = serializers.ListField(
+        child=serializers.UUIDField(),
+        write_only=True
+    )
+
+    class Meta:
+        model = AccountCategory
+        fields = ['category_ids']
+
+    def create(self, validated_data):
+        category_ids = validated_data.pop('category_ids', [])
+        twitter_account = self.context['request'].user_account.twitter_account
+        for category_id in category_ids:
+            AccountCategory.objects.get_or_create(
+                twitter_account=twitter_account, category_id=category_id)
+        return {"account_id": twitter_account, "category_ids": category_ids}
+
+
+class DeleteAccountCategorySerializer(serializers.ModelSerializer):
+    account_category_ids = serializers.ListField(
+        child=serializers.UUIDField(),
+        write_only=True
+    )
+
+    class Meta:
+        model = AccountCategory
+        fields = ['account_category_ids']
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:

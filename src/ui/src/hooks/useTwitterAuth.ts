@@ -9,10 +9,17 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 export default function useTwitterAuth() {
   // State to track whether the user is logged in via Twitter
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
+  const [isAccountSsetupComplete, setIsAccountSetupComplete] = useState(true);
 
   useEffect(() => {
     checkTwitterUserAuthentication();
   }, []);
+
+  useEffect(() => {
+    if (isTwitterUserLoggedIn) {
+      checkAccountSetup();
+    }
+  }, [isTwitterUserLoggedIn]);
 
   // Function to initiate Twitter user authentication
   const startTwitterAuthentication = async () => {
@@ -52,10 +59,29 @@ export default function useTwitterAuth() {
     }
   };
 
+  const checkAccountSetup = async () => {
+    try {
+      const { isSuccess, data } = await getServicewithCredentials(
+        "account/account-category/"
+      );
+      if (isSuccess) {
+        if (data?.data?.length > 0) {
+          localStorage.setItem("category", JSON.stringify(data?.data));
+          setIsAccountSetupComplete(true);
+        } else if (data?.data?.length === 0) {
+          setIsAccountSetupComplete(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error during account setup check:", error);
+    }
+  };
+
   return {
     isTwitterUserLoggedIn,
     startTwitterAuthentication,
     logoutTwitterUser,
     checkTwitterUserAuthentication,
+    isAccountSsetupComplete,
   };
 }

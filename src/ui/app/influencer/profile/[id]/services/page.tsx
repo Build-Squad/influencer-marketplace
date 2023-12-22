@@ -139,49 +139,52 @@ const Services = ({
         minWidth: "100%",
       }}
     >
-      <Grid container spacing={2}>
-        <ButtonGroup
-          variant="contained"
-          aria-label="outlined primary button group"
-          sx={{
-            mb: 2,
-            borderRadius: 8,
-          }}
-        >
-          <Button
-            variant={type === null ? "contained" : "outlined"}
-            color="secondary"
-            onClick={() => {
-              setType(null);
-            }}
+      <Grid container>
+        <Grid item xs={12}>
+          <ButtonGroup
+            aria-label="outlined primary button group"
             sx={{
-              borderRadius: "20px 0px 0px 20px",
+              mb: 2,
+              borderRadius: 8,
+              display: "flex",
+              justifyContent: "center",
             }}
           >
-            All
-          </Button>
-          <Button
-            variant={type === "published" ? "contained" : "outlined"}
-            color="secondary"
-            onClick={() => {
-              setType("published");
-            }}
-          >
-            Published
-          </Button>
-          <Button
-            variant={type === "draft" ? "contained" : "outlined"}
-            color="secondary"
-            onClick={() => {
-              setType("draft");
-            }}
-            sx={{
-              borderRadius: "0px 20px 20px 0px",
-            }}
-          >
-            Draft
-          </Button>
-        </ButtonGroup>
+            <Button
+              variant={type === null ? "contained" : "outlined"}
+              color="secondary"
+              onClick={() => {
+                setType(null);
+              }}
+              sx={{
+                borderRadius: "20px 0px 0px 20px",
+              }}
+            >
+              All
+            </Button>
+            <Button
+              variant={type === "published" ? "contained" : "outlined"}
+              color="secondary"
+              onClick={() => {
+                setType("published");
+              }}
+            >
+              Published
+            </Button>
+            <Button
+              variant={type === "draft" ? "contained" : "outlined"}
+              color="secondary"
+              onClick={() => {
+                setType("draft");
+              }}
+              sx={{
+                borderRadius: "0px 20px 20px 0px",
+              }}
+            >
+              Draft
+            </Button>
+          </ButtonGroup>
+        </Grid>
         <Grid container spacing={2}>
           {loading ? null : (
             <>
@@ -262,6 +265,7 @@ const Services = ({
                         <Box
                           sx={{
                             display: "flex",
+                            alignItems: "center",
                           }}
                         >
                           <Typography
@@ -275,6 +279,9 @@ const Services = ({
                           </Typography>
                           {service.package.influencer === currentUser?.id && (
                             <Chip
+                              sx={{
+                                mr: 2,
+                              }}
                               label={
                                 service?.package?.status
                                   .charAt(0)
@@ -346,9 +353,23 @@ const Services = ({
                           )}
                         </Box>
                       </Box>
-                      <Typography variant="body2" sx={{ my: 2 }}>
-                        {service.package.description}
-                      </Typography>
+                      <Tooltip
+                        title={service?.package?.description}
+                        // Only show the tooltip if the description is longer than 100 characters
+                        disableHoverListener={
+                          service?.package?.description.length < 100
+                        }
+                        disableFocusListener={
+                          service?.package?.description.length < 100
+                        }
+                      >
+                        <Typography variant="body2" sx={{ my: 2 }}>
+                          {service.package.description.length > 100
+                            ? service.package.description.substring(0, 100) +
+                              "..."
+                            : service.package.description}
+                        </Typography>
+                      </Tooltip>
                       <Box
                         sx={{
                           display: "flex",
@@ -377,7 +398,7 @@ const Services = ({
                                   color: "grey",
                                 }}
                               >
-                                Your Price
+                                Paid to You
                               </FormLabel>
                               <Typography
                                 sx={{ fontWeight: "bold" }}
@@ -400,7 +421,7 @@ const Services = ({
                                   color: "grey",
                                 }}
                               >
-                                Final Price for Business
+                                Listing Price
                               </FormLabel>
                               <Typography
                                 sx={{ fontWeight: "bold" }}

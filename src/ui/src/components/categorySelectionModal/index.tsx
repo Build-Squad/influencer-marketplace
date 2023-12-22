@@ -1,7 +1,11 @@
 "use client";
 
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
-import { getService } from "@/src/services/httpServices";
+import {
+  bulkDeleteService,
+  getService,
+  postService,
+} from "@/src/services/httpServices";
 import {
   Box,
   Button,
@@ -19,22 +23,27 @@ import { notification } from "../shared/notification";
 type CategorySelectionModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  addedCategories?: string[];
+  addedCategoryObjects?: AccountCategoryType[];
 };
 
-const steps = ["Add Categories", "Connect Wallet"];
+type AccountCategoryExtendedType = CategoryMasterType & {
+  added_already: boolean;
+  selected: boolean;
+  account_category_id?: string | null;
+  addedCategoryObjects?: AccountCategoryType[];
+};
 
 export default function CategorySelectionModal({
   open,
   setOpen,
+  addedCategories,
+  addedCategoryObjects,
 }: CategorySelectionModalProps) {
   const [search, setSearch] = React.useState<string>("");
-  const [categoryMasters, setCategoryMasters] = React.useState<
-    CategoryMasterType[]
+  const [allCategoryMasters, setAllCategoryMasters] = React.useState<
+    AccountCategoryExtendedType[]
   >([]);
-  const [selectedCategories, setSelectedCategories] = React.useState<
-    CategoryMasterType[]
-  >([]);
-  const [activeStep, setActiveStep] = React.useState(0);
 
   const getCategoryMasters = async () => {
     const { isSuccess, data, message } = await getService(
@@ -45,19 +54,109 @@ export default function CategorySelectionModal({
       }
     );
     if (isSuccess) {
-      setCategoryMasters(data?.data);
+      const _allCategoryMasters = data?.data?.map(
+        (categoryMaster: CategoryMasterType) => {
+          return {
+            ...categoryMaster,
+            added_already: addedCategories?.includes(categoryMaster.id),
+            selected: addedCategories?.includes(categoryMaster.id),
+            account_category_id: addedCategories?.includes(categoryMaster.id)
+              ? addedCategories?.find(
+                  (category_id: string) => category_id === categoryMaster.id
+                )
+              : null,
+          };
+        }
+      );
+      setAllCategoryMasters(_allCategoryMasters);
     } else {
       notification(message ? message : "Something went wrong", "error");
     }
   };
 
-  const onSubmit = () => {
-    setOpen(false);
+  const saveCategories = async () => {
+    const requestBody = {
+      category_ids: allCategoryMasters
+        ?.filter(
+          (categoryMaster: AccountCategoryExtendedType) =>
+            categoryMaster.selected && !categoryMaster.added_already
+        )
+        ?.map((categoryMaster: AccountCategoryExtendedType) => {
+          return categoryMaster.id;
+        }),
+    };
+    if (requestBody.category_ids.length === 0) {
+      return true;
+    }
+    const { isSuccess, data, message } = await postService(
+      "/account/account-category/",
+      requestBody
+    );
+    if (isSuccess) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const deleteCategories = async () => {
+    const toDeleteCategoryMasterIds = allCategoryMasters
+      ?.filter(
+        (categoryMaster: AccountCategoryExtendedType) =>
+          !categoryMaster.selected && categoryMaster.added_already
+      )
+      ?.map((categoryMaster: AccountCategoryExtendedType) => {
+        return categoryMaster.id;
+      });
+    const toDeleteAccountCategoryIds = addedCategoryObjects
+      ?.filter((category: AccountCategoryType) =>
+        toDeleteCategoryMasterIds?.includes(category.category.id)
+      )
+      ?.map((category: AccountCategoryType) => {
+        return category.id;
+      });
+    const requestBody = {
+      account_category_ids: toDeleteAccountCategoryIds
+        ? toDeleteAccountCategoryIds
+        : [],
+    };
+    if (requestBody.account_category_ids.length === 0) {
+      return true;
+    }
+    const { isSuccess, data, message } = await bulkDeleteService(
+      "/account/account-category/",
+      requestBody
+    );
+    if (isSuccess) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const onSubmit = async () => {
+    try {
+      const deleteCategoriesResponse = await deleteCategories();
+      if (deleteCategoriesResponse) {
+        const saveCategoriesResponse = await saveCategories();
+        if (saveCategoriesResponse && deleteCategoriesResponse) {
+          notification("Categories saved successfully", "success");
+          setOpen(false);
+        } else {
+          notification("Something went wrong", "error");
+        }
+      } else {
+        notification("Something went wrong", "error");
+      }
+    } finally {
+    }
   };
 
   useEffect(() => {
-    getCategoryMasters();
-  }, []);
+    if (open) {
+      getCategoryMasters();
+    }
+  }, [open, addedCategories]);
 
   return (
     <CustomModal
@@ -74,19 +173,36 @@ export default function CategorySelectionModal({
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Image src={Star_Coloured} alt={"Coloured Start"} height={30} />
             <Typography variant="h5" sx={{ ml: 2, fontWeight: "bold" }}>
-              {"Let's set up your Account"}
+              Select your categories
             </Typography>
           </Box>
         </Grid>
         <Grid item xs={12}>
-          <FormLabel
+          <Box
             sx={{
-              fontWeight: "bold",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
               my: 2,
             }}
           >
-            I create content about...
-          </FormLabel>
+            <FormLabel
+              sx={{
+                fontWeight: "bold",
+              }}
+            >
+              I create content about...
+            </FormLabel>
+            <FormLabel>
+              {
+                allCategoryMasters?.filter(
+                  (categoryMaster: AccountCategoryExtendedType) =>
+                    categoryMaster.selected
+                ).length
+              }
+              /{allCategoryMasters?.length} selected
+            </FormLabel>
+          </Box>
           <TextField
             fullWidth
             placeholder="Search category"
@@ -103,39 +219,39 @@ export default function CategorySelectionModal({
               setSearch(e.target.value);
             }}
           />
-          {categoryMasters.map((categoryMaster) => {
-            return (
-              <>
-                {categoryMaster?.name?.includes(search) && (
-                  <Chip
-                    key={categoryMaster.id}
-                    label={categoryMaster.name}
-                    sx={{ m: 1 }}
-                    color="secondary"
-                    variant={
-                      selectedCategories.includes(categoryMaster)
-                        ? "filled"
-                        : "outlined"
-                    }
-                    onClick={() => {
-                      if (selectedCategories.includes(categoryMaster)) {
-                        setSelectedCategories(
-                          selectedCategories.filter(
-                            (category) => category.id !== categoryMaster.id
+          {allCategoryMasters.map(
+            (categoryMaster: AccountCategoryExtendedType) => {
+              return (
+                <>
+                  {categoryMaster?.name?.includes(search) && (
+                    <Chip
+                      key={categoryMaster.id}
+                      label={categoryMaster.name}
+                      sx={{ m: 1 }}
+                      color="secondary"
+                      variant={categoryMaster?.selected ? "filled" : "outlined"}
+                      onClick={() => {
+                        setAllCategoryMasters(
+                          allCategoryMasters.map(
+                            (_categoryMaster: AccountCategoryExtendedType) => {
+                              if (_categoryMaster.id === categoryMaster.id) {
+                                return {
+                                  ..._categoryMaster,
+                                  selected: !_categoryMaster.selected,
+                                };
+                              } else {
+                                return _categoryMaster;
+                              }
+                            }
                           )
                         );
-                      } else {
-                        setSelectedCategories([
-                          ...selectedCategories,
-                          categoryMaster,
-                        ]);
-                      }
-                    }}
-                  />
-                )}
-              </>
-            );
-          })}
+                      }}
+                    />
+                  )}
+                </>
+              );
+            }
+          )}
         </Grid>
         <Grid item xs={12} sx={{ mt: 2 }}>
           <Button
@@ -143,7 +259,6 @@ export default function CategorySelectionModal({
             color="secondary"
             fullWidth
             sx={{ borderRadius: 8 }}
-            disabled={selectedCategories.length === 0}
             onClick={onSubmit}
           >
             Save

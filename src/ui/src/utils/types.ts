@@ -118,3 +118,9 @@ type ServiceCheckOutType = {
   quantity: number;
   price: number;
 };
+
+type AccountCategoryType = {
+  id: string;
+  category: CategoryMasterType;
+  twitter_account: string;
+};

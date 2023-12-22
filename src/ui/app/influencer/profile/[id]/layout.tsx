@@ -6,12 +6,24 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import VerifiedIcon from "@mui/icons-material/Verified";
-import { Avatar, Box, Button, Grid, Link, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Grid,
+  IconButton,
+  Link,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import NextLink from "next/link";
+import EditIcon from "@mui/icons-material/Edit";
+import CategorySelectionModal from "@/src/components/categorySelectionModal";
+import { getServicewithCredentials } from "@/src/services/httpServices";
 
 const tabs = [
   {
@@ -35,12 +47,49 @@ const ProfileLayout = ({
 }) => {
   const [tab, setTab] = React.useState<string>("services");
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
+  const [userAccountCategories, setUserAccountCategories] = React.useState<
+    AccountCategoryType[]
+  >([]);
+  const [categoryOpen, setCategoryOpen] = React.useState<boolean>(false);
   const router = useRouter();
   const pathname = usePathname();
 
+  const getUserCategories = async () => {
+    try {
+      const { isSuccess, data } = await getServicewithCredentials(
+        "account/account-category/"
+      );
+      if (isSuccess) {
+        if (data?.data?.length > 0) {
+          localStorage.setItem("category", JSON.stringify(data?.data));
+          setUserAccountCategories(data?.data);
+        } else if (data?.data?.length === 0) {
+          localStorage.removeItem("category");
+          setUserAccountCategories([]);
+        }
+      }
+    } catch (error) {
+      console.error("Error during account setup check:", error);
+    }
+  };
+
+  const chips = [
+    {
+      label: "Followers",
+      attribute: currentUser?.twitter_account?.followers_count,
+    },
+    {
+      label: "Following",
+      attribute: currentUser?.twitter_account?.following_count,
+    },
+    {
+      label: "Tweets",
+      attribute: currentUser?.twitter_account?.tweet_count,
+    },
+  ];
+
   useEffect(() => {
     const urlTab = pathname.split("/")[4]; // assuming the tab is the third part of the URL
-    console.log("urlTab", urlTab);
     if (urlTab && tabs.some((t) => t.value === urlTab)) {
       if (urlTab !== tab) {
         setTab(urlTab);
@@ -57,8 +106,19 @@ const ProfileLayout = ({
   }, [tab]);
 
   useEffect(() => {
+    if (!categoryOpen) {
+      getUserCategories();
+    }
+  }, [categoryOpen]);
+
+  useEffect(() => {
     if (localStorage.getItem("user")) {
       setCurrentUser(JSON.parse(localStorage.getItem("user") || "{}"));
+    }
+    if (localStorage.getItem("category")) {
+      setUserAccountCategories(
+        JSON.parse(localStorage.getItem("category") || "{}")
+      );
     }
   }, []);
 
@@ -271,25 +331,18 @@ const ProfileLayout = ({
                       sx={{
                         display: "flex",
                         flexDirection: "column",
-                        mt: 2,
                         p: 2,
                       }}
                     >
                       <Box
                         sx={{
                           display: "flex",
-                          flexDirection: "row",
+                          flexDirection: "column",
                           alignItems: "center",
                           justifyContent: "space-between",
                         }}
                       >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Joined Twitter On
-                        </Typography>
+                        <Typography>Joined Twitter On</Typography>
                         <Typography
                           sx={{
                             fontWeight: "bold",
@@ -303,7 +356,7 @@ const ProfileLayout = ({
                       <Box
                         sx={{
                           display: "flex",
-                          flexDirection: "row",
+                          flexDirection: "column",
                           alignItems: "center",
                           justifyContent: "space-between",
                         }}
@@ -327,72 +380,25 @@ const ProfileLayout = ({
                       </Box>
                       <Box
                         sx={{
+                          flexWrap: "wrap",
                           display: "flex",
                           flexDirection: "row",
                           alignItems: "center",
-                          justifyContent: "space-between",
+                          justifyContent: "center",
                         }}
                       >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Followers
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {currentUser?.twitter_account?.followers_count}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Following
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {currentUser?.twitter_account?.following_count}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            lineHeight: "29px",
-                          }}
-                        >
-                          Tweets
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {currentUser?.twitter_account?.tweet_count}
-                        </Typography>
+                        {chips.map((chip) => (
+                          <Chip
+                            key={chip.attribute}
+                            label={`${chip.attribute ? chip.attribute : 0} ${
+                              chip.label
+                            }`}
+                            sx={{
+                              borderRadius: "20px",
+                              m: 1,
+                            }}
+                          />
+                        ))}
                       </Box>
                       <Box>
                         <Typography
@@ -406,6 +412,54 @@ const ProfileLayout = ({
                           {currentUser?.twitter_account?.description}
                         </Typography>
                       </Box>
+                      <Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {`Categories (${userAccountCategories.length})`}
+                          </Typography>
+                          <IconButton
+                            onClick={() => {
+                              setCategoryOpen(true);
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {userAccountCategories.length === 0 && (
+                            <Typography>No Categories Added</Typography>
+                          )}
+                          {userAccountCategories.map((category) => (
+                            <Chip
+                              key={category.id}
+                              label={category.category.name}
+                              sx={{
+                                borderRadius: "20px",
+                                m: 1,
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
                     </Box>
                   </Box>
                 </Box>
@@ -417,26 +471,37 @@ const ProfileLayout = ({
                   }}
                 >
                   {tabs.map((item) => (
-                    <Button
-                      key={item.value}
-                      variant={item.value == tab ? "contained" : "outlined"}
-                      color="secondary"
-                      sx={{
-                        borderRadius: "20px",
-                        mr: 2,
-                      }}
-                      onClick={() => setTab(item.value)}
-                    >
+                    // <Button
+                    //   key={item.value}
+                    //   variant={item.value == tab ? "contained" : "outlined"}
+                    //   color="secondary"
+                    //   sx={{
+                    //     borderRadius: "20px",
+                    //     mr: 2,
+                    //   }}
+                    //   onClick={() => setTab(item.value)}
+                    // >
+                    //   {item.label}
+                    // </Button>
+                    <Typography variant="h4" key={item.value}>
                       {item.label}
-                    </Button>
+                    </Typography>
                   ))}
                 </Box>
-                <Box sx={{ p: 2, m: 2 }}>{children}</Box>
+                <Box sx={{ p: 2 }}>{children}</Box>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
+      <CategorySelectionModal
+        open={categoryOpen}
+        setOpen={setCategoryOpen}
+        addedCategoryObjects={userAccountCategories}
+        addedCategories={userAccountCategories.map(
+          (category) => category.category.id
+        )}
+      />
     </Box>
   );
 };
