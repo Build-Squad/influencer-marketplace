@@ -9,6 +9,7 @@ type Props = {
   logout: () => {};
   loginStatus: Boolean;
   setEmailOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setWalletOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function Navbar({
@@ -16,6 +17,7 @@ export default function Navbar({
   logout,
   loginStatus,
   setEmailOpen,
+  setWalletOpen,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -49,7 +51,7 @@ export default function Navbar({
           sx={{
             display: "flex",
             columnGap: "8px",
-            width: "33%",
+            // width: "33%",
             justifyContent: "center",
           }}
         >
@@ -78,7 +80,7 @@ export default function Navbar({
             For Business
           </Button>
         </Box>
-        <Box sx={{ width: "33%", textAlign: "right" }}>
+        <Box sx={{ textAlign: "right" }}>
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             Why XFluencer
           </Button>
@@ -155,6 +157,7 @@ export default function Navbar({
                   <LoginMenu
                     twitterLogin={authUser}
                     setEmailOpen={setEmailOpen}
+                    setWalletOpen={setWalletOpen}
                   />
                 </>
               )}

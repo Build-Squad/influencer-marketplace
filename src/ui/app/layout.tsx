@@ -14,6 +14,7 @@ import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
 import EmailLoginModal from "@/src/components/emailLoginModal";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
+import WalletConnectModal from "@/src/components/walletConnectModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
 
   const [emailOpen, setEmailOpen] = useState<boolean>(false);
   const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
+  const [walletOpen, setWalletOpen] = useState<boolean>(false);
 
   // Twitter authentication hook
   const {
@@ -74,6 +76,12 @@ export default function RootLayout({
     }
   }, [emailOpen]);
 
+  useEffect(() => {
+    if (!walletOpen) {
+      checkTwitterUserAuthentication();
+    }
+  }, [walletOpen]);
+
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -92,6 +100,7 @@ export default function RootLayout({
               logout={logoutTwitterUser}
               loginStatus={isTwitterUserLoggedIn}
               setEmailOpen={setEmailOpen}
+              setWalletOpen={setWalletOpen}
             />
             {children}
             {loginStatus.status ? (
@@ -111,6 +120,7 @@ export default function RootLayout({
               open={categoryOpen}
               setOpen={setCategoryOpen}
             />
+            <WalletConnectModal open={walletOpen} setOpen={setWalletOpen} />
           </ThemeRegistry>
         </SnackbarProvider>
       </body>

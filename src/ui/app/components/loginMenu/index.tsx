@@ -1,17 +1,19 @@
 "use client";
 
-import { Box, Button, List, ListItem, Menu } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { Button, List, ListItem, Menu } from "@mui/material";
 import * as React from "react";
 
 type LoginMenuProps = {
   twitterLogin: () => {};
   setEmailOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setWalletOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function LoginMenu({
   twitterLogin,
   setEmailOpen,
+  setWalletOpen,
 }: LoginMenuProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -36,7 +38,7 @@ export default function LoginMenu({
     },
     {
       label: "Connect with Wallet",
-      function: () => {},
+      function: () => setWalletOpen(true),
     },
   ];
 
