@@ -13,6 +13,9 @@ from .authentication import JWTAuthentication
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
 
+import logging
+logger = logging.getLogger(__name__)
+
 # Defines scope for OAuth2 with PKCE
 SCOPES = [
     "offline.access",
@@ -55,7 +58,7 @@ def twitterLoginCallback(request):
         # Create JWT and send response
         return createJWT(userData, access_token)
     except Exception as e:
-        print("Error in twitterLoginCallback -", e)
+        logger.error("Error in twitterLoginCallback -", e)
         return HttpResponseRedirect(
             config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
         )
@@ -81,11 +84,11 @@ def authenticateUser(authorization_response_url):
                 "url",
             ],
         ).data
-        print("Twitter User Authenticated", userData)
+        logger.info("Twitter User Authenticated", userData)
         return {"userData": userData, "access_token": access_token}
 
     except Exception as e:
-        print("Error authenticating User -", e)
+        logger.error("Error authenticating User -", e)
         return HttpResponseRedirect(
             config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
         )
@@ -153,10 +156,10 @@ def createUser(userData, access_token):
             existing_user_account.save()
 
         current_user = User.objects.filter(twitter_account=current_twitter_user).first()
-        print("User Successfully created/updated")
+        logger.info("User Successfully created/updated")
         return current_user
     except Exception as e:
-        print("Error creating/updating user account -", e)
+        logger.error("Error creating/updating user account -", e)
         return HttpResponseRedirect(
             config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
         )
@@ -184,10 +187,10 @@ def createJWT(userData, access_token):
         response = JWTOperations.setJwtToken(
             response, cookie_name="jwt", payload=payload
         )
-        print("JWT created successfully")
+        logger.info("JWT created successfully")
         return response
     except Exception as e:
-        print("Error while creating jwt - ", e)
+        logger.error("Error while creating jwt - ", e)
         return redirect(
             f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
         )

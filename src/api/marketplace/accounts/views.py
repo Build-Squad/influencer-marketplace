@@ -366,7 +366,6 @@ class AccountCategoryList(APIView):
             serializer = DeleteAccountCategorySerializer(data=request.data)
             if serializer.is_valid():
                 account_category_ids = serializer.validated_data['account_category_ids']
-                print(account_category_ids)
                 for account_category_id in account_category_ids:
                     account_category = self.get_object(account_category_id)
                     if account_category is None:
