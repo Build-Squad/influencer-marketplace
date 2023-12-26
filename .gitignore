@@ -41,3 +41,4 @@ src/api/marketplace/.idea/marketplace.iml
 src/api/marketplace/.idea/misc.xml
 src/api/marketplace/.idea/vcs.xml
 src/api/marketplace/.idea/workspace.xml
+src/api/marketplace/marketplace/logs/error.log

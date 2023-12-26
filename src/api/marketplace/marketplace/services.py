@@ -7,6 +7,11 @@ from .serializers import PageSizeSerializer, PageNumberSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.mail import send_mail
+# from .logger import custom_logger
+
+# logger = custom_logger()
+import logging
+logger = logging.getLogger(__name__)
 
 
 # JWT cookie related operations
@@ -106,6 +111,7 @@ class Pagination:
 
 
 def handleServerException(e):
+    logger.error(e)
     return Response({
         'isSuccess': False,
         'data': None,
@@ -115,6 +121,7 @@ def handleServerException(e):
 
 
 def handleBadRequest(e):
+    logger.error(e)
     return Response({
         'isSuccess': False,
         'data': None,
