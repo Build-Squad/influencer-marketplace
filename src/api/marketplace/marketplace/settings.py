@@ -19,7 +19,11 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MARKETPLACE_APP_DIR = os.path.join(BASE_DIR, 'marketplace')
+LOGGING_DIR = os.path.join(MARKETPLACE_APP_DIR, 'logs')
 
+if not os.path.exists(LOGGING_DIR):
+    os.makedirs(LOGGING_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -29,6 +33,52 @@ SECRET_KEY = "o421)j72pveh$waa8u1(s7+%$)d3c_^yt4y6qshaww26ft0p-n"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'django': {
+            '()': 'django.utils.log.ServerFormatter',
+            'format': '[{server_time}] {levelname} {message}',
+            'style': '{',
+        },
+        'simpleRe': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    "handlers": {
+        "console": {
+            'level': 'INFO',
+            "class": "logging.StreamHandler",
+            "formatter": "django",
+        },
+        "file": {
+            "level": "ERROR",
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            "filename": os.path.join(LOGGING_DIR, "error.log"),
+            "formatter": "simpleRe",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+        "": {
+            "handlers": ["file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    }
+}
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
