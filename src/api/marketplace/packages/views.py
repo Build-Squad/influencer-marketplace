@@ -190,7 +190,6 @@ class ServiceList(APIView):
     @swagger_auto_schema(request_body=CreateServicesSerializer)
     def post(self, request):
         try:
-            print(request)
             user_role = request.user_account.role
             serializer = CreateServicesSerializer(
                 data=request.data, context={'request': request})
