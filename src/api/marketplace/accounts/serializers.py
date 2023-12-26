@@ -3,13 +3,6 @@ from rest_framework import serializers
 from uuid import UUID
 from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
 
-
-class TwitterAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TwitterAccount
-        fields = "__all__"
-
-
 class CategoryMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoryMaster
@@ -51,6 +44,16 @@ class DeleteAccountCategorySerializer(serializers.ModelSerializer):
         model = AccountCategory
         fields = ['account_category_ids']
 
+
+class TwitterAccountSerializer(serializers.ModelSerializer):
+    account_categories = AccountCategorySerializer(
+        source='cat_twitter_account_id', many=True, read_only=True)
+
+    class Meta:
+        model = TwitterAccount
+        exclude = ("access_token", )
+
+
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -64,7 +67,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ("password", "otp", "otp_expiration", "is_superuser",
-                   "is_staff", "is_active", "groups", "user_permissions")
+                   "is_staff", "is_active", "groups", "user_permissions", "jwt")
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
