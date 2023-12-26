@@ -106,12 +106,11 @@ class Pagination:
 
 
 def handleServerException(e):
-    print(e)
     return Response({
         'isSuccess': False,
         'data': None,
         'message': 'Internal Server Error',
-        # 'errors': e,
+        'errors': e,
     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
