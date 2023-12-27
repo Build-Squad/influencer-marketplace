@@ -301,7 +301,7 @@ const Services = ({ currentUser, id }: ServiceProps) => {
                             alignItems: "center",
                           }}
                         >
-                          {service.package.influencer === loggedInUser?.id && (
+                          {service.package.influencer === loggedInUser?.id ? (
                             <Box
                               sx={{
                                 display: "flex",
@@ -347,6 +347,23 @@ const Services = ({ currentUser, id }: ServiceProps) => {
                                   </IconButton>
                                 }
                               />
+                            </Box>
+                          ) : (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Typography
+                                sx={{ fontWeight: "bold" }}
+                                variant="h6"
+                              >
+                                {service?.platform_price +
+                                  " " +
+                                  service?.currency?.symbol}
+                              </Typography>
                             </Box>
                           )}
                         </Box>
