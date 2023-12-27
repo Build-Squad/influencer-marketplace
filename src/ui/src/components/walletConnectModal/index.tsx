@@ -79,8 +79,14 @@ export default function WalletConnectModal({
   };
 
   useEffect(() => {
+    if (provider) {
+      connectWallet();
+    }
+  }, [provider]);
+
+  useEffect(() => {
     getProvider();
-  }, [window?.phantom?.solana]);
+  }, []);
 
   return (
     <CustomModal
@@ -145,13 +151,30 @@ export default function WalletConnectModal({
                   Phantom Wallet
                 </Button>
               ) : (
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={installPhantom}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
                 >
-                  Install Phantom Wallet
-                </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={installPhantom}
+                  >
+                    Install Phantom Wallet
+                  </Button>
+                  <Typography
+                    sx={{
+                      mt: 4,
+                    }}
+                  >
+                    Already installed?{" "}
+                    <Button onClick={getProvider}>Recheck</Button>
+                  </Typography>
+                </Box>
               )}
             </Box>
           </Grid>
