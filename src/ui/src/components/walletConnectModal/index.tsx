@@ -79,12 +79,6 @@ export default function WalletConnectModal({
   };
 
   useEffect(() => {
-    if (provider) {
-      connectWallet();
-    }
-  }, [provider]);
-
-  useEffect(() => {
     getProvider();
   }, []);
 
