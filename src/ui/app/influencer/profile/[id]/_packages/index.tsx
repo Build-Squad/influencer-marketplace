@@ -47,7 +47,7 @@ const Packages = ({
         {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
-          influencer: decodeURIComponent(params.id),
+          influencer: params.id,
         }
       );
       if (isSuccess) {
@@ -124,9 +124,7 @@ const Packages = ({
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              {decodeURIComponent(params.id).includes(
-                currentUser?.id ? currentUser?.id : ""
-              ) && (
+              {params?.id === currentUser?.id && (
                 <Grid item xs={12} sm={6} md={4} lg={4}>
                   <Card
                     sx={{

@@ -23,15 +23,14 @@ import {
 import Image from "next/image";
 import React, { useEffect } from "react";
 
-const Services = ({
-  params,
-}: {
-  params: {
-    id: string;
-  };
-}) => {
+type ServiceProps = {
+  currentUser: UserType | null;
+  id: string;
+};
+
+const Services = ({ currentUser, id }: ServiceProps) => {
+  const [loggedInUser, setLoggedInUser] = React.useState<UserType | null>(null);
   const [type, setType] = React.useState<string | null>(null);
-  const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [checkedOutServices, setCheckedOutServices] = React.useState<
     ServiceType[]
   >([]);
@@ -57,8 +56,8 @@ const Services = ({
         {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
-          influencer: decodeURIComponent(params.id),
-          status: type,
+          influencer: id,
+          status: id === loggedInUser?.id ? type : "published",
         }
       );
       if (isSuccess) {
@@ -127,9 +126,8 @@ const Services = ({
   }, [openModal]);
 
   useEffect(() => {
-    if (localStorage.getItem("user")) {
-      setCurrentUser(JSON.parse(localStorage.getItem("user") || "{}"));
-    }
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setLoggedInUser(user);
   }, []);
 
   return (
@@ -140,57 +138,57 @@ const Services = ({
       }}
     >
       <Grid container>
-        <Grid item xs={12}>
-          <ButtonGroup
-            aria-label="outlined primary button group"
-            sx={{
-              mb: 2,
-              borderRadius: 8,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Button
-              variant={type === null ? "contained" : "outlined"}
-              color="secondary"
-              onClick={() => {
-                setType(null);
-              }}
+        {id === loggedInUser?.id && (
+          <Grid item xs={12}>
+            <ButtonGroup
+              aria-label="outlined primary button group"
               sx={{
-                borderRadius: "20px 0px 0px 20px",
+                mb: 2,
+                borderRadius: 8,
+                display: "flex",
+                justifyContent: "center",
               }}
             >
-              All
-            </Button>
-            <Button
-              variant={type === "published" ? "contained" : "outlined"}
-              color="secondary"
-              onClick={() => {
-                setType("published");
-              }}
-            >
-              Published
-            </Button>
-            <Button
-              variant={type === "draft" ? "contained" : "outlined"}
-              color="secondary"
-              onClick={() => {
-                setType("draft");
-              }}
-              sx={{
-                borderRadius: "0px 20px 20px 0px",
-              }}
-            >
-              Draft
-            </Button>
-          </ButtonGroup>
-        </Grid>
+              <Button
+                variant={type === null ? "contained" : "outlined"}
+                color="secondary"
+                onClick={() => {
+                  setType(null);
+                }}
+                sx={{
+                  borderRadius: "20px 0px 0px 20px",
+                }}
+              >
+                All
+              </Button>
+              <Button
+                variant={type === "published" ? "contained" : "outlined"}
+                color="secondary"
+                onClick={() => {
+                  setType("published");
+                }}
+              >
+                Published
+              </Button>
+              <Button
+                variant={type === "draft" ? "contained" : "outlined"}
+                color="secondary"
+                onClick={() => {
+                  setType("draft");
+                }}
+                sx={{
+                  borderRadius: "0px 20px 20px 0px",
+                }}
+              >
+                Draft
+              </Button>
+            </ButtonGroup>
+          </Grid>
+        )}
         <Grid container spacing={2}>
           {loading ? null : (
             <>
-              {decodeURIComponent(params.id).includes(
-                currentUser?.id ? currentUser?.id : ""
-              ) && (
+              {id === loggedInUser?.id && (
                 <Grid item xs={12} sm={6} md={4} lg={4}>
                   <Card
                     sx={{
@@ -277,7 +275,7 @@ const Services = ({
                           >
                             {service?.package?.name}
                           </Typography>
-                          {service.package.influencer === currentUser?.id && (
+                          {service.package.influencer === loggedInUser?.id && (
                             <Chip
                               sx={{
                                 mr: 2,
@@ -303,7 +301,7 @@ const Services = ({
                             alignItems: "center",
                           }}
                         >
-                          {service.package.influencer === currentUser?.id && (
+                          {service.package.influencer === loggedInUser?.id && (
                             <Box
                               sx={{
                                 display: "flex",
@@ -376,7 +374,7 @@ const Services = ({
                           justifyContent: "space-between",
                         }}
                       >
-                        {service.package.influencer === currentUser?.id ? (
+                        {service.package.influencer === loggedInUser?.id ? (
                           <Box
                             sx={{
                               display: "flex",
@@ -451,7 +449,7 @@ const Services = ({
                                 ]);
                               }}
                               disabled={
-                                service.package.influencer === currentUser?.id
+                                service.package.influencer === loggedInUser?.id
                               }
                             >
                               Add to Cart
@@ -472,7 +470,7 @@ const Services = ({
                                 ]);
                               }}
                               disabled={
-                                service.package.influencer === currentUser?.id
+                                service.package.influencer === loggedInUser?.id
                               }
                             >
                               Buy Now

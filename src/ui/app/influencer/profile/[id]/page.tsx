@@ -18,12 +18,17 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { use, useEffect } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import NextLink from "next/link";
 import EditIcon from "@mui/icons-material/Edit";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
-import { getServicewithCredentials } from "@/src/services/httpServices";
+import {
+  getService,
+  getServicewithCredentials,
+} from "@/src/services/httpServices";
+import Services from "./_services";
+import { notification } from "@/src/components/shared/notification";
 
 const tabs = [
   {
@@ -37,39 +42,24 @@ const tabs = [
 ];
 
 const ProfileLayout = ({
-  children,
   params,
 }: {
-  children: React.ReactNode;
   params: {
     id: string;
   };
 }) => {
-  const [tab, setTab] = React.useState<string>("services");
+  const [loggedInUser, setLoggedInUser] = React.useState<UserType | null>(null);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
-  const [userAccountCategories, setUserAccountCategories] = React.useState<
-    AccountCategoryType[]
-  >([]);
   const [categoryOpen, setCategoryOpen] = React.useState<boolean>(false);
-  const router = useRouter();
-  const pathname = usePathname();
 
-  const getUserCategories = async () => {
-    try {
-      const { isSuccess, data } = await getServicewithCredentials(
-        "account/account-category/"
-      );
-      if (isSuccess) {
-        if (data?.data?.length > 0) {
-          localStorage.setItem("category", JSON.stringify(data?.data));
-          setUserAccountCategories(data?.data);
-        } else if (data?.data?.length === 0) {
-          localStorage.removeItem("category");
-          setUserAccountCategories([]);
-        }
-      }
-    } catch (error) {
-      console.error("Error during account setup check:", error);
+  const getUserDetails = async () => {
+    const { isSuccess, message, data } = await getService(
+      `/account/user/${params.id}/`
+    );
+    if (isSuccess) {
+      setCurrentUser(data?.data);
+    } else {
+      notification(message ? message : "Error fetching user details", "error");
     }
   };
 
@@ -89,37 +79,20 @@ const ProfileLayout = ({
   ];
 
   useEffect(() => {
-    const urlTab = pathname.split("/")[4]; // assuming the tab is the third part of the URL
-    if (urlTab && tabs.some((t) => t.value === urlTab)) {
-      if (urlTab !== tab) {
-        setTab(urlTab);
-      }
-    } else {
-      setTab(tabs[0].value);
+    if (params.id) {
+      getUserDetails();
     }
-  }, [pathname, router]);
-
-  useEffect(() => {
-    if (tab) {
-      router.push(`/influencer/profile/${params.id}/${tab}`);
-    }
-  }, [tab]);
+  }, [params.id]);
 
   useEffect(() => {
     if (!categoryOpen) {
-      getUserCategories();
+      getUserDetails();
     }
   }, [categoryOpen]);
 
   useEffect(() => {
-    if (localStorage.getItem("user")) {
-      setCurrentUser(JSON.parse(localStorage.getItem("user") || "{}"));
-    }
-    if (localStorage.getItem("category")) {
-      setUserAccountCategories(
-        JSON.parse(localStorage.getItem("category") || "{}")
-      );
-    }
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setLoggedInUser(user);
   }, []);
 
   return (
@@ -289,9 +262,7 @@ const ProfileLayout = ({
                         </Link>
                       </Typography>
                     )}
-                    {!decodeURIComponent(params.id).includes(
-                      currentUser?.id ? currentUser?.id : ""
-                    ) && (
+                    {params?.id !== loggedInUser?.id && (
                       <Box
                         sx={{
                           display: "flex",
@@ -426,15 +397,17 @@ const ProfileLayout = ({
                               fontWeight: "bold",
                             }}
                           >
-                            {`Categories (${userAccountCategories.length})`}
+                            {`Categories (${currentUser?.twitter_account?.account_categories?.length})`}
                           </Typography>
-                          <IconButton
-                            onClick={() => {
-                              setCategoryOpen(true);
-                            }}
-                          >
-                            <EditIcon />
-                          </IconButton>
+                          {params?.id === loggedInUser?.id && (
+                            <IconButton
+                              onClick={() => {
+                                setCategoryOpen(true);
+                              }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          )}
                         </Box>
                         <Box
                           sx={{
@@ -445,19 +418,22 @@ const ProfileLayout = ({
                             flexWrap: "wrap",
                           }}
                         >
-                          {userAccountCategories.length === 0 && (
+                          {currentUser?.twitter_account?.account_categories
+                            ?.length === 0 && (
                             <Typography>No Categories Added</Typography>
                           )}
-                          {userAccountCategories.map((category) => (
-                            <Chip
-                              key={category.id}
-                              label={category.category.name}
-                              sx={{
-                                borderRadius: "20px",
-                                m: 1,
-                              }}
-                            />
-                          ))}
+                          {currentUser?.twitter_account?.account_categories?.map(
+                            (category) => (
+                              <Chip
+                                key={category.id}
+                                label={category.category.name}
+                                sx={{
+                                  borderRadius: "20px",
+                                  m: 1,
+                                }}
+                              />
+                            )
+                          )}
                         </Box>
                       </Box>
                     </Box>
@@ -471,24 +447,14 @@ const ProfileLayout = ({
                   }}
                 >
                   {tabs.map((item) => (
-                    // <Button
-                    //   key={item.value}
-                    //   variant={item.value == tab ? "contained" : "outlined"}
-                    //   color="secondary"
-                    //   sx={{
-                    //     borderRadius: "20px",
-                    //     mr: 2,
-                    //   }}
-                    //   onClick={() => setTab(item.value)}
-                    // >
-                    //   {item.label}
-                    // </Button>
                     <Typography variant="h4" key={item.value}>
                       {item.label}
                     </Typography>
                   ))}
                 </Box>
-                <Box sx={{ p: 2 }}>{children}</Box>
+                <Box sx={{ p: 2 }}>
+                  <Services currentUser={currentUser} id={params.id} />
+                </Box>
               </Grid>
             </Grid>
           </Grid>
@@ -497,10 +463,12 @@ const ProfileLayout = ({
       <CategorySelectionModal
         open={categoryOpen}
         setOpen={setCategoryOpen}
-        addedCategoryObjects={userAccountCategories}
-        addedCategories={userAccountCategories.map(
-          (category) => category.category.id
-        )}
+        addedCategoryObjects={currentUser?.twitter_account?.account_categories}
+        addedCategories={
+          currentUser?.twitter_account?.account_categories?.map(
+            (category) => category.category.id
+          ) || []
+        }
       />
     </Box>
   );

@@ -105,7 +105,7 @@ export default function Navbar({
                 color="inherit"
                 sx={{ fontSize: "16px" }}
                 onClick={() => {
-                  window.location.href = `/influencer/profile/${currentUser?.id}}/services`;
+                  window.location.href = `/influencer/profile/${currentUser?.id}`;
                 }}
               >
                 Profile
