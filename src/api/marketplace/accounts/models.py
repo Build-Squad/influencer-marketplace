@@ -82,6 +82,7 @@ class User(AbstractUser):
                                          null=True, blank=True)
     jwt = models.CharField(max_length=255, blank=True, null=True)
 
+
     ordering = ('email',)
 
     class Meta:
@@ -106,3 +107,28 @@ class BankAccount(models.Model):
 
     class Meta:
         db_table = "bank_account"          
+
+
+class WalletProvider(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Wallet Provider ID', default=uuid.uuid4, editable=False)
+    wallet_provider = models.CharField(max_length=100, blank=True, null=True)
+
+
+class WalletNetwork(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Wallet Network ID', default=uuid.uuid4, editable=False)
+    wallet_network = models.CharField(max_length=100, blank=True, null=True)
+
+
+class Wallet(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Wallet ID', default=uuid.uuid4, editable=False)
+    user_id = models.ForeignKey(
+        User, related_name='wallet_user_id', on_delete=SET_NULL, null=True, blank=True)
+    wallet_network_id = models.ForeignKey(
+        WalletNetwork, related_name='wallet_network_id', on_delete=SET_NULL, null=True)
+    wallet_provider_id = models.ForeignKey(
+        WalletProvider, related_name='wallet_provider_id', on_delete=SET_NULL, null=True)
+    is_primary = models.BooleanField(default=True, blank=True, null=True)
+    wallet_address_id = models.CharField(max_length=255, blank=True, null=True)

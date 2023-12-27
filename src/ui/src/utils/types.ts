@@ -124,3 +124,9 @@ type AccountCategoryType = {
   category: CategoryMasterType;
   twitter_account: string;
 };
+
+interface Window {
+  ethereum: any;
+  web3: any;
+  phantom: any;
+}

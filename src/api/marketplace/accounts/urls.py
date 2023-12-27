@@ -16,7 +16,8 @@ from .views import (
     RoleList,
     RoleDetail,
     UserAuth,
-    EmailVerification
+    EmailVerification,
+    WalletAuth
 )
 
 urlpatterns = [
@@ -49,4 +50,6 @@ urlpatterns = [
     path("otp/verify/", OTPVerification.as_view(), name="otp-verify"),
 
     path("email-verify/", EmailVerification.as_view(), name="email-verify"),
+
+    path("wallet-auth/", WalletAuth.as_view(), name="wallet-auth"),
 ]

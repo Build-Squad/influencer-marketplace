@@ -97,3 +97,9 @@ class OTPVerificationSerializer(serializers.Serializer):
 
 class EmailVerificationSerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
+
+
+class WalletAuthSerializer(serializers.Serializer):
+    wallet_address_id = serializers.CharField(max_length=100)
+    wallet_provider_id = serializers.CharField(max_length=100)
+    wallet_network_id = serializers.CharField(max_length=100)

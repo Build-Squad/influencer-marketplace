@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
+from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role, Wallet, WalletNetwork, WalletProvider
 from .serializers import (
     CreateAccountCategorySerializer,
     DeleteAccountCategorySerializer,
@@ -29,7 +29,8 @@ from .serializers import (
     BankAccountSerializer,
     TwitterAuthSerializer,
     RoleSerializer,
-    EmailVerificationSerializer
+    EmailVerificationSerializer,
+    WalletAuthSerializer
 )
 from .services import OTPAuthenticationService, TwitterAuthenticationService
 from decouple import config
@@ -1012,6 +1013,102 @@ class EmailVerification(APIView):
                         },
                         status=status.HTTP_401_UNAUTHORIZED,
                     )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class WalletAuth(APIView):
+
+    def get_wallet(self, wallet_address_id):
+        try:
+            return Wallet.objects.get(wallet_address_id=wallet_address_id)
+        except Wallet.DoesNotExist:
+            return None
+
+    def create_wallet(self, wallet_address_id, wallet_provider, wallet_network):
+        try:
+            wallet = Wallet.objects.create(
+                wallet_address_id=wallet_address_id, wallet_provider_id=wallet_provider, wallet_network_id=wallet_network)
+            wallet.save()
+            return wallet
+        except Exception as e:
+            return None
+
+    def create_user(self, wallet_address_id, role):
+        try:
+            user = User.objects.create(
+                username=wallet_address_id,
+                role=Role.objects.get(name=role),
+            )
+            user.save()
+            return user
+        except Exception as e:
+            return None
+
+    def get_wallet_provider_id(self, name):
+        try:
+            return WalletProvider.objects.get(wallet_provider=name)
+        except WalletProvider.DoesNotExist:
+            return None
+
+    def get_wallet_network_id(self, name):
+        try:
+            return WalletNetwork.objects.get(wallet_network=name)
+        except WalletNetwork.DoesNotExist:
+            return None
+
+    @swagger_auto_schema(request_body=WalletAuthSerializer)
+    def post(self, request):
+        try:
+            serializer = WalletAuthSerializer(data=request.data)
+            if serializer.is_valid():
+                # Should create a wallet if no wallet is found for the requested user else return the wallet
+                wallet = self.get_wallet(request.data["wallet_address_id"])
+                if wallet is None:
+                    wallet_provider = self.get_wallet_provider_id(
+                        serializer.validated_data["wallet_provider_id"])
+                    wallet_network = self.get_wallet_network_id(
+                        serializer.validated_data["wallet_network_id"])
+                    wallet = self.create_wallet(
+                        serializer.validated_data["wallet_address_id"],
+                        wallet_provider,
+                        wallet_network,
+                    )
+                wallet = self.get_wallet(request.data["wallet_address_id"])
+
+                if wallet.user_id is None:
+                    user = self.create_user(
+                        serializer.validated_data["wallet_address_id"],
+                        "business_owner"
+                    )
+                    wallet.user_id = user
+                    wallet.save()
+                else:
+                    user = User.objects.get(username=wallet.user_id)
+                wallet = self.get_wallet(request.data["wallet_address_id"])
+                user = User.objects.get(username=wallet.user_id)
+                jwt_operations = JWTOperations()
+                user_id = str(user.id)
+                payload = {
+                    "id": user_id,
+                    "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=86400),
+                    "iat": datetime.datetime.utcnow(),
+                }
+                response = Response()
+                token = jwt_operations.generateToken(payload)
+                user.jwt = token
+                user.save()
+                response.set_cookie(
+                    'jwt', token, max_age=86400, path="/", secure=True, httponly=True, samesite="None")
+                response.data = {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Logged in successfully",
+                }
+                response.status_code = status.HTTP_200_OK
+                return response
             else:
                 return handleBadRequest(serializer.errors)
         except Exception as e:
