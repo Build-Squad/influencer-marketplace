@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role, Wallet, WalletNetwork, WalletProider
+from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role, Wallet, WalletNetwork, WalletProvider
 from .serializers import (
     CreateAccountCategorySerializer,
     DeleteAccountCategorySerializer,
@@ -1049,8 +1049,8 @@ class WalletAuth(APIView):
 
     def get_wallet_provider_id(self, name):
         try:
-            return WalletProider.objects.get(wallet_provider=name)
-        except WalletProider.DoesNotExist:
+            return WalletProvider.objects.get(wallet_provider=name)
+        except WalletProvider.DoesNotExist:
             return None
 
     def get_wallet_network_id(self, name):

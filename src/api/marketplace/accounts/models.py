@@ -109,7 +109,7 @@ class BankAccount(models.Model):
         db_table = "bank_account"          
 
 
-class WalletProider(models.Model):
+class WalletProvider(models.Model):
     id = models.UUIDField(
         primary_key=True, verbose_name='Wallet Provider ID', default=uuid.uuid4, editable=False)
     wallet_provider = models.CharField(max_length=100, blank=True, null=True)
@@ -129,6 +129,6 @@ class Wallet(models.Model):
     wallet_network_id = models.ForeignKey(
         WalletNetwork, related_name='wallet_network_id', on_delete=SET_NULL, null=True)
     wallet_provider_id = models.ForeignKey(
-        WalletProider, related_name='wallet_provider_id', on_delete=SET_NULL, null=True)
+        WalletProvider, related_name='wallet_provider_id', on_delete=SET_NULL, null=True)
     is_primary = models.BooleanField(default=True, blank=True, null=True)
     wallet_address_id = models.CharField(max_length=255, blank=True, null=True)
