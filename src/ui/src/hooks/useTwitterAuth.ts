@@ -10,6 +10,7 @@ export default function useTwitterAuth() {
   // State to track whether the user is logged in via Twitter
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
   const [isAccountSsetupComplete, setIsAccountSetupComplete] = useState(true);
+  const [userDetails, setUserDetails] = useState(null);
 
   useEffect(() => {
     checkTwitterUserAuthentication();
@@ -47,9 +48,11 @@ export default function useTwitterAuth() {
     try {
       const { isSuccess, data } = await getServicewithCredentials("account/");
       if (isSuccess) {
+        setUserDetails(data?.data);
         setTwitterUserLoggedIn(true);
         localStorage.setItem("user", JSON.stringify(data?.data));
       } else {
+        setUserDetails(null);
         setTwitterUserLoggedIn(false);
         localStorage.clear();
       }
@@ -83,5 +86,6 @@ export default function useTwitterAuth() {
     logoutTwitterUser,
     checkTwitterUserAuthentication,
     isAccountSsetupComplete,
+    userDetails,
   };
 }
