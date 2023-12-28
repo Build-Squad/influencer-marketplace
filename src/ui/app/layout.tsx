@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import ThemeRegistry from "./ThemeRegistry";
 import { SnackbarProvider } from "notistack";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { loginStatusType } from "./utils/types";
 import { useSearchParams } from "next/navigation";
 import Navbar from "./components/navbar";
@@ -15,6 +15,8 @@ import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
 import EmailLoginModal from "@/src/components/emailLoginModal";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import WalletConnectModal from "@/src/components/walletConnectModal";
+import { AppStore, makeStore } from "@/src/store";
+import { Provider } from "react-redux";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +30,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const storeRef = useRef<AppStore>();
+  if (!storeRef.current) {
+    // Create the store instance the first time this renders
+    storeRef.current = makeStore();
+  }
   const params = useSearchParams();
   // Snackbar only if the user tries to login/signup
   const [loginStatus, setLoginStatus] = useState<loginStatusType>({
@@ -94,34 +101,36 @@ export default function RootLayout({
           }}
           preventDuplicate
         >
-          <ThemeRegistry options={{ key: "mui-theme" }}>
-            <Navbar
-              authUser={startTwitterAuthentication}
-              logout={logoutTwitterUser}
-              loginStatus={isTwitterUserLoggedIn}
-              setEmailOpen={setEmailOpen}
-              setWalletOpen={setWalletOpen}
-            />
-            {children}
-            {loginStatus.status ? (
-              <SnackbarComp
-                variant={loginStatus.status}
-                message={<>{loginStatus.message}</>}
-                updateParentState={() => {
-                  setLoginStatus({
-                    status: "",
-                    message: "",
-                  });
-                }}
+          <Provider store={storeRef.current}>
+            <ThemeRegistry options={{ key: "mui-theme" }}>
+              <Navbar
+                authUser={startTwitterAuthentication}
+                logout={logoutTwitterUser}
+                loginStatus={isTwitterUserLoggedIn}
+                setEmailOpen={setEmailOpen}
+                setWalletOpen={setWalletOpen}
               />
-            ) : null}
-            <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
-            <CategorySelectionModal
-              open={categoryOpen}
-              setOpen={setCategoryOpen}
-            />
-            <WalletConnectModal open={walletOpen} setOpen={setWalletOpen} />
-          </ThemeRegistry>
+              {children}
+              {loginStatus.status ? (
+                <SnackbarComp
+                  variant={loginStatus.status}
+                  message={<>{loginStatus.message}</>}
+                  updateParentState={() => {
+                    setLoginStatus({
+                      status: "",
+                      message: "",
+                    });
+                  }}
+                />
+              ) : null}
+              <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
+              <CategorySelectionModal
+                open={categoryOpen}
+                setOpen={setCategoryOpen}
+              />
+              <WalletConnectModal open={walletOpen} setOpen={setWalletOpen} />
+            </ThemeRegistry>
+          </Provider>
         </SnackbarProvider>
       </body>
     </html>
