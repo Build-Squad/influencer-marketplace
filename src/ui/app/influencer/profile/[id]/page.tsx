@@ -262,7 +262,7 @@ const ProfileLayout = ({
                         </Link>
                       </Typography>
                     )}
-                    {params?.id !== loggedInUser?.id && (
+                    {/* {params?.id !== loggedInUser?.id && (
                       <Box
                         sx={{
                           display: "flex",
@@ -297,7 +297,7 @@ const ProfileLayout = ({
                           Save
                         </Button>
                       </Box>
-                    )}
+                    )} */}
                     <Box
                       sx={{
                         display: "flex",
