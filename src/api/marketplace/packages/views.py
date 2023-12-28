@@ -140,6 +140,11 @@ class ServiceMasterDetail(APIView):
 
 # Service
 class ServiceList(APIView):
+    def get_authenticators(self):
+        if self.request.method == 'POST':
+            return [JWTAuthentication()]
+        return super().get_authenticators()
+
     def get(self, request):
         try:
             search = request.GET.get("search", "")
@@ -186,7 +191,6 @@ class ServiceList(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=CreateServicesSerializer)
     def post(self, request):
         try:

@@ -96,6 +96,7 @@ type TwitterAccountType = {
   location: string | null;
   url: string | null;
   joined_at: string | null;
+  account_categories?: AccountCategoryType[];
 };
 
 type UserType = {
