@@ -8,6 +8,8 @@ import PhantomIcon from "@/public/phantomIcon.svg";
 import Image from "next/image";
 import { postService } from "@/src/services/httpServices";
 import { notification } from "../shared/notification";
+import { useAppDispatch } from "@/src/hooks/useRedux";
+import { loginReducer } from "@/src/reducers/userSlice";
 
 type WalletConnectModalProps = {
   open: boolean;
@@ -18,6 +20,7 @@ export default function WalletConnectModal({
   open,
   setOpen,
 }: WalletConnectModalProps) {
+  const dispatch = useAppDispatch();
   const [isPhantomInstalled, setIsPhantomInstalled] = React.useState(false);
   const [provider, setProvider] = React.useState<any>(null);
   const [walletAddress, setWalletAddress] = React.useState<string>("");
@@ -62,6 +65,7 @@ export default function WalletConnectModal({
       requestBody
     );
     if (isSuccess) {
+      dispatch(loginReducer(data?.data));
       notification(message);
       setOpen(false);
     } else {
