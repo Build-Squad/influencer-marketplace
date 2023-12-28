@@ -46,40 +46,43 @@ export default function Navbar({
             alt="bgimg"
           />
         </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            columnGap: "8px",
-            // width: "33%",
-            justifyContent: "center",
-          }}
-        >
-          <Button
-            variant={pathname.includes("influencer") ? "contained" : "outlined"}
-            color="secondary"
+        {loginStatus ? null : (
+          <Box
             sx={{
-              borderRadius: "20px",
-            }}
-            onClick={() => {
-              router.push("/influencer");
+              display: "flex",
+              columnGap: "8px",
+              // width: "33%",
+              justifyContent: "center",
             }}
           >
-            For Influencer
-          </Button>
-          <Button
-            variant={pathname.includes("business") ? "contained" : "outlined"}
-            color="secondary"
-            sx={{
-              borderRadius: "20px",
-            }}
-            onClick={() => {
-              router.push("/business");
-            }}
-          >
-            For Business
-          </Button>
-        </Box>
+            <Button
+              variant={
+                pathname.includes("influencer") ? "contained" : "outlined"
+              }
+              color="secondary"
+              sx={{
+                borderRadius: "20px",
+              }}
+              onClick={() => {
+                router.push("/influencer");
+              }}
+            >
+              For Influencer
+            </Button>
+            <Button
+              variant={pathname.includes("business") ? "contained" : "outlined"}
+              color="secondary"
+              sx={{
+                borderRadius: "20px",
+              }}
+              onClick={() => {
+                router.push("/business");
+              }}
+            >
+              For Business
+            </Button>
+          </Box>
+        )}
         <Box sx={{ textAlign: "right" }}>
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             Why XFluencer
@@ -101,15 +104,17 @@ export default function Navbar({
           </Button>
           {loginStatus ? (
             <>
-              <Button
-                color="inherit"
-                sx={{ fontSize: "16px" }}
-                onClick={() => {
-                  window.location.href = `/influencer/profile/${currentUser?.id}`;
-                }}
-              >
-                Profile
-              </Button>
+              {pathname.includes("business") ? null : (
+                <Button
+                  color="inherit"
+                  sx={{ fontSize: "16px" }}
+                  onClick={() => {
+                    window.location.href = `/influencer/profile/${currentUser?.id}`;
+                  }}
+                >
+                  Profile
+                </Button>
+              )}
               <Button
                 variant="outlined"
                 sx={{
