@@ -10,21 +10,21 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 type CheckoutModalProps = {
   serviceItems: ServiceType[];
-  packageItems: PackageType[];
   open: boolean;
   handleClose: () => void;
 };
 
 const CheckoutModal = ({
   serviceItems,
-  packageItems,
   open,
   handleClose,
 }: CheckoutModalProps) => {
+  const router = useRouter();
   const [checkedOutServices, setCheckedOutServices] = React.useState<
     Array<ServiceCheckOutType>
   >([]);
@@ -44,25 +44,18 @@ const CheckoutModal = ({
       if (index !== -1) {
         services[index].quantity += 1;
         services[index].price =
-          services[index].serviceItem.price * services[index].quantity;
+          parseFloat(services[index].serviceItem?.platform_price) *
+          services[index].quantity;
         return;
       }
       services.push({
         serviceItem: item,
         quantity: quantity,
-        price: item.price,
+        price: parseFloat(item.platform_price),
       });
     });
     setCheckedOutServices(services);
   }, [serviceItems]);
-
-  useEffect(() => {
-    if (checkedOutServices.length === 0 && open) {
-      setCheckedOutServices([]);
-      handleClose && handleClose();
-      return;
-    }
-  }, [checkedOutServices, open]);
 
   return (
     <Box
@@ -135,11 +128,21 @@ const CheckoutModal = ({
                 </TableRow>
               </TableHead>
               <TableBody>
+                {checkedOutServices.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={12}
+                      sx={{
+                        textAlign: "center",
+                      }}
+                    >
+                      No service added
+                    </TableCell>
+                  </TableRow>
+                )}
                 {checkedOutServices.map((service) => (
                   <TableRow key={service.serviceItem.id}>
-                    <TableCell>
-                      {service.serviceItem.service_master.name}
-                    </TableCell>
+                    <TableCell>{service.serviceItem?.package?.name}</TableCell>
                     <TableCell>
                       {/* A counter */}
                       <Box
@@ -150,7 +153,6 @@ const CheckoutModal = ({
                         }}
                       >
                         <Button
-                          variant="outlined"
                           color="secondary"
                           sx={{
                             borderRadius: "50%",
@@ -162,14 +164,14 @@ const CheckoutModal = ({
                           }}
                           onClick={() => {
                             const services = [...checkedOutServices];
-
                             services.forEach((item) => {
                               if (
                                 item.serviceItem.id === service.serviceItem.id
                               ) {
                                 item.quantity = Math.max(item.quantity - 1, 0);
                                 item.price =
-                                  item.serviceItem.price * item.quantity;
+                                  parseFloat(item.serviceItem.platform_price) *
+                                  item.quantity;
                                 if (item.quantity === 0) {
                                   const index = services.findIndex(
                                     (service) =>
@@ -186,9 +188,17 @@ const CheckoutModal = ({
                         >
                           -
                         </Button>
-                        <Box>{service.quantity}</Box>
+                        <Box
+                          sx={{
+                            p: "0px 8px",
+                            border: "1px solid #e8e8e8",
+                            borderRadius: 2,
+                            backgroundColor: "#f8f8f8",
+                          }}
+                        >
+                          {service.quantity}
+                        </Box>
                         <Button
-                          variant="outlined"
                           color="secondary"
                           sx={{
                             borderRadius: "50%",
@@ -207,7 +217,8 @@ const CheckoutModal = ({
                               ) {
                                 item.quantity += 1;
                                 item.price =
-                                  item.serviceItem.price * item.quantity;
+                                  parseFloat(item.serviceItem.platform_price) *
+                                  item.quantity;
                               }
                             });
 
@@ -219,7 +230,8 @@ const CheckoutModal = ({
                       </Box>
                     </TableCell>
                     <TableCell>
-                      {service.price} {service.serviceItem.currency.symbol}
+                      {service.price?.toFixed(2)}{" "}
+                      {service.serviceItem.currency.symbol}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -234,10 +246,9 @@ const CheckoutModal = ({
                   </TableCell>
                   <TableCell></TableCell>
                   <TableCell>
-                    {checkedOutServices.reduce(
-                      (acc, cur) => acc + cur.price,
-                      0
-                    )}{" "}
+                    {checkedOutServices
+                      .reduce((acc, cur) => acc + cur.price, 0)
+                      ?.toFixed(2)}{" "}
                     {checkedOutServices[0]?.serviceItem.currency.symbol}
                   </TableCell>
                 </TableRow>
@@ -269,6 +280,10 @@ const CheckoutModal = ({
               color="secondary"
               sx={{ borderRadius: 5, mx: 1 }}
               fullWidth
+              disabled={checkedOutServices.length === 0}
+              onClick={() => {
+                router.push("/checkout");
+              }}
             >
               Proceed
             </Button>

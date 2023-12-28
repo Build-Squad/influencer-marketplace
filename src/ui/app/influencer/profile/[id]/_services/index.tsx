@@ -529,7 +529,6 @@ const Services = ({ currentUser, id }: ServiceProps) => {
           setCheckedOutServices([]);
         }}
         serviceItems={checkedOutServices}
-        packageItems={[]}
       />
     </Box>
   );
