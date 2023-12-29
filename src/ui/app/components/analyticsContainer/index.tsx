@@ -1,7 +1,5 @@
 import React from "react";
 import { Box, Typography, Grid } from "@mui/material";
-import Vertical_Line from "@/public/svg/Vertical_Line.svg";
-import Image from "next/image";
 
 type AnalyticsItemProps = {
   value: String;
@@ -25,7 +23,20 @@ const AnalyticsItem = ({ value, subtitle }: AnalyticsItemProps) => (
       </Typography>
       <Typography variant="subtitle1">{subtitle}</Typography>
     </Box>
-    <Image src={Vertical_Line} height={124} width={0} alt="" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="2"
+      height="126"
+      viewBox="0 0 2 126"
+      fill="none"
+    >
+      <path
+        d="M1 1L0.999995 125"
+        stroke="white"
+        stroke-opacity="0.6"
+        stroke-linecap="round"
+      />
+    </svg>
   </Grid>
 );
 
@@ -36,12 +47,13 @@ const AnalyticsContainer = () => (
     justifyContent="center"
     alignItems="center"
     sx={{
+      color: "white",
       m: 0,
       width: "100%",
       padding: "24px 40px",
       borderRadius: "32px 32px 0px 0px",
       border: "1px solid #000",
-      background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+      background: "black",
       textAlign: "left",
     }}
   >

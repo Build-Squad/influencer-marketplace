@@ -11,6 +11,7 @@ const styles = {
     padding: "24px 40px",
     backgroundColor: "#212121",
     color: "white",
+    textAlign: "left",
   },
   column: {
     marginTop: 5,

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import { BannerFilterSchema, BannerFilterInitialValues } from "./validation";
 import Image from "next/image";
 import Arrow from "@/public/svg/Arrow.svg";
@@ -22,11 +22,12 @@ export default function Banner({}: Props) {
     <Box
       sx={{
         border: "1px solid #000",
-        background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+        backgroundImage: "url(/Business_Landing_page.png)",
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
         position: "relative",
+        paddingY: "82px",
       }}
     >
       <Box
@@ -34,7 +35,6 @@ export default function Banner({}: Props) {
           display: "flex",
           alignItems: "flex-end",
           columnGap: "4px",
-          mt: 3,
         }}
       >
         <Image
@@ -50,14 +50,12 @@ export default function Banner({}: Props) {
       </Box>
       <Box
         sx={{
-          width: "40%",
+          width: "60%",
           textAlign: "center",
           mt: 1,
           display: "flex",
           alignItems: "flex-end",
           columnGap: "8px",
-          position: "relative",
-          marginBottom: "120px",
         }}
       >
         <Typography variant="h4" fontWeight={"bold"}>
@@ -75,44 +73,43 @@ export default function Banner({}: Props) {
       {/* Filters Container */}
       <Box
         sx={{
-          position: "absolute",
-          top: "100%",
-          transform: "translateY(-50%)",
+          mt: 5,
           px: 5,
           py: 3,
-          width: "80%",
-          backgroundColor: "white",
+          width: "60%",
+          background: "rgba(255, 255, 255, 0.51)",
           borderRadius: "16px",
+          backdropFilter: "blur(5px)",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
         }}
       >
         <form onSubmit={formik.handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={4} sm={4} md={2} lg={2} sx={{ mb: 2 }}>
+          <Grid container spacing={2} justifyContent={"space-around"}>
+            <Grid item xs={4} sm={4} md={4} lg={4} sx={{ mb: 2 }}>
               <FiltersComponent formik={formik} type={"LANGUAGE"} />
             </Grid>
-            <Grid item xs={4} sm={4} md={2} lg={2}>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
               <FiltersComponent formik={formik} type={"SERVICES"} />
             </Grid>
-            <Grid item xs={4} sm={4} md={2} lg={2}>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
               <FiltersComponent formik={formik} type={"CATEGORIES"} />
             </Grid>
-            <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
+            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
                 type={"PRICE"}
                 data={{ name: "lowerPriceLimit", label: "Min. Price($)" }}
               />
             </Grid>
-            <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
-            <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
+            <span style={{ marginTop: "24px" }}>-</span>
+            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
                 type={"PRICE"}
                 data={{ name: "upperPriceLimit", label: "Max. Price($)" }}
               />
             </Grid>
-            <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
+            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
                 type={"FOLLOWERS"}
@@ -120,16 +117,62 @@ export default function Banner({}: Props) {
               />
             </Grid>
             <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
-            <Grid item xs={3} sm={3} md={1.2} lg={1.2}>
+            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
                 type={"FOLLOWERS"}
                 data={{ name: "upperPriceLimit", label: "Max. Followers" }}
               />
             </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={12}>
+              <FiltersComponent formik={formik} type={"SEARCH"} />
+            </Grid>
           </Grid>
-          <FiltersComponent formik={formik} type={"SEARCH"} />
         </form>
+      </Box>
+
+      <Box sx={{ mt: 5, textAlign: "center" }}>
+        <Typography variant="h6">
+          How can Xfluencer add to the success of your business?
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            columnGap: "8px",
+            mt: 2,
+          }}
+        >
+          {[
+            "Post",
+            "Thread",
+            "Like",
+            "Reply",
+            "Pinned Tweet",
+            "Quote a Post",
+          ].map((it: string, ind: number) => {
+            return (
+              <Button
+                key={ind}
+                variant={"outlined"}
+                color="secondary"
+                sx={{
+                  borderRadius: "24px",
+                  border: "1px solid #7B7B7B",
+                  background: "rgba(255, 255, 255, 0.40)",
+                  fontSize: "20px",
+                }}
+              >
+                {it}
+              </Button>
+            );
+          })}
+          <Typography variant="h6" fontWeight={"bold"}>
+            + Much More
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
