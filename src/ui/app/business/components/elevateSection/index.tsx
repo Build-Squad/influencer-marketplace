@@ -3,7 +3,7 @@ import { Box, Button, Typography } from "@mui/material";
 import React from "react";
 import Image from "next/image";
 import { CheckCircle } from "@mui/icons-material";
-
+import category_image from "@/public/svg/category_image.svg";
 type Props = {};
 
 export default function FAQSection({}: Props) {
@@ -108,7 +108,7 @@ export default function FAQSection({}: Props) {
         </Box>
         <Box sx={{ flex: 1 }}>
           <Image
-            src={"/category_image.png"}
+            src={category_image}
             alt=""
             height={100}
             width={100}
