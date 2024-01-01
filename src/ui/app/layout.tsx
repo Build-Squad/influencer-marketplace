@@ -57,7 +57,7 @@ export default function RootLayout({
           status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
       });
     }
-  }, [isTwitterUserLoggedIn]);
+  }, []);
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
