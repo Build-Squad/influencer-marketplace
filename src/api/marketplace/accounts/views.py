@@ -18,6 +18,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from packages.models import Package, Service
 from .models import (
     AccountLanguage,
     TwitterAccount,
@@ -145,35 +146,78 @@ class TwitterAccountList(APIView):
                     )
 
             if languages:
-                for twitter_account in twitterAccount:
-                    # Step 1: Fetch the associated User based on some logic (replace with your own logic)
-                    try:
-                        userObj = User.objects.get(
-                            twitter_account_id=twitter_account.id
-                        )
-                    except User.DoesNotExist:
-                        userObj = None
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not AccountLanguage.objects.filter(
+                        user_account__twitter_account=twitter_account,
+                        language__langEnglishName__in=languages,
+                    ).exists()
+                ]
 
-                    # Step 2: Fetch the associated AccountLanguage instances for the userObj
-                    if userObj:
-                        account_languages_for_user = AccountLanguage.objects.filter(
-                            user_account=userObj.id
-                        )
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
 
-                        # Check if any of the languages from the request is present in account_languages_for_user
-                        languages_present = any(
-                            language in account_language.language.langEnglishName
-                            for language in languages
-                            for account_language in account_languages_for_user
-                        )
+            if serviceTypes:
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not Package.objects.filter(
+                        influencer__twitter_account=twitter_account
+                    ).exists()
+                    or not Service.objects.filter(
+                        package__influencer__twitter_account=twitter_account,
+                        service_master__name__in=serviceTypes,
+                    ).exists()
+                ]
 
-                        # Step 3: If languages are not present, remove the twitter_account from the original queryset
-                        if not languages_present:
-                            twitterAccount = twitterAccount.exclude(
-                                id=twitter_account.id
-                            )
-                    else:
-                        twitterAccount = twitterAccount.exclude(id=twitter_account.id)
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
+
+            if upperPriceLimit:
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not Package.objects.filter(
+                        influencer__twitter_account=twitter_account
+                    ).exists()
+                    or not Service.objects.filter(
+                        package__influencer__twitter_account=twitter_account,
+                        price__lte=upperPriceLimit
+                    ).exists()
+                ]
+
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
+            
+            if lowerPriceLimit:
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not Package.objects.filter(
+                        influencer__twitter_account=twitter_account
+                    ).exists()
+                    or not Service.objects.filter(
+                        package__influencer__twitter_account=twitter_account,
+                        price__gte=lowerPriceLimit
+                    ).exists()
+                ]
+
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
+
 
             # Paginate the results
             pagination = Pagination(twitterAccount, request)
