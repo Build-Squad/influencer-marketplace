@@ -2,9 +2,9 @@ from marketplace.services import Pagination, handleServerException, handleNotFou
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Country, Currency, Language
+from .models import Country, Currency, LanguageMaster
 from django.db.models import Q
-from .serializers import CountrySerializer, CurrencySerializer, LanguageSerializer
+from .serializers import CountrySerializer, CurrencySerializer, LanguageMasterSerializer
 
 
 class CountryListView(APIView):
@@ -106,17 +106,17 @@ class LanguageListView(APIView):
         try:
             search = request.GET.get("search", None)
             order_by = request.GET.get("order_by", None)
-            language = Language.objects.all()
+            language = LanguageMaster.objects.all()
             if search:
-                language = Language.objects.filter(
+                language = LanguageMaster.objects.filter(
                     Q(langCode__icontains=search) | Q(langEnglishName__icontains=search)
                 )
             else:
-                language = Language.objects.all()
+                language = LanguageMaster.objects.all()
             if order_by:
                 language = language.order_by(order_by)
             pagination = Pagination(language, request)
-            serializer = LanguageSerializer(language, many=True)
+            serializer = LanguageMasterSerializer(language, many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -133,17 +133,17 @@ class LanguageListView(APIView):
 class LanguageDetailView(APIView):
     def get(self, request, pk, format=None):
         try:
-            language = Language.objects.get(pk=pk)
-            serializer = LanguageSerializer(language)
+            language = LanguageMaster.objects.get(pk=pk)
+            serializer = LanguageMasterSerializer(language)
             return Response(
                 {
                     "isSuccess": True,
                     "data": serializer.data,
-                    "message": "Language retrieved successfully",
+                    "message": "LanguageMaster retrieved successfully",
                 },
                 status=status.HTTP_200_OK,
             )
-        except Language.DoesNotExist:
+        except LanguageMaster.DoesNotExist:
             return handleNotFound()
         except Exception as e:
             return handleServerException(e)

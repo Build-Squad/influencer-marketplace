@@ -19,6 +19,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import (
+    AccountLanguage,
     TwitterAccount,
     CategoryMaster,
     AccountCategory,
@@ -111,7 +112,7 @@ class TwitterAccountList(APIView):
             lowerFollowerLimit = request.GET.get("lowerFollowerLimit", None)
 
             searchString = request.GET.get("searchString", "")
-            isVerified_str = request.GET.get("isVerified", "true")
+            isVerified_str = request.GET.get("isVerified", "false")
             isVerified = bool(strtobool(isVerified_str))
 
             # Filter based on parameters
@@ -136,6 +137,43 @@ class TwitterAccountList(APIView):
 
             if isVerified:
                 twitterAccount = twitterAccount.filter(verified=isVerified)
+
+            if categories:
+                for category in categories:
+                    twitterAccount = twitterAccount.filter(
+                        cat_twitter_account_id__category__name=category
+                    )
+
+            if languages:
+                for twitter_account in twitterAccount:
+                    # Step 1: Fetch the associated User based on some logic (replace with your own logic)
+                    try:
+                        userObj = User.objects.get(
+                            twitter_account_id=twitter_account.id
+                        )
+                    except User.DoesNotExist:
+                        userObj = None
+
+                    # Step 2: Fetch the associated AccountLanguage instances for the userObj
+                    if userObj:
+                        account_languages_for_user = AccountLanguage.objects.filter(
+                            user_account=userObj.id
+                        )
+
+                        # Check if any of the languages from the request is present in account_languages_for_user
+                        languages_present = any(
+                            language in account_language.language.langEnglishName
+                            for language in languages
+                            for account_language in account_languages_for_user
+                        )
+
+                        # Step 3: If languages are not present, remove the twitter_account from the original queryset
+                        if not languages_present:
+                            twitterAccount = twitterAccount.exclude(
+                                id=twitter_account.id
+                            )
+                    else:
+                        twitterAccount = twitterAccount.exclude(id=twitter_account.id)
 
             # Paginate the results
             pagination = Pagination(twitterAccount, request)

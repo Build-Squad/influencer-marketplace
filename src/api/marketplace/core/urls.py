@@ -13,6 +13,6 @@ urlpatterns = [
     path("country/<str:pk>/", CountryDetailView.as_view()),
     path("currency/", CurrencyListView.as_view()),
     path("currency/<str:pk>/", CurrencyDetailView.as_view()),
-    path("language/", LanguageListView.as_view()),
-    path("language/<str:pk>/", LanguageDetailView.as_view()),
+    path("language-master/", LanguageListView.as_view()),
+    path("language-master/<str:pk>/", LanguageDetailView.as_view()),
 ]
