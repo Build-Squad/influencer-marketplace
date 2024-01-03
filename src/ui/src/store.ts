@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { userSlice } from "./reducers/userSlice";
+import { cartSlice } from "./reducers/cartSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       // Add the generated reducer as a specific top-level slice
       user: userSlice.reducer,
+      cart: cartSlice.reducer,
     },
   });
 };
