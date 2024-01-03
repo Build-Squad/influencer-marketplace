@@ -110,6 +110,7 @@ const ProfileLayout = ({
               sx={{
                 backgroundImage: "url(/profileBanner.png)",
                 border: "1px solid #000",
+                borderTop: "none",
                 display: "flex",
                 minHeight: "200px",
                 width: "100%",
@@ -449,7 +450,7 @@ const ProfileLayout = ({
                   ))}
                 </Box>
                 <Box sx={{ p: 2 }}>
-                  <Services currentUser={currentUser} id={params.id} />
+                  <Services currentInfluencer={currentUser} id={params.id} />
                 </Box>
               </Grid>
             </Grid>
