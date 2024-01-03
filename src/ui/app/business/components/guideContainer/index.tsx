@@ -40,7 +40,13 @@ const stepContainerStyle = {
 
 export default function GuideContainer({}: Props) {
   return (
-    <>
+    <Box
+      sx={{
+        paddingY: "52px",
+        borderRadius: "16px",
+        boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
+      }}
+    >
       <Typography variant="h5" fontWeight="bold">
         How it Works?
       </Typography>
@@ -52,6 +58,7 @@ export default function GuideContainer({}: Props) {
           display: "flex",
           justifyContent: "space-between",
           padding: "64px 72px",
+          paddingBottom: "0px",
           flexWrap: "wrap",
         }}
       >
@@ -67,6 +74,6 @@ export default function GuideContainer({}: Props) {
           </Box>
         ))}
       </Box>
-    </>
+    </Box>
   );
 }

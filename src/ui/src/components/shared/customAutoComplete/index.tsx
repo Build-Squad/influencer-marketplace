@@ -116,6 +116,7 @@ const CustomAutoComplete = ({
 
   return isMulti ? (
     <Autocomplete
+    color="primary"
       multiple={true}
       value={value}
       options={options}

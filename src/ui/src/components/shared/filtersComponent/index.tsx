@@ -24,6 +24,8 @@ export default function FiltersComponent({
           sx={{
             ".MuiInputBase-root": {
               borderRadius: "24px",
+              border: "1px solid black",
+              backgroundColor: "white",
             },
           }}
           apiEndpoint="/core/language"
@@ -55,6 +57,8 @@ export default function FiltersComponent({
           sx={{
             ".MuiInputBase-root": {
               borderRadius: "24px",
+              border: "1px solid black",
+              backgroundColor: "white",
             },
           }}
           apiEndpoint="/packages/servicemaster"
@@ -86,6 +90,8 @@ export default function FiltersComponent({
           sx={{
             ".MuiInputBase-root": {
               borderRadius: "24px",
+              border: "1px solid black",
+              backgroundColor: "white",
             },
           }}
           apiEndpoint="/account/category-master"
@@ -133,6 +139,8 @@ export default function FiltersComponent({
           sx={{
             ".MuiInputBase-root": {
               borderRadius: "24px",
+              border: "1px solid black",
+              backgroundColor: "white",
             },
           }}
           fullWidth
@@ -161,6 +169,8 @@ export default function FiltersComponent({
           sx={{
             ".MuiInputBase-root": {
               borderRadius: "24px",
+              border: "1px solid black",
+              backgroundColor: "white",
             },
           }}
           fullWidth
@@ -174,7 +184,7 @@ export default function FiltersComponent({
                 variant="contained"
                 color="secondary"
                 sx={{
-                  borderRadius: "28px",
+                  borderRadius: "12px",
                   fontWeight: "bold",
                   px: 4,
                 }}
@@ -210,6 +220,8 @@ export default function FiltersComponent({
           sx={{
             ".MuiInputBase-root": {
               borderRadius: "24px",
+              border: "1px solid black",
+              backgroundColor: "white",
             },
           }}
           fullWidth

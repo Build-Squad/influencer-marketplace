@@ -17,9 +17,17 @@ type Props = {
 
 export default function InfluencersCards({ influencer }: Props) {
   return (
-    <Grid item xs={12} sm={6} md={3} lg={3} key={influencer?.twitterUsername}>
+    <Grid
+      item
+      xs={12}
+      sm={6}
+      md={2.8}
+      lg={2.8}
+      key={influencer?.twitterUsername}
+    >
       <Card
         sx={{
+          cursor: "pointer",
           borderRadius: "16px",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
         }}
