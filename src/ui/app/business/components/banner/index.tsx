@@ -22,6 +22,7 @@ export default function Banner({}: Props) {
     <Box
       sx={{
         border: "1px solid #000",
+        borderTop: "none",
         backgroundImage: "url(/Business_Landing_page.png)",
         display: "flex",
         alignItems: "center",
