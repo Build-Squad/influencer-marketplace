@@ -1,7 +1,9 @@
 from unicodedata import category
 from rest_framework import serializers
 from uuid import UUID
-from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
+
+from core.serializers import LanguageMasterSerializer
+from .models import AccountLanguage, TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role
 
 class CategoryMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,9 +62,17 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class AccountLanguageSerializer(serializers.ModelSerializer):
+    language = LanguageMasterSerializer(read_only=True)
+
+    class Meta:
+        model = AccountLanguage
+        fields = "__all__"
+
 class UserSerializer(serializers.ModelSerializer):
     twitter_account = TwitterAccountSerializer(read_only=True)
     role = RoleSerializer(read_only=True)
+    account_languages = AccountLanguageSerializer(many=True, read_only=True, source='acc_user_account_id')
 
     class Meta:
         model = User

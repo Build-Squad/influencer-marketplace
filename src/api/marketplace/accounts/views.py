@@ -1,6 +1,9 @@
+from distutils.util import strtobool
 from http.client import HTTPResponse
+import uuid
 from urllib import request
 from marketplace.authentication import JWTAuthentication
+from django.db.models import Q
 from marketplace.services import (
     EmailService,
     Pagination,
@@ -8,14 +11,26 @@ from marketplace.services import (
     handleBadRequest,
     handleNotFound,
     handleDeleteNotAllowed,
-    JWTOperations
+    JWTOperations,
 )
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TwitterAccount, CategoryMaster, AccountCategory, User, BankAccount, Role, Wallet, WalletNetwork, WalletProvider
+from packages.models import Package, Service
+from .models import (
+    AccountLanguage,
+    TwitterAccount,
+    CategoryMaster,
+    AccountCategory,
+    User,
+    BankAccount,
+    Role,
+    Wallet,
+    WalletNetwork,
+    WalletProvider,
+)
 from .serializers import (
     CreateAccountCategorySerializer,
     DeleteAccountCategorySerializer,
@@ -30,16 +45,16 @@ from .serializers import (
     TwitterAuthSerializer,
     RoleSerializer,
     EmailVerificationSerializer,
-    WalletAuthSerializer
+    WalletAuthSerializer,
 )
 from .services import OTPAuthenticationService, TwitterAuthenticationService
 from decouple import config
 import datetime
 
 
-
 # Twitter account API-Endpoint
 # List-Create-API
+
 
 class RoleList(APIView):
     def get(self, request):
@@ -84,10 +99,127 @@ class RoleDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 class TwitterAccountList(APIView):
     def get(self, request):
         try:
+            languages = request.GET.getlist("languages", [])
+            serviceTypes = request.GET.getlist("serviceTypes", [])
+            categories = request.GET.getlist("categories", [])
+
+            upperPriceLimit = request.GET.get("upperPriceLimit", None)
+            lowerPriceLimit = request.GET.get("lowerPriceLimit", None)
+            upperFollowerLimit = request.GET.get("upperFollowerLimit", None)
+            lowerFollowerLimit = request.GET.get("lowerFollowerLimit", None)
+
+            searchString = request.GET.get("searchString", "")
+            isVerified_str = request.GET.get("isVerified", "false")
+            isVerified = bool(strtobool(isVerified_str))
+
+            # Filter based on parameters
             twitterAccount = TwitterAccount.objects.all()
+
+            # From the account model itself.
+            if upperFollowerLimit is not None:
+                twitterAccount = twitterAccount.filter(
+                    followers_count__lte=upperFollowerLimit
+                )
+
+            if lowerFollowerLimit is not None:
+                twitterAccount = twitterAccount.filter(
+                    followers_count__gte=lowerFollowerLimit
+                )
+
+            if searchString:
+                twitterAccount = twitterAccount.filter(
+                    Q(user_name__icontains=searchString)
+                    | Q(name__icontains=searchString)
+                )
+
+            if isVerified:
+                twitterAccount = twitterAccount.filter(verified=isVerified)
+
+            if categories:
+                for category in categories:
+                    twitterAccount = twitterAccount.filter(
+                        cat_twitter_account_id__category__name=category
+                    )
+
+            if languages:
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not AccountLanguage.objects.filter(
+                        user_account__twitter_account=twitter_account,
+                        language__langEnglishName__in=languages,
+                    ).exists()
+                ]
+
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
+
+            if serviceTypes:
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not Package.objects.filter(
+                        influencer__twitter_account=twitter_account
+                    ).exists()
+                    or not Service.objects.filter(
+                        package__influencer__twitter_account=twitter_account,
+                        service_master__name__in=serviceTypes,
+                    ).exists()
+                ]
+
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
+
+            if upperPriceLimit:
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not Package.objects.filter(
+                        influencer__twitter_account=twitter_account
+                    ).exists()
+                    or not Service.objects.filter(
+                        package__influencer__twitter_account=twitter_account,
+                        price__lte=upperPriceLimit
+                    ).exists()
+                ]
+
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
+            
+            if lowerPriceLimit:
+                twitter_accounts_to_exclude = [
+                    twitter_account.id
+                    for twitter_account in twitterAccount
+                    if not User.objects.filter(twitter_account=twitter_account).exists()
+                    or not Package.objects.filter(
+                        influencer__twitter_account=twitter_account
+                    ).exists()
+                    or not Service.objects.filter(
+                        package__influencer__twitter_account=twitter_account,
+                        price__gte=lowerPriceLimit
+                    ).exists()
+                ]
+
+                # Exclude undesired twitter accounts from the queryset
+                twitterAccount = twitterAccount.exclude(
+                    id__in=twitter_accounts_to_exclude
+                )
+
+
+            # Paginate the results
             pagination = Pagination(twitterAccount, request)
             serializer = TwitterAccountSerializer(pagination.getData(), many=True)
             return Response(
@@ -312,6 +444,7 @@ class AccountCategoryList(APIView):
             return None
 
     authentication_classes = [JWTAuthentication]
+
     def get(self, request):
         try:
             # If no twitter_account_id is provided, try for the logged in user
@@ -338,11 +471,13 @@ class AccountCategoryList(APIView):
             return handleServerException(e)
 
     authentication_classes = [JWTAuthentication]
+
     @swagger_auto_schema(request_body=AccountCategorySerializer)
     def post(self, request):
         try:
-            serializer = CreateAccountCategorySerializer(data=request.data,
-                                                         context={'request': request})
+            serializer = CreateAccountCategorySerializer(
+                data=request.data, context={"request": request}
+            )
 
             if serializer.is_valid():
                 serializer.save()
@@ -366,7 +501,7 @@ class AccountCategoryList(APIView):
         try:
             serializer = DeleteAccountCategorySerializer(data=request.data)
             if serializer.is_valid():
-                account_category_ids = serializer.validated_data['account_category_ids']
+                account_category_ids = serializer.validated_data["account_category_ids"]
                 for account_category_id in account_category_ids:
                     account_category = self.get_object(account_category_id)
                     if account_category is None:
@@ -676,7 +811,6 @@ class BankAccountDetail(APIView):
 
 
 class TwitterAuth(APIView):
-
     def get_object(self, twitter_id):
         try:
             return TwitterAccount.objects.get(twitter_id=twitter_id)
@@ -689,8 +823,11 @@ class TwitterAuth(APIView):
             user_data = twitter_auth_service.get_twitter_client_data(request)
             twitter_account = self.get_object(user_data.id)
             if twitter_account:
-                twitter_account.access_token = twitter_auth_service.get_twitter_access_token(
-                    request.build_absolute_uri())
+                twitter_account.access_token = (
+                    twitter_auth_service.get_twitter_access_token(
+                        request.build_absolute_uri()
+                    )
+                )
                 twitter_account.save()
 
             else:
@@ -699,7 +836,8 @@ class TwitterAuth(APIView):
                     name=user_data.name,
                     user_name=user_data.username,
                     access_token=twitter_auth_service.get_twitter_access_token(
-                        request.build_absolute_uri()),
+                        request.build_absolute_uri()
+                    ),
                     description=user_data.description,
                     profile_image_url=user_data.profile_image_url,
                     followers_count=user_data.public_metrics["followers_count"],
@@ -727,13 +865,14 @@ class TwitterAuth(APIView):
             #                            payload=twitter_auth_service.get_jwt_payload(twitter_account))
 
             response = HTTPResponse()
-            response['Location'] = config('FRONT_END_URL')
+            response["Location"] = config("FRONT_END_URL")
             response.status_code = 302
             # response.set_cookie('jwt', JWTOperations().generateJwtToken(
             #     twitter_auth_service.get_jwt_payload(twitter_account)))
             return response
         except Exception as e:
             return handleServerException(e)
+
     @swagger_auto_schema(request_body=TwitterAuthSerializer)
     def post(self, request):
         try:
@@ -786,7 +925,6 @@ class UserAuth(APIView):
 
 
 class OTPAuth(APIView):
-
     def get_or_create_user(self, email):
         try:
             return User.objects.get(email=email)
@@ -798,6 +936,7 @@ class OTPAuth(APIView):
             )
             user.save()
             return user
+
     @swagger_auto_schema(request_body=OTPAuthenticationSerializer)
     def post(self, request):
         try:
@@ -878,13 +1017,21 @@ class OTPVerification(APIView):
                     user_id = str(user.id)
                     payload = {
                         "id": user_id,
-                        "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=86400),
+                        "exp": datetime.datetime.utcnow()
+                        + datetime.timedelta(seconds=86400),
                         "iat": datetime.datetime.utcnow(),
                     }
                     response = Response()  # Create a new Response instance
                     token = jwt_operations.generateToken(payload)
                     response.set_cookie(
-                        'jwt', token, max_age=86400, path="/", secure=True, httponly=True, samesite="None")
+                        "jwt",
+                        token,
+                        max_age=86400,
+                        path="/",
+                        secure=True,
+                        httponly=True,
+                        samesite="None",
+                    )
                     response.data = {
                         "isSuccess": True,
                         "data": UserSerializer(user).data,
@@ -1020,7 +1167,6 @@ class EmailVerification(APIView):
 
 
 class WalletAuth(APIView):
-
     def get_wallet(self, wallet_address_id):
         try:
             return Wallet.objects.get(wallet_address_id=wallet_address_id)
@@ -1030,7 +1176,10 @@ class WalletAuth(APIView):
     def create_wallet(self, wallet_address_id, wallet_provider, wallet_network):
         try:
             wallet = Wallet.objects.create(
-                wallet_address_id=wallet_address_id, wallet_provider_id=wallet_provider, wallet_network_id=wallet_network)
+                wallet_address_id=wallet_address_id,
+                wallet_provider_id=wallet_provider,
+                wallet_network_id=wallet_network,
+            )
             wallet.save()
             return wallet
         except Exception as e:
@@ -1068,9 +1217,11 @@ class WalletAuth(APIView):
                 wallet = self.get_wallet(request.data["wallet_address_id"])
                 if wallet is None:
                     wallet_provider = self.get_wallet_provider_id(
-                        serializer.validated_data["wallet_provider_id"])
+                        serializer.validated_data["wallet_provider_id"]
+                    )
                     wallet_network = self.get_wallet_network_id(
-                        serializer.validated_data["wallet_network_id"])
+                        serializer.validated_data["wallet_network_id"]
+                    )
                     wallet = self.create_wallet(
                         serializer.validated_data["wallet_address_id"],
                         wallet_provider,
@@ -1080,8 +1231,7 @@ class WalletAuth(APIView):
 
                 if wallet.user_id is None:
                     user = self.create_user(
-                        serializer.validated_data["wallet_address_id"],
-                        "business_owner"
+                        serializer.validated_data["wallet_address_id"], "business_owner"
                     )
                     wallet.user_id = user
                     wallet.save()
@@ -1093,7 +1243,8 @@ class WalletAuth(APIView):
                 user_id = str(user.id)
                 payload = {
                     "id": user_id,
-                    "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=86400),
+                    "exp": datetime.datetime.utcnow()
+                    + datetime.timedelta(seconds=86400),
                     "iat": datetime.datetime.utcnow(),
                 }
                 response = Response()
@@ -1101,7 +1252,14 @@ class WalletAuth(APIView):
                 user.jwt = token
                 user.save()
                 response.set_cookie(
-                    'jwt', token, max_age=86400, path="/", secure=True, httponly=True, samesite="None")
+                    "jwt",
+                    token,
+                    max_age=86400,
+                    path="/",
+                    secure=True,
+                    httponly=True,
+                    samesite="None",
+                )
                 response.data = {
                     "isSuccess": True,
                     "data": UserSerializer(user).data,

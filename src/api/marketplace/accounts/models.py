@@ -3,7 +3,7 @@ from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import SET_NULL
-from core.models import Currency
+from core.models import Currency, LanguageMaster
 from core.models import Country
 import uuid
 
@@ -49,7 +49,7 @@ class AccountCategory(models.Model):
                                          null=True)
 
     class Meta:
-        db_table = "account_category"                       
+        db_table = "account_category"
 
 
 class Role(models.Model):
@@ -96,6 +96,18 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class AccountLanguage(models.Model):
+    id = models.UUIDField(primary_key=True, verbose_name='Account Language ID', default=uuid.uuid4, editable=False)
+    user_account = models.ForeignKey(User, related_name='acc_user_account_id', on_delete=SET_NULL,
+                                         null=True)
+    language = models.ForeignKey(LanguageMaster, related_name='acc_language_master_id', on_delete=SET_NULL,
+                                         null=True)
+
+    class Meta:
+        db_table = "account_language"                       
+
 
 class BankAccount(models.Model):
     
