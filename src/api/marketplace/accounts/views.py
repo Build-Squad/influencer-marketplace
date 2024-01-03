@@ -103,14 +103,21 @@ class RoleDetail(APIView):
 class TwitterAccountList(APIView):
     def get(self, request):
         try:
-            languages = request.GET.getlist("languages", [])
-            serviceTypes = request.GET.getlist("serviceTypes", [])
-            categories = request.GET.getlist("categories", [])
+            languages_string = request.GET.get("languages", "")
+            languages = languages_string.split(",") if languages_string else []
 
-            upperPriceLimit = request.GET.get("upperPriceLimit", None)
-            lowerPriceLimit = request.GET.get("lowerPriceLimit", None)
-            upperFollowerLimit = request.GET.get("upperFollowerLimit", None)
-            lowerFollowerLimit = request.GET.get("lowerFollowerLimit", None)
+            service_types_string = request.GET.get("serviceTypes", "")
+            serviceTypes = (
+                service_types_string.split(",") if service_types_string else []
+            )
+
+            categories_string = request.GET.get("categories", "")
+            categories = categories_string.split(",") if categories_string else []
+
+            upperPriceLimit = request.GET.get("upperPriceLimit", "")
+            lowerPriceLimit = request.GET.get("lowerPriceLimit", "")
+            upperFollowerLimit = request.GET.get("upperFollowerLimit", "")
+            lowerFollowerLimit = request.GET.get("lowerFollowerLimit", "")
 
             searchString = request.GET.get("searchString", "")
             isVerified_str = request.GET.get("isVerified", "false")
@@ -120,17 +127,17 @@ class TwitterAccountList(APIView):
             twitterAccount = TwitterAccount.objects.all()
 
             # From the account model itself.
-            if upperFollowerLimit is not None:
+            if upperFollowerLimit or upperFollowerLimit.strip() != "":
                 twitterAccount = twitterAccount.filter(
                     followers_count__lte=upperFollowerLimit
                 )
 
-            if lowerFollowerLimit is not None:
+            if lowerFollowerLimit or lowerFollowerLimit.strip() != "":
                 twitterAccount = twitterAccount.filter(
                     followers_count__gte=lowerFollowerLimit
                 )
 
-            if searchString:
+            if searchString or searchString.strip() != "":
                 twitterAccount = twitterAccount.filter(
                     Q(user_name__icontains=searchString)
                     | Q(name__icontains=searchString)
@@ -180,7 +187,7 @@ class TwitterAccountList(APIView):
                     id__in=twitter_accounts_to_exclude
                 )
 
-            if upperPriceLimit:
+            if upperPriceLimit or upperPriceLimit.strip() != "":
                 twitter_accounts_to_exclude = [
                     twitter_account.id
                     for twitter_account in twitterAccount
@@ -190,7 +197,7 @@ class TwitterAccountList(APIView):
                     ).exists()
                     or not Service.objects.filter(
                         package__influencer__twitter_account=twitter_account,
-                        price__lte=upperPriceLimit
+                        price__lte=upperPriceLimit,
                     ).exists()
                 ]
 
@@ -198,8 +205,8 @@ class TwitterAccountList(APIView):
                 twitterAccount = twitterAccount.exclude(
                     id__in=twitter_accounts_to_exclude
                 )
-            
-            if lowerPriceLimit:
+
+            if lowerPriceLimit or lowerPriceLimit.strip() != "":
                 twitter_accounts_to_exclude = [
                     twitter_account.id
                     for twitter_account in twitterAccount
@@ -209,7 +216,7 @@ class TwitterAccountList(APIView):
                     ).exists()
                     or not Service.objects.filter(
                         package__influencer__twitter_account=twitter_account,
-                        price__gte=lowerPriceLimit
+                        price__gte=lowerPriceLimit,
                     ).exists()
                 ]
 
@@ -217,7 +224,6 @@ class TwitterAccountList(APIView):
                 twitterAccount = twitterAccount.exclude(
                     id__in=twitter_accounts_to_exclude
                 )
-
 
             # Paginate the results
             pagination = Pagination(twitterAccount, request)

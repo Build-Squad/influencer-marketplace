@@ -3,7 +3,7 @@ export type TopInfluencersType = {
   twitterUsername: string;
   profileUrl: string;
   services: string[];
-  location: string;
+  followers: string;
   minPrice: number;
   maxPrice: number;
 };
