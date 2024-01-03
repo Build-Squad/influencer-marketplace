@@ -55,7 +55,6 @@ export default function useTwitterAuth() {
       if (isSuccess) {
         setUserDetails(data?.data);
         setTwitterUserLoggedIn(true);
-        console.log("Twitter user is authenticated");
         dispatch(loginReducer(data?.data));
       } else {
         setUserDetails(null);
