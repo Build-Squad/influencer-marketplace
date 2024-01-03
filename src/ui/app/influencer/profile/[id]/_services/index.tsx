@@ -4,6 +4,7 @@ import CheckoutModal from "@/src/components/checkoutModal";
 import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
 import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
 import { notification } from "@/src/components/shared/notification";
+import { useAppSelector } from "@/src/hooks/useRedux";
 import { deleteService, getService } from "@/src/services/httpServices";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -29,7 +30,7 @@ type ServiceProps = {
 };
 
 const Services = ({ currentUser, id }: ServiceProps) => {
-  const [loggedInUser, setLoggedInUser] = React.useState<UserType | null>(null);
+  const loggedInUser = useAppSelector((state) => state.user?.user);
   const [type, setType] = React.useState<string | null>(null);
   const [checkedOutServices, setCheckedOutServices] = React.useState<
     ServiceType[]
@@ -124,11 +125,6 @@ const Services = ({ currentUser, id }: ServiceProps) => {
       setSelectedService(null);
     }
   }, [openModal]);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    setLoggedInUser(user);
-  }, []);
 
   return (
     <Box
