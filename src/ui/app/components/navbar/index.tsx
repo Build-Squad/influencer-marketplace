@@ -1,36 +1,77 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Toolbar, AppBar, Button, Box } from "@mui/material";
 import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import LoginMenu from "../loginMenu";
+import useTwitterAuth from "@/src/hooks/useTwitterAuth";
+import { LOGIN_STATUS_SUCCESS, LOGIN_STATUS_FAILED } from "@/src/utils/consts";
+import { loginStatusType } from "@/app/utils/types";
+import { useAppSelector } from "@/src/hooks/useRedux";
 
-type Props = {
-  authUser: () => {};
-  logout: () => {};
-  loginStatus: Boolean;
+type NavbarProps = {
+  setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
   setEmailOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setWalletOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  emailOpen: boolean;
+  walletOpen: boolean;
 };
 
 export default function Navbar({
-  authUser,
-  logout,
-  loginStatus,
+  setLoginStatus,
   setEmailOpen,
   setWalletOpen,
-}: Props) {
+  setCategoryOpen,
+  emailOpen,
+  walletOpen,
+}: NavbarProps) {
+  const {
+    isTwitterUserLoggedIn,
+    startTwitterAuthentication,
+    logoutTwitterUser,
+    checkTwitterUserAuthentication,
+    isAccountSsetupComplete,
+  } = useTwitterAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
+  const currentUser = useAppSelector((state) => state.user?.user);
+  // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
+
+  const params = useSearchParams();
 
   useEffect(() => {
-    if (loginStatus) {
-      const user = localStorage.getItem("user");
-      if (user) {
-        setCurrentUser(JSON.parse(user));
-      }
+    if (!emailOpen) {
+      checkTwitterUserAuthentication();
     }
-  }, [loginStatus]);
+  }, [emailOpen]);
+
+  useEffect(() => {
+    if (!walletOpen) {
+      checkTwitterUserAuthentication();
+    }
+  }, [walletOpen]);
+
+  useEffect(() => {
+    const status = params.get("authenticationStatus");
+    if (status) {
+      setLoginStatus({
+        status,
+        message:
+          status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
+      });
+    }
+  }, [isTwitterUserLoggedIn]);
+
+  useEffect(() => {
+    const status = params.get("authenticationStatus");
+    if (
+      isTwitterUserLoggedIn &&
+      !isAccountSsetupComplete &&
+      status === "success"
+    ) {
+      setCategoryOpen(true);
+    }
+  }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
 
   return (
     <AppBar position="static" sx={{ boxShadow: "none" }}>
@@ -46,7 +87,7 @@ export default function Navbar({
             alt="bgimg"
           />
         </Box>
-        {loginStatus ? null : (
+        {isTwitterUserLoggedIn ? null : (
           <Box
             sx={{
               display: "flex",
@@ -102,7 +143,7 @@ export default function Navbar({
           <Button color="inherit" sx={{ fontSize: "16px" }}>
             About
           </Button>
-          {loginStatus ? (
+          {isTwitterUserLoggedIn ? (
             <>
               {pathname.includes("business") ? null : (
                 <Button
@@ -128,7 +169,7 @@ export default function Navbar({
                   },
                 }}
                 onClick={() => {
-                  logout();
+                  logoutTwitterUser();
                   if (pathname.includes("influencer")) {
                     router.push("/influencer");
                   } else if (pathname.includes("business")) {
@@ -153,14 +194,14 @@ export default function Navbar({
                     border: "1px solid black",
                     borderRadius: "20px",
                   }}
-                  onClick={authUser}
+                  onClick={startTwitterAuthentication}
                 >
                   Login
                 </Button>
               ) : (
                 <>
                   <LoginMenu
-                    twitterLogin={authUser}
+                    twitterLogin={startTwitterAuthentication}
                     setEmailOpen={setEmailOpen}
                     setWalletOpen={setWalletOpen}
                   />
