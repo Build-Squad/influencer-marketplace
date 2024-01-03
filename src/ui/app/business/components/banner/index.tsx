@@ -23,6 +23,7 @@ export default function Banner({}: Props) {
       sx={{
         border: "1px solid #000",
         backgroundImage: "url(/Business_Landing_page.png)",
+        backgroundSize: "cover",
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
