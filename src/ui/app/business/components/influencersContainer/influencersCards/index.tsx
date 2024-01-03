@@ -90,9 +90,15 @@ export default function InfluencersCards({ influencer }: Props) {
               justifyContent={"center"}
               alignItems={"center"}
             >
-              <LocationOn fontSize="small" sx={{ color: "#676767" }} />
-              <Typography variant="subtitle1" fontWeight={"light"}>
-                {influencer?.location}
+              <Typography variant="subtitle1" fontWeight={"bold"}>
+                Followers:
+              </Typography>
+              <Typography
+                variant="subtitle1"
+                fontWeight={"light"}
+                sx={{ ml: 1 }}
+              >
+                {influencer?.followers}
               </Typography>
             </Box>
             <Typography variant="subtitle1" fontWeight={"bold"}>

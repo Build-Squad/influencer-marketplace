@@ -5,97 +5,13 @@ import InfluencersCards from "./influencersCards";
 import { TopInfluencersType } from "./types";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 
-type Props = {};
-
-const dummyData: Array<TopInfluencersType> = [
-  {
-    name: "Parikshit Singh",
-    twitterUsername: "ParikshitSingh567",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Story", "Post", "Repost", "Thread"],
-    location: "Hyderabad, India",
-    minPrice: 100,
-    maxPrice: 500,
-  },
-  {
-    name: "Shyam Visamsetty",
-    twitterUsername: "shyamvisamsetty",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread"],
-    location: "Madrid, Spain",
-    minPrice: 100,
-    maxPrice: 200,
-  },
-  {
-    name: "Mudit Sethi",
-    twitterUsername: "alphamudit",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Like", "Repost", "Thread"],
-    location: "Punjab, India",
-    minPrice: 1200,
-    maxPrice: 2800,
-  },
-  {
-    name: "Laxmi Jangid",
-    twitterUsername: "laxjangid1",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread", "Post"],
-    location: "Madrid, Spain",
-    minPrice: 11200,
-    maxPrice: 34400,
-  },
-  {
-    name: "Mudit Sethi",
-    twitterUsername: "alphamudit",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Like", "Repost", "Thread"],
-    location: "Punjab, India",
-    minPrice: 1200,
-    maxPrice: 2800,
-  },
-  {
-    name: "Laxmi Jangid",
-    twitterUsername: "laxjangid1",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread", "Post"],
-    location: "Madrid, Spain",
-    minPrice: 11200,
-    maxPrice: 34400,
-  },
-  {
-    name: "Parikshit Singh",
-    twitterUsername: "ParikshitSingh567",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Story", "Post", "Repost", "Thread"],
-    location: "Hyderabad, India",
-    minPrice: 100,
-    maxPrice: 500,
-  },
-  {
-    name: "Shyam Visamsetty",
-    twitterUsername: "shyamvisamsetty",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread"],
-    location: "Madrid, Spain",
-    minPrice: 100,
-    maxPrice: 200,
-  },
-];
+type Props = {
+  topInfluencers: TopInfluencersType[];
+};
 
 const CARDS_PER_GROUP = 4;
 
-export default function InfluencersContainer({}: Props) {
-  const [topInfluencers, setTopInfluencers] =
-    useState<TopInfluencersType[]>(dummyData);
-
+export default function InfluencersContainer({ topInfluencers }: Props) {
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
 
   const handleBack = () => {

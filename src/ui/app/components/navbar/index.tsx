@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Toolbar, AppBar, Button, Box } from "@mui/material";
+import { Toolbar, AppBar, Button, Box, Typography } from "@mui/material";
 import Image from "next/image";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import LoginMenu from "../loginMenu";
@@ -7,6 +7,23 @@ import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { LOGIN_STATUS_SUCCESS, LOGIN_STATUS_FAILED } from "@/src/utils/consts";
 import { loginStatusType } from "@/app/utils/types";
 import { useAppSelector } from "@/src/hooks/useRedux";
+import HomeIcon from "@/public/svg/Home.svg";
+import HomeDisabledIcon from "@/public/svg/Home_disabled.svg";
+
+import ProfileIcon from "@/public/svg/Profile.svg";
+import ProfileDisabledIcon from "@/public/svg/Profile_disabled.svg";
+
+import DashboardIcon from "@/public/svg/Dashboard.svg";
+import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
+
+import CartIcon from "@/public/svg/Cart.svg";
+import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
+
+import NotificationIcon from "@/public/svg/Notification.svg";
+import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
+
+import ExploreIcon from "@/public/svg/Explore.svg";
+import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
@@ -16,6 +33,40 @@ type NavbarProps = {
   emailOpen: boolean;
   walletOpen: boolean;
 };
+
+const MENU_ITEMS = [
+  {
+    label: "Home",
+    route: "/business",
+    icon: HomeIcon,
+    disabledIcon: HomeDisabledIcon,
+  },
+  {
+    label: "Explore",
+    route: "/business/explore",
+    icon: ExploreIcon,
+    disabledIcon: ExploreDisabledIcon,
+  },
+
+  {
+    label: "Dashboard",
+    route: "/business/dashboard",
+    icon: DashboardIcon,
+    disabledIcon: DashboardDisabledIcon,
+  },
+  {
+    label: "My cart",
+    route: "/business/cart",
+    icon: CartIcon,
+    disabledIcon: CartDisabledIcon,
+  },
+  {
+    label: "Notifications",
+    route: "/business/notifications",
+    icon: NotificationIcon,
+    disabledIcon: NotificationDisabledIcon,
+  },
+];
 
 export default function Navbar({
   setLoginStatus,
@@ -125,66 +176,54 @@ export default function Navbar({
           </Box>
         )}
         <Box sx={{ textAlign: "right" }}>
-          <Button color="inherit" sx={{ fontSize: "16px" }}>
-            Why XFluencer
-          </Button>
-          <Button
-            color="inherit"
-            sx={{ fontSize: "16px" }}
-            onClick={() => {
-              router.push("/business/explore");
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              columnGap: "16px",
             }}
           >
-            Explore
-          </Button>
-          <Button color="inherit" sx={{ fontSize: "16px" }}>
-            How it works
-          </Button>
-          <Button color="inherit" sx={{ fontSize: "16px" }}>
-            About
-          </Button>
-          {isTwitterUserLoggedIn ? (
-            <>
-              {pathname.includes("business") ? null : (
-                <Button
-                  color="inherit"
-                  sx={{ fontSize: "16px" }}
+            {MENU_ITEMS.map((item: any) => {
+              return (
+                <Box
+                  sx={{
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                   onClick={() => {
-                    window.location.href = `/influencer/profile/${currentUser?.id}`;
+                    if (item?.route) {
+                      router.push(item.route);
+                    }
                   }}
                 >
-                  Profile
-                </Button>
-              )}
-              <Button
-                variant="outlined"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
-                  border: "1px solid black",
-                  borderRadius: "20px",
-                  "&:hover": {
-                    border: "1px solid black",
-                  },
-                }}
-                onClick={() => {
-                  logoutTwitterUser();
-                  if (pathname.includes("influencer")) {
-                    router.push("/influencer");
-                  } else if (pathname.includes("business")) {
-                    router.push("/business");
-                  } else {
-                    router.push("/");
-                  }
-                }}
-              >
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              {pathname.includes("influencer") ? (
+                  <Image
+                    src={pathname == item.route ? item.icon : item.disabledIcon}
+                    alt={item.label}
+                    height={item.height ?? 16}
+                  />
+                  <Typography sx={{ fontSize: "10px" }}>
+                    {item.label}
+                  </Typography>
+                </Box>
+              );
+            })}
+            {isTwitterUserLoggedIn ? (
+              <>
+                {pathname.includes("business") ? null : (
+                  <Button
+                    color="inherit"
+                    sx={{ fontSize: "16px" }}
+                    onClick={() => {
+                      window.location.href = `/influencer/profile/${currentUser?.id}`;
+                    }}
+                  >
+                    Profile
+                  </Button>
+                )}
                 <Button
                   variant="outlined"
                   sx={{
@@ -193,22 +232,52 @@ export default function Navbar({
                     color: "black",
                     border: "1px solid black",
                     borderRadius: "20px",
+                    "&:hover": {
+                      border: "1px solid black",
+                    },
                   }}
-                  onClick={startTwitterAuthentication}
+                  onClick={() => {
+                    logoutTwitterUser();
+                    if (pathname.includes("influencer")) {
+                      router.push("/influencer");
+                    } else if (pathname.includes("business")) {
+                      router.push("/business");
+                    } else {
+                      router.push("/");
+                    }
+                  }}
                 >
-                  Login
+                  Logout
                 </Button>
-              ) : (
-                <>
-                  <LoginMenu
-                    twitterLogin={startTwitterAuthentication}
-                    setEmailOpen={setEmailOpen}
-                    setWalletOpen={setWalletOpen}
-                  />
-                </>
-              )}
-            </>
-          )}
+              </>
+            ) : (
+              <>
+                {pathname.includes("influencer") ? (
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      background:
+                        "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                      color: "black",
+                      border: "1px solid black",
+                      borderRadius: "20px",
+                    }}
+                    onClick={startTwitterAuthentication}
+                  >
+                    Login
+                  </Button>
+                ) : (
+                  <>
+                    <LoginMenu
+                      twitterLogin={startTwitterAuthentication}
+                      setEmailOpen={setEmailOpen}
+                      setWalletOpen={setWalletOpen}
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </Box>
         </Box>
       </Toolbar>
     </AppBar>

@@ -134,7 +134,6 @@ export default function Explore({}: Props) {
       {/* Filters section */}
       <Box
         sx={{
-          mt: 2,
           p: 3,
           background: `url(/ExplorePage.png) center / cover`,
         }}

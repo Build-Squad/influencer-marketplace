@@ -28,7 +28,7 @@ export default function FiltersComponent({
               backgroundColor: "white",
             },
           }}
-          apiEndpoint="/core/language"
+          apiEndpoint="/core/language-master"
           label="Language"
           value={formik.values.languages}
           onChange={(value: any) => {

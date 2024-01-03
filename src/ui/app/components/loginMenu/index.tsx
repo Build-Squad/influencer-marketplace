@@ -3,6 +3,8 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Button, List, ListItem, Menu } from "@mui/material";
 import * as React from "react";
+import ProfileIcon from "@/public/svg/Profile.svg";
+import Image from "next/image";
 
 type LoginMenuProps = {
   twitterLogin: () => {};
@@ -27,6 +29,10 @@ export default function LoginMenu({
 
   const loginOptions = [
     {
+      label: "Profile",
+      function: () => {},
+    },
+    {
       label: "Connect with X",
       function: twitterLogin,
     },
@@ -44,17 +50,13 @@ export default function LoginMenu({
 
   return (
     <>
-      <Button
-        variant="outlined"
-        color="secondary"
-        sx={{
-          borderRadius: "20px",
-        }}
-        endIcon={<ArrowDropDownIcon />}
+      <Image
+        src={ProfileIcon}
+        alt={"Profile Icon"}
+        height={34}
         onClick={handleClick}
-      >
-        Connect
-      </Button>
+        style={{ cursor: "pointer" }}
+      />
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}

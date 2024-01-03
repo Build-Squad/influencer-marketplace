@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Button, Grid, Switch, Typography } from "@mui/material";
 import { BannerFilterSchema, BannerFilterInitialValues } from "./validation";
 import Image from "next/image";
 import Arrow from "@/public/svg/Arrow.svg";
@@ -23,6 +23,7 @@ export default function Banner({}: Props) {
       sx={{
         border: "1px solid #000",
         backgroundImage: "url(/Business_Landing_page.png)",
+        backgroundSize: "cover",
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
@@ -85,15 +86,40 @@ export default function Banner({}: Props) {
       >
         <form onSubmit={formik.handleSubmit}>
           <Grid container spacing={2} justifyContent={"space-around"}>
-            <Grid item xs={4} sm={4} md={4} lg={4} sx={{ mb: 2 }}>
+            <Grid item xs={3} sm={3} md={3} lg={3} sx={{ mb: 2 }}>
               <FiltersComponent formik={formik} type={"LANGUAGE"} />
             </Grid>
-            <Grid item xs={4} sm={4} md={4} lg={4}>
+            <Grid item xs={3} sm={3} md={3} lg={3}>
               <FiltersComponent formik={formik} type={"SERVICES"} />
             </Grid>
-            <Grid item xs={4} sm={4} md={4} lg={4}>
+            <Grid item xs={3} sm={3} md={3} lg={3}>
               <FiltersComponent formik={formik} type={"CATEGORIES"} />
             </Grid>
+            <Grid
+              item
+              xs={3}
+              sm={3}
+              md={3}
+              lg={3}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                "&.MuiGrid-item": {
+                  paddingTop: "0px",
+                },
+              }}
+            >
+              <Typography>Verified</Typography>
+              <Switch
+                color="secondary"
+                checked={formik.values.isVerified}
+                onChange={(e: any) => {
+                  formik.setFieldValue("isVerified", e.target.checked);
+                }}
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} justifyContent={"space-around"}>
             <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
@@ -124,6 +150,13 @@ export default function Banner({}: Props) {
                 data={{ name: "upperPriceLimit", label: "Max. Followers" }}
               />
             </Grid>
+          </Grid>
+          <Grid
+            container
+            spacing={2}
+            justifyContent={"space-around"}
+            sx={{ paddingTop: "16px" }}
+          >
             <Grid item xs={12} sm={12} md={12} lg={12}>
               <FiltersComponent formik={formik} type={"SEARCH"} />
             </Grid>
