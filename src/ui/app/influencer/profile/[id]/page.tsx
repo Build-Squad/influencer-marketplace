@@ -29,6 +29,7 @@ import {
 } from "@/src/services/httpServices";
 import Services from "./_services";
 import { notification } from "@/src/components/shared/notification";
+import { useAppSelector } from "@/src/hooks/useRedux";
 
 const tabs = [
   {
@@ -48,7 +49,7 @@ const ProfileLayout = ({
     id: string;
   };
 }) => {
-  const [loggedInUser, setLoggedInUser] = React.useState<UserType | null>(null);
+  const loggedInUser = useAppSelector((state) => state.user?.user);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [categoryOpen, setCategoryOpen] = React.useState<boolean>(false);
 
@@ -89,11 +90,6 @@ const ProfileLayout = ({
       getUserDetails();
     }
   }, [categoryOpen]);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    setLoggedInUser(user);
-  }, []);
 
   return (
     <Box

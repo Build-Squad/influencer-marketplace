@@ -28,7 +28,7 @@ class TwitterAccount(models.Model):
         db_table = "twitter_account"
 
     def __str__(self):
-        return self.name
+        return self.user_name
 
 class CategoryMaster(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Category Master ID', default=uuid.uuid4, editable=False)
@@ -37,6 +37,9 @@ class CategoryMaster(models.Model):
 
     class Meta:
         db_table = "category_master" 
+
+    def __str__(self):
+        return self.name
 
 class AccountCategory(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Account Category ID', default=uuid.uuid4, editable=False)
@@ -56,6 +59,9 @@ class Role(models.Model):
 
     class Meta:
         db_table = "role"
+
+    def __str__(self):
+        return self.name
 
 class User(AbstractUser):
 
@@ -114,11 +120,16 @@ class WalletProvider(models.Model):
         primary_key=True, verbose_name='Wallet Provider ID', default=uuid.uuid4, editable=False)
     wallet_provider = models.CharField(max_length=100, blank=True, null=True)
 
+    def __str__(self):
+        return self.wallet_provider
 
 class WalletNetwork(models.Model):
     id = models.UUIDField(
         primary_key=True, verbose_name='Wallet Network ID', default=uuid.uuid4, editable=False)
     wallet_network = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.wallet_network
 
 
 class Wallet(models.Model):
@@ -132,3 +143,6 @@ class Wallet(models.Model):
         WalletProvider, related_name='wallet_provider_id', on_delete=SET_NULL, null=True)
     is_primary = models.BooleanField(default=True, blank=True, null=True)
     wallet_address_id = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.wallet_address_id

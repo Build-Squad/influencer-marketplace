@@ -1,15 +1,21 @@
+"use client";
+
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { getServicewithCredentials } from "../services/httpServices";
 import { notification } from "../components/shared/notification";
+import { useAppDispatch } from "./useRedux";
+import { loginReducer, logoutReducer } from "../reducers/userSlice";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // Hook for handling user login/signup via Twitter
 export default function useTwitterAuth() {
+  const dispatch = useAppDispatch();
   // State to track whether the user is logged in via Twitter
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
   const [isAccountSsetupComplete, setIsAccountSetupComplete] = useState(true);
+  const [userDetails, setUserDetails] = useState(null);
 
   useEffect(() => {
     checkTwitterUserAuthentication();
@@ -36,7 +42,7 @@ export default function useTwitterAuth() {
       await axios.get(`${BACKEND_URL}logout/`, { withCredentials: true });
       notification("Logged out successfully");
       setTwitterUserLoggedIn(false);
-      localStorage.clear();
+      dispatch(logoutReducer());
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -47,10 +53,13 @@ export default function useTwitterAuth() {
     try {
       const { isSuccess, data } = await getServicewithCredentials("account/");
       if (isSuccess) {
+        setUserDetails(data?.data);
         setTwitterUserLoggedIn(true);
-        localStorage.setItem("user", JSON.stringify(data?.data));
+        dispatch(loginReducer(data?.data));
       } else {
+        setUserDetails(null);
         setTwitterUserLoggedIn(false);
+        dispatch(logoutReducer());
         localStorage.clear();
       }
     } catch (error) {
@@ -83,5 +92,6 @@ export default function useTwitterAuth() {
     logoutTwitterUser,
     checkTwitterUserAuthentication,
     isAccountSsetupComplete,
+    userDetails,
   };
 }
