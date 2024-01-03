@@ -1,22 +1,20 @@
 "use client";
 
-import "./globals.css";
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import ThemeRegistry from "./ThemeRegistry";
-import { SnackbarProvider } from "notistack";
-import { useEffect, useRef, useState } from "react";
-import { loginStatusType } from "./utils/types";
-import { useSearchParams } from "next/navigation";
-import Navbar from "./components/navbar";
-import SnackbarComp from "@/src/components/shared/snackBarComp";
-import useTwitterAuth from "@/src/hooks/useTwitterAuth";
-import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
-import EmailLoginModal from "@/src/components/emailLoginModal";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
+import EmailLoginModal from "@/src/components/emailLoginModal";
+import SnackbarComp from "@/src/components/shared/snackBarComp";
 import WalletConnectModal from "@/src/components/walletConnectModal";
 import { AppStore, makeStore } from "@/src/store";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { useSearchParams } from "next/navigation";
+import { SnackbarProvider } from "notistack";
+import { useRef, useState } from "react";
 import { Provider } from "react-redux";
+import ThemeRegistry from "./ThemeRegistry";
+import Navbar from "./components/navbar";
+import "./globals.css";
+import { loginStatusType } from "./utils/types";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,49 +44,6 @@ export default function RootLayout({
   const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
   const [walletOpen, setWalletOpen] = useState<boolean>(false);
 
-  // Twitter authentication hook
-  const {
-    isTwitterUserLoggedIn,
-    startTwitterAuthentication,
-    logoutTwitterUser,
-    checkTwitterUserAuthentication,
-    isAccountSsetupComplete,
-  } = useTwitterAuth();
-
-  useEffect(() => {
-    const status = params.get("authenticationStatus");
-    if (status) {
-      setLoginStatus({
-        status,
-        message:
-          status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
-      });
-    }
-  }, [isTwitterUserLoggedIn]);
-
-  useEffect(() => {
-    const status = params.get("authenticationStatus");
-    if (
-      isTwitterUserLoggedIn &&
-      !isAccountSsetupComplete &&
-      status === "success"
-    ) {
-      setCategoryOpen(true);
-    }
-  }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
-
-  useEffect(() => {
-    if (!emailOpen) {
-      checkTwitterUserAuthentication();
-    }
-  }, [emailOpen]);
-
-  useEffect(() => {
-    if (!walletOpen) {
-      checkTwitterUserAuthentication();
-    }
-  }, [walletOpen]);
-
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -104,11 +59,12 @@ export default function RootLayout({
           <Provider store={storeRef.current}>
             <ThemeRegistry options={{ key: "mui-theme" }}>
               <Navbar
-                authUser={startTwitterAuthentication}
-                logout={logoutTwitterUser}
-                loginStatus={isTwitterUserLoggedIn}
                 setEmailOpen={setEmailOpen}
+                setCategoryOpen={setCategoryOpen}
                 setWalletOpen={setWalletOpen}
+                setLoginStatus={setLoginStatus}
+                emailOpen={emailOpen}
+                walletOpen={walletOpen}
               />
               {children}
               {loginStatus.status ? (
