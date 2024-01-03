@@ -11,6 +11,9 @@ class Country(models.Model):
     class Meta:
         db_table = "country"
 
+    def __str__(self):
+        return self.name
+
  
 class Currency(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Currency', default=uuid.uuid4, editable=False)
@@ -22,6 +25,9 @@ class Currency(models.Model):
     class Meta:
         db_table = "currency"
 
+    def __str__(self):
+        return self.name
+
 
 class LanguageMaster(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Language Master', default=uuid.uuid4, editable=False)
@@ -31,3 +37,6 @@ class LanguageMaster(models.Model):
 
     class Meta:
         db_table = "language_master"
+
+    def __str__(self):
+        return self.langEnglishName

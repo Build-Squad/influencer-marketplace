@@ -1,12 +1,19 @@
 #  import serializers
 from locale import currency
 from rest_framework import serializers
-from .models import ServiceMaster, Service, Package
+from .models import ServiceMaster, Service, Package, ServiceMasterMetaData
 from core.serializers import CurrencySerializer
 from uuid import UUID
 
 
+class ServiceMasterMetaDataSerilizer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceMasterMetaData
+        fields = '__all__'
+
 class ServiceMasterSerializer(serializers.ModelSerializer):
+    service_master_meta_data = ServiceMasterMetaDataSerilizer(
+        source='service_master_meta_data_id', many=True, read_only=True)
     class Meta:
         model = ServiceMaster
         fields = '__all__'

@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render
+from accounts.serializers import UserSerializer
 from tweepy import Client, OAuth2UserHandler
 from django.http import (
     JsonResponse,
@@ -187,6 +188,11 @@ def createJWT(userData, access_token):
         response = JWTOperations.setJwtToken(
             response, cookie_name="jwt", payload=payload
         )
+        response.data = {
+            "isSuccess": True,
+            "data": UserSerializer(current_user).data,
+            "message": "Logged in successfully",
+        }
         logger.info("JWT created successfully")
         return response
     except Exception as e:

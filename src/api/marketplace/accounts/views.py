@@ -1034,7 +1034,7 @@ class OTPVerification(APIView):
                     )
                     response.data = {
                         "isSuccess": True,
-                        "data": None,
+                        "data": UserSerializer(user).data,
                         "message": "Logged in successfully",
                     }
                     response.status_code = status.HTTP_200_OK
@@ -1262,7 +1262,7 @@ class WalletAuth(APIView):
                 )
                 response.data = {
                     "isSuccess": True,
-                    "data": None,
+                    "data": UserSerializer(user).data,
                     "message": "Logged in successfully",
                 }
                 response.status_code = status.HTTP_200_OK

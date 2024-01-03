@@ -1,9 +1,7 @@
 from datetime import *
 from django.utils import timezone
-from unicodedata import name
 from django.db import models
 import uuid
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db.models import SET_NULL
 from django.conf import settings
@@ -44,6 +42,9 @@ class Package(models.Model):
             self.deleted_at = timezone.now()
             self.save()
 
+    def __str__(self):
+        return self.name
+
 class ServiceMaster(models.Model):
 
     TYPE_CHOICES = (
@@ -70,6 +71,9 @@ class ServiceMaster(models.Model):
             self.deleted_at = timezone.now()
             self.save()
 
+    def __str__(self):
+        return self.name
+
 class Service(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Service', default=uuid.uuid4, editable=False)
     service_master = models.ForeignKey(ServiceMaster, related_name='service_master_id', on_delete=SET_NULL, null=True)
@@ -88,3 +92,32 @@ class Service(models.Model):
     def delete (self, *args, **kwargs):
         self.deleted_at = timezone.now()
         self.save()
+
+    def __str__(self):
+        return self.package.name
+
+
+class ServiceMasterMetaData(models.Model):
+
+    TYPE_CHOICES = (
+        ('text', 'text'),
+        ('long_text', 'long_text'),
+        ('date_time', 'date_time'),
+        ('media', 'media'),
+    )
+
+    id = models.UUIDField(
+        primary_key=True, verbose_name='ServiceMasterMetaData', default=uuid.uuid4, editable=False)
+    field_name = models.CharField(max_length=100, blank=True, null=True)
+    label = models.CharField(max_length=100, blank=True, null=True)
+    placeholder = models.CharField(max_length=100, blank=True, null=True)
+    min = models.CharField(max_length=100, blank=True, null=True)
+    max = models.CharField(max_length=100, blank=True, null=True)
+    span = models.IntegerField(blank=True, null=True)
+    field_type = models.CharField(choices=TYPE_CHOICES,
+                                  max_length=50, default='text')
+    service_master_id = models.ForeignKey(
+        ServiceMaster, related_name='service_master_meta_data_id', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = "service_master_meta_data"
