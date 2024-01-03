@@ -125,7 +125,10 @@ export default function Navbar({
   }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
 
   return (
-    <AppBar position="static" sx={{ boxShadow: "none" }}>
+    <AppBar
+      position="static"
+      sx={{ boxShadow: "none", borderBottom: "1px solid #000" }}
+    >
       <Toolbar
         component="nav"
         sx={{ display: "flex", justifyContent: "space-between" }}
@@ -136,6 +139,9 @@ export default function Navbar({
             width="150"
             height="20"
             alt="bgimg"
+            onClick={() => {
+              router.push("/");
+            }}
           />
         </Box>
         {isTwitterUserLoggedIn ? null : (

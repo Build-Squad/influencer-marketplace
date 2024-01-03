@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
+import { addOrderItem, removeOrderItem } from "@/src/reducers/cartSlice";
 import {
   Box,
   Button,
@@ -14,48 +16,37 @@ import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 type CheckoutModalProps = {
-  serviceItems: ServiceType[];
   open: boolean;
   handleClose: () => void;
+  currentInfluencer: UserType | null;
 };
 
 const CheckoutModal = ({
-  serviceItems,
   open,
   handleClose,
+  currentInfluencer,
 }: CheckoutModalProps) => {
   const router = useRouter();
-  const [checkedOutServices, setCheckedOutServices] = React.useState<
-    Array<ServiceCheckOutType>
-  >([]);
+  const cart = useAppSelector((state) => state.cart);
+  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    if (serviceItems.length === 0) {
-      setCheckedOutServices([]);
-      return;
-    }
-    const services: ServiceCheckOutType[] = [];
-    serviceItems.forEach((item) => {
-      const quantity = 1;
-      // If the service is already in the array, then just increase the quantity
-      const index = services.findIndex(
-        (service) => service.serviceItem.id === item.id
-      );
-      if (index !== -1) {
-        services[index].quantity += 1;
-        services[index].price =
-          parseFloat(services[index].serviceItem?.platform_price) *
-          services[index].quantity;
-        return;
-      }
-      services.push({
-        serviceItem: item,
-        quantity: quantity,
-        price: parseFloat(item.platform_price),
-      });
-    });
-    setCheckedOutServices(services);
-  }, [serviceItems]);
+  const removeItemFromCart = (service: ServiceType) => {
+    dispatch(
+      removeOrderItem({
+        service: service,
+      })
+    );
+  };
+
+  const addItemToCart = (service: ServiceType) => {
+    // Check if the service is already in the cart
+    dispatch(
+      addOrderItem({
+        influencer: currentInfluencer,
+        service: service,
+      })
+    );
+  };
 
   return (
     <Box
@@ -128,7 +119,7 @@ const CheckoutModal = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {checkedOutServices.length === 0 && (
+                {cart?.orderItems.length === 0 && (
                   <TableRow>
                     <TableCell
                       colSpan={12}
@@ -140,101 +131,72 @@ const CheckoutModal = ({
                     </TableCell>
                   </TableRow>
                 )}
-                {checkedOutServices.map((service) => (
-                  <TableRow key={service.serviceItem.id}>
-                    <TableCell>{service.serviceItem?.package?.name}</TableCell>
-                    <TableCell>
-                      {/* A counter */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Button
-                          color="secondary"
-                          sx={{
-                            borderRadius: "50%",
-                            minWidth: 0,
-                            width: 30,
-                            height: 30,
-                            p: 0,
-                            mr: 1,
-                          }}
-                          onClick={() => {
-                            const services = [...checkedOutServices];
-                            services.forEach((item) => {
-                              if (
-                                item.serviceItem.id === service.serviceItem.id
-                              ) {
-                                item.quantity = Math.max(item.quantity - 1, 0);
-                                item.price =
-                                  parseFloat(item.serviceItem.platform_price) *
-                                  item.quantity;
-                                if (item.quantity === 0) {
-                                  const index = services.findIndex(
-                                    (service) =>
-                                      service.serviceItem.id ===
-                                      item.serviceItem.id
-                                  );
-                                  services.splice(index, 1);
-                                }
-                              }
-                            });
-
-                            setCheckedOutServices(services);
-                          }}
-                        >
-                          -
-                        </Button>
+                {cart?.orderItems.map((orderItem) => {
+                  const service = orderItem?.service;
+                  const quantity = orderItem?.quantity;
+                  return (
+                    <TableRow key={service.id}>
+                      <TableCell>{service?.package?.name}</TableCell>
+                      <TableCell>
+                        {/* A counter */}
                         <Box
                           sx={{
-                            p: "0px 8px",
-                            border: "1px solid #e8e8e8",
-                            borderRadius: 2,
-                            backgroundColor: "#f8f8f8",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
                           }}
                         >
-                          {service.quantity}
+                          <Button
+                            color="secondary"
+                            sx={{
+                              borderRadius: "50%",
+                              minWidth: 0,
+                              width: 30,
+                              height: 30,
+                              p: 0,
+                              mr: 1,
+                            }}
+                            onClick={() => {
+                              removeItemFromCart(service);
+                            }}
+                          >
+                            -
+                          </Button>
+                          <Box
+                            sx={{
+                              p: "0px 8px",
+                              border: "1px solid #e8e8e8",
+                              borderRadius: 2,
+                              backgroundColor: "#f8f8f8",
+                            }}
+                          >
+                            {quantity}
+                          </Box>
+                          <Button
+                            color="secondary"
+                            sx={{
+                              borderRadius: "50%",
+                              minWidth: 0,
+                              width: 30,
+                              height: 30,
+                              p: 0,
+                              ml: 1,
+                            }}
+                            onClick={() => {
+                              addItemToCart(service);
+                            }}
+                          >
+                            +
+                          </Button>
                         </Box>
-                        <Button
-                          color="secondary"
-                          sx={{
-                            borderRadius: "50%",
-                            minWidth: 0,
-                            width: 30,
-                            height: 30,
-                            p: 0,
-                            ml: 1,
-                          }}
-                          onClick={() => {
-                            const services = [...checkedOutServices];
-
-                            services.forEach((item) => {
-                              if (
-                                item.serviceItem.id === service.serviceItem.id
-                              ) {
-                                item.quantity += 1;
-                                item.price =
-                                  parseFloat(item.serviceItem.platform_price) *
-                                  item.quantity;
-                              }
-                            });
-
-                            setCheckedOutServices(services);
-                          }}
-                        >
-                          +
-                        </Button>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {service.price?.toFixed(2)}{" "}
-                      {service.serviceItem.currency.symbol}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        {Number(service?.platform_price)?.toFixed(2)}{" "}
+                        {service.currency.symbol}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
                 <TableRow>
                   {/* Total */}
                   <TableCell
@@ -246,10 +208,8 @@ const CheckoutModal = ({
                   </TableCell>
                   <TableCell></TableCell>
                   <TableCell>
-                    {checkedOutServices
-                      .reduce((acc, cur) => acc + cur.price, 0)
-                      ?.toFixed(2)}{" "}
-                    {checkedOutServices[0]?.serviceItem.currency.symbol}
+                    {cart?.orderTotal?.toFixed(2)}{" "}
+                    {cart?.orderTotalCurrency?.symbol}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -266,7 +226,6 @@ const CheckoutModal = ({
             <Button
               variant="outlined"
               onClick={() => {
-                setCheckedOutServices([]);
                 handleClose();
               }}
               color="secondary"
@@ -280,7 +239,7 @@ const CheckoutModal = ({
               color="secondary"
               sx={{ borderRadius: 5, mx: 1 }}
               fullWidth
-              disabled={checkedOutServices.length === 0}
+              disabled={cart?.orderItems.length === 0}
               onClick={() => {
                 router.push("/checkout");
               }}
