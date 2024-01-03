@@ -887,7 +887,7 @@ class OTPVerification(APIView):
                         'jwt', token, max_age=86400, path="/", secure=True, httponly=True, samesite="None")
                     response.data = {
                         "isSuccess": True,
-                        "data": None,
+                        "data": UserSerializer(user).data,
                         "message": "Logged in successfully",
                     }
                     response.status_code = status.HTTP_200_OK

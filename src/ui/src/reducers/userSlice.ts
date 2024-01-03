@@ -1,7 +1,6 @@
 // A slice that will keep track of the login status of the user and the user's information
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "../store";
 
 type UserState = {
   loggedIn: boolean;
