@@ -4,7 +4,8 @@ import CheckoutModal from "@/src/components/checkoutModal";
 import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
 import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
 import { notification } from "@/src/components/shared/notification";
-import { useAppSelector } from "@/src/hooks/useRedux";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
+import { addOrderItem, resetCart } from "@/src/reducers/cartSlice";
 import { deleteService, getService } from "@/src/services/httpServices";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -25,16 +26,15 @@ import Image from "next/image";
 import React, { useEffect } from "react";
 
 type ServiceProps = {
-  currentUser: UserType | null;
+  currentInfluencer: UserType | null;
   id: string;
 };
 
-const Services = ({ currentUser, id }: ServiceProps) => {
+const Services = ({ currentInfluencer, id }: ServiceProps) => {
+  const dispatch = useAppDispatch();
+  const cart = useAppSelector((state) => state.cart);
   const loggedInUser = useAppSelector((state) => state.user?.user);
   const [type, setType] = React.useState<string | null>(null);
-  const [checkedOutServices, setCheckedOutServices] = React.useState<
-    ServiceType[]
-  >([]);
   const [services, setServices] = React.useState<ServiceType[]>([]);
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
@@ -48,6 +48,8 @@ const Services = ({ currentUser, id }: ServiceProps) => {
   const [selectedService, setSelectedService] =
     React.useState<ServiceType | null>(null);
   const [deleteLoading, setDeleteLoading] = React.useState<boolean>(false);
+  const [openCheckoutModal, setOpenCheckoutModal] =
+    React.useState<boolean>(false);
 
   const getServices = async () => {
     try {
@@ -109,6 +111,21 @@ const Services = ({ currentUser, id }: ServiceProps) => {
     }));
   };
 
+  const addItemToCart = (service: ServiceType) => {
+    // Check if the service is already in the cart
+    dispatch(
+      addOrderItem({
+        influencer: currentInfluencer,
+        service: service,
+      })
+    );
+  };
+
+  const closeCheckoutModal = () => {
+    dispatch(resetCart());
+    setOpenCheckoutModal(false);
+  };
+
   useEffect(() => {
     if (refreshPage) {
       getServices();
@@ -125,6 +142,12 @@ const Services = ({ currentUser, id }: ServiceProps) => {
       setSelectedService(null);
     }
   }, [openModal]);
+
+  useEffect(() => {
+    if (cart?.orderItems?.length > 0) {
+      setOpenCheckoutModal(true);
+    }
+  }, [cart]);
 
   return (
     <Box
@@ -225,10 +248,11 @@ const Services = ({ currentUser, id }: ServiceProps) => {
                   </Card>
                 </Grid>
               )}
-              {services?.map((service) => {
+              {services?.map((serviceItem) => {
                 // Attach the platform_price to the service object
                 // It will be price + price * (platform_fee / 100)
                 // Take care of type conversion
+                let service = { ...serviceItem };
                 service.platform_price = (
                   parseFloat(service.price.toString()) +
                   parseFloat(service.price.toString()) *
@@ -456,10 +480,7 @@ const Services = ({ currentUser, id }: ServiceProps) => {
                               fullWidth
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setCheckedOutServices((prev) => [
-                                  ...prev,
-                                  service,
-                                ]);
+                                addItemToCart(service);
                               }}
                               disabled={
                                 service.package.influencer === loggedInUser?.id
@@ -477,10 +498,7 @@ const Services = ({ currentUser, id }: ServiceProps) => {
                               fullWidth
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setCheckedOutServices((prev) => [
-                                  ...prev,
-                                  service,
-                                ]);
+                                addItemToCart(service);
                               }}
                               disabled={
                                 service.package.influencer === loggedInUser?.id
@@ -520,11 +538,9 @@ const Services = ({ currentUser, id }: ServiceProps) => {
         serviceItem={selectedService}
       />
       <CheckoutModal
-        open={checkedOutServices.length > 0}
-        handleClose={() => {
-          setCheckedOutServices([]);
-        }}
-        serviceItems={checkedOutServices}
+        open={openCheckoutModal}
+        handleClose={closeCheckoutModal}
+        currentInfluencer={currentInfluencer}
       />
     </Box>
   );
