@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Toolbar, AppBar, Button, Box, Typography } from "@mui/material";
-import Image from "next/image";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import LoginMenu from "../loginMenu";
-import useTwitterAuth from "@/src/hooks/useTwitterAuth";
-import { LOGIN_STATUS_SUCCESS, LOGIN_STATUS_FAILED } from "@/src/utils/consts";
 import { loginStatusType } from "@/app/utils/types";
-import { useAppSelector } from "@/src/hooks/useRedux";
 import HomeIcon from "@/public/svg/Home.svg";
 import HomeDisabledIcon from "@/public/svg/Home_disabled.svg";
-
-import ProfileIcon from "@/public/svg/Profile.svg";
-import ProfileDisabledIcon from "@/public/svg/Profile_disabled.svg";
+import { useAppSelector } from "@/src/hooks/useRedux";
+import useTwitterAuth from "@/src/hooks/useTwitterAuth";
+import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
+import { AppBar, Badge, Box, Button, Toolbar, Typography } from "@mui/material";
+import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
+import LoginMenu from "../loginMenu";
 
 import DashboardIcon from "@/public/svg/Dashboard.svg";
 import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
@@ -56,7 +53,7 @@ const MENU_ITEMS = [
   },
   {
     label: "My cart",
-    route: "/business/cart",
+    route: "/checkout",
     icon: CartIcon,
     disabledIcon: CartDisabledIcon,
   },
@@ -83,6 +80,7 @@ export default function Navbar({
     checkTwitterUserAuthentication,
     isAccountSsetupComplete,
   } = useTwitterAuth();
+  const cart = useAppSelector((state) => state.cart);
   const router = useRouter();
   const pathname = usePathname();
   const currentUser = useAppSelector((state) => state.user?.user);
@@ -133,7 +131,7 @@ export default function Navbar({
         component="nav"
         sx={{ display: "flex", justifyContent: "space-between" }}
       >
-        <Box sx={{ width: "33%" }}>
+        <Box>
           <Image
             src={"/XFluencer_logo.png"}
             width="150"
@@ -206,11 +204,28 @@ export default function Navbar({
                     }
                   }}
                 >
-                  <Image
-                    src={pathname == item.route ? item.icon : item.disabledIcon}
-                    alt={item.label}
-                    height={item.height ?? 16}
-                  />
+                  {item.label === "My cart" ? (
+                    <Badge
+                      badgeContent={cart?.orderItems.length}
+                      color="secondary"
+                    >
+                      <Image
+                        src={
+                          pathname == item.route ? item.icon : item.disabledIcon
+                        }
+                        alt={item.label}
+                        height={item.height ?? 16}
+                      />
+                    </Badge>
+                  ) : (
+                    <Image
+                      src={
+                        pathname == item.route ? item.icon : item.disabledIcon
+                      }
+                      alt={item.label}
+                      height={item.height ?? 16}
+                    />
+                  )}
                   <Typography sx={{ fontSize: "10px" }}>
                     {item.label}
                   </Typography>
