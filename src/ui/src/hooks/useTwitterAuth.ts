@@ -6,6 +6,7 @@ import { getServicewithCredentials } from "../services/httpServices";
 import { notification } from "../components/shared/notification";
 import { useAppDispatch } from "./useRedux";
 import { loginReducer, logoutReducer } from "../reducers/userSlice";
+import { resetCart } from "../reducers/cartSlice";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -43,6 +44,7 @@ export default function useTwitterAuth() {
       notification("Logged out successfully");
       setTwitterUserLoggedIn(false);
       dispatch(logoutReducer());
+      dispatch(resetCart());
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -60,6 +62,7 @@ export default function useTwitterAuth() {
         setUserDetails(null);
         setTwitterUserLoggedIn(false);
         dispatch(logoutReducer());
+        dispatch(resetCart());
         localStorage.clear();
       }
     } catch (error) {
