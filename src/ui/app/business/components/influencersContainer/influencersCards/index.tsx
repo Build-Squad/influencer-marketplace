@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import React from "react";
 import { TopInfluencersType } from "../types";
-import { LocationOn } from "@mui/icons-material";
 
 type Props = {
   influencer: TopInfluencersType;

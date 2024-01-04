@@ -12,7 +12,7 @@ type TopInfluencersType = {
   twitterUsername: string;
   profileUrl: string;
   services: string[];
-  location: string;
+  followers: string;
   minPrice: number;
   maxPrice: number;
 };
@@ -26,7 +26,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Story", "Post", "Repost", "Thread"],
-    location: "Hyderabad, India",
+    followers: "Hyderabad, India",
     minPrice: 100,
     maxPrice: 500,
   },
@@ -36,7 +36,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Post", "Repost", "Thread"],
-    location: "Madrid, Spain",
+    followers: "Madrid, Spain",
     minPrice: 100,
     maxPrice: 200,
   },
@@ -46,7 +46,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Like", "Repost", "Thread"],
-    location: "Punjab, India",
+    followers: "Punjab, India",
     minPrice: 1200,
     maxPrice: 2800,
   },
@@ -56,7 +56,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Post", "Repost", "Thread", "Post"],
-    location: "Madrid, Spain",
+    followers: "Madrid, Spain",
     minPrice: 11200,
     maxPrice: 34400,
   },
@@ -66,7 +66,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Like", "Repost", "Thread"],
-    location: "Punjab, India",
+    followers: "Punjab, India",
     minPrice: 1200,
     maxPrice: 2800,
   },
@@ -76,7 +76,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Post", "Repost", "Thread", "Post"],
-    location: "Madrid, Spain",
+    followers: "Madrid, Spain",
     minPrice: 11200,
     maxPrice: 34400,
   },
@@ -86,7 +86,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Story", "Post", "Repost", "Thread"],
-    location: "Hyderabad, India",
+    followers: "Hyderabad, India",
     minPrice: 100,
     maxPrice: 500,
   },
@@ -96,7 +96,7 @@ const dummyData: Array<TopInfluencersType> = [
     profileUrl:
       "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
     services: ["Post", "Repost", "Thread"],
-    location: "Madrid, Spain",
+    followers: "Madrid, Spain",
     minPrice: 100,
     maxPrice: 200,
   },
