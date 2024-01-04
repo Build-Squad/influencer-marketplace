@@ -21,10 +21,42 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
-import { TimePicker } from "@mui/x-date-pickers";
+import { DateTimePicker, TimePicker } from "@mui/x-date-pickers";
 import NextLink from "next/link";
+import { useAppSelector } from "@/src/hooks/useRedux";
+import { notification } from "@/src/components/shared/notification";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
 export default function CheckoutPage() {
+  const cart = useAppSelector((state) => state.cart);
+  const user = useAppSelector((state) => state.user);
+  const route = useRouter();
+
+  const [orderItems, setOrderItems] = React.useState<OrderItemType[]>([]);
+
+  if (!user) {
+    notification("You need to login first", "error");
+    route.push("/");
+    return null;
+  }
+
+  if (cart?.orderItems?.length === 0) {
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h6">No items added to the cart</Typography>
+      </Box>
+    );
+  }
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Grid
@@ -44,218 +76,193 @@ export default function CheckoutPage() {
             p: 2,
           }}
         >
-          {formFields.map((field) => (
-            <Box
-              sx={{
-                borderRadius: 4,
-                backgroundColor: "#ffffff",
-                boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
-                width: "100%",
-                p: 2,
-                m: 2,
-              }}
-            >
+          {cart?.orderItems?.map((orderItem) => {
+            return (
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: "bold",
-                  }}
-                >
-                  {field.serviceName}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  sx={{
-                    borderRadius: 7,
-                  }}
-                  startIcon={<AddIcon />}
-                >
-                  Add More
-                </Button>
-              </Box>
-              <Divider
-                sx={{
-                  my: 2,
-                }}
-              />
-              <Grid
-                container
-                spacing={2}
-                sx={{
+                  borderRadius: 4,
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+                  width: "100%",
                   p: 2,
+                  m: 2,
                 }}
               >
-                {field.fields.map((subField) => {
-                  const masterField = masterFields.find(
-                    (masterField) => masterField.id === subField.masterFieldId
-                  );
-                  return (
-                    <Grid
-                      md={masterField?.minSpan}
-                      lg={masterField?.minSpan}
-                      xs={12}
-                      sm={12}
-                      sx={{
-                        my: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        p: 1,
-                      }}
-                    >
-                      <FormLabel
-                        required={subField.required}
-                        sx={{
-                          color: "secondary.main",
-                        }}
-                      >
-                        {masterField?.label}
-                      </FormLabel>
-                      {masterField?.type === "text" && (
-                        <TextField
-                          variant="outlined"
-                          fullWidth
-                          placeholder={masterField?.placeholder}
-                          size="small"
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {orderItem.service?.package?.name}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    sx={{
+                      borderRadius: 7,
+                    }}
+                    startIcon={<AddIcon />}
+                  >
+                    Add More
+                  </Button>
+                </Box>
+                <Divider
+                  sx={{
+                    my: 2,
+                  }}
+                />
+                <Grid
+                  container
+                  spacing={2}
+                  sx={{
+                    p: 2,
+                  }}
+                >
+                  {orderItem?.service?.service_master?.service_master_meta_data?.map(
+                    (formFields) => {
+                      return (
+                        <Grid
+                          md={formFields?.span}
+                          lg={formFields?.span}
+                          xs={12}
+                          sm={12}
                           sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 3,
-                            },
+                            my: 1,
+                            display: "flex",
+                            flexDirection: "column",
+                            p: 1,
                           }}
-                        />
-                      )}
-                      {masterField?.type === "multiline" && (
-                        <TextField
-                          variant="outlined"
-                          fullWidth
-                          multiline
-                          rows={4}
-                          inputProps={{
-                            maxLength: masterField?.max,
-                          }}
-                          placeholder={masterField?.placeholder}
-                          size="small"
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 3,
-                            },
-                          }}
-                        />
-                      )}
-                      {masterField?.type === "date" && (
-                        <DatePicker
-                          value={dayjs()}
-                          onChange={() => {}}
-                          slotProps={{
-                            textField: {
-                              size: "small",
-                              variant: "outlined",
-                              fullWidth: true,
-                              // borderRadius: 3,
-                              sx: {
+                        >
+                          <FormLabel
+                            sx={{
+                              color: "secondary.main",
+                            }}
+                          >
+                            {formFields?.label}
+                          </FormLabel>
+                          {formFields?.field_type === "text" && (
+                            <TextField
+                              variant="outlined"
+                              fullWidth
+                              placeholder={formFields?.placeholder}
+                              size="small"
+                              sx={{
                                 "& .MuiOutlinedInput-root": {
                                   borderRadius: 3,
                                 },
-                              },
-                            },
-                          }}
-                        />
-                      )}
-                      {masterField?.type === "time" && (
-                        <TimePicker
-                          value={dayjs()}
-                          onChange={() => {}}
-                          slotProps={{
-                            textField: {
-                              size: "small",
-                              variant: "outlined",
-                              fullWidth: true,
-                              sx: {
+                              }}
+                            />
+                          )}
+                          {formFields?.field_type === "long_text" && (
+                            <TextField
+                              variant="outlined"
+                              fullWidth
+                              multiline
+                              rows={4}
+                              inputProps={{
+                                maxLength: formFields?.max,
+                              }}
+                              placeholder={formFields?.placeholder}
+                              size="small"
+                              sx={{
                                 "& .MuiOutlinedInput-root": {
                                   borderRadius: 3,
                                 },
-                              },
-                            },
-                          }}
-                        />
-                      )}
-                    </Grid>
-                  );
-                })}
-                <Grid item xs={12}>
-                  <FormLabel
-                    sx={{
-                      color: "secondary.main",
-                    }}
-                  >
-                    Add Media
-                  </FormLabel>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Button
-                      variant="contained"
-                      disableElevation
-                      sx={{
-                        p: 2,
-                        mt: 1,
-                        borderRadius: 8,
-                      }}
-                    >
-                      Select Media to Upload
-                    </Button>
-                  </Box>
+                              }}
+                            />
+                          )}
+                          {formFields?.field_type === "date_time" && (
+                            <DateTimePicker
+                              value={dayjs()}
+                              onChange={() => {}}
+                              slotProps={{
+                                textField: {
+                                  size: "small",
+                                  variant: "outlined",
+                                  fullWidth: true,
+                                  // borderRadius: 3,
+                                  sx: {
+                                    "& .MuiOutlinedInput-root": {
+                                      borderRadius: 3,
+                                    },
+                                  },
+                                },
+                              }}
+                            />
+                          )}
+                          {formFields?.field_type === "media" && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Button
+                                variant="contained"
+                                disableElevation
+                                sx={{
+                                  p: 2,
+                                  mt: 1,
+                                  borderRadius: 8,
+                                }}
+                              >
+                                {formFields?.placeholder}
+                              </Button>
+                            </Box>
+                          )}
+                        </Grid>
+                      );
+                    }
+                  )}
                 </Grid>
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      sx={{
-                        p: 1,
-                        mt: 1,
-                        borderRadius: 8,
-                        minWidth: 100,
-                        mx: 2,
-                      }}
-                    >
-                      Clear
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      sx={{
-                        p: 1,
-                        mt: 1,
-                        borderRadius: 8,
-                        minWidth: 100,
-                        mx: 2,
-                      }}
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
+              </Box>
+            );
+          })}
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="secondary"
+                sx={{
+                  p: 1,
+                  mt: 1,
+                  borderRadius: 8,
+                  minWidth: 100,
+                  mx: 2,
+                }}
+              >
+                Clear
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{
+                  p: 1,
+                  mt: 1,
+                  borderRadius: 8,
+                  minWidth: 100,
+                  mx: 2,
+                }}
+              >
+                Save
+              </Button>
             </Box>
-          ))}
+          </Grid>
         </Grid>
         <Grid item xs={12} md={4} lg={4} sm={12}>
           <Box
@@ -297,7 +304,7 @@ export default function CheckoutPage() {
                 }}
               >
                 <Link
-                  href=""
+                  href={`/influencer/profile/${cart?.influencer?.id}`}
                   target="_blank"
                   component={NextLink}
                   sx={{
@@ -308,7 +315,7 @@ export default function CheckoutPage() {
                     },
                   }}
                 >
-                  @mudit__21
+                  {cart?.influencer?.twitter_account?.user_name}
                 </Link>
               </Typography>
             </Box>
@@ -349,7 +356,7 @@ export default function CheckoutPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {checkedOutServices.length === 0 && (
+                  {cart?.orderItems?.length === 0 && (
                     <TableRow>
                       <TableCell
                         colSpan={12}
@@ -361,11 +368,9 @@ export default function CheckoutPage() {
                       </TableCell>
                     </TableRow>
                   )}
-                  {checkedOutServices.map((service) => (
-                    <TableRow key={service.serviceItem.id}>
-                      <TableCell>
-                        {service.serviceItem?.package?.name}
-                      </TableCell>
+                  {cart?.orderItems.map((orderItem) => (
+                    <TableRow key={orderItem?.service.id}>
+                      <TableCell>{orderItem?.service?.package?.name}</TableCell>
                       <TableCell>
                         {/* A counter */}
                         <Box
@@ -385,31 +390,7 @@ export default function CheckoutPage() {
                               p: 0,
                               mr: 1,
                             }}
-                            onClick={() => {
-                              const services = [...checkedOutServices];
-                              services.forEach((item) => {
-                                if (
-                                  item.serviceItem.id === service.serviceItem.id
-                                ) {
-                                  item.quantity = Math.max(
-                                    item.quantity - 1,
-                                    0
-                                  );
-                                  item.price =
-                                    parseFloat(
-                                      item.serviceItem.platform_price
-                                    ) * item.quantity;
-                                  if (item.quantity === 0) {
-                                    const index = services.findIndex(
-                                      (service) =>
-                                        service.serviceItem.id ===
-                                        item.serviceItem.id
-                                    );
-                                    services.splice(index, 1);
-                                  }
-                                }
-                              });
-                            }}
+                            onClick={() => {}}
                           >
                             -
                           </Button>
@@ -421,7 +402,7 @@ export default function CheckoutPage() {
                               backgroundColor: "#f8f8f8",
                             }}
                           >
-                            {service.quantity}
+                            {orderItem.quantity}
                           </Box>
                           <Button
                             color="secondary"
@@ -433,29 +414,15 @@ export default function CheckoutPage() {
                               p: 0,
                               ml: 1,
                             }}
-                            onClick={() => {
-                              const services = [...checkedOutServices];
-
-                              services.forEach((item) => {
-                                if (
-                                  item.serviceItem.id === service.serviceItem.id
-                                ) {
-                                  item.quantity += 1;
-                                  item.price =
-                                    parseFloat(
-                                      item.serviceItem.platform_price
-                                    ) * item.quantity;
-                                }
-                              });
-                            }}
+                            onClick={() => {}}
                           >
                             +
                           </Button>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        {service.price?.toFixed(2)}{" "}
-                        {service.serviceItem.currency.symbol}
+                        {Number(orderItem?.service?.platform_price)?.toFixed(2)}{" "}
+                        {orderItem?.service?.currency?.symbol}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -470,10 +437,8 @@ export default function CheckoutPage() {
                     </TableCell>
                     <TableCell></TableCell>
                     <TableCell>
-                      {checkedOutServices
-                        .reduce((acc, cur) => acc + cur.price, 0)
-                        ?.toFixed(2)}{" "}
-                      {checkedOutServices[0]?.serviceItem.currency.symbol}
+                      {cart?.orderTotal?.toFixed(2)}{" "}
+                      {cart?.orderTotalCurrency?.symbol}
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -485,8 +450,8 @@ export default function CheckoutPage() {
               }}
             >
               <Typography variant="body1">
-                Your payment will be held for 72 hours. If Josh declines the
-                order, the amount will be added back to your Wallet
+                {`Your payment will be held for 72 hours. If ${cart?.influencer?.twitter_account?.name}
+                declines the order, the amount will be added back to your Wallet`}
               </Typography>
             </Box>
             <Box>

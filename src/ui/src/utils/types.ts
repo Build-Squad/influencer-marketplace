@@ -25,6 +25,18 @@ type LanguageType = {
   langNativeName: string;
 };
 
+type ServiceMasterMetaDataType = {
+  id: string;
+  field_name: string;
+  label: string;
+  placeholder: string;
+  min: string;
+  max: string;
+  span: number;
+  field_type: string;
+  service_master_id: string;
+};
+
 type ServiceMasterType = {
   id: string;
   name: string;
@@ -34,6 +46,7 @@ type ServiceMasterType = {
   created_at: string;
   deleted_at: string | null;
   is_duration_based: boolean;
+  service_master_meta_data: ServiceMasterMetaDataType[];
 };
 
 type PackageType = {
@@ -130,4 +143,9 @@ interface Window {
   ethereum: any;
   web3: any;
   phantom: any;
+}
+
+type OrderItemType = {
+  service: ServiceType;
+  orderItemMetaData: ServiceMasterMetaDataType[];
 }
