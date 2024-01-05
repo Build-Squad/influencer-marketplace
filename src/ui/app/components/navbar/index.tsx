@@ -21,6 +21,7 @@ import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 
 import ExploreIcon from "@/public/svg/Explore.svg";
 import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
+import { getService } from "@/src/services/httpServices";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
@@ -29,6 +30,7 @@ type NavbarProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
   emailOpen: boolean;
   walletOpen: boolean;
+  setConnectWallet: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const MENU_ITEMS = [
@@ -72,6 +74,7 @@ export default function Navbar({
   setCategoryOpen,
   emailOpen,
   walletOpen,
+  setConnectWallet,
 }: NavbarProps) {
   const {
     isTwitterUserLoggedIn,
@@ -87,6 +90,16 @@ export default function Navbar({
   // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
 
   const params = useSearchParams();
+
+  const getWallets = async () => {
+    const { isSuccess, message, data } = await getService(`/account/wallets/`);
+    if (isSuccess) {
+      if (data?.data?.length === 0) {
+        setWalletOpen(true);
+        setConnectWallet(true);
+      }
+    }
+  };
 
   useEffect(() => {
     if (!emailOpen) {
@@ -121,6 +134,20 @@ export default function Navbar({
       setCategoryOpen(true);
     }
   }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
+
+  // Check for the wallet open after the categroy selection
+  // But also check if category selection check is complete
+
+  useEffect(() => {
+    const status = params.get("authenticationStatus");
+    if (
+      isAccountSsetupComplete &&
+      status === "success" &&
+      isTwitterUserLoggedIn
+    ) {
+      getWallets();
+    }
+  }, [isAccountSsetupComplete, isTwitterUserLoggedIn]);
 
   return (
     <AppBar
