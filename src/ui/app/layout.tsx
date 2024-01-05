@@ -43,6 +43,7 @@ export default function RootLayout({
   const [emailOpen, setEmailOpen] = useState<boolean>(false);
   const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
   const [walletOpen, setWalletOpen] = useState<boolean>(false);
+  const [connectWallet, setConnectWallet] = useState<boolean>(false);
 
   return (
     <html lang="en">
@@ -65,6 +66,7 @@ export default function RootLayout({
                 setLoginStatus={setLoginStatus}
                 emailOpen={emailOpen}
                 walletOpen={walletOpen}
+                setConnectWallet={setConnectWallet}
               />
               {children}
               {loginStatus.status ? (
@@ -84,7 +86,11 @@ export default function RootLayout({
                 open={categoryOpen}
                 setOpen={setCategoryOpen}
               />
-              <WalletConnectModal open={walletOpen} setOpen={setWalletOpen} />
+              <WalletConnectModal
+                open={walletOpen}
+                setOpen={setWalletOpen}
+                connect={connectWallet}
+              />
             </ThemeRegistry>
           </Provider>
         </SnackbarProvider>
