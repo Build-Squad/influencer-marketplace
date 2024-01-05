@@ -46,6 +46,8 @@ from .serializers import (
     RoleSerializer,
     EmailVerificationSerializer,
     WalletAuthSerializer,
+    WalletConnectSerializer,
+    WalletSerializer,
 )
 from .services import OTPAuthenticationService, TwitterAuthenticationService
 from decouple import config
@@ -1275,5 +1277,69 @@ class WalletAuth(APIView):
                 return response
             else:
                 return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class WalletConnect(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self, wallet_address_id):
+        try:
+            return Wallet.objects.get(wallet_address_id=wallet_address_id)
+        except Wallet.DoesNotExist:
+            return None
+
+    @swagger_auto_schema(request_body=WalletConnectSerializer)
+    def post(self, request):
+        # Only connect the wallet to the user
+        try:
+            serializer = WalletConnectSerializer(
+                data=request.data, context={"request": request})
+            if serializer.is_valid():
+                wallet = self.get_object(request.data["wallet_address_id"])
+                if wallet:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Wallet already connected",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Wallet connected successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class WalletList(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        try:
+            wallet = Wallet.objects.all()
+            wallet = wallet.filter(user_id=request.user_account.id)
+            pagination = Pagination(wallet, request)
+            serializer = WalletSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Wallet retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             return handleServerException(e)
