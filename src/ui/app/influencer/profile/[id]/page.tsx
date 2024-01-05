@@ -555,11 +555,7 @@ const ProfileLayout = ({
                             </>
                           ) : (
                             <>
-                              <Table
-                                sx={{
-                                  maxWidth: "100%",
-                                }}
-                              >
+                              <Table>
                                 <TableHead>
                                   <TableRow>
                                     <TableCell>
@@ -588,10 +584,7 @@ const ProfileLayout = ({
                                     <TableRow key={wallet.id}>
                                       <TableCell>
                                         <Typography>
-                                          {wallet.wallet_address_id.slice(
-                                            0,
-                                            10
-                                          )}
+                                          {wallet.wallet_address_id.slice(0, 8)}
                                           {"..."}
                                         </Typography>
                                       </TableCell>
