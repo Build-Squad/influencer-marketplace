@@ -31,6 +31,7 @@ type NavbarProps = {
   emailOpen: boolean;
   walletOpen: boolean;
   setConnectWallet: React.Dispatch<React.SetStateAction<boolean>>;
+  categoryOpen: boolean;
 };
 
 const MENU_ITEMS = [
@@ -75,14 +76,18 @@ export default function Navbar({
   emailOpen,
   walletOpen,
   setConnectWallet,
+  categoryOpen,
 }: NavbarProps) {
   const {
     isTwitterUserLoggedIn,
     startTwitterAuthentication,
     logoutTwitterUser,
     checkTwitterUserAuthentication,
-    isAccountSsetupComplete,
+    isAccountSetupComplete,
+    categoriesAdded,
+    checkAccountSetup,
   } = useTwitterAuth();
+
   const cart = useAppSelector((state) => state.cart);
   const router = useRouter();
   const pathname = usePathname();
@@ -128,26 +133,29 @@ export default function Navbar({
     const status = params.get("authenticationStatus");
     if (
       isTwitterUserLoggedIn &&
-      !isAccountSsetupComplete &&
+      !isAccountSetupComplete &&
       status === "success"
     ) {
       setCategoryOpen(true);
     }
-  }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
+  }, [isTwitterUserLoggedIn, isAccountSetupComplete]);
 
   // Check for the wallet open after the categroy selection
   // But also check if category selection check is complete
 
   useEffect(() => {
+    if (!categoryOpen) {
+      checkAccountSetup();
+    }
+  }, [categoryOpen]);
+
+  useEffect(() => {
     const status = params.get("authenticationStatus");
-    if (
-      isAccountSsetupComplete &&
-      status === "success" &&
-      isTwitterUserLoggedIn
-    ) {
+    console.log("categoriesAdded", categoriesAdded);
+    if (categoriesAdded && status === "success" && isTwitterUserLoggedIn) {
       getWallets();
     }
-  }, [isAccountSsetupComplete, isTwitterUserLoggedIn]);
+  }, [categoriesAdded, isTwitterUserLoggedIn]);
 
   return (
     <AppBar

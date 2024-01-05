@@ -67,6 +67,7 @@ export default function RootLayout({
                 emailOpen={emailOpen}
                 walletOpen={walletOpen}
                 setConnectWallet={setConnectWallet}
+                categoryOpen={categoryOpen}
               />
               {children}
               {loginStatus.status ? (
