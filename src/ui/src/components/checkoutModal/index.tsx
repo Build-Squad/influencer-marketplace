@@ -131,11 +131,10 @@ const CheckoutModal = ({
                     </TableCell>
                   </TableRow>
                 )}
-                {cart?.orderItems.map((orderItem) => {
+                {cart?.servicesAdded.map((orderItem, index) => {
                   const service = orderItem?.service;
-                  const quantity = orderItem?.quantity;
                   return (
-                    <TableRow key={service.id}>
+                    <TableRow key={index}>
                       <TableCell>{service?.package?.name}</TableCell>
                       <TableCell>
                         {/* A counter */}
@@ -170,7 +169,7 @@ const CheckoutModal = ({
                               backgroundColor: "#f8f8f8",
                             }}
                           >
-                            {quantity}
+                            {orderItem?.quantity}
                           </Box>
                           <Button
                             color="secondary"
