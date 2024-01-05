@@ -149,3 +149,11 @@ type OrderItemType = {
   service: ServiceType;
   orderItemMetaData: ServiceMasterMetaDataType[];
 }
+
+type WalletType = {
+  id: string;
+  wallet_address_id: string;
+  wallet_network_id: string;
+  wallet_provider_id: string;
+  is_primary: boolean;
+};
