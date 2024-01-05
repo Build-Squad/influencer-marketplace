@@ -197,8 +197,8 @@ class WalletNetworkSerializer(serializers.ModelSerializer):
 
 
 class WalletSerializer(serializers.ModelSerializer):
-    wallet_provider = WalletProviderSerializer(read_only=True)
-    wallet_network = WalletNetworkSerializer(read_only=True)
+    wallet_provider_id = WalletProviderSerializer(read_only=True)
+    wallet_network_id = WalletNetworkSerializer(read_only=True)
 
     class Meta:
         model = Wallet
