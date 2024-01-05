@@ -150,10 +150,20 @@ type OrderItemType = {
   orderItemMetaData: ServiceMasterMetaDataType[];
 }
 
+type WalletProviderType = {
+  id: string;
+  wallet_provider: string;
+};
+
+type WalletNetworkType = {
+  id: string;
+  wallet_network: string;
+};
+
 type WalletType = {
   id: string;
   wallet_address_id: string;
-  wallet_network_id: string;
-  wallet_provider_id: string;
+  wallet_network_id: WalletNetworkType;
+  wallet_provider_id: WalletProviderType;
   is_primary: boolean;
 };
