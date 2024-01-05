@@ -14,7 +14,7 @@ import { loginReducer } from "@/src/reducers/userSlice";
 type WalletConnectModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  connect: boolean;
+  connect?: boolean;
 };
 
 export default function WalletConnectModal({
