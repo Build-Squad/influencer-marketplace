@@ -6,24 +6,23 @@ import LoginMenu from "../loginMenu";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { LOGIN_STATUS_SUCCESS, LOGIN_STATUS_FAILED } from "@/src/utils/consts";
 import { loginStatusType } from "@/app/utils/types";
-import { useAppSelector } from "@/src/hooks/useRedux";
 import HomeIcon from "@/public/svg/Home.svg";
 import HomeDisabledIcon from "@/public/svg/Home_disabled.svg";
-
-import ProfileIcon from "@/public/svg/Profile.svg";
-import ProfileDisabledIcon from "@/public/svg/Profile_disabled.svg";
-
 import DashboardIcon from "@/public/svg/Dashboard.svg";
 import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
-
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
-
 import NotificationIcon from "@/public/svg/Notification.svg";
 import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
-
 import ExploreIcon from "@/public/svg/Explore.svg";
 import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
+import OrdersDisabledIcon from "@/public/svg/Orders_disabled.svg";
+import OrdersIcon from "@/public/svg/orders.svg";
+import MessageIcon from "@/public/svg/Messages.svg";
+import MessageDisabledIcon from "@/public/svg/Messages_disabled.svg";
+
+import SavedProfileIcon from "@/public/svg/Saved.svg";
+import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
@@ -34,39 +33,103 @@ type NavbarProps = {
   walletOpen: boolean;
 };
 
-const MENU_ITEMS = [
-  {
+const MENU_ITEMS: {
+  [key: string]: {
+    label: string;
+    route: string;
+    icon: string;
+    disabledIcon: string;
+  };
+} = {
+  Home: {
     label: "Home",
-    route: "/business",
+    route: "",
     icon: HomeIcon,
     disabledIcon: HomeDisabledIcon,
   },
-  {
+  Explore: {
     label: "Explore",
-    route: "/business/explore",
+    route: "/explore",
     icon: ExploreIcon,
     disabledIcon: ExploreDisabledIcon,
   },
-
-  {
+  Dashboard: {
     label: "Dashboard",
-    route: "/business/dashboard",
+    route: "/dashboard",
     icon: DashboardIcon,
     disabledIcon: DashboardDisabledIcon,
   },
-  {
+  Cart: {
     label: "My cart",
-    route: "/business/cart",
+    route: "/cart",
     icon: CartIcon,
     disabledIcon: CartDisabledIcon,
   },
-  {
+  Notifications: {
     label: "Notifications",
-    route: "/business/notifications",
+    route: "/notifications",
     icon: NotificationIcon,
     disabledIcon: NotificationDisabledIcon,
   },
-];
+  Orders: {
+    label: "Orders",
+    route: "/orders",
+    icon: OrdersIcon,
+    disabledIcon: OrdersDisabledIcon,
+  },
+  Message: {
+    label: "Messages",
+    route: "/messages",
+    icon: MessageIcon,
+    disabledIcon: MessageDisabledIcon,
+  },
+
+  "Saved Profile": {
+    label: "Saved Profile",
+    route: "/saved-profiles",
+    icon: SavedProfileIcon,
+    disabledIcon: SavedProfileDisabledIcon,
+  },
+};
+
+const MenuItemsComponent = ({ items }: { items: string[] }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  return items ? (
+    <>
+      {items.map((key: string) => {
+        const item = MENU_ITEMS[key];
+        const route = pathname.includes("business")
+          ? `/business${item.route}`
+          : pathname.includes("influencer")
+          ? `/influencer${item.route}`
+          : "";
+
+        return (
+          <Box
+            sx={{
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onClick={() => {
+              router.push(route);
+            }}
+          >
+            <Image
+              src={pathname == route ? item.icon : item.disabledIcon}
+              alt={item.label}
+              height={16}
+            />
+            <Typography sx={{ fontSize: "10px" }}>{item.label}</Typography>
+          </Box>
+        );
+      })}
+    </>
+  ) : null;
+};
 
 export default function Navbar({
   setLoginStatus,
@@ -85,7 +148,6 @@ export default function Navbar({
   } = useTwitterAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const currentUser = useAppSelector((state) => state.user?.user);
   // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
 
   const params = useSearchParams();
@@ -149,7 +211,6 @@ export default function Navbar({
             sx={{
               display: "flex",
               columnGap: "8px",
-              // width: "33%",
               justifyContent: "center",
             }}
           >
@@ -181,7 +242,7 @@ export default function Navbar({
             </Button>
           </Box>
         )}
-        <Box sx={{ textAlign: "right" }}>
+        <Box sx={{ textAlign: "right", width: "33%" }}>
           <Box
             sx={{
               display: "flex",
@@ -190,99 +251,42 @@ export default function Navbar({
               columnGap: "16px",
             }}
           >
-            {MENU_ITEMS.map((item: any) => {
-              return (
-                <Box
-                  sx={{
-                    cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  onClick={() => {
-                    if (item?.route) {
-                      router.push(item.route);
-                    }
-                  }}
-                >
-                  <Image
-                    src={pathname == item.route ? item.icon : item.disabledIcon}
-                    alt={item.label}
-                    height={item.height ?? 16}
-                  />
-                  <Typography sx={{ fontSize: "10px" }}>
-                    {item.label}
-                  </Typography>
-                </Box>
-              );
-            })}
             {isTwitterUserLoggedIn ? (
-              <>
-                {pathname.includes("business") ? null : (
-                  <Button
-                    color="inherit"
-                    sx={{ fontSize: "16px" }}
-                    onClick={() => {
-                      window.location.href = `/influencer/profile/${currentUser?.id}`;
-                    }}
-                  >
-                    Profile
-                  </Button>
-                )}
-                <Button
-                  variant="outlined"
-                  sx={{
-                    background:
-                      "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                    color: "black",
-                    border: "1px solid black",
-                    borderRadius: "20px",
-                    "&:hover": {
-                      border: "1px solid black",
-                    },
-                  }}
-                  onClick={() => {
-                    logoutTwitterUser();
-                    if (pathname.includes("influencer")) {
-                      router.push("/influencer");
-                    } else if (pathname.includes("business")) {
-                      router.push("/business");
-                    } else {
-                      router.push("/");
-                    }
-                  }}
-                >
-                  Logout
-                </Button>
-              </>
+              // Business menu items
+              pathname.includes("business") ? (
+                <MenuItemsComponent
+                  items={[
+                    "Home",
+                    "Explore",
+                    "Dashboard",
+                    "Message",
+                    "Cart",
+                    "Saved Profile",
+                    "Notifications",
+                  ]}
+                />
+              ) : (
+                // Influencer menu items
+                <MenuItemsComponent
+                  items={[
+                    "Home",
+                    "Orders",
+                    "Dashboard",
+                    "Message",
+                    "Notifications",
+                  ]}
+                />
+              )
             ) : (
-              <>
-                {pathname.includes("influencer") ? (
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      background:
-                        "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                      color: "black",
-                      border: "1px solid black",
-                      borderRadius: "20px",
-                    }}
-                    onClick={startTwitterAuthentication}
-                  >
-                    Login
-                  </Button>
-                ) : (
-                  <>
-                    <LoginMenu
-                      twitterLogin={startTwitterAuthentication}
-                      setEmailOpen={setEmailOpen}
-                      setWalletOpen={setWalletOpen}
-                    />
-                  </>
-                )}
-              </>
+              <MenuItemsComponent items={["Home", "Explore"]} />
             )}
+            <LoginMenu
+              isTwitterUserLoggedIn={isTwitterUserLoggedIn}
+              twitterLogin={startTwitterAuthentication}
+              setEmailOpen={setEmailOpen}
+              setWalletOpen={setWalletOpen}
+              logoutTwitterUser={logoutTwitterUser}
+            />
           </Box>
         </Box>
       </Toolbar>
