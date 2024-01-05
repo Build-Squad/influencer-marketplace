@@ -120,7 +120,7 @@ export default function Banner({}: Props) {
               />
             </Grid>
           </Grid>
-          <Grid container spacing={2} justifyContent={"space-around"}>
+          <Grid container spacing={2} justifyContent={"center"}>
             <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
@@ -128,7 +128,7 @@ export default function Banner({}: Props) {
                 data={{ name: "lowerPriceLimit", label: "Min. Price($)" }}
               />
             </Grid>
-            <span style={{ marginTop: "24px" }}>-</span>
+            <span style={{ marginTop: "24px", marginLeft: "10px" }}>-</span>
             <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
@@ -143,7 +143,7 @@ export default function Banner({}: Props) {
                 data={{ name: "lowerFollowerLimit", label: "Min. Followers" }}
               />
             </Grid>
-            <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
+            <span style={{ marginTop: "24px", marginLeft: "10px" }}>-</span>
             <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
               <FiltersComponent
                 formik={formik}
