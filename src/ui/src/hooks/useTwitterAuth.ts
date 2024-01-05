@@ -6,6 +6,7 @@ import { getServicewithCredentials } from "../services/httpServices";
 import { notification } from "../components/shared/notification";
 import { useAppDispatch } from "./useRedux";
 import { loginReducer, logoutReducer } from "../reducers/userSlice";
+import { resetCart } from "../reducers/cartSlice";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -14,8 +15,9 @@ export default function useTwitterAuth() {
   const dispatch = useAppDispatch();
   // State to track whether the user is logged in via Twitter
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
-  const [isAccountSsetupComplete, setIsAccountSetupComplete] = useState(true);
+  const [isAccountSetupComplete, setIsAccountSetupComplete] = useState(true);
   const [userDetails, setUserDetails] = useState(null);
+  const [categoriesAdded, setCategoriesAdded] = useState(false);
 
   useEffect(() => {
     checkTwitterUserAuthentication();
@@ -43,6 +45,7 @@ export default function useTwitterAuth() {
       notification("Logged out successfully");
       setTwitterUserLoggedIn(false);
       dispatch(logoutReducer());
+      dispatch(resetCart());
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -60,6 +63,7 @@ export default function useTwitterAuth() {
         setUserDetails(null);
         setTwitterUserLoggedIn(false);
         dispatch(logoutReducer());
+        dispatch(resetCart());
         localStorage.clear();
       }
     } catch (error) {
@@ -75,10 +79,11 @@ export default function useTwitterAuth() {
       );
       if (isSuccess) {
         if (data?.data?.length > 0) {
-          localStorage.setItem("category", JSON.stringify(data?.data));
           setIsAccountSetupComplete(true);
+          setCategoriesAdded(true);
         } else if (data?.data?.length === 0) {
           setIsAccountSetupComplete(false);
+          setCategoriesAdded(false);
         }
       }
     } catch (error) {
@@ -91,7 +96,9 @@ export default function useTwitterAuth() {
     startTwitterAuthentication,
     logoutTwitterUser,
     checkTwitterUserAuthentication,
-    isAccountSsetupComplete,
+    isAccountSetupComplete,
     userDetails,
+    categoriesAdded,
+    checkAccountSetup,
   };
 }

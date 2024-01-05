@@ -12,6 +12,9 @@ from .models import (
     User,
     BankAccount,
     Role,
+    Wallet,
+    WalletNetwork,
+    WalletProvider,
 )
 
 
@@ -149,3 +152,54 @@ class WalletAuthSerializer(serializers.Serializer):
     wallet_address_id = serializers.CharField(max_length=100)
     wallet_provider_id = serializers.CharField(max_length=100)
     wallet_network_id = serializers.CharField(max_length=100)
+
+
+class WalletConnectSerializer(serializers.Serializer):
+    wallet_address_id = serializers.CharField(max_length=100)
+    wallet_provider_id = serializers.CharField(max_length=100)
+    wallet_network_id = serializers.CharField(max_length=100)
+
+    # From the request.user_account, add a wallet to that particular user id
+    def create(self, validated_data):
+        wallet_address_id = validated_data.pop("wallet_address_id")
+        wallet_provider_id = WalletProvider.objects.get(
+            wallet_provider=validated_data.pop("wallet_provider_id")
+        )
+        wallet_network_id = WalletNetwork.objects.get(
+            wallet_network=validated_data.pop("wallet_network_id")
+        )
+        user_account = self.context["request"].user_account
+
+        # Check if there are any other wallets for the user
+        other_wallets = Wallet.objects.filter(user_id=user_account).exists()
+
+        wallet = Wallet.objects.create(
+            wallet_address_id=wallet_address_id,
+            wallet_provider_id=wallet_provider_id,
+            wallet_network_id=wallet_network_id,
+            user_id=user_account,
+            is_primary=not other_wallets,  # Set is_primary to True if there are no other wallets
+        )
+
+        return wallet
+
+
+class WalletProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletProvider
+        fields = "__all__"
+
+
+class WalletNetworkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletNetwork
+        fields = "__all__"
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    wallet_provider_id = WalletProviderSerializer(read_only=True)
+    wallet_network_id = WalletNetworkSerializer(read_only=True)
+
+    class Meta:
+        model = Wallet
+        fields = "__all__"

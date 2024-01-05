@@ -28,9 +28,10 @@ import React, { useEffect } from "react";
 type ServiceProps = {
   currentInfluencer: UserType | null;
   id: string;
+  wallets: WalletType[];
 };
 
-const Services = ({ currentInfluencer, id }: ServiceProps) => {
+const Services = ({ currentInfluencer, id, wallets }: ServiceProps) => {
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const loggedInUser = useAppSelector((state) => state.user?.user);
@@ -221,8 +222,12 @@ const Services = ({ currentInfluencer, id }: ServiceProps) => {
                       boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
                     }}
                     onClick={() => {
-                      setSelectedService(null);
-                      setOpenModal(true);
+                      if (wallets.length > 0) {
+                        setSelectedService(null);
+                        setOpenModal(true);
+                      } else {
+                        notification("Please add a wallet first", "error");
+                      }
                     }}
                   >
                     <Tooltip title="Add Package">
