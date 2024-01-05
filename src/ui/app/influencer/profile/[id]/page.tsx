@@ -1,10 +1,16 @@
 "use client";
 
+import Star_Coloured from "@/public/svg/Star_Coloured.svg";
+import CategorySelectionModal from "@/src/components/categorySelectionModal";
+import { notification } from "@/src/components/shared/notification";
+import WalletConnectModal from "@/src/components/walletConnectModal";
+import { useAppSelector } from "@/src/hooks/useRedux";
+import { getService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
+import EditIcon from "@mui/icons-material/Edit";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
-import TelegramIcon from "@mui/icons-material/Telegram";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import {
   Avatar,
@@ -14,22 +20,18 @@ import {
   Grid,
   IconButton,
   Link,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { usePathname, useRouter } from "next/navigation";
-import React, { use, useEffect } from "react";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import Image from "next/image";
 import NextLink from "next/link";
-import EditIcon from "@mui/icons-material/Edit";
-import CategorySelectionModal from "@/src/components/categorySelectionModal";
-import {
-  getService,
-  getServicewithCredentials,
-} from "@/src/services/httpServices";
+import React, { useEffect } from "react";
 import Services from "./_services";
-import { notification } from "@/src/components/shared/notification";
-import { useAppSelector } from "@/src/hooks/useRedux";
 
 const tabs = [
   {
@@ -52,6 +54,9 @@ const ProfileLayout = ({
   const loggedInUser = useAppSelector((state) => state.user?.user);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [categoryOpen, setCategoryOpen] = React.useState<boolean>(false);
+  const [openWalletConnectModal, setOpenWalletConnectModal] =
+    React.useState<boolean>(false);
+  const [wallets, setWallets] = React.useState<WalletType[]>([]);
 
   const getUserDetails = async () => {
     const { isSuccess, message, data } = await getService(
@@ -61,6 +66,13 @@ const ProfileLayout = ({
       setCurrentUser(data?.data);
     } else {
       notification(message ? message : "Error fetching user details", "error");
+    }
+  };
+
+  const getWallets = async () => {
+    const { isSuccess, message, data } = await getService(`/account/wallets/`);
+    if (isSuccess) {
+      setWallets(data?.data);
     }
   };
 
@@ -90,6 +102,16 @@ const ProfileLayout = ({
       getUserDetails();
     }
   }, [categoryOpen]);
+
+  useEffect(() => {
+    if (
+      !openWalletConnectModal &&
+      params.id &&
+      params?.id === loggedInUser?.id
+    ) {
+      getWallets();
+    }
+  }, [openWalletConnectModal, params.id, loggedInUser?.id]);
 
   return (
     <Box
@@ -125,7 +147,8 @@ const ProfileLayout = ({
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "center",
+                    flexDirection: "column",
+                    alignItems: "center",
                     m: 2,
                   }}
                 >
@@ -435,6 +458,164 @@ const ProfileLayout = ({
                       </Box>
                     </Box>
                   </Box>
+                  {/* Only for the current logged in user */}
+                  {params?.id === loggedInUser?.id && (
+                    <Box
+                      sx={{
+                        borderRadius: "16px",
+                        boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
+                        backgroundColor: "#FFF",
+                        zIndex: "1",
+                        display: "flex",
+                        minWidth: "100%",
+                        flexDirection: "column",
+                        mt: 4,
+                        p: 2,
+                        maxWidth: "100%",
+                      }}
+                    >
+                      <Grid container spacing={2}>
+                        <Grid
+                          item
+                          xs={12}
+                          sx={{ display: "flex", justifyContent: "flex-start" }}
+                        >
+                          <Image
+                            src={Star_Coloured}
+                            alt={"Coloured Start"}
+                            height={30}
+                          />
+                          <Typography
+                            variant="h5"
+                            sx={{ ml: 2, fontWeight: "bold" }}
+                          >
+                            Web3 Wallets
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <Typography variant="body1">
+                            {/* Text about connecting wallets */}
+                            Connect your wallet to receive payments in crypto
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            color="secondary"
+                            sx={{
+                              borderRadius: 6,
+                            }}
+                            onClick={() => {
+                              setOpenWalletConnectModal(true);
+                            }}
+                          >
+                            Add Wallet
+                          </Button>
+                        </Grid>
+                        <Grid item xs={12}>
+                          {wallets?.length === 0 ? (
+                            <>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  minHeight: "200px",
+                                }}
+                              >
+                                <Image
+                                  src={"/wallets.png"}
+                                  alt={"Wallet"}
+                                  height={100}
+                                  width={100}
+                                />
+                                <Typography
+                                  variant="body1"
+                                  sx={{ textAlign: "center" }}
+                                >
+                                  No Wallets Connected
+                                </Typography>
+                              </Box>
+                            </>
+                          ) : (
+                            <>
+                              <Table
+                                sx={{
+                                  maxWidth: "100%",
+                                }}
+                              >
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>
+                                      <Typography
+                                        sx={{
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        Address
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Typography
+                                        sx={{
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        Wallet
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {wallets?.map((wallet) => (
+                                    <TableRow key={wallet.id}>
+                                      <TableCell>
+                                        <Typography>
+                                          {wallet.wallet_address_id.slice(
+                                            0,
+                                            10
+                                          )}
+                                          {"..."}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Typography>Phantom</Typography>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Typography>
+                                          {wallet.is_primary && (
+                                            <Chip
+                                              label="Primary"
+                                              sx={{
+                                                borderRadius: "20px",
+                                                m: 1,
+                                              }}
+                                              color="primary"
+                                            />
+                                          )}
+                                        </Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </>
+                          )}
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  )}
                 </Box>
               </Grid>
               <Grid item xs={12} md={9} sm={12} lg={9}>
@@ -450,13 +631,22 @@ const ProfileLayout = ({
                   ))}
                 </Box>
                 <Box sx={{ p: 2 }}>
-                  <Services currentInfluencer={currentUser} id={params.id} />
+                  <Services
+                    currentInfluencer={currentUser}
+                    id={params.id}
+                    wallets={wallets}
+                  />
                 </Box>
               </Grid>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
+      <WalletConnectModal
+        open={openWalletConnectModal}
+        setOpen={setOpenWalletConnectModal}
+        connect={true}
+      />
       <CategorySelectionModal
         open={categoryOpen}
         setOpen={setCategoryOpen}
