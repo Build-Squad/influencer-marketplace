@@ -18,7 +18,7 @@ import NotificationIcon from "@/public/svg/Notification.svg";
 import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import ExploreIcon from "@/public/svg/Explore.svg";
 import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
-import OrdersDisabledIcon from "@/public/svg/Orders_disabled.svg";
+import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
 import MessageIcon from "@/public/svg/Messages.svg";
 import MessageDisabledIcon from "@/public/svg/Messages_disabled.svg";
