@@ -417,7 +417,13 @@ const ProfileLayout = ({
                               fontWeight: "bold",
                             }}
                           >
-                            {`Categories (${currentUser?.twitter_account?.account_categories?.length})`}
+                            {`Categories (${
+                              currentUser?.twitter_account?.account_categories
+                                ?.length
+                                ? currentUser?.twitter_account
+                                    ?.account_categories?.length
+                                : 0
+                            })`}
                           </Typography>
                           {params?.id === loggedInUser?.id && (
                             <IconButton
@@ -590,7 +596,14 @@ const ProfileLayout = ({
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
-                                        <Typography>Phantom</Typography>
+                                        <Typography>
+                                          {wallet?.wallet_provider_id?.wallet_provider
+                                            ?.charAt(0)
+                                            .toUpperCase() +
+                                            wallet?.wallet_provider_id?.wallet_provider?.slice(
+                                              1
+                                            )}
+                                        </Typography>
                                       </TableCell>
                                       <TableCell>
                                         <Typography>
