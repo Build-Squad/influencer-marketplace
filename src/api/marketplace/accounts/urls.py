@@ -17,7 +17,9 @@ from .views import (
     RoleDetail,
     UserAuth,
     EmailVerification,
-    WalletAuth
+    WalletAuth,
+    WalletConnect,
+    WalletList
 )
 
 urlpatterns = [
@@ -52,4 +54,7 @@ urlpatterns = [
     path("email-verify/", EmailVerification.as_view(), name="email-verify"),
 
     path("wallet-auth/", WalletAuth.as_view(), name="wallet-auth"),
+
+    path("connect-wallet/", WalletConnect.as_view(), name="connect-wallet"),
+    path("wallets/", WalletList.as_view(), name="wallets"),
 ]

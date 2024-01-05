@@ -14,11 +14,13 @@ import { loginReducer } from "@/src/reducers/userSlice";
 type WalletConnectModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  connect?: boolean;
 };
 
 export default function WalletConnectModal({
   open,
   setOpen,
+  connect = false,
 }: WalletConnectModalProps) {
   const dispatch = useAppDispatch();
   const [isPhantomInstalled, setIsPhantomInstalled] = React.useState(false);
@@ -61,11 +63,13 @@ export default function WalletConnectModal({
       wallet_network_id: "solana",
     };
     const { isSuccess, data, message } = await postService(
-      "/account/wallet-auth/",
+      connect ? "/account/connect-wallet/" : "/account/wallet-auth/",
       requestBody
     );
     if (isSuccess) {
-      dispatch(loginReducer(data?.data));
+      if (!connect) {
+        dispatch(loginReducer(data?.data));
+      }
       notification(message);
       setOpen(false);
     } else {
@@ -215,8 +219,9 @@ export default function WalletConnectModal({
                 textAlign: "center",
               }}
             >
-              By logging in, you agree to our Terms & Conditions and Privacy
-              Policy
+              {connect
+                ? "Connect your Wallet"
+                : "By logging in, you agree to our Terms & Conditions and Privacy Policy"}
             </Typography>
           </Box>
         </Grid>

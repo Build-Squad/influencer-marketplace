@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Toolbar, AppBar, Button, Box, Typography } from "@mui/material";
-import Image from "next/image";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import LoginMenu from "../loginMenu";
-import useTwitterAuth from "@/src/hooks/useTwitterAuth";
-import { LOGIN_STATUS_SUCCESS, LOGIN_STATUS_FAILED } from "@/src/utils/consts";
 import { loginStatusType } from "@/app/utils/types";
-import { useAppSelector } from "@/src/hooks/useRedux";
 import HomeIcon from "@/public/svg/Home.svg";
 import HomeDisabledIcon from "@/public/svg/Home_disabled.svg";
-
-import ProfileIcon from "@/public/svg/Profile.svg";
-import ProfileDisabledIcon from "@/public/svg/Profile_disabled.svg";
+import { useAppSelector } from "@/src/hooks/useRedux";
+import useTwitterAuth from "@/src/hooks/useTwitterAuth";
+import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
+import { AppBar, Badge, Box, Button, Toolbar, Typography } from "@mui/material";
+import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
+import LoginMenu from "../loginMenu";
 
 import DashboardIcon from "@/public/svg/Dashboard.svg";
 import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
@@ -24,6 +21,7 @@ import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 
 import ExploreIcon from "@/public/svg/Explore.svg";
 import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
+import { getService } from "@/src/services/httpServices";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
@@ -32,6 +30,8 @@ type NavbarProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
   emailOpen: boolean;
   walletOpen: boolean;
+  setConnectWallet: React.Dispatch<React.SetStateAction<boolean>>;
+  categoryOpen: boolean;
 };
 
 const MENU_ITEMS = [
@@ -56,7 +56,7 @@ const MENU_ITEMS = [
   },
   {
     label: "My cart",
-    route: "/business/cart",
+    route: "/checkout",
     icon: CartIcon,
     disabledIcon: CartDisabledIcon,
   },
@@ -75,20 +75,36 @@ export default function Navbar({
   setCategoryOpen,
   emailOpen,
   walletOpen,
+  setConnectWallet,
+  categoryOpen,
 }: NavbarProps) {
   const {
     isTwitterUserLoggedIn,
     startTwitterAuthentication,
     logoutTwitterUser,
     checkTwitterUserAuthentication,
-    isAccountSsetupComplete,
+    isAccountSetupComplete,
+    categoriesAdded,
+    checkAccountSetup,
   } = useTwitterAuth();
+
+  const cart = useAppSelector((state) => state.cart);
   const router = useRouter();
   const pathname = usePathname();
   const currentUser = useAppSelector((state) => state.user?.user);
   // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
 
   const params = useSearchParams();
+
+  const getWallets = async () => {
+    const { isSuccess, message, data } = await getService(`/account/wallets/`);
+    if (isSuccess) {
+      if (data?.data?.length === 0) {
+        setWalletOpen(true);
+        setConnectWallet(true);
+      }
+    }
+  };
 
   useEffect(() => {
     if (!emailOpen) {
@@ -117,12 +133,29 @@ export default function Navbar({
     const status = params.get("authenticationStatus");
     if (
       isTwitterUserLoggedIn &&
-      !isAccountSsetupComplete &&
+      !isAccountSetupComplete &&
       status === "success"
     ) {
       setCategoryOpen(true);
     }
-  }, [isTwitterUserLoggedIn, isAccountSsetupComplete]);
+  }, [isTwitterUserLoggedIn, isAccountSetupComplete]);
+
+  // Check for the wallet open after the categroy selection
+  // But also check if category selection check is complete
+
+  useEffect(() => {
+    if (!categoryOpen) {
+      checkAccountSetup();
+    }
+  }, [categoryOpen]);
+
+  useEffect(() => {
+    const status = params.get("authenticationStatus");
+    console.log("categoriesAdded", categoriesAdded);
+    if (categoriesAdded && status === "success" && isTwitterUserLoggedIn) {
+      getWallets();
+    }
+  }, [categoriesAdded, isTwitterUserLoggedIn]);
 
   return (
     <AppBar
@@ -133,7 +166,7 @@ export default function Navbar({
         component="nav"
         sx={{ display: "flex", justifyContent: "space-between" }}
       >
-        <Box sx={{ width: "33%" }}>
+        <Box>
           <Image
             src={"/XFluencer_logo.png"}
             width="150"
@@ -206,11 +239,28 @@ export default function Navbar({
                     }
                   }}
                 >
-                  <Image
-                    src={pathname == item.route ? item.icon : item.disabledIcon}
-                    alt={item.label}
-                    height={item.height ?? 16}
-                  />
+                  {item.label === "My cart" ? (
+                    <Badge
+                      badgeContent={cart?.orderItems.length}
+                      color="secondary"
+                    >
+                      <Image
+                        src={
+                          pathname == item.route ? item.icon : item.disabledIcon
+                        }
+                        alt={item.label}
+                        height={item.height ?? 16}
+                      />
+                    </Badge>
+                  ) : (
+                    <Image
+                      src={
+                        pathname == item.route ? item.icon : item.disabledIcon
+                      }
+                      alt={item.label}
+                      height={item.height ?? 16}
+                    />
+                  )}
                   <Typography sx={{ fontSize: "10px" }}>
                     {item.label}
                   </Typography>
