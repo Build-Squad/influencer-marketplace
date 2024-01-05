@@ -15,6 +15,8 @@ import ThemeRegistry from "./ThemeRegistry";
 import Navbar from "./components/navbar";
 import "./globals.css";
 import { loginStatusType } from "./utils/types";
+import { PersistGate } from "redux-persist/integration/react";
+import { persistStore } from "redux-persist";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,6 +35,7 @@ export default function RootLayout({
     // Create the store instance the first time this renders
     storeRef.current = makeStore();
   }
+  const persistor = persistStore(storeRef.current);
   const params = useSearchParams();
   // Snackbar only if the user tries to login/signup
   const [loginStatus, setLoginStatus] = useState<loginStatusType>({
@@ -58,41 +61,43 @@ export default function RootLayout({
           preventDuplicate
         >
           <Provider store={storeRef.current}>
-            <ThemeRegistry options={{ key: "mui-theme" }}>
-              <Navbar
-                setEmailOpen={setEmailOpen}
-                setCategoryOpen={setCategoryOpen}
-                setWalletOpen={setWalletOpen}
-                setLoginStatus={setLoginStatus}
-                emailOpen={emailOpen}
-                walletOpen={walletOpen}
-                setConnectWallet={setConnectWallet}
-                categoryOpen={categoryOpen}
-              />
-              {children}
-              {loginStatus.status ? (
-                <SnackbarComp
-                  variant={loginStatus.status}
-                  message={<>{loginStatus.message}</>}
-                  updateParentState={() => {
-                    setLoginStatus({
-                      status: "",
-                      message: "",
-                    });
-                  }}
+            <PersistGate loading={null} persistor={persistor}>
+              <ThemeRegistry options={{ key: "mui-theme" }}>
+                <Navbar
+                  setEmailOpen={setEmailOpen}
+                  setCategoryOpen={setCategoryOpen}
+                  setWalletOpen={setWalletOpen}
+                  setLoginStatus={setLoginStatus}
+                  emailOpen={emailOpen}
+                  walletOpen={walletOpen}
+                  setConnectWallet={setConnectWallet}
+                  categoryOpen={categoryOpen}
                 />
-              ) : null}
-              <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
-              <CategorySelectionModal
-                open={categoryOpen}
-                setOpen={setCategoryOpen}
-              />
-              <WalletConnectModal
-                open={walletOpen}
-                setOpen={setWalletOpen}
-                connect={connectWallet}
-              />
-            </ThemeRegistry>
+                {children}
+                {loginStatus.status ? (
+                  <SnackbarComp
+                    variant={loginStatus.status}
+                    message={<>{loginStatus.message}</>}
+                    updateParentState={() => {
+                      setLoginStatus({
+                        status: "",
+                        message: "",
+                      });
+                    }}
+                  />
+                ) : null}
+                <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
+                <CategorySelectionModal
+                  open={categoryOpen}
+                  setOpen={setCategoryOpen}
+                />
+                <WalletConnectModal
+                  open={walletOpen}
+                  setOpen={setWalletOpen}
+                  connect={connectWallet}
+                />
+              </ThemeRegistry>
+            </PersistGate>
           </Provider>
         </SnackbarProvider>
       </body>

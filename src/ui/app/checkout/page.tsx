@@ -368,58 +368,10 @@ export default function CheckoutPage() {
                       </TableCell>
                     </TableRow>
                   )}
-                  {cart?.orderItems.map((orderItem) => (
+                  {cart?.servicesAdded.map((orderItem) => (
                     <TableRow key={orderItem?.service.id}>
                       <TableCell>{orderItem?.service?.package?.name}</TableCell>
-                      <TableCell>
-                        {/* A counter */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Button
-                            color="secondary"
-                            sx={{
-                              borderRadius: "50%",
-                              minWidth: 0,
-                              width: 30,
-                              height: 30,
-                              p: 0,
-                              mr: 1,
-                            }}
-                            onClick={() => {}}
-                          >
-                            -
-                          </Button>
-                          <Box
-                            sx={{
-                              p: "0px 8px",
-                              border: "1px solid #e8e8e8",
-                              borderRadius: 2,
-                              backgroundColor: "#f8f8f8",
-                            }}
-                          >
-                            {orderItem.quantity}
-                          </Box>
-                          <Button
-                            color="secondary"
-                            sx={{
-                              borderRadius: "50%",
-                              minWidth: 0,
-                              width: 30,
-                              height: 30,
-                              p: 0,
-                              ml: 1,
-                            }}
-                            onClick={() => {}}
-                          >
-                            +
-                          </Button>
-                        </Box>
-                      </TableCell>
+                      <TableCell>{orderItem?.quantity} </TableCell>
                       <TableCell>
                         {Number(orderItem?.service?.platform_price)?.toFixed(2)}{" "}
                         {orderItem?.service?.currency?.symbol}
