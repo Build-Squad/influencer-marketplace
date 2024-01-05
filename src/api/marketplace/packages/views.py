@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from .models import Package, ServiceMaster, Service
 from drf_yasg.utils import swagger_auto_schema
 from core.models import Currency
-from accounts.models import User
+from accounts.models import User, Wallet
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from .serializers import (
@@ -198,6 +198,12 @@ class ServiceList(APIView):
             serializer = CreateServicesSerializer(
                 data=request.data, context={'request': request})
             if serializer.is_valid():
+                # Get all the wallets of the user
+                user_wallets = Wallet.objects.filter(
+                    user_id=request.user_account.id, deleted_at=None
+                )
+                if len(user_wallets) == 0:
+                    return handleBadRequest("User does not have any wallet")
                 try:
                     service_master = ServiceMaster.objects.get(
                         id=request.data["service_master"], deleted_at=None
