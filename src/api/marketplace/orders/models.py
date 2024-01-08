@@ -7,6 +7,14 @@ from packages.models import Package, ServiceMaster
 
 class Order(models.Model):
 
+    STATUS_CHOICES = (
+        ('draft', 'draft'),
+        ('pending', 'pending'),
+        ('accepted', 'accepted'),
+        ('rejected', 'rejected'),
+        ('completed', 'completed'),
+    )
+
     id = models.UUIDField(primary_key=True, verbose_name='Order', default=uuid.uuid4, editable=False)
     buyer = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='order_buyer_id', on_delete=SET_NULL, null=True)
@@ -14,7 +22,8 @@ class Order(models.Model):
     currency = models.ForeignKey(
         Currency, related_name='order_currency_id', on_delete=SET_NULL, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='draft')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
