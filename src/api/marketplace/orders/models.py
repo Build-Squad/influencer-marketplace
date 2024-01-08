@@ -79,11 +79,7 @@ class OrderItemMetaData(models.Model):
 
     id = models.UUIDField(
         primary_key=True, verbose_name='ServiceMasterMetaData', default=uuid.uuid4, editable=False)
-    field_name = models.CharField(max_length=100, blank=True, null=True)
     label = models.CharField(max_length=100, blank=True, null=True)
-    placeholder = models.CharField(max_length=100, blank=True, null=True)
-    min = models.CharField(max_length=100, blank=True, null=True)
-    max = models.CharField(max_length=100, blank=True, null=True)
     span = models.IntegerField(blank=True, null=True)
     field_type = models.CharField(choices=TYPE_CHOICES,
                                   max_length=50, default='text')
