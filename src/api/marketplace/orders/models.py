@@ -1,27 +1,36 @@
-from unicodedata import name
 from django.db import models
 import uuid
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.db.models import SET_NULL
 from django.conf import settings
 from core.models import Currency
-from core.models import Country
 from packages.models import Package, ServiceMaster
 
 class Order(models.Model):
 
+    STATUS_CHOICES = (
+        ('draft', 'draft'),
+        ('pending', 'pending'),
+        ('accepted', 'accepted'),
+        ('rejected', 'rejected'),
+        ('completed', 'completed'),
+    )
+
     id = models.UUIDField(primary_key=True, verbose_name='Order', default=uuid.uuid4, editable=False)
-    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='order_buyer_id', on_delete=SET_NULL, null=True)
-    package = models.ForeignKey(Package, related_name='order_package_id', on_delete=SET_NULL, null=True)
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='order_buyer_id', on_delete=SET_NULL, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    currency = models.ForeignKey(Currency, related_name='order_currency_id', on_delete=SET_NULL, null=True)
+    currency = models.ForeignKey(
+        Currency, related_name='order_currency_id', on_delete=SET_NULL, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='draft')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "order" 
+
+    def __str__(self):
+        return self.buyer.username + " - " + self.status
 
 class OrderItem(models.Model):
     
@@ -33,18 +42,56 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='order_item_currency_id', on_delete=SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    package = models.ForeignKey(
+        Package, related_name='order_item_package_id', on_delete=SET_NULL, null=True)
+    platform_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True)
 
     class Meta:
         db_table = "order_item" 
 
+    def __str__(self):
+        return self.package.name + " - " + self.status
+
 class OrderAttachment(models.Model):
     
-    id = models.UUIDField(primary_key=True, verbose_name='OrderAttachment', default=uuid.uuid4, editable=False)
-    order_id = models.ForeignKey(Order, related_name='order_attachment_order_id', on_delete=SET_NULL, null=True)
+    id = models.UUIDField(
+        primary_key=True, verbose_name='OrderAttachment', default=uuid.uuid4, editable=False)
     filename = models.TextField(blank=True, null=True)
+    order_item = models.ForeignKey(
+        OrderItem, related_name='order_attachment_order_item_id', on_delete=SET_NULL, null=True)
+    file_type = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_attachment"    
+
+    def __str__(self):
+        return self.filename + " - " + self.file_type
+
+
+class OrderItemMetaData(models.Model):
+    TYPE_CHOICES = (
+        ('text', 'text'),
+        ('long_text', 'long_text'),
+        ('date_time', 'date_time'),
+        ('media', 'media'),
+    )
+
+    id = models.UUIDField(
+        primary_key=True, verbose_name='ServiceMasterMetaData', default=uuid.uuid4, editable=False)
+    label = models.CharField(max_length=100, blank=True, null=True)
+    span = models.IntegerField(blank=True, null=True)
+    field_type = models.CharField(choices=TYPE_CHOICES,
+                                  max_length=50, default='text')
+    order_item = models.ForeignKey(
+        OrderItem, related_name='order_item_meta_data_order_item_id', on_delete=SET_NULL, null=True)
+    value = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "order_item_meta_data"
+
+    def __str__(self):
+        return self.label + " - " + self.field_type
 
 class OrderItemTracking(models.Model):
     
