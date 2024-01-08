@@ -1,17 +1,16 @@
 "use client";
 
-import { Box, Button, Grid, Typography } from "@mui/material";
-import React, { useEffect } from "react";
-import CustomModal from "../shared/customModal";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
-import PhantomIcon from "@/public/phantomIcon.svg";
-import Image from "next/image";
-import { postService } from "@/src/services/httpServices";
-import { notification } from "../shared/notification";
 import { useAppDispatch } from "@/src/hooks/useRedux";
 import { loginReducer } from "@/src/reducers/userSlice";
-import dynamic from "next/dynamic";
+import { postService } from "@/src/services/httpServices";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import { useWallet } from "@solana/wallet-adapter-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import React, { useEffect } from "react";
+import CustomModal from "../shared/customModal";
+import { notification } from "../shared/notification";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -30,7 +29,7 @@ export default function WalletConnectModal({
   setOpen,
   connect = false,
 }: WalletConnectModalProps) {
-  const { publicKey, signIn, signMessage, wallet, wallets } = useWallet();
+  const { publicKey, wallet } = useWallet();
   const dispatch = useAppDispatch();
   const [walletAddress, setWalletAddress] = React.useState<string>("");
   const [walletProvider, setWalletProvider] = React.useState<string>("");
