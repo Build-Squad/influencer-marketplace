@@ -584,8 +584,7 @@ const ProfileLayout = ({
                                     <TableRow key={wallet.id}>
                                       <TableCell>
                                         <Typography>
-                                          {wallet.wallet_address_id.slice(0, 8)}
-                                          {"..."}
+                                          {wallet.wallet_address_id}
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
@@ -641,6 +640,7 @@ const ProfileLayout = ({
                     currentInfluencer={currentUser}
                     id={params.id}
                     wallets={wallets}
+                    setOpen={setOpenWalletConnectModal}
                   />
                 </Box>
               </Grid>
