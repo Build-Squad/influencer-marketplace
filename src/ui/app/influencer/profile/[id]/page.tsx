@@ -581,7 +581,14 @@ const ProfileLayout = ({
                                 </TableHead>
                                 <TableBody>
                                   {wallets?.map((wallet) => (
-                                    <TableRow key={wallet.id}>
+                                    <TableRow
+                                      key={wallet.id}
+                                      sx={{
+                                        backgroundColor: wallet.is_primary
+                                          ? "#D1EFF2"
+                                          : "",
+                                      }}
+                                    >
                                       <TableCell>
                                         <Typography>
                                           {wallet.wallet_address_id}
@@ -597,20 +604,7 @@ const ProfileLayout = ({
                                             )}
                                         </Typography>
                                       </TableCell>
-                                      <TableCell>
-                                        <Typography>
-                                          {wallet.is_primary && (
-                                            <Chip
-                                              label="Primary"
-                                              sx={{
-                                                borderRadius: "20px",
-                                                m: 1,
-                                              }}
-                                              color="primary"
-                                            />
-                                          )}
-                                        </Typography>
-                                      </TableCell>
+                                      <TableCell>{/* Action Menu */}</TableCell>
                                     </TableRow>
                                   ))}
                                 </TableBody>
