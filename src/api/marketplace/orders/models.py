@@ -83,6 +83,8 @@ class OrderItemMetaData(models.Model):
     span = models.IntegerField(blank=True, null=True)
     field_type = models.CharField(choices=TYPE_CHOICES,
                                   max_length=50, default='text')
+    order_item = models.ForeignKey(
+        OrderItem, related_name='order_item_meta_data_order_item_id', on_delete=SET_NULL, null=True)
     value = models.TextField(blank=True, null=True)
 
     class Meta:
