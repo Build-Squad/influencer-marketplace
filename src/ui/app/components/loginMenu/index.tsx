@@ -63,22 +63,24 @@ export default function LoginMenu({
       );
     }
     if (!isTwitterUserLoggedIn) {
-      options.push(
-        {
-          label: "Connect with X",
-          function: twitterLogin,
-        },
-        {
-          label: "Connect with Email",
-          function: () => {
-            setEmailOpen(true);
+      options.push({
+        label: "Connect with X",
+        function: twitterLogin,
+      });
+      if (pathname.includes("business")) {
+        options.push(
+          {
+            label: "Connect with Email",
+            function: () => {
+              setEmailOpen(true);
+            },
           },
-        },
-        {
-          label: "Connect with Wallet",
-          function: () => setWalletOpen(true),
-        }
-      );
+          {
+            label: "Connect with Wallet",
+            function: () => setWalletOpen(true),
+          }
+        );
+      }
     }
 
     return options;
