@@ -29,9 +29,15 @@ type ServiceProps = {
   currentInfluencer: UserType | null;
   id: string;
   wallets: WalletType[];
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const Services = ({ currentInfluencer, id, wallets }: ServiceProps) => {
+const Services = ({
+  currentInfluencer,
+  id,
+  wallets,
+  setOpen,
+}: ServiceProps) => {
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const loggedInUser = useAppSelector((state) => state.user?.user);
@@ -227,6 +233,7 @@ const Services = ({ currentInfluencer, id, wallets }: ServiceProps) => {
                         setOpenModal(true);
                       } else {
                         notification("Please add a wallet first", "error");
+                        setOpen(true);
                       }
                     }}
                   >
@@ -251,6 +258,19 @@ const Services = ({ currentInfluencer, id, wallets }: ServiceProps) => {
                       </Box>
                     </Tooltip>
                   </Card>
+                </Grid>
+              )}
+              {services?.length === 0 && id !== loggedInUser?.id && (
+                <Grid item xs={12}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    No services found
+                  </Typography>
                 </Grid>
               )}
               {services?.map((serviceItem) => {
