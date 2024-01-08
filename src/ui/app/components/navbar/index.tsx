@@ -124,7 +124,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
               router.push(route);
             }}
           >
-            {item.label === "My cart" ? (
+            {item.route === "/checkout" ? (
               <Badge badgeContent={cart?.orderItems.length} color="secondary">
                 <Image
                   src={pathname == route ? item.icon : item.disabledIcon}
@@ -173,6 +173,7 @@ export default function Navbar({
   // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
 
   const params = useSearchParams();
+  const user = useAppSelector((state) => state.user);
 
   const getWallets = async () => {
     const { isSuccess, message, data } = await getService(`/account/wallets/`);
@@ -302,7 +303,7 @@ export default function Navbar({
           >
             {isTwitterUserLoggedIn ? (
               // Business menu items
-              pathname.includes("business") ? (
+              user?.user?.role?.name.includes("business") ? (
                 <MenuItemsComponent
                   items={[
                     "Home",
