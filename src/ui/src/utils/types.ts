@@ -35,6 +35,7 @@ type ServiceMasterMetaDataType = {
   span: number;
   field_type: string;
   service_master_id: string;
+  value: string | null;
 };
 
 type ServiceMasterType = {
