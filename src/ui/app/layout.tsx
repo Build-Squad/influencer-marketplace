@@ -17,6 +17,7 @@ import "./globals.css";
 import { loginStatusType } from "./utils/types";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
+import WalletContextProvider from "@/src/components/shared/walletContextProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,39 +64,41 @@ export default function RootLayout({
           <Provider store={storeRef.current}>
             <PersistGate loading={null} persistor={persistor}>
               <ThemeRegistry options={{ key: "mui-theme" }}>
-                <Navbar
-                  setEmailOpen={setEmailOpen}
-                  setCategoryOpen={setCategoryOpen}
-                  setWalletOpen={setWalletOpen}
-                  setLoginStatus={setLoginStatus}
-                  emailOpen={emailOpen}
-                  walletOpen={walletOpen}
-                  setConnectWallet={setConnectWallet}
-                  categoryOpen={categoryOpen}
-                />
-                {children}
-                {loginStatus.status ? (
-                  <SnackbarComp
-                    variant={loginStatus.status}
-                    message={<>{loginStatus.message}</>}
-                    updateParentState={() => {
-                      setLoginStatus({
-                        status: "",
-                        message: "",
-                      });
-                    }}
+                <WalletContextProvider>
+                  <Navbar
+                    setEmailOpen={setEmailOpen}
+                    setCategoryOpen={setCategoryOpen}
+                    setWalletOpen={setWalletOpen}
+                    setLoginStatus={setLoginStatus}
+                    emailOpen={emailOpen}
+                    walletOpen={walletOpen}
+                    setConnectWallet={setConnectWallet}
+                    categoryOpen={categoryOpen}
                   />
-                ) : null}
-                <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
-                <CategorySelectionModal
-                  open={categoryOpen}
-                  setOpen={setCategoryOpen}
-                />
-                <WalletConnectModal
-                  open={walletOpen}
-                  setOpen={setWalletOpen}
-                  connect={connectWallet}
-                />
+                  {children}
+                  {loginStatus.status ? (
+                    <SnackbarComp
+                      variant={loginStatus.status}
+                      message={<>{loginStatus.message}</>}
+                      updateParentState={() => {
+                        setLoginStatus({
+                          status: "",
+                          message: "",
+                        });
+                      }}
+                    />
+                  ) : null}
+                  <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
+                  <CategorySelectionModal
+                    open={categoryOpen}
+                    setOpen={setCategoryOpen}
+                  />
+                  <WalletConnectModal
+                    open={walletOpen}
+                    setOpen={setWalletOpen}
+                    connect={connectWallet}
+                  />
+                </WalletContextProvider>
               </ThemeRegistry>
             </PersistGate>
           </Provider>

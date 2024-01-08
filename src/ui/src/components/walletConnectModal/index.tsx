@@ -1,15 +1,22 @@
 "use client";
 
-import { Box, Button, Grid, Typography } from "@mui/material";
-import React, { useEffect } from "react";
-import CustomModal from "../shared/customModal";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
-import PhantomIcon from "@/public/phantomIcon.svg";
-import Image from "next/image";
-import { postService } from "@/src/services/httpServices";
-import { notification } from "../shared/notification";
 import { useAppDispatch } from "@/src/hooks/useRedux";
 import { loginReducer } from "@/src/reducers/userSlice";
+import { postService } from "@/src/services/httpServices";
+import { Box, Button, Grid, Typography } from "@mui/material";
+import { useWallet } from "@solana/wallet-adapter-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import React, { useEffect } from "react";
+import CustomModal from "../shared/customModal";
+import { notification } from "../shared/notification";
+
+const WalletMultiButtonDynamic = dynamic(
+  async () =>
+    (await import("@solana/wallet-adapter-material-ui")).WalletMultiButton,
+  { ssr: false }
+);
 
 type WalletConnectModalProps = {
   open: boolean;
@@ -22,44 +29,15 @@ export default function WalletConnectModal({
   setOpen,
   connect = false,
 }: WalletConnectModalProps) {
+  const { publicKey, wallet } = useWallet();
   const dispatch = useAppDispatch();
-  const [isPhantomInstalled, setIsPhantomInstalled] = React.useState(false);
-  const [provider, setProvider] = React.useState<any>(null);
   const [walletAddress, setWalletAddress] = React.useState<string>("");
-
-  const getProvider = () => {
-    if ("phantom" in window) {
-      const provider = window.phantom?.solana;
-      if (provider?.isPhantom) {
-        setIsPhantomInstalled(true);
-        setProvider(provider);
-        return;
-      }
-    }
-
-    setIsPhantomInstalled(false);
-  };
-
-  const connectWallet = async () => {
-    if (provider) {
-      try {
-        const connected = await provider.connect();
-        if (connected) {
-          const publicKey = connected.publicKey.toString();
-          setWalletAddress(publicKey);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      getProvider();
-    }
-  };
+  const [walletProvider, setWalletProvider] = React.useState<string>("");
 
   const onSubmit = async () => {
     const requestBody = {
       wallet_address_id: walletAddress,
-      wallet_provider_id: "phantom",
+      wallet_provider_id: walletProvider,
       wallet_network_id: "solana",
     };
     const { isSuccess, data, message } = await postService(
@@ -80,15 +58,12 @@ export default function WalletConnectModal({
     }
   };
 
-  const installPhantom = async () => {
-    if (!provider) {
-      window.open("https://phantom.app/", "_blank");
-    }
-  };
-
   useEffect(() => {
-    getProvider();
-  }, []);
+    if (wallet && publicKey) {
+      setWalletProvider(wallet.adapter.name);
+      setWalletAddress(publicKey.toBase58());
+    }
+  }, [wallet, publicKey]);
 
   return (
     <CustomModal
@@ -118,86 +93,28 @@ export default function WalletConnectModal({
             </Typography>
           </Box>
         </Grid>
-        {!walletAddress && (
-          <Grid item xs={12}>
-            <Box
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: "flex",
+              my: 2,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <WalletMultiButtonDynamic
+              color="secondary"
+              variant="contained"
               sx={{
-                display: "flex",
-                my: 2,
-                justifyContent: "center",
-                alignItems: "center",
+                borderRadius: 8,
+                "& .MuiButton-root": {
+                  borderRadius: 8,
+                  color: "#ffffff",
+                },
               }}
-            >
-              {isPhantomInstalled ? (
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={connectWallet}
-                  startIcon={
-                    <Image
-                      src={PhantomIcon}
-                      alt={"Coloured Start"}
-                      height={30}
-                      width={30}
-                    />
-                  }
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: "bold",
-                    borderRadius: 4,
-                    px: 2,
-                    py: 1,
-                    border: "1px solig rgba(0,0,0,0.2)",
-                  }}
-                >
-                  Phantom Wallet
-                </Button>
-              ) : (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={installPhantom}
-                  >
-                    Install Phantom Wallet
-                  </Button>
-                  <Typography
-                    sx={{
-                      mt: 4,
-                    }}
-                  >
-                    Already installed?{" "}
-                    <Button onClick={getProvider}>Recheck</Button>
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </Grid>
-        )}
-        {walletAddress && (
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: "flex",
-                my: 2,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                Your Wallet Address:
-              </Typography>
-              <Typography variant="h6">{walletAddress}</Typography>
-            </Box>
-          </Grid>
-        )}
+            />
+          </Box>
+        </Grid>
         <Grid
           item
           xs={12}

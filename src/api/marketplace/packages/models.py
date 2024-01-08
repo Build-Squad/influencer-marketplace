@@ -121,3 +121,6 @@ class ServiceMasterMetaData(models.Model):
 
     class Meta:
         db_table = "service_master_meta_data"
+
+    def __str__(self):
+        return self.field_name + ' - ' + self.service_master_id.name

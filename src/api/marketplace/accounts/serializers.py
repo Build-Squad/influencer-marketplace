@@ -159,14 +159,32 @@ class WalletConnectSerializer(serializers.Serializer):
     wallet_provider_id = serializers.CharField(max_length=100)
     wallet_network_id = serializers.CharField(max_length=100)
 
+    def get_or_create_wallet_provider(self, name):
+        try:
+            wallet_provider = WalletProvider.objects.get(wallet_provider=name)
+            return wallet_provider
+        except WalletProvider.DoesNotExist:
+            wallet_provider = WalletProvider.objects.create(
+                wallet_provider=name)
+            wallet_provider.save()
+            return wallet_provider
+
+    def get_or_create_wallet_network(self, name):
+        try:
+            return WalletNetwork.objects.get(wallet_network=name)
+        except WalletNetwork.DoesNotExist:
+            wallet_network = WalletNetwork.objects.create(wallet_network=name)
+            wallet_network.save()
+            return wallet_network
+
     # From the request.user_account, add a wallet to that particular user id
     def create(self, validated_data):
         wallet_address_id = validated_data.pop("wallet_address_id")
-        wallet_provider_id = WalletProvider.objects.get(
-            wallet_provider=validated_data.pop("wallet_provider_id")
+        wallet_provider_id = self.get_or_create_wallet_provider(
+            validated_data.pop("wallet_provider_id")
         )
-        wallet_network_id = WalletNetwork.objects.get(
-            wallet_network=validated_data.pop("wallet_network_id")
+        wallet_network_id = self.get_or_create_wallet_network(
+            validated_data.pop("wallet_network_id")
         )
         user_account = self.context["request"].user_account
 
@@ -199,6 +217,14 @@ class WalletNetworkSerializer(serializers.ModelSerializer):
 class WalletSerializer(serializers.ModelSerializer):
     wallet_provider_id = WalletProviderSerializer(read_only=True)
     wallet_network_id = WalletNetworkSerializer(read_only=True)
+
+    # Truncate the address to first 4 and last 4 characters
+    wallet_address_id = serializers.SerializerMethodField()
+
+    def get_wallet_address_id(self, wallet):
+        if wallet.wallet_address_id:
+            return wallet.wallet_address_id[:4] + "..." + wallet.wallet_address_id[-4:]
+        return None
 
     class Meta:
         model = Wallet

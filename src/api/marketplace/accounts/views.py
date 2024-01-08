@@ -1204,17 +1204,23 @@ class WalletAuth(APIView):
         except Exception as e:
             return None
 
-    def get_wallet_provider_id(self, name):
+    def get_or_create_wallet_provider(self, name):
         try:
-            return WalletProvider.objects.get(wallet_provider=name)
+            wallet_provider = WalletProvider.objects.get(wallet_provider=name)
+            return wallet_provider
         except WalletProvider.DoesNotExist:
-            return None
+            wallet_provider = WalletProvider.objects.create(
+                wallet_provider=name)
+            wallet_provider.save()
+            return wallet_provider
 
-    def get_wallet_network_id(self, name):
+    def get_or_create_wallet_network(self, name):
         try:
             return WalletNetwork.objects.get(wallet_network=name)
         except WalletNetwork.DoesNotExist:
-            return None
+            wallet_network = WalletNetwork.objects.create(wallet_network=name)
+            wallet_network.save()
+            return wallet_network
 
     @swagger_auto_schema(request_body=WalletAuthSerializer)
     def post(self, request):
@@ -1224,10 +1230,10 @@ class WalletAuth(APIView):
                 # Should create a wallet if no wallet is found for the requested user else return the wallet
                 wallet = self.get_wallet(request.data["wallet_address_id"])
                 if wallet is None:
-                    wallet_provider = self.get_wallet_provider_id(
+                    wallet_provider = self.get_or_create_wallet_provider(
                         serializer.validated_data["wallet_provider_id"]
                     )
-                    wallet_network = self.get_wallet_network_id(
+                    wallet_network = self.get_or_create_wallet_network(
                         serializer.validated_data["wallet_network_id"]
                     )
                     wallet = self.create_wallet(

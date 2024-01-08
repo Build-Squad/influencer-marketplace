@@ -124,7 +124,6 @@ def createUser(userData, access_token):
             # Update the user data
             existing_user.name = userData.name
             existing_user.user_name = userData.username
-            existing_user.description = userData.description
             existing_user.profile_image_url = userData.profile_image_url
             existing_user.followers_count = userData.public_metrics["followers_count"]
             existing_user.following_count = userData.public_metrics["following_count"]
