@@ -1,3 +1,4 @@
+from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
     handleServerException,
@@ -20,6 +21,7 @@ from .models import (
     Review,
 )
 from .serializers import (
+    CreateOrderSerializer,
     OrderSerializer,
     OrderItemSerializer,
     OrderAttachmentSerializer,
@@ -52,10 +54,13 @@ class OrderList(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    @swagger_auto_schema(request_body=OrderSerializer)
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=CreateOrderSerializer)
     def post(self, request):
         try:
-            serializer = OrderSerializer(data=request.data)
+            serializer = CreateOrderSerializer(
+                data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -70,7 +75,6 @@ class OrderList(APIView):
                 return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)
-
 
 # Retrieve-Update-Destroy API
 class OrderDetail(APIView):

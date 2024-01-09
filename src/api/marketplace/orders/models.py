@@ -30,7 +30,7 @@ class Order(models.Model):
         db_table = "order" 
 
     def __str__(self):
-        return self.buyer.username + " - " + self.status
+        return (self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
 
 class OrderItem(models.Model):
     
@@ -51,7 +51,7 @@ class OrderItem(models.Model):
         db_table = "order_item" 
 
     def __str__(self):
-        return self.package.name + " - " + self.status
+        return (self.service_master.name if self.service_master else 'No service master') + " - " + (self.status if self.status else 'No status') + " - " + str(self.created_at)
 
 class OrderAttachment(models.Model):
     
@@ -91,7 +91,7 @@ class OrderItemMetaData(models.Model):
         db_table = "order_item_meta_data"
 
     def __str__(self):
-        return self.label + " - " + self.field_type
+        return (self.label if self.label else 'No label') + " - " + (self.field_type if self.field_type else 'No field type')
 
 class OrderItemTracking(models.Model):
     

@@ -200,7 +200,7 @@ class ServiceList(APIView):
             if serializer.is_valid():
                 # Get all the wallets of the user
                 user_wallets = Wallet.objects.filter(
-                    user_id=request.user_account.id, deleted_at=None
+                    user_id=request.user_account.id
                 )
                 if len(user_wallets) == 0:
                     return handleBadRequest("User does not have any wallet")

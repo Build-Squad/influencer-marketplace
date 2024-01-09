@@ -1,5 +1,10 @@
 "use client";
 
+import { notification } from "@/src/components/shared/notification";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
+import { resetCart, updateFieldValues } from "@/src/reducers/cartSlice";
+import { postService } from "@/src/services/httpServices";
+import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
   Button,
@@ -15,31 +20,57 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { checkedOutServices, formFields, masterFields } from "./consts";
-import AddIcon from "@mui/icons-material/Add";
+import { DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
-import { DateTimePicker, TimePicker } from "@mui/x-date-pickers";
 import NextLink from "next/link";
-import { useAppSelector } from "@/src/hooks/useRedux";
-import { notification } from "@/src/components/shared/notification";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 export default function CheckoutPage() {
+  const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const user = useAppSelector((state) => state.user);
   const route = useRouter();
-
-  const [orderItems, setOrderItems] = React.useState<OrderItemType[]>([]);
 
   if (!user) {
     notification("You need to login first", "error");
     route.push("/");
     return null;
   }
+
+  const createOrder = async () => {
+    const body = {
+      order_items: cart?.orderItems?.map((orderItem) => {
+        return {
+          service_id: orderItem?.service?.id,
+          meta_data:
+            orderItem?.service?.service_master?.service_master_meta_data?.map(
+              (metaData) => {
+                return {
+                  service_master_meta_data_id: metaData?.id,
+                  value: metaData?.value,
+                };
+              }
+            ),
+        };
+      }),
+    };
+    try {
+      const { isSuccess, message, data } = await postService(
+        "/orders/order/",
+        body
+      );
+      if (isSuccess) {
+        notification(message, "success");
+        dispatch(resetCart());
+      } else {
+        notification(message, "error");
+      }
+    } finally {
+    }
+  };
 
   if (cart?.orderItems?.length === 0) {
     return (
@@ -76,7 +107,7 @@ export default function CheckoutPage() {
             p: 2,
           }}
         >
-          {cart?.orderItems?.map((orderItem) => {
+          {cart?.orderItems?.map((orderItem, index: number) => {
             return (
               <Box
                 sx={{
@@ -150,6 +181,17 @@ export default function CheckoutPage() {
                           </FormLabel>
                           {formFields?.field_type === "text" && (
                             <TextField
+                              value={formFields?.value}
+                              name={formFields?.id}
+                              onChange={(e) => {
+                                dispatch(
+                                  updateFieldValues({
+                                    index: index,
+                                    service_master_meta_data_id: formFields?.id,
+                                    value: e.target.value,
+                                  })
+                                );
+                              }}
                               variant="outlined"
                               fullWidth
                               placeholder={formFields?.placeholder}
@@ -163,6 +205,17 @@ export default function CheckoutPage() {
                           )}
                           {formFields?.field_type === "long_text" && (
                             <TextField
+                              name={formFields?.id}
+                              value={formFields?.value}
+                              onChange={(e) => {
+                                dispatch(
+                                  updateFieldValues({
+                                    index: index,
+                                    service_master_meta_data_id: formFields?.id,
+                                    value: e.target.value,
+                                  })
+                                );
+                              }}
                               variant="outlined"
                               fullWidth
                               multiline
@@ -181,14 +234,29 @@ export default function CheckoutPage() {
                           )}
                           {formFields?.field_type === "date_time" && (
                             <DateTimePicker
-                              value={dayjs()}
-                              onChange={() => {}}
+                              value={
+                                dayjs(formFields?.value).isValid()
+                                  ? dayjs(formFields?.value)
+                                  : null
+                              }
+                              onChange={(e) => {
+                                dispatch(
+                                  updateFieldValues({
+                                    index: index,
+                                    service_master_meta_data_id: formFields?.id,
+                                    value: dayjs(e).format(
+                                      "YYYY-MM-DD HH:mm:ss"
+                                    ),
+                                  })
+                                );
+                              }}
                               slotProps={{
                                 textField: {
                                   size: "small",
                                   variant: "outlined",
                                   fullWidth: true,
                                   // borderRadius: 3,
+                                  name: formFields?.id,
                                   sx: {
                                     "& .MuiOutlinedInput-root": {
                                       borderRadius: 3,
@@ -257,6 +325,9 @@ export default function CheckoutPage() {
                   borderRadius: 8,
                   minWidth: 100,
                   mx: 2,
+                }}
+                onClick={() => {
+                  createOrder();
                 }}
               >
                 Save

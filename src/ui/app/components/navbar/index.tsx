@@ -10,21 +10,17 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import LoginMenu from "../loginMenu";
 
-import DashboardIcon from "@/public/svg/Dashboard.svg";
-import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
-import NotificationIcon from "@/public/svg/Notification.svg";
-import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
+import DashboardIcon from "@/public/svg/Dashboard.svg";
+import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
 import ExploreIcon from "@/public/svg/Explore.svg";
 import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
-import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
+import NotificationIcon from "@/public/svg/Notification.svg";
+import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
-import MessageIcon from "@/public/svg/Messages.svg";
-import MessageDisabledIcon from "@/public/svg/Messages_disabled.svg";
+import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 
-import SavedProfileIcon from "@/public/svg/Saved.svg";
-import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
 import { getService } from "@/src/services/httpServices";
 
 type NavbarProps = {
@@ -82,19 +78,6 @@ const MENU_ITEMS: {
     icon: OrdersIcon,
     disabledIcon: OrdersDisabledIcon,
   },
-  Message: {
-    label: "Messages",
-    route: "/messages",
-    icon: MessageIcon,
-    disabledIcon: MessageDisabledIcon,
-  },
-
-  "Saved Profile": {
-    label: "Saved Profile",
-    route: "/saved-profiles",
-    icon: SavedProfileIcon,
-    disabledIcon: SavedProfileDisabledIcon,
-  },
 };
 
 const MenuItemsComponent = ({ items }: { items: string[] }) => {
@@ -106,9 +89,9 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
       {items.map((key: string) => {
         const item = MENU_ITEMS[key];
         const route = pathname.includes("business")
-          ? `/business${item.route}`
+          ? `/business${item?.route}`
           : pathname.includes("influencer")
-          ? `/influencer${item.route}`
+          ? `/influencer${item?.route}`
           : "";
 
         return (
@@ -124,23 +107,23 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
               router.push(route);
             }}
           >
-            {item.label === "My cart" ? (
+            {item?.route === "/checkout" ? (
               <Badge badgeContent={cart?.orderItems.length} color="secondary">
                 <Image
-                  src={pathname == route ? item.icon : item.disabledIcon}
-                  alt={item.label}
+                  src={pathname == route ? item?.icon : item?.disabledIcon}
+                  alt={item?.label}
                   height={16}
                 />
               </Badge>
             ) : (
               <Image
-                src={pathname == route ? item.icon : item.disabledIcon}
-                alt={item.label}
+                src={pathname == route ? item?.icon : item?.disabledIcon}
+                alt={item?.label}
                 height={16}
               />
             )}
 
-            <Typography sx={{ fontSize: "10px" }}>{item.label}</Typography>
+            <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
           </Box>
         );
       })}
@@ -173,6 +156,7 @@ export default function Navbar({
   // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
 
   const params = useSearchParams();
+  const user = useAppSelector((state) => state.user);
 
   const getWallets = async () => {
     const { isSuccess, message, data } = await getService(`/account/wallets/`);
@@ -302,7 +286,7 @@ export default function Navbar({
           >
             {isTwitterUserLoggedIn ? (
               // Business menu items
-              pathname.includes("business") ? (
+              user?.user?.role?.name.includes("business") ? (
                 <MenuItemsComponent
                   items={[
                     "Home",

@@ -4,6 +4,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type OrderItem = {
   service: ServiceType;
+  index: number;
 };
 
 type ServiceAdded = {
@@ -26,6 +27,13 @@ type AddOrderItemPayloadType = {
 
 type RemoveOrderItemPayloadType = {
   service: ServiceType;
+  ind?: number;
+};
+
+type UpdateOrderItemPayloadType = {
+  index: number;
+  value: string;
+  service_master_meta_data_id: string;
 };
 
 const initialState: CartState = {
@@ -71,8 +79,19 @@ export const cartSlice = createSlice({
       }
 
       // Always push a new item to the orderItems array
+      const serviceWithUpdatedMetaData = {
+        ...action.payload.service,
+        service_master: {
+          ...action.payload.service.service_master,
+          service_master_meta_data:
+            action.payload.service.service_master.service_master_meta_data.map(
+              (item) => ({ ...item, value: null })
+            ),
+        },
+      };
       state.orderItems.push({
-        service: action.payload.service,
+        service: serviceWithUpdatedMetaData,
+        index: state.orderItems.length,
       });
 
       // Set influencer, orderTotal, and orderTotalCurrency here
@@ -87,18 +106,29 @@ export const cartSlice = createSlice({
       state,
       action: PayloadAction<RemoveOrderItemPayloadType>
     ) => {
-      const index = state.orderItems.findIndex(
-        (item) => item.service.id === action.payload?.service.id
-      );
+      if (action.payload.ind !== undefined) {
+        // If there is an index, remove the item at that index
+        // Check that it is a valid index
+        if (
+          action.payload.ind < 0 ||
+          action.payload.ind >= state.orderItems.length
+        ) {
+          return;
+        }
+        state.orderItems.splice(action.payload.ind, 1);
+      } else {
+        const index = state.orderItems.findIndex(
+          (item) => item.service.id === action.payload?.service.id
+        );
 
-      // Check if the item exists before trying to remove it
-      if (index === -1) {
-        return;
+        // Check if the item exists before trying to remove it
+        if (index === -1) {
+          return;
+        }
+
+        // Always remove the item from the orderItems array
+        state.orderItems.splice(index, 1);
       }
-
-      // Always remove the item from the orderItems array
-      state.orderItems.splice(index, 1);
-
       // Find the service in the servicesAdded array
       const serviceAdded = state.servicesAdded.find(
         (item) => item.service.id === action.payload.service.id
@@ -133,6 +163,31 @@ export const cartSlice = createSlice({
       }, 0);
     },
 
+    // Update the value of the order item of the index
+    updateFieldValues: (
+      state,
+      action: PayloadAction<UpdateOrderItemPayloadType>
+    ) => {
+      const orderItem = state.orderItems[action.payload.index];
+      const serviceMasterMetaDataIndex =
+        orderItem.service.service_master.service_master_meta_data.findIndex(
+          (item) => item.id === action.payload.service_master_meta_data_id
+        );
+      if (serviceMasterMetaDataIndex !== -1) {
+        const updatedServiceMasterMetaData = {
+          ...orderItem.service.service_master.service_master_meta_data[
+            serviceMasterMetaDataIndex
+          ],
+          value: action.payload.value,
+        };
+        orderItem.service.service_master.service_master_meta_data.splice(
+          serviceMasterMetaDataIndex,
+          1,
+          updatedServiceMasterMetaData
+        );
+      }
+    },
+
     resetCart: (state) => {
       state.influencer = null;
       state.orderItems = [];
@@ -148,4 +203,5 @@ export const cartSlice = createSlice({
   },
 });
 
-export const { addOrderItem, removeOrderItem, resetCart } = cartSlice.actions;
+export const { addOrderItem, removeOrderItem, resetCart, updateFieldValues } =
+  cartSlice.actions;
