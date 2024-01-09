@@ -66,6 +66,47 @@ class OrderList(APIView):
 class OrderListView(APIView):
     authentication_classes = [JWTAuthentication]
 
+    def get(self, request):
+        # Get the role of the user and get the orders of the users.
+        # Return the count based on the status of the orders
+        # Response will be like
+        try:
+            user = request.user_account
+            role = request.user_account.role
+            if role.name == "business_owner":
+                orders = Order.objects.filter(
+                    Q(buyer=user)
+                ).distinct()
+            elif role.name == "influencer":
+                # For all the order items, there will be a package in it and the package willl have influencer id
+                order_items = OrderItem.objects.filter(
+                    Q(package__influencer=user)
+                ).distinct()
+                orders = Order.objects.filter(
+                    Q(order_item_order_id__in=order_items)
+                ).distinct()
+
+            approved = orders.filter(status="accepted").count()
+            pending = orders.filter(status="pending").count()
+            completed = orders.filter(status="completed").count()
+            rejected = orders.filter(status="rejected").count()
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": {
+                        "approved": approved,
+                        "pending": pending,
+                        "completed": completed,
+                        "rejected": rejected
+                    },
+                    "message": "All Order Count retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
     @swagger_auto_schema(request_body=OrderListFilterSerializer)
     def post(self, request):
         try:
