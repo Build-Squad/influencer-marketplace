@@ -1,17 +1,57 @@
+from locale import currency
+from accounts.serializers import UserSerializer
+from core.serializers import CurrencySerializer
+from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service
 from rest_framework import serializers
 from .models import Order, OrderItem, OrderAttachment, OrderItemMetaData, OrderItemTracking, OrderMessage, OrderMessageAttachment, Transaction, Review
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    package = PackageSerializer(read_only=True)
+    service_master = ServiceMasterReadSerializer(read_only=True)
+    currency = CurrencySerializer(read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = '__all__'
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
 class OrderSerializer(serializers.ModelSerializer):
+
+    buyer = UserSerializer(read_only=True)
+    order_item_order_id = OrderItemSerializer(many=True, read_only=True)
+    review = ReviewSerializer(read_only=True)
+    amount = serializers.SerializerMethodField()
+    currency = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         fields = '__all__'
 
-class OrderItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItem
-        fields = '__all__'
+    def get_amount(self, obj):
+        # Should return the sum of the price of each order item and also add the platform fee
+        order_items = obj.order_item_order_id.all()
+        amount = 0
+        for order_item in order_items:
+            amount += order_item.price
+            amount += (order_item.price * order_item.platform_fee / 100)
+        return amount
+
+    def get_currency(self, obj):
+        # Should return the currency of the first order item
+        first_order_item = obj.order_item_order_id.first()
+        if first_order_item:
+            return CurrencySerializer(first_order_item.currency).data
+        return None
 
 
 class OrderItemMetaDataSerializer(serializers.ModelSerializer):
@@ -87,7 +127,3 @@ class TransactionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = '__all__'
