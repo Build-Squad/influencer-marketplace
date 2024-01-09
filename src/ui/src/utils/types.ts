@@ -59,7 +59,7 @@ type PackageType = {
   deleted_at: string | null;
   status: string;
   publish_date: string;
-  influencer: string;
+  influencer: InfleuncerType;
   currency: CurrencyType;
 };
 
@@ -149,7 +149,7 @@ interface Window {
 type OrderItemType = {
   service: ServiceType;
   orderItemMetaData: ServiceMasterMetaDataType[];
-}
+};
 
 type WalletProviderType = {
   id: string;
@@ -205,4 +205,17 @@ type OrderType = {
   description: null;
   status: string;
   created_at: Date;
+};
+
+type OrderFilterType = {
+  influencers?: string[];
+  buyers?: string[];
+  status?: string[];
+  service_masters?: string[];
+  lt_created_at?: string;
+  gt_created_at?: string;
+  lt_rating?: string;
+  gt_rating?: string;
+  lt_amount?: string;
+  gt_amount?: string;
 };
