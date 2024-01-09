@@ -10,21 +10,17 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import LoginMenu from "../loginMenu";
 
-import DashboardIcon from "@/public/svg/Dashboard.svg";
-import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
-import NotificationIcon from "@/public/svg/Notification.svg";
-import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
+import DashboardIcon from "@/public/svg/Dashboard.svg";
+import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
 import ExploreIcon from "@/public/svg/Explore.svg";
 import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
-import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
+import NotificationIcon from "@/public/svg/Notification.svg";
+import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
-import MessageIcon from "@/public/svg/Messages.svg";
-import MessageDisabledIcon from "@/public/svg/Messages_disabled.svg";
+import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 
-import SavedProfileIcon from "@/public/svg/Saved.svg";
-import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
 import { getService } from "@/src/services/httpServices";
 
 type NavbarProps = {
@@ -81,19 +77,6 @@ const MENU_ITEMS: {
     route: "/orders",
     icon: OrdersIcon,
     disabledIcon: OrdersDisabledIcon,
-  },
-  Message: {
-    label: "Messages",
-    route: "/messages",
-    icon: MessageIcon,
-    disabledIcon: MessageDisabledIcon,
-  },
-
-  "Saved Profile": {
-    label: "Saved Profile",
-    route: "/saved-profiles",
-    icon: SavedProfileIcon,
-    disabledIcon: SavedProfileDisabledIcon,
   },
 };
 
