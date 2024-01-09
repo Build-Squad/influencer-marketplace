@@ -118,7 +118,6 @@ const CardComponent: React.FC<CardDetailsType> = ({
 const LeftComponent: React.FC<Props> = ({ userName }) => (
   <Box
     sx={{
-      width: "100%",
       height: "100%",
       padding: "20px 16px 20px 40px",
       border: "1px solid #D3D3D3",
