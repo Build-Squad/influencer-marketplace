@@ -44,6 +44,8 @@ export default function LoginMenu({
           function: () => {
             if (pathname.includes("influencer")) {
               window.location.href = `/influencer/profile/${currentUser?.id}`;
+            } else if (pathname.includes("business")) {
+              router.push("/business/profile?tab=wallet");
             }
           },
         },
