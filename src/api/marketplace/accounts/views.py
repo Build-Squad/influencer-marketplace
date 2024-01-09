@@ -457,6 +457,8 @@ class AccountCategoryList(APIView):
         try:
             # If no twitter_account_id is provided, try for the logged in user
             twitter_account_id = request.GET.get("twitter_account_id")
+            if request.user_account.twitter_account is None:
+                return handleBadRequest("Twitter Account is required")
             if twitter_account_id is None:
                 twitter_account_id = request.user_account.twitter_account.id
             if twitter_account_id is None:
