@@ -86,7 +86,7 @@ class OrderListView(APIView):
                     Q(order_item_order_id__in=order_items)
                 ).distinct()
 
-            approved = orders.filter(status="accepted").count()
+            accepted = orders.filter(status="accepted").count()
             pending = orders.filter(status="pending").count()
             completed = orders.filter(status="completed").count()
             rejected = orders.filter(status="rejected").count()
@@ -95,7 +95,7 @@ class OrderListView(APIView):
                 {
                     "isSuccess": True,
                     "data": {
-                        "approved": approved,
+                        "accepted": accepted,
                         "pending": pending,
                         "completed": completed,
                         "rejected": rejected
