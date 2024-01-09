@@ -168,3 +168,41 @@ type WalletType = {
   wallet_provider_id: WalletProviderType;
   is_primary: boolean;
 };
+
+type TwiiterAccountReadType = {
+  id: string;
+  twitter_id: string;
+  name: string;
+  user_name: string;
+};
+
+type InfleuncerType = {
+  id: string;
+  first_name: string;
+  last_name: null;
+  twitter_account: TwiiterAccountReadType;
+};
+
+type OrderItemOrderID = {
+  id: string;
+  package: PackageType;
+  service_master: ServiceMasterType;
+  currency: CurrencyType;
+  quantity: null;
+  status: null;
+  price: string;
+  created_at: Date;
+  platform_fee: string;
+  order_id: string;
+};
+
+type OrderType = {
+  id: string;
+  buyer: UserType;
+  order_item_order_id: OrderItemOrderID[];
+  amount: number;
+  currency: CurrencyType;
+  description: null;
+  status: string;
+  created_at: Date;
+};
