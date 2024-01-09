@@ -32,14 +32,30 @@ from .serializers import (
     ReviewSerializer,
 )
 from rest_framework import status
+from django.db.models import Q
+
 
 
 # ORDER API-Endpoint
 # List-Create-API
 class OrderList(APIView):
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         try:
-            orders = Order.objects.all()
+            user = request.user_account
+            role = request.user_account.role
+            if role.name == "business_owner":
+                orders = Order.objects.filter(
+                    Q(buyer=user)
+                ).distinct()
+            elif role.name == "influencer":
+                # For all the order items, there will be a package in it and the package willl have influencer id
+                order_items = OrderItem.objects.filter(
+                    Q(package__influencer=user)
+                ).distinct()
+                orders = Order.objects.filter(
+                    Q(order_item_order_id__in=order_items)
+                ).distinct()
             pagination = Pagination(orders, request)
             serializer = OrderSerializer(pagination.getData(), many=True)
             return Response(
@@ -54,7 +70,6 @@ class OrderList(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    authentication_classes = [JWTAuthentication]
 
     @swagger_auto_schema(request_body=CreateOrderSerializer)
     def post(self, request):
