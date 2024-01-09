@@ -22,6 +22,7 @@ from .models import (
 )
 from .serializers import (
     CreateOrderSerializer,
+    OrderListFilterSerializer,
     OrderSerializer,
     OrderItemSerializer,
     OrderAttachmentSerializer,
@@ -40,36 +41,6 @@ from django.db.models import Q
 # List-Create-API
 class OrderList(APIView):
     authentication_classes = [JWTAuthentication]
-    def get(self, request):
-        try:
-            user = request.user_account
-            role = request.user_account.role
-            if role.name == "business_owner":
-                orders = Order.objects.filter(
-                    Q(buyer=user)
-                ).distinct()
-            elif role.name == "influencer":
-                # For all the order items, there will be a package in it and the package willl have influencer id
-                order_items = OrderItem.objects.filter(
-                    Q(package__influencer=user)
-                ).distinct()
-                orders = Order.objects.filter(
-                    Q(order_item_order_id__in=order_items)
-                ).distinct()
-            pagination = Pagination(orders, request)
-            serializer = OrderSerializer(pagination.getData(), many=True)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "All Order retrieved successfully",
-                    "pagination": pagination.getPageInfo(),
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
 
     @swagger_auto_schema(request_body=CreateOrderSerializer)
     def post(self, request):
@@ -88,6 +59,74 @@ class OrderList(APIView):
                 )
             else:
                 return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class OrderListView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=OrderListFilterSerializer)
+    def post(self, request):
+        try:
+            # Get the filters from the request
+            filter_serializer = OrderListFilterSerializer(
+                data=request.data)
+            filter_serializer.is_valid(raise_exception=True)
+            filters = filter_serializer.validated_data
+
+            user = request.user_account
+            role = request.user_account.role
+            if role.name == "business_owner":
+                orders = Order.objects.filter(
+                    Q(buyer=user)
+                ).distinct()
+            elif role.name == "influencer":
+                # For all the order items, there will be a package in it and the package willl have influencer id
+                order_items = OrderItem.objects.filter(
+                    Q(package__influencer=user)
+                ).distinct()
+                orders = Order.objects.filter(
+                    Q(order_item_order_id__in=order_items)
+                ).distinct()
+
+            if 'influencers' in filters:
+                orders = orders.filter(
+                    order_item_order_id__package__influencer__in=filters['influencers'])
+
+            if 'buyers' in filters:
+                orders = orders.filter(buyer__in=filters['buyers'])
+
+            if 'status' in filters:
+                orders = orders.filter(status__in=filters['status'])
+
+            if 'service_masters' in filters:
+                orders = orders.filter(
+                    order_item_order_id__service_master__in=filters['service_masters'])
+
+            if 'lt_created_at' in filters:
+                orders = orders.filter(created_at__lt=filters['lt_created_at'])
+
+            if 'gt_created_at' in filters:
+                orders = orders.filter(created_at__gt=filters['gt_created_at'])
+
+            if 'lt_rating' in filters:
+                orders = orders.filter(review__rating__lt=filters['lt_rating'])
+
+            if 'gt_rating' in filters:
+                orders = orders.filter(review__rating__gt=filters['gt_rating'])
+
+            pagination = Pagination(orders, request)
+            serializer = OrderSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Order retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             return handleServerException(e)
 

@@ -9,7 +9,7 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
 
-class OrderItemSerializer(serializers.ModelSerializer):
+class OrderItemReadSerializer(serializers.ModelSerializer):
     package = PackageSerializer(read_only=True)
     service_master = ServiceMasterReadSerializer(read_only=True)
     currency = CurrencySerializer(read_only=True)
@@ -25,10 +25,26 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class OrderListFilterSerializer(serializers.Serializer):
+    influencers = serializers.ListField(
+        child=serializers.UUIDField(), required=False)
+    buyers = serializers.ListField(
+        child=serializers.UUIDField(), required=False)
+    status = serializers.ListField(
+        child=serializers.CharField(), required=False)
+    service_masters = serializers.ListField(
+        child=serializers.UUIDField(), required=False)
+    lt_created_at = serializers.DateTimeField(required=False)
+    gt_created_at = serializers.DateTimeField(required=False)
+    lt_rating = serializers.FloatField(required=False)
+    gt_rating = serializers.FloatField(required=False)
+    lt_amount = serializers.FloatField(required=False)
+    gt_amount = serializers.FloatField(required=False)
+
 class OrderSerializer(serializers.ModelSerializer):
 
     buyer = UserSerializer(read_only=True)
-    order_item_order_id = OrderItemSerializer(many=True, read_only=True)
+    order_item_order_id = OrderItemReadSerializer(many=True, read_only=True)
     review = ReviewSerializer(read_only=True)
     amount = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
