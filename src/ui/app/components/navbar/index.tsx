@@ -89,9 +89,9 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
       {items.map((key: string) => {
         const item = MENU_ITEMS[key];
         const route = pathname.includes("business")
-          ? `/business${item.route}`
+          ? `/business${item?.route}`
           : pathname.includes("influencer")
-          ? `/influencer${item.route}`
+          ? `/influencer${item?.route}`
           : "";
 
         return (
@@ -107,23 +107,23 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
               router.push(route);
             }}
           >
-            {item.route === "/checkout" ? (
+            {item?.route === "/checkout" ? (
               <Badge badgeContent={cart?.orderItems.length} color="secondary">
                 <Image
-                  src={pathname == route ? item.icon : item.disabledIcon}
-                  alt={item.label}
+                  src={pathname == route ? item?.icon : item?.disabledIcon}
+                  alt={item?.label}
                   height={16}
                 />
               </Badge>
             ) : (
               <Image
-                src={pathname == route ? item.icon : item.disabledIcon}
-                alt={item.label}
+                src={pathname == route ? item?.icon : item?.disabledIcon}
+                alt={item?.label}
                 height={16}
               />
             )}
 
-            <Typography sx={{ fontSize: "10px" }}>{item.label}</Typography>
+            <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
           </Box>
         );
       })}
