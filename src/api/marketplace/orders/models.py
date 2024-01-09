@@ -166,6 +166,7 @@ class Review(models.Model):
     order = models.ForeignKey(Order, related_name='review_order_id', on_delete=SET_NULL, null=True)
     note = models.TextField(blank=True, null=True)
     is_visible = models.BooleanField(default=True, blank=True, null=True)
+    rating = models.IntegerField(blank=True, null=True)
 
     class Meta:
         db_table = "review"            
