@@ -79,13 +79,18 @@ export const cartSlice = createSlice({
       }
 
       // Always push a new item to the orderItems array
-      action.payload.service.service_master.service_master_meta_data.forEach(
-        (item) => {
-          item.value = null;
-        }
-      );
+      const serviceWithUpdatedMetaData = {
+        ...action.payload.service,
+        service_master: {
+          ...action.payload.service.service_master,
+          service_master_meta_data:
+            action.payload.service.service_master.service_master_meta_data.map(
+              (item) => ({ ...item, value: null })
+            ),
+        },
+      };
       state.orderItems.push({
-        service: action.payload.service,
+        service: serviceWithUpdatedMetaData,
         index: state.orderItems.length,
       });
 
