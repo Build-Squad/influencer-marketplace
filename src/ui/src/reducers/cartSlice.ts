@@ -164,12 +164,22 @@ export const cartSlice = createSlice({
       action: PayloadAction<UpdateOrderItemPayloadType>
     ) => {
       const orderItem = state.orderItems[action.payload.index];
-      const serviceMasterMetaData =
-        orderItem.service.service_master.service_master_meta_data.find(
+      const serviceMasterMetaDataIndex =
+        orderItem.service.service_master.service_master_meta_data.findIndex(
           (item) => item.id === action.payload.service_master_meta_data_id
         );
-      if (serviceMasterMetaData) {
-        serviceMasterMetaData.value = action.payload.value;
+      if (serviceMasterMetaDataIndex !== -1) {
+        const updatedServiceMasterMetaData = {
+          ...orderItem.service.service_master.service_master_meta_data[
+            serviceMasterMetaDataIndex
+          ],
+          value: action.payload.value,
+        };
+        orderItem.service.service_master.service_master_meta_data.splice(
+          serviceMasterMetaDataIndex,
+          1,
+          updatedServiceMasterMetaData
+        );
       }
     },
 
