@@ -65,7 +65,6 @@ export default function CheckoutPage() {
       if (isSuccess) {
         notification(message, "success");
         dispatch(resetCart());
-        route.push("/");
       } else {
         notification(message, "error");
       }
