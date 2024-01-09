@@ -119,6 +119,20 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
+class TwitterReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TwitterAccount
+        fields = ('id', 'twitter_id', 'name', 'user_name')
+
+
+class InfluencerSerializer(serializers.ModelSerializer):
+    # Only return the twitter username and first name last name and the id of the user
+    twitter_account = TwitterReadSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'twitter_account')
+
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

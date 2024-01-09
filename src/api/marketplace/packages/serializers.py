@@ -1,5 +1,6 @@
 #  import serializers
 from locale import currency
+from accounts.serializers import InfluencerSerializer, UserSerializer
 from rest_framework import serializers
 from .models import ServiceMaster, Service, Package, ServiceMasterMetaData
 from core.serializers import CurrencySerializer
@@ -9,6 +10,12 @@ from uuid import UUID
 class ServiceMasterMetaDataSerilizer(serializers.ModelSerializer):
     class Meta:
         model = ServiceMasterMetaData
+        fields = '__all__'
+
+
+class ServiceMasterReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceMaster
         fields = '__all__'
 
 class ServiceMasterSerializer(serializers.ModelSerializer):
@@ -26,6 +33,7 @@ class CreateServiceMasterSerializer(serializers.ModelSerializer):
         # fields = ('id', 'name', 'description', 'limit', 'type', 'created_at')
 
 class PackageSerializer(serializers.ModelSerializer):
+    influencer = InfluencerSerializer(read_only=True)
     class Meta:
         model = Package
         fields = '__all__'

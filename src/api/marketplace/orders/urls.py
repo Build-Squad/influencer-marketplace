@@ -8,6 +8,7 @@ from .views import (
     OrderAttachmentDetail,
     OrderItemTrackingList,
     OrderItemTrackingDetail,
+    OrderListView,
     OrderMessageList,
     OrderMessageDetail,
     OrderMessageAttachmentList,
@@ -19,7 +20,9 @@ from .views import (
 )
 
 urlpatterns = [
-    path("order/", OrderList.as_view(), name="order-list"),
+    path("order-list/", OrderListView.as_view(), name="order-list"),
+
+    path("order/", OrderList.as_view(), name="create-order"),
     path('order/<uuid:pk>/', OrderDetail.as_view(), name="order-details"),
 
     path("order-item/", OrderItemList.as_view(), name="order-item-list"),
