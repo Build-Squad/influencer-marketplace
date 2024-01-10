@@ -1,3 +1,4 @@
+from api.marketplace.accounts.models import Wallet
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -48,6 +49,13 @@ class OrderList(APIView):
             serializer = CreateOrderSerializer(
                 data=request.data, context={'request': request})
             if serializer.is_valid():
+                # Check that the requested account has atleast one wallet connected
+                # If not, then return error
+                # If yes, then create the order
+                wallets = Wallet.objects.filter(
+                    user_id=self.request.user_account)
+                if wallets.count() == 0:
+                    return handleBadRequest({"wallet": "No wallet is connected to the account. Please add a wallet to the account."})
                 serializer.save()
                 return Response(
                     {
@@ -156,6 +164,9 @@ class OrderListView(APIView):
 
             if 'gt_rating' in filters:
                 orders = orders.filter(review__rating__gt=filters['gt_rating'])
+
+            if 'order_by' in filters:
+                orders = orders.order_by(filters['order_by'])
 
             pagination = Pagination(orders, request)
             serializer = OrderSerializer(pagination.getData(), many=True)
