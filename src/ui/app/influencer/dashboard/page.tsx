@@ -326,7 +326,10 @@ export default function BusinessDashboardPage() {
   }, []);
 
   useEffect(() => {
-    getOrders();
+    const delayDebounceFn = setTimeout(() => {
+      getOrders();
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
@@ -379,6 +382,9 @@ export default function BusinessDashboardPage() {
                     : `${model?.[0]?.field}`
                   : undefined,
               }));
+            }}
+            localeText={{
+              noRowsLabel: "No Orders found",
             }}
           />
         </Grid>
