@@ -106,7 +106,25 @@ const CustomAutoComplete = ({
       getOptions();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [search, pagination]);
+  }, [search, pagination, customFilter]); // Add customFilter to the dependency array
+
+  React.useEffect(() => {
+    // Reset options and pagination
+    setOptions([]);
+    setPagination({
+      current_page_number: 1,
+      current_page_size: 10,
+      total_data_count: 0,
+      total_page_count: 0,
+    });
+
+    const timeout = setTimeout(() => {
+      getOptions();
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [search, customFilter]); // Remove pagination from the dependency array
+
+  //
 
   // If value is not undefined, then we need to check if the value is there in the options, if not then we need to add the value to the options
   React.useEffect(() => {

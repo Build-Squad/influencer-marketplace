@@ -360,6 +360,9 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                   },
                 },
               },
+              actionBar: {
+                actions: ["clear"],
+              },
             }}
             label="Order Date From"
             value={
@@ -406,6 +409,9 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                     borderRadius: 8,
                   },
                 },
+              },
+              actionBar: {
+                actions: ["clear"],
               },
             }}
             label="Order Date To"
