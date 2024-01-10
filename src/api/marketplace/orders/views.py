@@ -1,4 +1,4 @@
-from api.marketplace.accounts.models import Wallet
+from accounts.models import Wallet
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
