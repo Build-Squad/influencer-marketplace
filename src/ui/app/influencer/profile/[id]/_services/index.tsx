@@ -279,10 +279,10 @@ const Services = ({
                 // Take care of type conversion
                 let service = { ...serviceItem };
                 service.platform_price = (
-                  parseFloat(service.price.toString()) +
-                  parseFloat(service.price.toString()) *
-                    (parseFloat(service.platform_fees.toString()) / 100)
-                ).toString();
+                  parseFloat(service?.price?.toString()) +
+                  parseFloat(service?.price?.toString()) *
+                    (parseFloat(service?.platform_fees?.toString()) / 100)
+                )?.toString();
                 return (
                   <Grid item xs={12} sm={6} md={4} lg={4} key={service.id}>
                     <Card
@@ -320,7 +320,8 @@ const Services = ({
                           >
                             {service?.package?.name}
                           </Typography>
-                          {service.package.influencer === loggedInUser?.id && (
+                          {service?.package?.influencer?.id ===
+                            loggedInUser?.id && (
                             <Chip
                               sx={{
                                 mr: 2,
@@ -346,7 +347,8 @@ const Services = ({
                             alignItems: "center",
                           }}
                         >
-                          {service.package.influencer === loggedInUser?.id ? (
+                          {service?.package?.influencer?.id ===
+                          loggedInUser?.id ? (
                             <Box
                               sx={{
                                 display: "flex",
@@ -436,7 +438,8 @@ const Services = ({
                           justifyContent: "space-between",
                         }}
                       >
-                        {service.package.influencer === loggedInUser?.id ? (
+                        {service?.package?.influencer?.id ===
+                        loggedInUser?.id ? (
                           <Box
                             sx={{
                               display: "flex",
@@ -508,7 +511,8 @@ const Services = ({
                                 addItemToCart(service);
                               }}
                               disabled={
-                                service.package.influencer === loggedInUser?.id
+                                service?.package?.influencer?.id ===
+                                loggedInUser?.id
                               }
                             >
                               Add to Cart
@@ -526,7 +530,8 @@ const Services = ({
                                 addItemToCart(service);
                               }}
                               disabled={
-                                service.package.influencer === loggedInUser?.id
+                                service?.package?.influencer?.id ===
+                                loggedInUser?.id
                               }
                             >
                               Buy Now

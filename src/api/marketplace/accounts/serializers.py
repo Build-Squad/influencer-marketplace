@@ -1,4 +1,5 @@
 from unicodedata import category
+from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
 from uuid import UUID
 
@@ -237,7 +238,7 @@ class WalletSerializer(serializers.ModelSerializer):
 
     def get_wallet_address_id(self, wallet):
         if wallet.wallet_address_id:
-            return wallet.wallet_address_id[:4] + "..." + wallet.wallet_address_id[-4:]
+            return truncateWalletAddress(wallet.wallet_address_id)
         return None
 
     class Meta:

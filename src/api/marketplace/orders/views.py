@@ -1,3 +1,4 @@
+from accounts.models import Wallet
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -48,6 +49,13 @@ class OrderList(APIView):
             serializer = CreateOrderSerializer(
                 data=request.data, context={'request': request})
             if serializer.is_valid():
+                # Check that the requested account has atleast one wallet connected
+                # If not, then return error
+                # If yes, then create the order
+                wallets = Wallet.objects.filter(
+                    user_id=self.request.user_account)
+                if wallets.count() == 0:
+                    return handleBadRequest({"wallet": "No wallet is connected to the account. Please add a wallet to the account."})
                 serializer.save()
                 return Response(
                     {
@@ -65,6 +73,47 @@ class OrderList(APIView):
 
 class OrderListView(APIView):
     authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        # Get the role of the user and get the orders of the users.
+        # Return the count based on the status of the orders
+        # Response will be like
+        try:
+            user = request.user_account
+            role = request.user_account.role
+            if role.name == "business_owner":
+                orders = Order.objects.filter(
+                    Q(buyer=user)
+                ).distinct()
+            elif role.name == "influencer":
+                # For all the order items, there will be a package in it and the package willl have influencer id
+                order_items = OrderItem.objects.filter(
+                    Q(package__influencer=user)
+                ).distinct()
+                orders = Order.objects.filter(
+                    Q(order_item_order_id__in=order_items)
+                ).distinct()
+
+            accepted = orders.filter(status="accepted").count()
+            pending = orders.filter(status="pending").count()
+            completed = orders.filter(status="completed").count()
+            rejected = orders.filter(status="rejected").count()
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": {
+                        "accepted": accepted,
+                        "pending": pending,
+                        "completed": completed,
+                        "rejected": rejected
+                    },
+                    "message": "All Order Count retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
 
     @swagger_auto_schema(request_body=OrderListFilterSerializer)
     def post(self, request):
@@ -115,6 +164,9 @@ class OrderListView(APIView):
 
             if 'gt_rating' in filters:
                 orders = orders.filter(review__rating__gt=filters['gt_rating'])
+
+            if 'order_by' in filters:
+                orders = orders.order_by(filters['order_by'])
 
             pagination = Pagination(orders, request)
             serializer = OrderSerializer(pagination.getData(), many=True)

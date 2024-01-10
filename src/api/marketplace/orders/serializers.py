@@ -40,6 +40,7 @@ class OrderListFilterSerializer(serializers.Serializer):
     gt_rating = serializers.FloatField(required=False)
     lt_amount = serializers.FloatField(required=False)
     gt_amount = serializers.FloatField(required=False)
+    order_by = serializers.CharField(required=False)
 
 class OrderSerializer(serializers.ModelSerializer):
 

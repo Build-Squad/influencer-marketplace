@@ -12,6 +12,7 @@ from marketplace.services import (
     handleNotFound,
     handleDeleteNotAllowed,
     JWTOperations,
+    truncateWalletAddress,
 )
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ValidationError
@@ -1198,7 +1199,7 @@ class WalletAuth(APIView):
     def create_user(self, wallet_address_id, role):
         try:
             user = User.objects.create(
-                username=wallet_address_id,
+                username=truncateWalletAddress(wallet_address_id),
                 role=Role.objects.get(name=role),
             )
             user.save()

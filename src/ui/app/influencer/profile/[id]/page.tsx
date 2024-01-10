@@ -232,7 +232,7 @@ const ProfileLayout = ({
                         @{currentUser?.twitter_account?.user_name}
                       </Link>
                     </Typography>
-                    <Typography
+                    {/* <Typography
                       sx={{
                         alignItems: "center",
                         justifyContent: "center",
@@ -248,8 +248,8 @@ const ProfileLayout = ({
                         sx={{ fontSize: "16px", color: "#000", ml: 1 }}
                       />{" "}
                       {currentUser?.twitter_account?.location}
-                    </Typography>
-                    {currentUser?.twitter_account?.url && (
+                    </Typography> */}
+                    {/* {currentUser?.twitter_account?.url && (
                       <Typography
                         sx={{
                           alignItems: "center",
@@ -281,7 +281,7 @@ const ProfileLayout = ({
                           Website
                         </Link>
                       </Typography>
-                    )}
+                    )} */}
                     {/* {params?.id !== loggedInUser?.id && (
                       <Box
                         sx={{
@@ -400,7 +400,9 @@ const ProfileLayout = ({
                           Bio
                         </Typography>
                         <Typography>
-                          {currentUser?.twitter_account?.description}
+                          {currentUser?.twitter_account?.description
+                            ? currentUser?.twitter_account?.description
+                            : "No Bio Added"}
                         </Typography>
                       </Box>
                       <Box>

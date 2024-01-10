@@ -21,7 +21,7 @@ const formatTwitterFollowers = (followersCount: any) => {
     return `${(followersCount / 1000).toFixed(1)}K`;
   } else {
     // Leave as is
-    return followersCount.toString();
+    return followersCount?.toString();
   }
 };
 

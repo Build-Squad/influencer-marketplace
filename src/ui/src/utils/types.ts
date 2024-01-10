@@ -59,7 +59,7 @@ type PackageType = {
   deleted_at: string | null;
   status: string;
   publish_date: string;
-  influencer: string;
+  influencer: InfleuncerType;
   currency: CurrencyType;
 };
 
@@ -149,7 +149,7 @@ interface Window {
 type OrderItemType = {
   service: ServiceType;
   orderItemMetaData: ServiceMasterMetaDataType[];
-}
+};
 
 type WalletProviderType = {
   id: string;
@@ -168,3 +168,62 @@ type WalletType = {
   wallet_provider_id: WalletProviderType;
   is_primary: boolean;
 };
+
+type TwiiterAccountReadType = {
+  id: string;
+  twitter_id: string;
+  name: string;
+  user_name: string;
+};
+
+type InfleuncerType = {
+  id: string;
+  first_name: string;
+  last_name: null;
+  twitter_account: TwiiterAccountReadType;
+};
+
+type OrderItemOrderID = {
+  id: string;
+  package: PackageType;
+  service_master: ServiceMasterType;
+  currency: CurrencyType;
+  quantity: null;
+  status: null;
+  price: string;
+  created_at: Date;
+  platform_fee: string;
+  order_id: string;
+};
+
+type OrderType = {
+  id: string;
+  buyer: UserType;
+  order_item_order_id: OrderItemOrderID[];
+  amount: number;
+  currency: CurrencyType;
+  description: null;
+  status: string;
+  created_at: Date;
+};
+
+type OrderFilterType = {
+  influencers?: string[];
+  buyers?: string[];
+  status?: string[];
+  service_masters?: string[];
+  lt_created_at?: string;
+  gt_created_at?: string;
+  lt_rating?: string;
+  gt_rating?: string;
+  lt_amount?: string;
+  gt_amount?: string;
+};
+
+interface SVGIcon
+  extends React.FunctionComponent<React.SVGAttributes<HTMLOrSVGElement>> {}
+
+declare module "*.svg?icon" {
+  const content: SVGIcon;
+  export default content;
+}
