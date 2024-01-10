@@ -1,7 +1,14 @@
 "use client";
 
-import { Autocomplete, Box, Grid, TextField, Typography } from "@mui/material";
-import React from "react";
+import {
+  Autocomplete,
+  Badge,
+  Box,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useEffect } from "react";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import CustomAutoComplete from "../../shared/customAutoComplete";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -11,6 +18,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import FilterChip from "../../shared/filterChip";
 import { useAppSelector } from "@/src/hooks/useRedux";
+import filterCount from "@/src/services/filterCount";
 
 type FilterBarProps = {
   filters: OrderFilterType;
@@ -19,6 +27,13 @@ type FilterBarProps = {
 
 export default function FilterBar({ filters, setFilters }: FilterBarProps) {
   const userRoleName = useAppSelector((state) => state?.user?.user?.role?.name);
+  const [count, setCount] = React.useState<number>(0);
+
+  useEffect(() => {
+    const count = filterCount(filters);
+    setCount(count);
+  }, [filters]);
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Grid container spacing={2}>
@@ -40,21 +55,22 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
               alignItems: "center",
             }}
           >
-            <FilterListIcon />
-            <Typography
-              sx={{
-                fontWeight: "bold",
-              }}
-            >
-              Filters
-            </Typography>
+            <Badge badgeContent={count} color="secondary">
+              <FilterListIcon />
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                }}
+              >
+                Filters
+              </Typography>
+            </Badge>
           </Box>
         </Grid>
         <Grid item xs={12} sm={6} md={2} lg={2}>
           <CustomAutoComplete
             customFilter={{
-              role:
-                userRoleName === "influencer" ? "business_owner" : "influencer",
+              role: userRoleName === "influencer" ? "business_owner" : "",
             }}
             label={`Search ${
               userRoleName === "influencer" ? "Business" : "Influencer"
