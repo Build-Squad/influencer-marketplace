@@ -191,7 +191,7 @@ const Packages = ({
                         <Typography variant="body1">
                           {item.currency.symbol} {item.price}
                         </Typography>
-                        {item.influencer === currentUser?.id && (
+                        {item?.influencer?.id === currentUser?.id && (
                           <Box
                             onClick={(e) => {
                               e.stopPropagation();
@@ -227,7 +227,7 @@ const Packages = ({
                         onClick={(e) => {
                           e.stopPropagation();
                         }}
-                        disabled={item.influencer === currentUser?.id}
+                        disabled={item?.influencer?.id === currentUser?.id}
                       >
                         Add to Cart
                       </Button>
@@ -242,7 +242,7 @@ const Packages = ({
                         onClick={(e) => {
                           e.stopPropagation();
                         }}
-                        disabled={item.influencer === currentUser?.id}
+                        disabled={item?.influencer?.id === currentUser?.id}
                       >
                         Buy Now
                       </Button>
