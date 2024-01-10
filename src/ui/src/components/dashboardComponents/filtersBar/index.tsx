@@ -10,6 +10,7 @@ import { FORM_DATE_FORMAT } from "@/src/utils/consts";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import FilterChip from "../../shared/filterChip";
+import { useAppSelector } from "@/src/hooks/useRedux";
 
 type FilterBarProps = {
   filters: OrderFilterType;
@@ -17,6 +18,7 @@ type FilterBarProps = {
 };
 
 export default function FilterBar({ filters, setFilters }: FilterBarProps) {
+  const userRoleName = useAppSelector((state) => state?.user?.user?.role?.name);
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Grid container spacing={2}>
@@ -50,15 +52,28 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
         </Grid>
         <Grid item xs={12} sm={6} md={2} lg={2}>
           <CustomAutoComplete
-            label="Search Business"
+            customFilter={{
+              role:
+                userRoleName === "influencer" ? "business_owner" : "influencer",
+            }}
+            label={`Search ${
+              userRoleName === "influencer" ? "Business" : "Influencer"
+            }`}
             apiEndpoint="/account/user"
-            placeholder="Search Business"
             value={[]}
             getOptionDisabled={(option) => {
               // if the option id is in the filters.buyers then disable it
               if (typeof option === "object" && option) {
                 if ("id" in option && filters.buyers) {
-                  return filters.buyers?.includes(option.id as string);
+                  if (userRoleName === "influencer") {
+                    return filters.buyers?.includes(option.id as string);
+                  }
+                  return false;
+                } else if ("id" in option && filters.influencers) {
+                  if (userRoleName === "business_owner") {
+                    return filters.influencers?.includes(option.id as string);
+                  }
+                  return false;
                 } else {
                   return false;
                 }
@@ -69,31 +84,61 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             onChange={(value) => {
               // Ensure value is an array and then extract the id from the object
               if (Array.isArray(value)) {
-                setFilters((prev) => {
-                  return {
-                    ...prev,
-                    buyers: [
-                      ...(prev.buyers || []),
-                      ...value.map((item) => item.id),
-                    ],
-                    objects: {
-                      ...prev.objects,
-                      buyers: [...value, ...(prev?.objects?.buyers || [])],
-                    },
-                  };
-                });
+                if (userRoleName === "influencer") {
+                  setFilters((prev) => {
+                    return {
+                      ...prev,
+                      buyers: [
+                        ...(prev.buyers || []),
+                        ...value.map((item) => item.id),
+                      ],
+                      objects: {
+                        ...prev.objects,
+                        buyers: [...value, ...(prev?.objects?.buyers || [])],
+                      },
+                    };
+                  });
+                } else {
+                  setFilters((prev) => {
+                    return {
+                      ...prev,
+                      influencers: [
+                        ...(prev.influencers || []),
+                        ...value.map((item) => item.id),
+                      ],
+                      objects: {
+                        ...prev.objects,
+                        influencers: [
+                          ...value,
+                          ...(prev?.objects?.influencers || []),
+                        ],
+                      },
+                    };
+                  });
+                }
               }
             }}
             onClear={() => {
               setFilters((prev) => {
-                return {
-                  ...prev,
-                  buyers: undefined,
-                  objects: {
-                    ...prev.objects,
+                if (userRoleName === "influencer") {
+                  return {
+                    ...prev,
                     buyers: undefined,
-                  },
-                };
+                    objects: {
+                      ...prev.objects,
+                      buyers: undefined,
+                    },
+                  };
+                } else {
+                  return {
+                    ...prev,
+                    influencers: undefined,
+                    objects: {
+                      ...prev.objects,
+                      influencers: undefined,
+                    },
+                  };
+                }
               });
             }}
             sx={{
@@ -159,7 +204,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                       ...prev.objects,
                       service_masters: [
                         ...value,
-                        ...(prev.objects.service_masters || []),
+                        ...(prev?.objects?.service_masters || []),
                       ],
                     },
                   };
@@ -407,7 +452,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                       const new_buyers = prev.buyers?.filter(
                         (buyer) => buyer !== item.id
                       );
-                      const new_objects_buyers = prev.objects.buyers?.filter(
+                      const new_objects_buyers = prev?.objects?.buyers?.filter(
                         (buyer) => buyer.id !== item.id
                       );
                       return {
@@ -427,6 +472,45 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             })}
           </>
         )}
+        {filters?.objects?.influencers &&
+          filters.objects.influencers.length > 0 && (
+            <>
+              {filters.objects.influencers.map((item, index) => {
+                return (
+                  <FilterChip
+                    color="secondary"
+                    key={index}
+                    label={item.username ? item.username : ""}
+                    onDelete={() => {
+                      setFilters((prev) => {
+                        // If the value post deletion is empty then remove the key from the object
+                        // update both the buyers and objects.buyers
+                        const new_influencers = prev.influencers?.filter(
+                          (buyer) => buyer !== item.id
+                        );
+                        const new_influencer_objects =
+                          prev?.objects?.influencers?.filter(
+                            (buyer) => buyer.id !== item.id
+                          );
+                        return {
+                          ...prev,
+                          buyers: new_influencers?.length
+                            ? new_influencers
+                            : undefined,
+                          objects: {
+                            ...prev.objects,
+                            influencers: new_influencer_objects?.length
+                              ? new_influencer_objects
+                              : undefined,
+                          },
+                        };
+                      });
+                    }}
+                  />
+                );
+              })}
+            </>
+          )}
         {/* For the service masters selected show chips that can be deleted  */}
         {filters?.objects?.service_masters &&
           filters?.objects?.service_masters.length > 0 && (
@@ -446,7 +530,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                             (service_master) => service_master !== item.id
                           );
                         const new_objects_service_masters =
-                          prev.objects.service_masters?.filter(
+                          prev?.objects?.service_masters?.filter(
                             (service_master) => service_master.id !== item.id
                           );
                         return {
