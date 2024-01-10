@@ -7,7 +7,7 @@ from .serializers import PageSizeSerializer, PageNumberSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.mail import send_mail
-# from .logger import custom_logger
+import json
 
 # logger = custom_logger()
 import logging
@@ -112,21 +112,32 @@ class Pagination:
 
 def handleServerException(e):
     logger.error(e)
+    try:
+        json.dumps(str(e))  # Try to serialize the error
+        error = str(e)
+    except TypeError:
+        error = 'Non-serializable error'
+
     return Response({
         'isSuccess': False,
         'data': None,
         'message': 'Internal Server Error',
-        'errors': e,
+        'errors': error,
     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def handleBadRequest(e):
     logger.error(e)
+    try:
+        json.dumps(str(e))  # Try to serialize the error
+        error = str(e)
+    except TypeError:
+        error = 'Non-serializable error'
     return Response({
         'isSuccess': False,
         'data': None,
         'message': 'Bad Request',
-        'errors': e,
+        'errors': error,
     }, status=status.HTTP_400_BAD_REQUEST)
 
 def handleNotFound(resource_name):
@@ -153,3 +164,9 @@ class EmailService:
             send_mail(subject, message, from_email, recipient_list)
         except Exception as e:
             pass
+
+
+def truncateWalletAddress(address):
+    if address:
+        return address[:4] + "..." + address[-4:]
+    return None
