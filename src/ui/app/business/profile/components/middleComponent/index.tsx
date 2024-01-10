@@ -8,15 +8,18 @@ import {
 } from "@mui/material";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { useAppSelector } from "@/src/hooks/useRedux";
+import WalletConnectModal from "@/src/components/walletConnectModal";
 
 type Props = {};
 
 const ConnectWalletComponent = () => {
+  const [connectWallet, setConnectWallet] = useState<boolean>(false);
+  const [walletOpen, setWalletOpen] = useState<boolean>(false);
   return (
     <>
       <Box sx={{ display: "flex", columnGap: "4px" }}>
@@ -46,6 +49,7 @@ const ConnectWalletComponent = () => {
             sx={{
               borderRadius: "20px",
             }}
+            onClick={() => setWalletOpen(true)}
           >
             Add Wallet
           </Button>
@@ -54,6 +58,11 @@ const ConnectWalletComponent = () => {
       <Box sx={{ mt: 2 }}>
         <WalletsTable wallets={[]} />
       </Box>
+      <WalletConnectModal
+        open={walletOpen}
+        setOpen={setWalletOpen}
+        connect={connectWallet}
+      />
     </>
   );
 };

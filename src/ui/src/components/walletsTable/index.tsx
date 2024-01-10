@@ -1,12 +1,13 @@
 import { Box } from "@mui/material";
 import React from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import {
+  TableRow,
+  TableHead,
+  TableContainer,
+  TableCell,
+  TableBody,
+  Table,
+} from "@mui/material";
 
 type Props = {
   wallets: {
@@ -15,27 +16,46 @@ type Props = {
   }[];
 };
 
+const styles = {
+  headerCellStyle: {
+    fontSize: "16px",
+    fontWeight: "bold",
+  },
+  bodyCellStyle: {
+    paddingX: "10px",
+  },
+};
+
 function createData(addr: string, walletName: string) {
   return { addr, walletName };
 }
 
 const rows = [
-  createData("0x4...423", "Phantom"),
-  createData("0x4...423", "Phantom"),
-  createData("0x4...423", "Phantom"),
-  createData("0x4...423", "Phantom"),
-  createData("0x4...423", "Phantom"),
+  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
+  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
+  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
+  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
+  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
 ];
 
 export default function WalletsTable({ wallets }: Props) {
   return (
     <Box>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
+      <TableContainer>
+        <Table sx={{ minWidth: 650 }}>
+          <TableHead
+            sx={{
+              border: "2px solid black",
+              borderRadius: "12px",
+            }}
+          >
             <TableRow>
-              <TableCell>Address</TableCell>
-              <TableCell align="right">Wallet Name</TableCell>
+              <TableCell align="left" sx={styles.headerCellStyle}>
+                Address
+              </TableCell>
+              <TableCell align="left" sx={styles.headerCellStyle}>
+                Wallet Name
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -44,10 +64,12 @@ export default function WalletsTable({ wallets }: Props) {
                 key={row.addr}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell component="th" scope="row">
+                <TableCell align="left" sx={styles.bodyCellStyle}>
                   {row.addr}
                 </TableCell>
-                <TableCell align="right">{row.walletName}</TableCell>
+                <TableCell align="left" sx={styles.bodyCellStyle}>
+                  {row.walletName}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
