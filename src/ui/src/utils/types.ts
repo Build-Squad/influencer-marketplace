@@ -218,6 +218,11 @@ type OrderFilterType = {
   gt_rating?: string;
   lt_amount?: string;
   gt_amount?: string;
+  objects: {
+    influencers?: UserType[];
+    buyers?: UserType[];
+    service_masters?: ServiceMasterType[];
+  };
 };
 
 interface SVGIcon
