@@ -9,6 +9,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { FORM_DATE_FORMAT } from "@/src/utils/consts";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import FilterChip from "../../shared/filterChip";
 
 type FilterBarProps = {
   filters: OrderFilterType;
@@ -27,13 +28,13 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
           lg={1}
           sx={{
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "flex-start",
           }}
         >
           <Box
             sx={{
               display: "flex",
-              justifyContent: "center",
+              justifyContent: "flex-start",
               alignItems: "center",
             }}
           >
@@ -53,6 +54,18 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             apiEndpoint="/account/user"
             placeholder="Search Business"
             value={[]}
+            getOptionDisabled={(option) => {
+              // if the option id is in the filters.buyers then disable it
+              if (typeof option === "object" && option) {
+                if ("id" in option && filters.buyers) {
+                  return filters.buyers?.includes(option.id as string);
+                } else {
+                  return false;
+                }
+              } else {
+                return false;
+              }
+            }}
             onChange={(value) => {
               // Ensure value is an array and then extract the id from the object
               if (Array.isArray(value)) {
@@ -63,13 +76,24 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                       ...(prev.buyers || []),
                       ...value.map((item) => item.id),
                     ],
+                    objects: {
+                      ...prev.objects,
+                      buyers: [...value, ...(prev?.objects?.buyers || [])],
+                    },
                   };
                 });
               }
             }}
             onClear={() => {
               setFilters((prev) => {
-                return { ...prev, buyers: undefined };
+                return {
+                  ...prev,
+                  buyers: undefined,
+                  objects: {
+                    ...prev.objects,
+                    buyers: undefined,
+                  },
+                };
               });
             }}
             sx={{
@@ -109,6 +133,18 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             apiEndpoint="/packages/servicemaster/"
             placeholder="Search Service"
             value={[]}
+            getOptionDisabled={(option) => {
+              // if the option id is in the filters.buyers then disable it
+              if (typeof option === "object" && option) {
+                if ("id" in option && filters.service_masters) {
+                  return filters.service_masters?.includes(option.id as string);
+                } else {
+                  return false;
+                }
+              } else {
+                return false;
+              }
+            }}
             onChange={(value) => {
               // Ensure value is an array and then extract the id from the object
               if (Array.isArray(value)) {
@@ -119,13 +155,27 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                       ...(prev.service_masters || []),
                       ...value.map((item) => item.id),
                     ],
+                    objects: {
+                      ...prev.objects,
+                      service_masters: [
+                        ...value,
+                        ...(prev.objects.service_masters || []),
+                      ],
+                    },
                   };
                 });
               }
             }}
             onClear={() => {
               setFilters((prev) => {
-                return { ...prev, service_masters: undefined };
+                return {
+                  ...prev,
+                  service_masters: undefined,
+                  objects: {
+                    ...prev.objects,
+                    service_masters: undefined,
+                  },
+                };
               });
             }}
             sx={{
@@ -330,6 +380,94 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             }
           />
         </Grid>
+      </Grid>
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          mt: 2,
+          px: 2,
+        }}
+      >
+        {/* For the buyers, influencers selected show chips that can be deleted  */}
+        {filters?.objects?.buyers && filters.objects.buyers.length > 0 && (
+          <>
+            {filters.objects.buyers.map((item, index) => {
+              return (
+                <FilterChip
+                  color="secondary"
+                  key={index}
+                  label={item.username ? item.username : ""}
+                  onDelete={() => {
+                    setFilters((prev) => {
+                      // If the value post deletion is empty then remove the key from the object
+                      // update both the buyers and objects.buyers
+                      const new_buyers = prev.buyers?.filter(
+                        (buyer) => buyer !== item.id
+                      );
+                      const new_objects_buyers = prev.objects.buyers?.filter(
+                        (buyer) => buyer.id !== item.id
+                      );
+                      return {
+                        ...prev,
+                        buyers: new_buyers?.length ? new_buyers : undefined,
+                        objects: {
+                          ...prev.objects,
+                          buyers: new_objects_buyers?.length
+                            ? new_objects_buyers
+                            : undefined,
+                        },
+                      };
+                    });
+                  }}
+                />
+              );
+            })}
+          </>
+        )}
+        {/* For the service masters selected show chips that can be deleted  */}
+        {filters?.objects?.service_masters &&
+          filters?.objects?.service_masters.length > 0 && (
+            <>
+              {filters?.objects.service_masters.map((item, index) => {
+                return (
+                  <FilterChip
+                    color="secondary"
+                    key={index}
+                    label={item?.name ? item?.name : ""}
+                    onDelete={() => {
+                      setFilters((prev) => {
+                        // If the value post deletion is empty then remove the key from the object
+                        // update both the buyers and objects.buyers
+                        const new_service_masters =
+                          prev.service_masters?.filter(
+                            (service_master) => service_master !== item.id
+                          );
+                        const new_objects_service_masters =
+                          prev.objects.service_masters?.filter(
+                            (service_master) => service_master.id !== item.id
+                          );
+                        return {
+                          ...prev,
+                          service_masters: new_service_masters?.length
+                            ? new_service_masters
+                            : undefined,
+                          objects: {
+                            ...prev.objects,
+                            service_masters: new_objects_service_masters?.length
+                              ? new_objects_service_masters
+                              : undefined,
+                          },
+                        };
+                      });
+                    }}
+                  />
+                );
+              })}
+            </>
+          )}
       </Grid>
     </LocalizationProvider>
   );
