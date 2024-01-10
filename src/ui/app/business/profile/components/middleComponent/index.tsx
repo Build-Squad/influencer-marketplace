@@ -135,7 +135,7 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
           }}
           onClick={startTwitterAuthentication}
         >
-          Login to Twitter
+          Login to X
         </Button>
       </Box>
     </>
