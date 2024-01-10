@@ -7,10 +7,12 @@ import { Box, Button, Grid, Typography } from "@mui/material";
 import Image from "next/image";
 import { ArrowCircleRightOutlined } from "@mui/icons-material";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
+import { useAppSelector } from "@/src/hooks/useRedux";
 
 type Props = {};
 
 export default function Banner({}: Props) {
+  const user = useAppSelector((state) => state.user);
   const { startTwitterAuthentication } = useTwitterAuth();
   return (
     <Fragment>
@@ -40,22 +42,24 @@ export default function Banner({}: Props) {
             <br /> Amplify Your Twitter Influence with Business Collaborations!
             <Image src={Arrow} height={24} width={70} alt={"Coloured Star"} />
           </Typography>
-          <Button
-            color="secondary"
-            variant="contained"
-            sx={{
-              mt: 3,
-              borderRadius: "28px",
-              fontWeight: "bold",
-              padding: "12px 32px",
-              fontSize: "16px",
-            }}
-            size="large"
-            onClick={startTwitterAuthentication}
-            endIcon={<ArrowCircleRightOutlined />}
-          >
-            Connect with X
-          </Button>
+          {user?.loggedIn ? null : (
+            <Button
+              color="secondary"
+              variant="contained"
+              sx={{
+                mt: 3,
+                borderRadius: "28px",
+                fontWeight: "bold",
+                padding: "12px 32px",
+                fontSize: "16px",
+              }}
+              size="large"
+              onClick={startTwitterAuthentication}
+              endIcon={<ArrowCircleRightOutlined />}
+            >
+              Connect with X
+            </Button>
+          )}
 
           <Box
             sx={{
