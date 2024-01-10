@@ -8,7 +8,7 @@ type StatusCardProps = {
   card: {
     label: string;
     value: number;
-    icon: string;
+    icon: React.JSX.Element;
     onClick: () => void;
   };
   selectedCard: number;
@@ -69,7 +69,7 @@ export default function StatusCard({
           alignItems: "center",
         }}
       >
-        <Image
+        {/* <Image
           src={card.icon}
           alt={card.label}
           height={30}
@@ -78,7 +78,8 @@ export default function StatusCard({
             // This is an svg image, so we need to set the fill property to change the color
             fill: card?.value === selectedCard ? "#fff" : "#000",
           }}
-        />
+        /> */}
+        {card.icon}
         <Typography
           variant="body1"
           sx={{
