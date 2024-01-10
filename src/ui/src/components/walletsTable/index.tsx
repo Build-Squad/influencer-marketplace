@@ -1,5 +1,5 @@
 "use client";
-import { Box, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import {
   TableRow,
@@ -19,6 +19,7 @@ type Props = {};
 type walletsType = {
   addr: string;
   walletName: string;
+  isPrimary: boolean;
 }[];
 
 const styles = {
@@ -42,6 +43,7 @@ export default function WalletsTable({}: Props) {
         return {
           addr: wal.wallet_address_id,
           walletName: wal?.wallet_provider_id?.wallet_provider,
+          isPrimary: wal?.is_primary,
         };
       });
       setUserWallets(wallets);
@@ -78,10 +80,22 @@ export default function WalletsTable({}: Props) {
               userWallets?.map((row, index) => (
                 <TableRow
                   key={index}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  sx={{
+                    "&:last-child td, &:last-child th": { border: 0 },
+                    backgroundColor: row.isPrimary
+                      ? "rgba(162, 229, 235, 0.40)"
+                      : "inherit",
+                  }}
                 >
                   <TableCell align="left" sx={styles.bodyCellStyle}>
                     {row.addr}
+                    {row.isPrimary ? (
+                      <Chip
+                        sx={{ ml: 1, backgroundColor: "#9AE3E9" }}
+                        label="primary"
+                        size="small"
+                      />
+                    ) : null}
                   </TableCell>
                   <TableCell align="left" sx={styles.bodyCellStyle}>
                     {row.walletName}
