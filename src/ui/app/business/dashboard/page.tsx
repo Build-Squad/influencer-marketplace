@@ -1,10 +1,10 @@
 "use client";
 
-import acceptedOrders from "@/public/svg/acceptedOrders.svg";
-import completedOrders from "@/public/svg/completedOrders.svg";
-import pendingOrders from "@/public/svg/pendingOrders.svg";
-import rejectedOrders from "@/public/svg/rejectedOrders.svg";
-import totalOrders from "@/public/svg/totalOrders.svg";
+import AcceptedOrders from "@/public/svg/acceptedOrders.svg?icon";
+import CompletedOrders from "@/public/svg/completedOrders.svg?icon";
+import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
+import TotalOrders from "@/public/svg/totalOrders.svg?icon";
+import PendingOrders from "@/public/svg/pendingOrders.svg?icon";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import StatusChip from "@/src/components/shared/statusChip";
@@ -116,7 +116,13 @@ export default function BusinessDashboardPage() {
         setSelectedCard(0);
       },
       value: 0,
-      icon: totalOrders,
+      icon: (
+        <TotalOrders
+          style={{
+            fill: selectedCard === 0 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
     },
     {
       label: "Accepted Orders",
@@ -128,7 +134,13 @@ export default function BusinessDashboardPage() {
         setSelectedCard(1);
       },
       value: 1,
-      icon: acceptedOrders,
+      icon: (
+        <AcceptedOrders
+          style={{
+            fill: selectedCard === 1 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
     },
     {
       label: "Completed Orders",
@@ -140,7 +152,13 @@ export default function BusinessDashboardPage() {
         setSelectedCard(2);
       },
       value: 2,
-      icon: completedOrders,
+      icon: (
+        <CompletedOrders
+          style={{
+            fill: selectedCard === 2 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
     },
     {
       label: "Pending Orders",
@@ -152,7 +170,13 @@ export default function BusinessDashboardPage() {
         setSelectedCard(3);
       },
       value: 3,
-      icon: pendingOrders,
+      icon: (
+        <PendingOrders
+          style={{
+            fill: selectedCard === 3 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
     },
     {
       label: "Rejected Orders",
@@ -164,7 +188,13 @@ export default function BusinessDashboardPage() {
         setSelectedCard(4);
       },
       value: 4,
-      icon: rejectedOrders,
+      icon: (
+        <RejectedOrders
+          style={{
+            fill: selectedCard === 3 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
     },
   ];
 
