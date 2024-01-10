@@ -191,7 +191,7 @@ export default function BusinessDashboardPage() {
       icon: (
         <RejectedOrders
           style={{
-            fill: selectedCard === 3 ? "#fff" : "#19191929",
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
           }}
         />
       ),
