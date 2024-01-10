@@ -222,7 +222,7 @@ export default function Navbar({
   return (
     <AppBar
       position="static"
-      sx={{ boxShadow: "none", borderBottom: "1px solid #000" }}
+      sx={{ boxShadow: "none", borderBottom: "1px solid #D3D3D3" }}
     >
       <Toolbar
         component="nav"
