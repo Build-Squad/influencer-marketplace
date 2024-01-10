@@ -1,5 +1,6 @@
-import { Box } from "@mui/material";
-import React from "react";
+"use client";
+import { Box, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import {
   TableRow,
   TableHead,
@@ -8,6 +9,10 @@ import {
   TableBody,
   Table,
 } from "@mui/material";
+import { getService } from "@/src/services/httpServices";
+import { notification } from "../shared/notification";
+import EmptyWalletIcon from "@/public/svg/No_wallets_connected.svg";
+import Image from "next/image";
 
 type Props = {
   wallets: {
@@ -39,6 +44,20 @@ const rows = [
 ];
 
 export default function WalletsTable({ wallets }: Props) {
+  const [userWallets, setUserWallets] = useState([]);
+  const getUserWallets = async () => {
+    const { isSuccess, data, message } = await getService("/account/wallets/");
+    if (isSuccess) {
+      setUserWallets(data?.data ?? []);
+    } else {
+      notification(message ? message : "Something went wrong", "error");
+    }
+  };
+
+  useEffect(() => {
+    getUserWallets();
+  }, []);
+
   return (
     <Box>
       <TableContainer>
@@ -59,19 +78,43 @@ export default function WalletsTable({ wallets }: Props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, index) => (
-              <TableRow
-                key={index}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell align="left" sx={styles.bodyCellStyle}>
-                  {row.addr}
-                </TableCell>
-                <TableCell align="left" sx={styles.bodyCellStyle}>
-                  {row.walletName}
+            {userWallets.length ? (
+              rows.map((row, index) => (
+                <TableRow
+                  key={index}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell align="left" sx={styles.bodyCellStyle}>
+                    {row.addr}
+                  </TableCell>
+                  <TableCell align="left" sx={styles.bodyCellStyle}>
+                    {row.walletName}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={2}>
+                  <Box
+                    sx={{
+                      paddingY: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Image
+                      src={EmptyWalletIcon}
+                      alt="existing_user_account"
+                      width="64"
+                    />
+                    <Typography variant="subtitle1" sx={{ mt: 1 }}>
+                      No Wallets Connected
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>
