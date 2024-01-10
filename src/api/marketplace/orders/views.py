@@ -160,10 +160,12 @@ class OrderListView(APIView):
                 orders = orders.filter(created_at__gt=filters['gt_created_at'])
 
             if 'lt_rating' in filters:
-                orders = orders.filter(review__rating__lt=filters['lt_rating'])
+                orders = orders.filter(
+                    review_order_id__rating__lt=filters['lt_rating'])
 
             if 'gt_rating' in filters:
-                orders = orders.filter(review__rating__gt=filters['gt_rating'])
+                orders = orders.filter(
+                    review_order_id__rating__gt=filters['gt_rating'])
 
             if 'order_by' in filters:
                 orders = orders.order_by(filters['order_by'])

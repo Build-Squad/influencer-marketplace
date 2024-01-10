@@ -27,6 +27,9 @@ import {
 } from "@mui/x-data-grid";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import FilterBar from "@/src/components/dashboardComponents/filtersBar";
+import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import dayjs from "dayjs";
 
 export default function BusinessDashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -191,7 +194,7 @@ export default function BusinessDashboardPage() {
       icon: (
         <RejectedOrders
           style={{
-            fill: selectedCard === 3 ? "#fff" : "#19191929",
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
           }}
         />
       ),
@@ -203,6 +206,7 @@ export default function BusinessDashboardPage() {
       field: "influencer",
       headerName: "Influencer",
       flex: 1,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -241,6 +245,7 @@ export default function BusinessDashboardPage() {
       headerName: "Services",
       flex: 1,
       minWidth: 200,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -278,6 +283,7 @@ export default function BusinessDashboardPage() {
       field: "amount",
       headerName: "Total Amount",
       flex: 1,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -302,6 +308,7 @@ export default function BusinessDashboardPage() {
       field: "action",
       headerName: "Action",
       flex: 1,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -328,7 +335,21 @@ export default function BusinessDashboardPage() {
       },
     },
     {
-      field: "rating",
+      field: "created_at",
+      headerName: "Order Date",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {dayjs(params?.row?.created_at).format(DISPLAY_DATE_FORMAT)}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "review_order_id__rating",
       headerName: "Rating",
       flex: 1,
       renderCell: (
@@ -389,7 +410,7 @@ export default function BusinessDashboardPage() {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          {/* Filters bar */}
+          <FilterBar filters={filters} setFilters={setFilters} />
         </Grid>
         <Grid item xs={12}>
           <DataGrid
@@ -404,6 +425,18 @@ export default function BusinessDashboardPage() {
             getRowHeight={(params) => 100}
             sx={{
               backgroundColor: "#fff",
+            }}
+            // Sorting
+            sortingMode="server"
+            onSortModelChange={(model) => {
+              setFilters((prev) => ({
+                ...prev,
+                order_by: model?.[0]?.field
+                  ? model?.[0]?.sort === "asc"
+                    ? `-${model?.[0]?.field}`
+                    : `${model?.[0]?.field}`
+                  : undefined,
+              }));
             }}
           />
         </Grid>

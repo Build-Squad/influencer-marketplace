@@ -292,26 +292,18 @@ export default function Navbar({
                     "Home",
                     "Explore",
                     "Dashboard",
-                    "Message",
                     "Cart",
-                    "Saved Profile",
                     "Notifications",
                   ]}
                 />
               ) : (
                 // Influencer menu items
                 <MenuItemsComponent
-                  items={[
-                    "Home",
-                    "Orders",
-                    "Dashboard",
-                    "Message",
-                    "Notifications",
-                  ]}
+                  items={["Home", "Orders", "Dashboard", "Notifications"]}
                 />
               )
             ) : (
-              <MenuItemsComponent items={["Home", "Explore"]} />
+              <MenuItemsComponent items={["Home"]} />
             )}
             <LoginMenu
               isTwitterUserLoggedIn={isTwitterUserLoggedIn}

@@ -4,10 +4,12 @@ import AcceptedOrders from "@/public/svg/acceptedOrders.svg?icon";
 import CompletedOrders from "@/public/svg/completedOrders.svg?icon";
 import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
 import TotalOrders from "@/public/svg/totalOrders.svg?icon";
+import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import StatusChip from "@/src/components/shared/statusChip";
 import { getService, postService } from "@/src/services/httpServices";
+import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 import {
   Box,
   Grid,
@@ -22,6 +24,7 @@ import {
   GridRenderCellParams,
   GridTreeNodeWithRender,
 } from "@mui/x-data-grid";
+import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -179,7 +182,7 @@ export default function BusinessDashboardPage() {
 
   const columns = [
     {
-      field: "buyer",
+      field: "buyer__username",
       headerName: "Business",
       flex: 1,
       renderCell: (
@@ -218,6 +221,7 @@ export default function BusinessDashboardPage() {
       headerName: "Services",
       flex: 1,
       minWidth: 200,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -254,6 +258,7 @@ export default function BusinessDashboardPage() {
     {
       field: "amount",
       headerName: "Total Amount",
+      sortable: false,
       flex: 1,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
@@ -276,7 +281,21 @@ export default function BusinessDashboardPage() {
       },
     },
     {
-      field: "rating",
+      field: "created_at",
+      headerName: "Order Date",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {dayjs(params?.row?.created_at).format(DISPLAY_DATE_FORMAT)}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "review_order_id__rating",
       headerName: "Rating",
       flex: 1,
       renderCell: (
@@ -334,6 +353,7 @@ export default function BusinessDashboardPage() {
         </Grid>
         <Grid item xs={12}>
           {/* Filters bar */}
+          <FilterBar filters={filters} setFilters={setFilters} />
         </Grid>
         <Grid item xs={12}>
           <DataGrid
@@ -348,6 +368,17 @@ export default function BusinessDashboardPage() {
             getRowHeight={(params) => 100}
             sx={{
               backgroundColor: "#fff",
+            }}
+            sortingMode="server"
+            onSortModelChange={(model) => {
+              setFilters((prev) => ({
+                ...prev,
+                order_by: model?.[0]?.field
+                  ? model?.[0]?.sort === "asc"
+                    ? `-${model?.[0]?.field}`
+                    : `${model?.[0]?.field}`
+                  : undefined,
+              }));
             }}
           />
         </Grid>

@@ -19,6 +19,8 @@ type CustomAutoCompleteProps = {
   getOptionLabel?: (option: unknown) => string;
   isOptionEqualToValue?: (option: unknown, value: unknown) => boolean;
   isMulti?: Boolean;
+  getOptionDisabled?: (option: unknown) => boolean;
+  customFilter?: object;
 };
 
 const CustomAutoComplete = ({
@@ -35,7 +37,9 @@ const CustomAutoComplete = ({
   type,
   getOptionLabel,
   isOptionEqualToValue,
+  getOptionDisabled,
   isMulti = false,
+  customFilter,
 }: CustomAutoCompleteProps) => {
   const [selected, setSelected] = React.useState<unknown>(null); // This is the value that is selected from the options[]
   const [options, setOptions] = React.useState<unknown[]>([]);
@@ -53,6 +57,7 @@ const CustomAutoComplete = ({
         search,
         page_size: pagination.current_page_size,
         page_number: pagination.current_page_number,
+        ...customFilter,
       });
       if (isSuccess) {
         setOptions([...options, ...data?.data]);
@@ -120,6 +125,7 @@ const CustomAutoComplete = ({
       value={value}
       options={options}
       sx={sx}
+      getOptionDisabled={getOptionDisabled}
       getOptionLabel={getOptionLabel}
       inputValue={search}
       onInputChange={handleSearch}
@@ -149,6 +155,7 @@ const CustomAutoComplete = ({
       id="custom-input-demo"
       options={options}
       sx={sx}
+      getOptionDisabled={getOptionDisabled}
       getOptionLabel={getOptionLabel}
       isOptionEqualToValue={isOptionEqualToValue}
       inputValue={search}

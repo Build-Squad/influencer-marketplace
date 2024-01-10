@@ -610,8 +610,12 @@ class AccountCategoryDetail(APIView):
 class UserList(APIView):
     def get(self, request):
         try:
-            user = User.objects.all()
-            pagination = Pagination(user, request)
+            role = request.query_params.get('role')
+            if role is not None:
+                users = User.objects.filter(role__name=role)
+            else:
+                users = User.objects.all()
+            pagination = Pagination(users, request)
             serializer = UserSerializer(pagination.getData(), many=True)
             return Response(
                 {
