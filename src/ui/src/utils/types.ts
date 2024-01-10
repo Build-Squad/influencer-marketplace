@@ -219,3 +219,11 @@ type OrderFilterType = {
   lt_amount?: string;
   gt_amount?: string;
 };
+
+interface SVGIcon
+  extends React.FunctionComponent<React.SVGAttributes<HTMLOrSVGElement>> {}
+
+declare module "*.svg?icon" {
+  const content: SVGIcon;
+  export default content;
+}
