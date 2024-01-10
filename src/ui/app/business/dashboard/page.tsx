@@ -206,6 +206,7 @@ export default function BusinessDashboardPage() {
       field: "influencer",
       headerName: "Influencer",
       flex: 1,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -244,6 +245,7 @@ export default function BusinessDashboardPage() {
       headerName: "Services",
       flex: 1,
       minWidth: 200,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -281,6 +283,7 @@ export default function BusinessDashboardPage() {
       field: "amount",
       headerName: "Total Amount",
       flex: 1,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -305,6 +308,7 @@ export default function BusinessDashboardPage() {
       field: "action",
       headerName: "Action",
       flex: 1,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -345,7 +349,7 @@ export default function BusinessDashboardPage() {
       },
     },
     {
-      field: "rating",
+      field: "review_order_id__rating",
       headerName: "Rating",
       flex: 1,
       renderCell: (
@@ -421,6 +425,18 @@ export default function BusinessDashboardPage() {
             getRowHeight={(params) => 100}
             sx={{
               backgroundColor: "#fff",
+            }}
+            // Sorting
+            sortingMode="server"
+            onSortModelChange={(model) => {
+              setFilters((prev) => ({
+                ...prev,
+                order_by: model?.[0]?.field
+                  ? model?.[0]?.sort === "asc"
+                    ? `-${model?.[0]?.field}`
+                    : `${model?.[0]?.field}`
+                  : undefined,
+              }));
             }}
           />
         </Grid>

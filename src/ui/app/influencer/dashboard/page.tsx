@@ -182,7 +182,7 @@ export default function BusinessDashboardPage() {
 
   const columns = [
     {
-      field: "buyer",
+      field: "buyer__username",
       headerName: "Business",
       flex: 1,
       renderCell: (
@@ -221,6 +221,7 @@ export default function BusinessDashboardPage() {
       headerName: "Services",
       flex: 1,
       minWidth: 200,
+      sortable: false,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -257,6 +258,7 @@ export default function BusinessDashboardPage() {
     {
       field: "amount",
       headerName: "Total Amount",
+      sortable: false,
       flex: 1,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
@@ -293,7 +295,7 @@ export default function BusinessDashboardPage() {
       },
     },
     {
-      field: "rating",
+      field: "review_order_id__rating",
       headerName: "Rating",
       flex: 1,
       renderCell: (
@@ -366,6 +368,17 @@ export default function BusinessDashboardPage() {
             getRowHeight={(params) => 100}
             sx={{
               backgroundColor: "#fff",
+            }}
+            sortingMode="server"
+            onSortModelChange={(model) => {
+              setFilters((prev) => ({
+                ...prev,
+                order_by: model?.[0]?.field
+                  ? model?.[0]?.sort === "asc"
+                    ? `-${model?.[0]?.field}`
+                    : `${model?.[0]?.field}`
+                  : undefined,
+              }));
             }}
           />
         </Grid>
