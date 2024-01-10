@@ -12,7 +12,7 @@ Input: {
 }
 Output: 4 (3 influencers + 1 order_by)
 
-So, the function will count the number of keys in the object and return the count
+This function will count the number of keys in the object and return the count
 It will ignore the keys that have empty array or empty string as value and will ignore some defined keys
 Additional keys can be added to the ignore list from a parameter
 For the keys that are arrays, it will count the number of elements in the array
