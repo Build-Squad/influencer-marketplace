@@ -116,7 +116,6 @@ const CustomAutoComplete = ({
 
   return isMulti ? (
     <Autocomplete
-    color="primary"
       multiple={true}
       value={value}
       options={options}
@@ -127,6 +126,7 @@ const CustomAutoComplete = ({
       renderInput={(params) => {
         return (
           <TextField
+            color="secondary"
             {...params}
             label={label}
             helperText={helperText}
@@ -155,6 +155,7 @@ const CustomAutoComplete = ({
       onInputChange={handleSearch}
       renderInput={(params) => (
         <TextField
+          color="secondary"
           {...params}
           label={label}
           placeholder={placeholder}

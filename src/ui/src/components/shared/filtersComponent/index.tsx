@@ -11,6 +11,18 @@ type FiltersComponentsType = {
   };
 };
 
+const styles = {
+  inputBoxBorderStyles: {
+    ".MuiInputBase-root": {
+      borderRadius: "24px",
+      backgroundColor: "white",
+    },
+    ".MuiOutlinedInput-notchedOutline": {
+      border: "1px solid black",
+    },
+  },
+};
+
 export default function FiltersComponent({
   formik,
   type,
@@ -21,13 +33,7 @@ export default function FiltersComponent({
       return (
         <CustomAutoComplete
           isMulti={true}
-          sx={{
-            ".MuiInputBase-root": {
-              borderRadius: "24px",
-              border: "1px solid black",
-              backgroundColor: "white",
-            },
-          }}
+          sx={styles.inputBoxBorderStyles}
           apiEndpoint="/core/language-master"
           label="Language"
           value={formik.values.languages}
@@ -54,13 +60,7 @@ export default function FiltersComponent({
       return (
         <CustomAutoComplete
           isMulti={true}
-          sx={{
-            ".MuiInputBase-root": {
-              borderRadius: "24px",
-              border: "1px solid black",
-              backgroundColor: "white",
-            },
-          }}
+          sx={styles.inputBoxBorderStyles}
           apiEndpoint="/packages/servicemaster"
           label="Type of service"
           value={formik.values.serviceTypes}
@@ -87,13 +87,7 @@ export default function FiltersComponent({
       return (
         <CustomAutoComplete
           isMulti={true}
-          sx={{
-            ".MuiInputBase-root": {
-              borderRadius: "24px",
-              border: "1px solid black",
-              backgroundColor: "white",
-            },
-          }}
+          sx={styles.inputBoxBorderStyles}
           apiEndpoint="/account/category-master"
           label="Category"
           value={formik.values.categories}
@@ -136,13 +130,8 @@ export default function FiltersComponent({
           : formik.values.upperPriceLimit;
       return (
         <TextField
-          sx={{
-            ".MuiInputBase-root": {
-              borderRadius: "24px",
-              border: "1px solid black",
-              backgroundColor: "white",
-            },
-          }}
+          color="secondary"
+          sx={styles.inputBoxBorderStyles}
           fullWidth
           name={data?.name}
           label={data?.label}
@@ -163,16 +152,11 @@ export default function FiltersComponent({
     case "SEARCH":
       return (
         <TextField
+          color="secondary"
           name="searchString"
           value={formik.values.searchString}
           onChange={formik.handleChange}
-          sx={{
-            ".MuiInputBase-root": {
-              borderRadius: "24px",
-              border: "1px solid black",
-              backgroundColor: "white",
-            },
-          }}
+          sx={styles.inputBoxBorderStyles}
           fullWidth
           id="standard-bare"
           variant="outlined"
@@ -217,13 +201,8 @@ export default function FiltersComponent({
           : formik.values.upperFollowerLimit;
       return (
         <TextField
-          sx={{
-            ".MuiInputBase-root": {
-              borderRadius: "24px",
-              border: "1px solid black",
-              backgroundColor: "white",
-            },
-          }}
+          color="secondary"
+          sx={styles.inputBoxBorderStyles}
           fullWidth
           id={data?.name}
           name={data?.name}
