@@ -4,10 +4,12 @@ import AcceptedOrders from "@/public/svg/acceptedOrders.svg?icon";
 import CompletedOrders from "@/public/svg/completedOrders.svg?icon";
 import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
 import TotalOrders from "@/public/svg/totalOrders.svg?icon";
+import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import StatusChip from "@/src/components/shared/statusChip";
 import { getService, postService } from "@/src/services/httpServices";
+import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 import {
   Box,
   Grid,
@@ -22,6 +24,7 @@ import {
   GridRenderCellParams,
   GridTreeNodeWithRender,
 } from "@mui/x-data-grid";
+import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -276,6 +279,20 @@ export default function BusinessDashboardPage() {
       },
     },
     {
+      field: "created_at",
+      headerName: "Order Date",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {dayjs(params?.row?.created_at).format(DISPLAY_DATE_FORMAT)}
+          </Typography>
+        );
+      },
+    },
+    {
       field: "rating",
       headerName: "Rating",
       flex: 1,
@@ -334,6 +351,7 @@ export default function BusinessDashboardPage() {
         </Grid>
         <Grid item xs={12}>
           {/* Filters bar */}
+          <FilterBar filters={filters} setFilters={setFilters} />
         </Grid>
         <Grid item xs={12}>
           <DataGrid
