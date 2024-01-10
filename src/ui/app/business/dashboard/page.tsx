@@ -27,6 +27,7 @@ import {
 } from "@mui/x-data-grid";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 
 export default function BusinessDashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -389,7 +390,7 @@ export default function BusinessDashboardPage() {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          {/* Filters bar */}
+          <FilterBar filters={filters} setFilters={setFilters} />
         </Grid>
         <Grid item xs={12}>
           <DataGrid
