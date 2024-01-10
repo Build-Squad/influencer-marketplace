@@ -28,6 +28,8 @@ import {
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
+import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import dayjs from "dayjs";
 
 export default function BusinessDashboardPage() {
   const [loading, setLoading] = useState(false);
@@ -325,6 +327,20 @@ export default function BusinessDashboardPage() {
               </IconButton>
             </Tooltip>
           </Box>
+        );
+      },
+    },
+    {
+      field: "created_at",
+      headerName: "Order Date",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {dayjs(params?.row?.created_at).format(DISPLAY_DATE_FORMAT)}
+          </Typography>
         );
       },
     },
