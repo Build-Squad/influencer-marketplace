@@ -14,12 +14,12 @@ import { notification } from "../shared/notification";
 import EmptyWalletIcon from "@/public/svg/No_wallets_connected.svg";
 import Image from "next/image";
 
-type Props = {
-  wallets: {
-    addr: string;
-    walletName: string;
-  }[];
-};
+type Props = {};
+
+type walletsType = {
+  addr: string;
+  walletName: string;
+}[];
 
 const styles = {
   headerCellStyle: {
@@ -31,24 +31,20 @@ const styles = {
   },
 };
 
-function createData(addr: string, walletName: string) {
-  return { addr, walletName };
-}
-
-const rows = [
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-];
-
-export default function WalletsTable({ wallets }: Props) {
-  const [userWallets, setUserWallets] = useState([]);
+export default function WalletsTable({}: Props) {
+  const [userWallets, setUserWallets] = useState<walletsType>();
   const getUserWallets = async () => {
     const { isSuccess, data, message } = await getService("/account/wallets/");
     if (isSuccess) {
-      setUserWallets(data?.data ?? []);
+      const allWallets = data?.data ?? [];
+
+      const wallets = allWallets.map((wal: any) => {
+        return {
+          addr: wal.wallet_address_id,
+          walletName: wal?.wallet_provider_id?.wallet_provider,
+        };
+      });
+      setUserWallets(wallets);
     } else {
       notification(message ? message : "Something went wrong", "error");
     }
@@ -78,8 +74,8 @@ export default function WalletsTable({ wallets }: Props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {userWallets.length ? (
-              rows.map((row, index) => (
+            {userWallets?.length ? (
+              userWallets?.map((row, index) => (
                 <TableRow
                   key={index}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}

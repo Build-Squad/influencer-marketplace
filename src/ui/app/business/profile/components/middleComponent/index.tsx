@@ -49,14 +49,17 @@ const ConnectWalletComponent = () => {
             sx={{
               borderRadius: "20px",
             }}
-            onClick={() => setWalletOpen(true)}
+            onClick={() => {
+              setWalletOpen(true);
+              setConnectWallet(true);
+            }}
           >
             Add Wallet
           </Button>
         </Box>
       </Box>
       <Box sx={{ mt: 2 }}>
-        <WalletsTable wallets={[]} />
+        <WalletsTable />
       </Box>
       <WalletConnectModal
         open={walletOpen}
