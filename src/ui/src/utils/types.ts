@@ -218,6 +218,7 @@ type OrderFilterType = {
   gt_rating?: string;
   lt_amount?: string;
   gt_amount?: string;
+  order_by?: string;
   objects?: {
     influencers?: UserType[];
     buyers?: UserType[];
