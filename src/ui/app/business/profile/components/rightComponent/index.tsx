@@ -1,9 +1,28 @@
 import { Box, Button, Typography, LinearProgress } from "@mui/material";
 import React from "react";
 
-type Props = {};
+type Props = {
+  userDetails: {
+    username: string;
+    isTwitterAccountConnected: boolean;
+    isWalletConnected: boolean;
+    businessDetails: {
+      username: string;
+    };
+  };
+};
+const getProfileCompletedStatus: (
+  userDetails: Props["userDetails"]
+) => string = (userDetails) => {
+  let count = 0;
+  if (userDetails.isTwitterAccountConnected) count += 5;
+  if (userDetails.isWalletConnected) count += 5;
+  // TODD: Calculate based on info added
+  if (userDetails.businessDetails) count += 7;
+  return `${count} / 20`;
+};
 
-export default function RightComponent({}: Props) {
+export default function RightComponent({ userDetails }: Props) {
   return (
     <Box
       sx={{
@@ -36,7 +55,7 @@ export default function RightComponent({}: Props) {
         <Box sx={{ textAlign: "center" }}>
           <Typography variant="subtitle1">Information Added</Typography>
           <Typography variant="h4" fontWeight={"bold"}>
-            18/20
+            {getProfileCompletedStatus(userDetails)}
           </Typography>
           <Box sx={{ width: "100%", mt: 2 }}>
             <LinearProgress
@@ -49,16 +68,17 @@ export default function RightComponent({}: Props) {
         <Box sx={{ mt: 3 }}>
           <Typography variant="h6">Missing Details-</Typography>
           <ul style={{ color: "#626262" }}>
-            <li>Lorem ipsum dolor sit amet</li>
-            <li style={{ marginTop: "12px" }}>
-              Consectetur eget ut ut commodo
-            </li>
-            <li style={{ marginTop: "12px" }}>nibh accumsan vestibulum sed</li>
-            <li style={{ marginTop: "12px" }}>
-              Volutpat nisi nisl sed odio lorem
-            </li>
-            <li style={{ marginTop: "12px" }}>Habitasse sapien vitae</li>
-            <li style={{ marginTop: "12px" }}>nibh accumsan vestibulum sed</li>
+            {!userDetails.isWalletConnected ? (
+              <li>Add wallet to your account</li>
+            ) : null}
+
+            {!userDetails.isTwitterAccountConnected ? (
+              <li>Connect your X Account</li>
+            ) : null}
+
+            {!userDetails.businessDetails.username ? (
+              <li>Add username</li>
+            ) : null}
           </ul>
         </Box>
       </Box>

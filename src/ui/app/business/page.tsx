@@ -40,6 +40,7 @@ export default function BusinessHome() {
     if (isSuccess) {
       const filteredData = data?.data?.map((inf: any) => {
         return {
+          id: inf.id,
           name: inf.name || "",
           twitterUsername: inf.user_name || "",
           profileUrl: inf.profile_image_url || "",

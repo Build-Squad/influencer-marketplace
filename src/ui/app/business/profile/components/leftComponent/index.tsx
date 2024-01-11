@@ -11,7 +11,14 @@ import Details_unselected from "@/public/svg/Details_unselected.svg";
 import Details from "@/public/svg/Details.svg";
 
 type Props = {
-  userName: string;
+  userDetails: {
+    username: string;
+    isTwitterAccountConnected: boolean;
+    isWalletConnected: boolean;
+    businessDetails: {
+      username: string;
+    };
+  };
 };
 
 type CardDetailsType = {
@@ -25,37 +32,41 @@ type CardDetailsType = {
   tabProgressString: string;
 };
 
-const CARD_DETAILS: CardDetailsType[] = [
-  {
-    tabName: "wallet",
-    icon: Connect_wallet,
-    disabledIcon: Connect_wallet_unselected,
-    heading: "Connect your web3 wallet",
-    subHeading:
-      "Connecting your wallet is a crucial step providing a high level of security for transactions.",
-    isMandatory: true,
-    tabProgressString: "0 / 5",
-  },
-  {
-    tabName: "connect_x",
-    icon: connect_x,
-    disabledIcon: connect_x_unselected,
-    heading: "Connect with X",
-    subHeading:
-      "Connecting with X helps influencers navigate your profile better for collaboration.",
-    isMandatory: false,
-    tabProgressString: "1 / 5",
-  },
-  {
-    tabName: "details",
-    icon: Details,
-    disabledIcon: Details_unselected,
-    heading: "Business Details",
-    subHeading: "Adding your details increases trust in your business.",
-    isMandatory: false,
-    tabProgressString: "0 / 5",
-  },
-];
+const getCardDetails: (
+  userDetails: Props["userDetails"]
+) => CardDetailsType[] = (userDetails) => {
+  return [
+    {
+      tabName: "wallet",
+      icon: Connect_wallet,
+      disabledIcon: Connect_wallet_unselected,
+      heading: "Connect your web3 wallet",
+      subHeading:
+        "Connecting your wallet is a crucial step providing a high level of security for transactions.",
+      isMandatory: true,
+      tabProgressString: `${userDetails.isWalletConnected ? 5 : 0} / 5`,
+    },
+    {
+      tabName: "connect_x",
+      icon: connect_x,
+      disabledIcon: connect_x_unselected,
+      heading: "Connect with X",
+      subHeading:
+        "Connecting with X helps influencers navigate your profile better for collaboration.",
+      isMandatory: false,
+      tabProgressString: `${userDetails.isTwitterAccountConnected ? 5 : 0} / 5`,
+    },
+    {
+      tabName: "details",
+      icon: Details,
+      disabledIcon: Details_unselected,
+      heading: "Business Details",
+      subHeading: "Adding your details increases trust in your business.",
+      isMandatory: false,
+      tabProgressString: "0 / 5",
+    },
+  ];
+};
 
 const styles = {
   cardContainer: {
@@ -68,7 +79,7 @@ const styles = {
   },
 };
 
-const CardComponent: React.FC<CardDetailsType> = ({
+const CardComponent = ({
   tabName,
   icon,
   disabledIcon,
@@ -76,7 +87,7 @@ const CardComponent: React.FC<CardDetailsType> = ({
   subHeading,
   isMandatory,
   tabProgressString,
-}) => {
+}: CardDetailsType) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isActive = searchParams.get("tab") === tabName;
@@ -115,22 +126,26 @@ const CardComponent: React.FC<CardDetailsType> = ({
   );
 };
 
-const LeftComponent: React.FC<Props> = ({ userName }) => (
-  <Box
-    sx={{
-      height: "100%",
-      padding: "20px 16px 20px 40px",
-      border: "1px solid #D3D3D3",
-      borderTop: "none",
-    }}
-  >
-    <Typography variant="h6" sx={{ ml: 1 }}>
-      {userName}
-    </Typography>
-    {CARD_DETAILS.map((item: CardDetailsType, index: number) => (
-      <CardComponent key={index} {...item} />
-    ))}
-  </Box>
-);
+const LeftComponent = ({ userDetails }: Props) => {
+  return (
+    <Box
+      sx={{
+        height: "100%",
+        padding: "20px 16px 20px 40px",
+        border: "1px solid #D3D3D3",
+        borderTop: "none",
+      }}
+    >
+      <Typography variant="h6" sx={{ ml: 1 }}>
+        {userDetails.username}
+      </Typography>
+      {getCardDetails(userDetails).map(
+        (item: CardDetailsType, index: number) => (
+          <CardComponent key={index} {...item} />
+        )
+      )}
+    </Box>
+  );
+};
 
 export default LeftComponent;

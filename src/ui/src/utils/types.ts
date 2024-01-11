@@ -126,6 +126,7 @@ type UserType = {
   username: string | null;
   role: RoleType;
   twitter_account: TwitterAccountType | null;
+  wallets: WalletType[] | null;
 };
 
 type ServiceCheckOutType = {

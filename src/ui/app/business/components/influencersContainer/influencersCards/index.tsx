@@ -9,12 +9,14 @@ import {
 } from "@mui/material";
 import React from "react";
 import { TopInfluencersType } from "../types";
+import { useRouter } from "next/navigation";
 
 type Props = {
   influencer: TopInfluencersType;
 };
 
 export default function InfluencersCards({ influencer }: Props) {
+  const router = useRouter();
   return (
     <Grid
       item
@@ -29,6 +31,9 @@ export default function InfluencersCards({ influencer }: Props) {
           cursor: "pointer",
           borderRadius: "16px",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
+        }}
+        onClick={() => {
+          router.push(`/influencer/profile/${influencer?.id}`);
         }}
       >
         <CardContent

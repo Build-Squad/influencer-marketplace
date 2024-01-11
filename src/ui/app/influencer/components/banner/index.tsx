@@ -31,7 +31,7 @@ export default function Banner({}: Props) {
             alt={"Coloured Start"}
           />
           <Typography variant="subtitle1" sx={{ marginTop: "32px" }}>
-            Monetize your Twitter Influence
+            Monetize your X Influence
           </Typography>
           <Typography
             variant="h4"
@@ -39,7 +39,7 @@ export default function Banner({}: Props) {
             sx={{ marginTop: "8px", lineHeight: "60px" }}
           >
             Connect, Create, Thrive:
-            <br /> Amplify Your Twitter Influence with Business Collaborations!
+            <br /> Amplify Your X Influence with Business Collaborations!
             <Image src={Arrow} height={24} width={70} alt={"Coloured Star"} />
           </Typography>
           {user?.loggedIn ? null : (
