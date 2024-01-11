@@ -29,14 +29,12 @@ export default function BusinessProfile({}: Props) {
         username: user?.username ?? "",
       },
     });
-  }, []);
+  }, [user]);
 
   return (
     <Grid container sx={{ height: "100vh" }}>
       <Grid item xs={12} sm={12} md={3} lg={3}>
-        <LeftComponent
-          userDetails={userDetails}
-        />
+        <LeftComponent userDetails={userDetails} />
       </Grid>
       <Grid
         item
@@ -49,7 +47,7 @@ export default function BusinessProfile({}: Props) {
         <MiddleComponent />
       </Grid>
       <Grid item xs={12} sm={12} md={3} lg={3}>
-        <RightComponent userDetails={userDetails}/>
+        <RightComponent userDetails={userDetails} />
       </Grid>
     </Grid>
   );
