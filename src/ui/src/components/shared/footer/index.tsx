@@ -36,8 +36,8 @@ const Footer = () => {
         <Typography sx={styles.footerText}>
           XFluencer: Where influencers monetize tweets, likes, and retweets, and
           businesses effortlessly discover and purchase impactful social media
-          services on Twitter. Bridging the gap for seamless collaborations.
-          Elevate your Twitter presence with XFluencer.
+          services on X. Bridging the gap for seamless collaborations.
+          Elevate your X presence with XFluencer.
         </Typography>
         <Typography sx={styles.copyright}>
           © 2020, All Rights Reserved

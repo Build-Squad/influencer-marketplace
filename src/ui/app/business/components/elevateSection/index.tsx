@@ -32,7 +32,7 @@ export default function FAQSection({}: Props) {
             {[
               "Impactful Services",
               "Decentralized Community",
-              "Twitter Web3 Influencers",
+              "X Web3 Influencers",
             ].map((item, ind) => {
               return (
                 <Box
@@ -78,11 +78,11 @@ export default function FAQSection({}: Props) {
       >
         <Box sx={{ flex: 1, textAlign: "left" }}>
           <Typography variant="h4" fontWeight={"bold"}>
-            Tailored Services from Twitter Web3 Influencers:
+            Tailored Services from X Web3 Influencers:
           </Typography>
           <Typography sx={{ mt: 3 }} variant="h6">
             Xfluencer is not just another influencer marketplace—it's a
-            dedicated space for Twitter Web3 influencers.
+            dedicated space for X Web3 influencers.
           </Typography>
           <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
             <CheckCircle
@@ -102,7 +102,7 @@ export default function FAQSection({}: Props) {
             <Typography variant="h6">
               Choose from a range of services including posts, reposts, replies,
               pinned tweets, likes, and quoted posts, all delivered by
-              influencers with a proven track record on Twitter.
+              influencers with a proven track record on X.
             </Typography>
           </Box>
         </Box>

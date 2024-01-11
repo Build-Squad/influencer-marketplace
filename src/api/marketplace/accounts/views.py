@@ -674,13 +674,13 @@ class UserDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    @swagger_auto_schema(request_body=UserCreateSerializer)
+    @swagger_auto_schema(request_body=UserSerializer)
     def put(self, request, pk):
         try:
             user = self.get_object(pk)
             if user is None:
                 return handleNotFound("User")
-            serializer = UserCreateSerializer(instance=user, data=request.data)
+            serializer = UserSerializer(instance=user, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(

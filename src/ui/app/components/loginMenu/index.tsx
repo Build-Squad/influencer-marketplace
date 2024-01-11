@@ -1,10 +1,11 @@
 "use client";
 
-import { List, ListItem, Menu } from "@mui/material";
+import { Box, List, ListItem, Menu } from "@mui/material";
 import * as React from "react";
 import ProfileIcon from "@/public/svg/Profile.svg";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { LoginRounded } from "@mui/icons-material";
 import { useAppSelector } from "@/src/hooks/useRedux";
 
 type LoginMenuProps = {
@@ -90,13 +91,20 @@ export default function LoginMenu({
 
   return (
     <>
-      <Image
-        src={ProfileIcon}
-        alt={"Profile Icon"}
-        height={34}
-        onClick={handleClick}
-        style={{ cursor: "pointer" }}
-      />
+      {isTwitterUserLoggedIn ? (
+        <Image
+          src={ProfileIcon}
+          alt={"Profile Icon"}
+          height={34}
+          onClick={handleClick}
+          style={{ cursor: "pointer" }}
+        />
+      ) : (
+        <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
+          <LoginRounded />
+        </Box>
+      )}
+
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}

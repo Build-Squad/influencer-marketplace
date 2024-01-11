@@ -10,10 +10,10 @@ import { resetCart } from "../reducers/cartSlice";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// Hook for handling user login/signup via Twitter
+// Hook for handling user login/signup via X
 export default function useTwitterAuth() {
   const dispatch = useAppDispatch();
-  // State to track whether the user is logged in via Twitter
+  // State to track whether the user is logged in via X
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
   const [isAccountSetupComplete, setIsAccountSetupComplete] = useState(true);
   const [userDetails, setUserDetails] = useState(null);
@@ -29,7 +29,7 @@ export default function useTwitterAuth() {
     }
   }, [isTwitterUserLoggedIn]);
 
-  // Function to initiate Twitter user authentication
+  // Function to initiate X user authentication
   const startTwitterAuthentication = async () => {
     try {
       window.location.href = `${BACKEND_URL}auth-twitter-user/`;
@@ -38,7 +38,7 @@ export default function useTwitterAuth() {
     }
   };
 
-  // Function to logout the Twitter user
+  // Function to logout the X user
   const logoutTwitterUser = async () => {
     try {
       await axios.get(`${BACKEND_URL}logout/`, { withCredentials: true });
@@ -51,7 +51,7 @@ export default function useTwitterAuth() {
     }
   };
 
-  // Function to check if the Twitter user is authenticated
+  // Function to check if the X user is authenticated
   const checkTwitterUserAuthentication = async () => {
     try {
       const { isSuccess, data } = await getServicewithCredentials("account/");
