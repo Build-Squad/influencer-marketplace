@@ -36,7 +36,13 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Grid container spacing={2}>
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          p: 2,
+        }}
+      >
         <Grid
           item
           xs={12}
@@ -454,7 +460,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
         sx={{
           display: "flex",
           flexWrap: "wrap",
-          mt: 2,
+          mt: 1,
           px: 2,
         }}
       >

@@ -63,8 +63,7 @@ export default function CheckoutPage() {
         body
       );
       if (isSuccess) {
-        notification(message, "success");
-        dispatch(resetCart());
+        notification("Order Details saved successfully!", "success");
       } else {
         notification(message, "error");
       }
