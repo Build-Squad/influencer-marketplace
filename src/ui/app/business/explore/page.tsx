@@ -8,6 +8,7 @@ import Footer from "@/src/components/shared/footer";
 import InfluencersCards from "../components/influencersContainer/influencersCards";
 
 type TopInfluencersType = {
+  id: string;
   name: string;
   twitterUsername: string;
   profileUrl: string;
@@ -21,6 +22,7 @@ type Props = {};
 
 const dummyData: Array<TopInfluencersType> = [
   {
+    id: "1",
     name: "Parikshit Singh",
     twitterUsername: "ParikshitSingh567",
     profileUrl:
@@ -31,6 +33,7 @@ const dummyData: Array<TopInfluencersType> = [
     maxPrice: 500,
   },
   {
+    id: "2",
     name: "Shyam Visamsetty",
     twitterUsername: "shyamvisamsetty",
     profileUrl:
@@ -41,6 +44,7 @@ const dummyData: Array<TopInfluencersType> = [
     maxPrice: 200,
   },
   {
+    id: "3",
     name: "Mudit Sethi",
     twitterUsername: "alphamudit",
     profileUrl:
@@ -51,6 +55,7 @@ const dummyData: Array<TopInfluencersType> = [
     maxPrice: 2800,
   },
   {
+    id: "4",
     name: "Laxmi Jangid",
     twitterUsername: "laxjangid1",
     profileUrl:
@@ -61,6 +66,7 @@ const dummyData: Array<TopInfluencersType> = [
     maxPrice: 34400,
   },
   {
+    id: "5",
     name: "Mudit Sethi",
     twitterUsername: "alphamudit",
     profileUrl:
@@ -71,6 +77,7 @@ const dummyData: Array<TopInfluencersType> = [
     maxPrice: 2800,
   },
   {
+    id: "6",
     name: "Laxmi Jangid",
     twitterUsername: "laxjangid1",
     profileUrl:
@@ -81,6 +88,7 @@ const dummyData: Array<TopInfluencersType> = [
     maxPrice: 34400,
   },
   {
+    id: "7",
     name: "Parikshit Singh",
     twitterUsername: "ParikshitSingh567",
     profileUrl:
@@ -91,6 +99,7 @@ const dummyData: Array<TopInfluencersType> = [
     maxPrice: 500,
   },
   {
+    id: "8",
     name: "Shyam Visamsetty",
     twitterUsername: "shyamvisamsetty",
     profileUrl:
