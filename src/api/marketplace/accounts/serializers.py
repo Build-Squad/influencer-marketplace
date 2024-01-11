@@ -98,12 +98,43 @@ class AccountLanguageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class WalletProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletProvider
+        fields = "__all__"
+
+
+class WalletNetworkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletNetwork
+        fields = "__all__"
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    wallet_provider_id = WalletProviderSerializer(read_only=True)
+    wallet_network_id = WalletNetworkSerializer(read_only=True)
+
+    # Truncate the address to first 4 and last 4 characters
+    wallet_address_id = serializers.SerializerMethodField()
+
+    def get_wallet_address_id(self, wallet):
+        if wallet.wallet_address_id:
+            return truncateWalletAddress(wallet.wallet_address_id)
+        return None
+
+    class Meta:
+        model = Wallet
+        fields = "__all__"
+
+
 class UserSerializer(serializers.ModelSerializer):
     twitter_account = TwitterAccountSerializer(read_only=True)
     role = RoleSerializer(read_only=True)
     account_languages = AccountLanguageSerializer(
         many=True, read_only=True, source="acc_user_account_id"
     )
+    username = serializers.CharField(required=False)
+    wallets = WalletSerializer(many=True, read_only=True, source="wallet_user_id")
 
     class Meta:
         model = User
@@ -123,7 +154,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TwitterReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = TwitterAccount
-        fields = ('id', 'twitter_id', 'name', 'user_name')
+        fields = ("id", "twitter_id", "name", "user_name")
 
 
 class InfluencerSerializer(serializers.ModelSerializer):
@@ -132,7 +163,8 @@ class InfluencerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'twitter_account')
+        fields = ("id", "first_name", "last_name", "twitter_account")
+
 
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -179,8 +211,7 @@ class WalletConnectSerializer(serializers.Serializer):
             wallet_provider = WalletProvider.objects.get(wallet_provider=name)
             return wallet_provider
         except WalletProvider.DoesNotExist:
-            wallet_provider = WalletProvider.objects.create(
-                wallet_provider=name)
+            wallet_provider = WalletProvider.objects.create(wallet_provider=name)
             wallet_provider.save()
             return wallet_provider
 
@@ -215,32 +246,3 @@ class WalletConnectSerializer(serializers.Serializer):
         )
 
         return wallet
-
-
-class WalletProviderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WalletProvider
-        fields = "__all__"
-
-
-class WalletNetworkSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WalletNetwork
-        fields = "__all__"
-
-
-class WalletSerializer(serializers.ModelSerializer):
-    wallet_provider_id = WalletProviderSerializer(read_only=True)
-    wallet_network_id = WalletNetworkSerializer(read_only=True)
-
-    # Truncate the address to first 4 and last 4 characters
-    wallet_address_id = serializers.SerializerMethodField()
-
-    def get_wallet_address_id(self, wallet):
-        if wallet.wallet_address_id:
-            return truncateWalletAddress(wallet.wallet_address_id)
-        return None
-
-    class Meta:
-        model = Wallet
-        fields = "__all__"

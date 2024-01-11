@@ -14,6 +14,8 @@ import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import WalletConnectModal from "@/src/components/walletConnectModal";
+import { putService } from "@/src/services/httpServices";
+import { notification } from "@/src/components/shared/notification";
 
 type Props = {};
 
@@ -103,7 +105,6 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
           }}
           onClick={() => {
             logoutTwitterUser();
-            console.log(pathname);
             window.location.href = `${pathname}?tab=${tabName}`;
           }}
         >
@@ -143,6 +144,31 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
 };
 
 const DetailsComponent = () => {
+  const user = useAppSelector((state) => state.user?.user);
+  const [formData, setFormData] = useState({
+    businessName: "",
+    username: "",
+  });
+
+  // TODO: Apply debouncing and call update user details API
+  const handleChange = async (e: any) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { isSuccess, message, data } = await putService(
+      `/account/user/${user?.id}/`,
+      {
+        // Replace this with formData fields
+        username: formData.username,
+      }
+    );
+    if (isSuccess) {
+      console.log(data);
+    } else {
+      notification(
+        message ? message : "Something went wrong, try again later",
+        "error"
+      );
+    }
+  };
   return (
     <Box>
       <Typography variant="h6">Basic Details</Typography>
@@ -154,7 +180,14 @@ const DetailsComponent = () => {
       >
         Business name
       </Typography>
-      <TextField fullWidth variant="standard" />
+      <TextField
+        color="secondary"
+        fullWidth
+        name="businessName"
+        variant="standard"
+        onChange={handleChange}
+        value={formData.businessName}
+      />
       <Typography
         variant="subtitle1"
         fontWeight={"bold"}
@@ -162,23 +195,14 @@ const DetailsComponent = () => {
       >
         Username
       </Typography>
-      <TextField fullWidth variant="standard" />
-      <Typography
-        variant="subtitle1"
-        fontWeight={"bold"}
-        sx={{ mt: 2, color: "#C7C7C7" }}
-      >
-        Status
-      </Typography>
-      <TextField fullWidth variant="standard" />
-      <Typography
-        variant="subtitle1"
-        fontWeight={"bold"}
-        sx={{ mt: 2, color: "#C7C7C7" }}
-      >
-        Location
-      </Typography>
-      <TextField fullWidth variant="standard" />
+      <TextField
+        color="secondary"
+        fullWidth
+        name="username"
+        variant="standard"
+        onChange={handleChange}
+        value={formData.username}
+      />
     </Box>
   );
 };

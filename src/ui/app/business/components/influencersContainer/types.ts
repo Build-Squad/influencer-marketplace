@@ -1,4 +1,5 @@
 export type TopInfluencersType = {
+  id:string;
   name: string;
   twitterUsername: string;
   profileUrl: string;
