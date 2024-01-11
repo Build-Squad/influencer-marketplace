@@ -49,13 +49,18 @@ class OrderList(APIView):
             serializer = CreateOrderSerializer(
                 data=request.data, context={'request': request})
             if serializer.is_valid():
-                # Check that the requested account has atleast one wallet connected
-                # If not, then return error
-                # If yes, then create the order
-                wallets = Wallet.objects.filter(
-                    user_id=self.request.user_account)
-                if wallets.count() == 0:
-                    return handleBadRequest({"wallet": "No wallet is connected to the account. Please add a wallet to the account."})
+                draft_order = Order.objects.filter(
+                    buyer=self.request.user_account, status='draft')
+                if draft_order.exists():
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You already have an active draft order. Please complete that order first.",
+                            "data": None,
+                            "errors": "You already have an active draft order. Please complete that order first.",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 serializer.save()
                 return Response(
                     {
