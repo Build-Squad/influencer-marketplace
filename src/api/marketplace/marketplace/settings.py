@@ -135,7 +135,6 @@ INSTALLED_APPS = [
     "orders",
     "corsheaders",
     "drf_yasg",
-    "storages",
 ]
 
 MIDDLEWARE = [
@@ -193,57 +192,6 @@ AWS_SES_REGION_ENDPOINT = config("AWS_SES_REGION_ENDPOINT")
 USE_SES_V2 = True
 
 
-# S3 Bucket
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-
-# Media files (user uploaded files)
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "access_key": config('AWS_ACCESS_KEY'),
-            "secret_key": config('AWS_ACCESS_SECRET_KEY'),
-            "bucket_name": config('AWS_STORAGE_BUCKET_NAME'),
-        },
-    },
-    "static": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "access_key": config('AWS_ACCESS_KEY'),
-            "secret_key": config('AWS_ACCESS_SECRET_KEY'),
-            "bucket_name": config('AWS_STORAGE_BUCKET_NAME'),
-        },
-        "LOCATION": "static",
-    },
-    "media": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "access_key": config('AWS_ACCESS_KEY'),
-            "secret_key": config('AWS_ACCESS_SECRET_KEY'),
-            "bucket_name": config('AWS_STORAGE_BUCKET_NAME'),
-        },
-        "LOCATION": "media",
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "access_key": config('AWS_ACCESS_KEY'),
-            "secret_key": config('AWS_ACCESS_SECRET_KEY'),
-            "bucket_name": config('AWS_STORAGE_BUCKET_NAME'),
-        },
-        "LOCATION": "staticfiles",
-    }
-}
-
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -293,19 +241,15 @@ USE_TZ = True
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # web accessible folder
-# STATIC_ROOT = '/home/xidev/xfluencer/influencer-marketplace/src/api/marketplace/static/'
+STATIC_ROOT = '/home/xidev/xfluencer/influencer-marketplace/src/api/marketplace/static/'
 # URL prefix for static files.
-# STATIC_URL = 'static/'
+STATIC_URL = 'static/'
 # List of finder classes that know how to find static files in
 # various locations.
-# STATICFILES_FINDERS = (
-#   'django.contrib.staticfiles.finders.FileSystemFinder',
-#   'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#   'storages.backends.s3boto3.S3Boto3Storage',
-# )
-
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/staticfiles/'
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 AUTH_USER_MODEL = "accounts.User"
 ACCOUNT_AUTHENTICATION_METHOD = "email"
