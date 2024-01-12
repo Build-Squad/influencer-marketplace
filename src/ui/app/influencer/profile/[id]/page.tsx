@@ -3,7 +3,7 @@
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import { notification } from "@/src/components/shared/notification";
-import WalletConnectModal from "@/src/components/walletConnectModal";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { getService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
