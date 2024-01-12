@@ -50,7 +50,7 @@ class OrderList(APIView):
                 data=request.data, context={'request': request})
             if serializer.is_valid():
                 draft_order = Order.objects.filter(
-                    buyer=self.request.user_account, status='draft')
+                    buyer=self.request.user_account, status='draft', deleted_at=None)
                 if draft_order.exists():
                     return Response(
                         {
@@ -88,15 +88,15 @@ class OrderListView(APIView):
             role = request.user_account.role
             if role.name == "business_owner":
                 orders = Order.objects.filter(
-                    Q(buyer=user)
+                    Q(buyer=user), deleted_at=None
                 ).distinct()
             elif role.name == "influencer":
                 # For all the order items, there will be a package in it and the package willl have influencer id
                 order_items = OrderItem.objects.filter(
-                    Q(package__influencer=user)
+                    Q(package__influencer=user), deleted_at=None
                 ).distinct()
                 orders = Order.objects.filter(
-                    Q(order_item_order_id__in=order_items)
+                    Q(order_item_order_id__in=order_items), deleted_at=None
                 ).distinct()
 
             accepted = orders.filter(status="accepted").count()
@@ -133,15 +133,15 @@ class OrderListView(APIView):
             role = request.user_account.role
             if role.name == "business_owner":
                 orders = Order.objects.filter(
-                    Q(buyer=user)
+                    Q(buyer=user), deleted_at=None
                 ).distinct()
             elif role.name == "influencer":
                 # For all the order items, there will be a package in it and the package willl have influencer id
                 order_items = OrderItem.objects.filter(
-                    Q(package__influencer=user)
+                    Q(package__influencer=user), deleted_at=None
                 ).distinct()
                 orders = Order.objects.filter(
-                    Q(order_item_order_id__in=order_items)
+                    Q(order_item_order_id__in=order_items), deleted_at=None
                 ).distinct()
 
             if 'influencers' in filters:
@@ -191,9 +191,10 @@ class OrderListView(APIView):
 
 # Retrieve-Update-Destroy API
 class OrderDetail(APIView):
+    authentication_classes = [JWTAuthentication]
     def get_object(self, pk):
         try:
-            return Order.objects.get(pk=pk)
+            return Order.objects.get(pk=pk, deleted_at=None)
         except Order.DoesNotExist:
             return None
 
@@ -214,23 +215,36 @@ class OrderDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
-
-    @swagger_auto_schema(request_body=OrderSerializer)
+    @swagger_auto_schema(request_body=CreateOrderSerializer)
     def put(self, request, pk):
         try:
             order = self.get_object(pk)
             if order is None:
                 return handleNotFound("Order")
-            serializer = OrderSerializer(instance=order, data=request.data)
+
+            if order.status != 'draft' and order.status != 'pending':
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Order defails cannot be updated as payment has been made",
+                        "data": None,
+                        "errors": "Order defails cannot be updated as payment has been made",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            serializer = CreateOrderSerializer(
+                instance=order, data=request.data, context={'request': request})
+
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
                         "data": OrderSerializer(serializer.instance).data,
-                        "message": "Order updated successfully",
+                        "message": "Order created successfully",
                     },
-                    status=status.HTTP_200_OK,
+                    status=status.HTTP_201_CREATED,
                 )
             else:
                 return handleBadRequest(serializer.errors)
@@ -345,6 +359,7 @@ class OrderItemDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+    authentication_classes = [JWTAuthentication]
     def delete(self, request, pk):
         try:
             orderItem = self.get_object(pk)
