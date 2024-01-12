@@ -65,10 +65,15 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
         source="cat_twitter_account_id", many=True, read_only=True
     )
     service_types = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
 
     class Meta:
         model = TwitterAccount
         exclude = ("access_token",)
+
+    def get_user_id(self, twitter_account):
+        user = User.objects.filter(twitter_account=twitter_account)
+        return user[0].id
 
     def get_service_types(self, twitter_account):
         services = Service.objects.filter(

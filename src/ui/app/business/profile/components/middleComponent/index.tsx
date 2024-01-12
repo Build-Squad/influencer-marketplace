@@ -61,7 +61,7 @@ const ConnectWalletComponent = () => {
         </Box>
       </Box>
       <Box sx={{ mt: 2 }}>
-        <WalletsTable />
+        <WalletsTable walletOpen={walletOpen} />
       </Box>
       <WalletConnectModal
         open={walletOpen}
