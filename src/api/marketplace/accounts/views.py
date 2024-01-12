@@ -963,6 +963,17 @@ class OTPAuth(APIView):
                 otp_service = OTPAuthenticationService()
                 otp, otp_expiration = otp_service.generateOTP()
                 if user:
+                    # Only allow a business owner to login
+                    if user.role.name != "business_owner":
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "data": None,
+                                "message": "Only business owners can login via email",
+                                "errors": "Only business owners can login via email",
+                            },
+                            status=status.HPPT_403_FORBIDDEN,
+                        )
                     user.otp = otp
                     user.otp_expiration = otp_expiration
                     user.save()
@@ -1255,11 +1266,23 @@ class WalletAuth(APIView):
                         serializer.validated_data["wallet_address_id"], "business_owner"
                     )
                     wallet.user_id = user
+                    wallet.is_primary = True  # Mark the wallet as primary
                     wallet.save()
                 else:
                     user = User.objects.get(username=wallet.user_id)
                 wallet = self.get_wallet(request.data["wallet_address_id"])
                 user = User.objects.get(username=wallet.user_id)
+                # Only allow business owners to login
+                if user.role.name != "business_owner":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Only business owners can login via wallet",
+                            "errors": "Only business owners can login via wallet",
+                        },
+                        status=status.HPPT_403_FORBIDDEN,
+                    )
                 jwt_operations = JWTOperations()
                 user_id = str(user.id)
                 payload = {
