@@ -1,5 +1,6 @@
-import { Box } from "@mui/material";
-import React from "react";
+"use client";
+import { Box, Chip, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import {
   TableRow,
   TableHead,
@@ -8,13 +9,18 @@ import {
   TableBody,
   Table,
 } from "@mui/material";
+import { getService } from "@/src/services/httpServices";
+import { notification } from "../shared/notification";
+import EmptyWalletIcon from "@/public/svg/No_wallets_connected.svg";
+import Image from "next/image";
 
-type Props = {
-  wallets: {
-    addr: string;
-    walletName: string;
-  }[];
-};
+type Props = {};
+
+type walletsType = {
+  addr: string;
+  walletName: string;
+  isPrimary: boolean;
+}[];
 
 const styles = {
   headerCellStyle: {
@@ -26,19 +32,30 @@ const styles = {
   },
 };
 
-function createData(addr: string, walletName: string) {
-  return { addr, walletName };
-}
+export default function WalletsTable({}: Props) {
+  const [userWallets, setUserWallets] = useState<walletsType>();
+  const getUserWallets = async () => {
+    const { isSuccess, data, message } = await getService("/account/wallets/");
+    if (isSuccess) {
+      const allWallets = data?.data ?? [];
 
-const rows = [
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-  createData("CugBzHRdQiDahHp6n89rxs9SRoQdH9BNZYKj9YTjFQbp", "Phantom"),
-];
+      const wallets = allWallets.map((wal: any) => {
+        return {
+          addr: wal.wallet_address_id,
+          walletName: wal?.wallet_provider_id?.wallet_provider,
+          isPrimary: wal?.is_primary,
+        };
+      });
+      setUserWallets(wallets);
+    } else {
+      notification(message ? message : "Something went wrong", "error");
+    }
+  };
 
-export default function WalletsTable({ wallets }: Props) {
+  useEffect(() => {
+    getUserWallets();
+  }, []);
+
   return (
     <Box>
       <TableContainer>
@@ -59,19 +76,55 @@ export default function WalletsTable({ wallets }: Props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, index) => (
-              <TableRow
-                key={index}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell align="left" sx={styles.bodyCellStyle}>
-                  {row.addr}
-                </TableCell>
-                <TableCell align="left" sx={styles.bodyCellStyle}>
-                  {row.walletName}
+            {userWallets?.length ? (
+              userWallets?.map((row, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    "&:last-child td, &:last-child th": { border: 0 },
+                    backgroundColor: row.isPrimary
+                      ? "rgba(162, 229, 235, 0.40)"
+                      : "inherit",
+                  }}
+                >
+                  <TableCell align="left" sx={styles.bodyCellStyle}>
+                    {row.addr}
+                    {row.isPrimary ? (
+                      <Chip
+                        sx={{ ml: 1, backgroundColor: "#9AE3E9" }}
+                        label="primary"
+                        size="small"
+                      />
+                    ) : null}
+                  </TableCell>
+                  <TableCell align="left" sx={styles.bodyCellStyle}>
+                    {row.walletName}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={2}>
+                  <Box
+                    sx={{
+                      paddingY: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Image
+                      src={EmptyWalletIcon}
+                      alt="existing_user_account"
+                      width="64"
+                    />
+                    <Typography variant="subtitle1" sx={{ mt: 1 }}>
+                      No Wallets Connected
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>

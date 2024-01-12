@@ -47,7 +47,7 @@ export default function Banner({}: Props) {
           style={{ marginBottom: "8px" }}
         />
         <Typography variant="body1">
-          Strategically Match Your Business with Twitter's Finest Influencers.
+          Strategically Match Your Business with X's Finest Influencers.
         </Typography>
       </Box>
       <Box

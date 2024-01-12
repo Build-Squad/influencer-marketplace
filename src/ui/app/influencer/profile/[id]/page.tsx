@@ -333,7 +333,7 @@ const ProfileLayout = ({
                           justifyContent: "space-between",
                         }}
                       >
-                        <Typography>Joined Twitter On</Typography>
+                        <Typography>Joined X On</Typography>
                         <Typography
                           sx={{
                             fontWeight: "bold",
