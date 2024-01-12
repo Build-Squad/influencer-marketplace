@@ -22,6 +22,8 @@ services:
       - POSTGRES_PASSWORD=xsdrt1768
       - DJANGO_SETTINGS_MODULE=marketplace.settings
       - PYTHONPATH=/api/marketplace
+      - AWS_S3_REGION_NAME=us-east-2
+      - AWS_STORAGE_BUCKET_NAME=xfluencer
 
   ui:
     build:
