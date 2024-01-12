@@ -231,10 +231,18 @@ STORAGES = {
         },
         "LOCATION": "media",
     },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": config('AWS_ACCESS_KEY'),
+            "secret_key": config('AWS_ACCESS_SECRET_KEY'),
+            "bucket_name": config('AWS_STORAGE_BUCKET_NAME'),
+        },
+        "LOCATION": "staticfiles",
+    }
 }
 
-DEFAULT_FILE_STORAGE = "storages.default"
-STATICFILES_STORAGE = "storages.static"
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -290,14 +298,14 @@ USE_TZ = True
 # STATIC_URL = 'static/'
 # List of finder classes that know how to find static files in
 # various locations.
-STATICFILES_FINDERS = (
-  'django.contrib.staticfiles.finders.FileSystemFinder',
-  'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-  'storages.backends.s3boto3.S3Boto3Storage',
-)
+# STATICFILES_FINDERS = (
+#   'django.contrib.staticfiles.finders.FileSystemFinder',
+#   'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#   'storages.backends.s3boto3.S3Boto3Storage',
+# )
 
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/staticfiles/'
 
 AUTH_USER_MODEL = "accounts.User"
 ACCOUNT_AUTHENTICATION_METHOD = "email"
