@@ -180,12 +180,13 @@ type InfleuncerType = {
 };
 
 type OrderItemMetaDataType = {
-  id: string;
+  id?: string;
   label: string;
   span: number;
   field_type: string;
-  value: string;
-  order_item: string;
+  value: string | null;
+  order_item?: string;
+  service_master_meta_data_id: string;
 };
 
 type OrderItemType = {
@@ -193,12 +194,11 @@ type OrderItemType = {
   package: PackageType;
   service_master: ServiceMasterType;
   currency: CurrencyType;
-  quantity: null;
-  status: null;
   price: string;
-  created_at: Date;
+  created_at: Date | string;
   platform_fee: string;
-  order_id: string;
+  platform_price: string;
+  order_id?: string;
   order_item_meta_data: OrderItemMetaDataType[];
 };
 
