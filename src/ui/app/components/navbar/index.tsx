@@ -226,7 +226,7 @@ export default function Navbar({
         boxShadow: "none",
         borderBottom: "1px solid #D3D3D3",
         position: "sticky",
-        top:0,
+        top: 0,
         zIndex: 2,
       }}
     >
@@ -309,7 +309,7 @@ export default function Navbar({
                 />
               )
             ) : (
-              <MenuItemsComponent items={["Home"]} />
+              <MenuItemsComponent items={["Home", "Explore"]} />
             )}
             <LoginMenu
               isTwitterUserLoggedIn={isTwitterUserLoggedIn}
