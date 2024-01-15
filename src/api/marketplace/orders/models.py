@@ -4,6 +4,8 @@ from django.db.models import SET_NULL
 from django.conf import settings
 from core.models import Currency
 from packages.models import Package, ServiceMaster
+from django.utils import timezone
+
 
 class Order(models.Model):
 
@@ -25,12 +27,25 @@ class Order(models.Model):
     status = models.CharField(choices=STATUS_CHOICES,
                               max_length=50, default='draft')
     created_at = models.DateTimeField(auto_now_add=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "order" 
 
     def __str__(self):
         return (self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
+
+    # Delete only if draft
+    def delete(self, *args, **kwargs):
+        """
+        1. Soft delete the order
+        2. Only if the order is in draft status
+        """
+        if self.status == 'draft':
+            self.deleted_at = timezone.now()
+            self.save()
+        else:
+            raise Exception('Cannot delete order after payment is made')
 
 class OrderItem(models.Model):
     
@@ -46,12 +61,25 @@ class OrderItem(models.Model):
         Package, related_name='order_item_package_id', on_delete=SET_NULL, null=True)
     platform_fee = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "order_item" 
 
     def __str__(self):
         return (self.service_master.name if self.service_master else 'No service master') + " - " + (self.status if self.status else 'No status') + " - " + str(self.created_at)
+
+    def delete(self, *args, **kwargs):
+        """
+        1. Soft delete the order item
+        2. Only if the order item is in draft status
+        """
+        # Check that the order is in draft status
+        if self.order_id.status == 'draft':
+            self.deleted_at = timezone.now()
+            self.save()
+        else:
+            raise Exception('Cannot delete order item after payment is made')
 
 class OrderAttachment(models.Model):
     

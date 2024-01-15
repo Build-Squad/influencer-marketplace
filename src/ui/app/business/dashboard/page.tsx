@@ -36,7 +36,7 @@ export default function BusinessDashboardPage() {
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
-    status: ["accepted"],
+    status: ["accepted", "rejected", "pending", "completed"],
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
@@ -48,7 +48,7 @@ export default function BusinessDashboardPage() {
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 5,
+    current_page_size: 10,
   });
 
   const getOrders = async () => {
