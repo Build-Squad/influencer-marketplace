@@ -365,7 +365,7 @@ export default function Orders() {
     if (status) {
       setActionLoading(true);
       const { isSuccess, data, message } = await putService(
-        `orders/order/${orderId}/`,
+        `orders/update-status/${orderId}/`,
         {
           status,
         }

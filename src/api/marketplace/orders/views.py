@@ -37,7 +37,6 @@ from rest_framework import status
 from django.db.models import Q
 
 
-
 # ORDER API-Endpoint
 # List-Create-API
 class OrderList(APIView):
@@ -47,10 +46,12 @@ class OrderList(APIView):
     def post(self, request):
         try:
             serializer = CreateOrderSerializer(
-                data=request.data, context={'request': request})
+                data=request.data, context={"request": request}
+            )
             if serializer.is_valid():
                 draft_order = Order.objects.filter(
-                    buyer=self.request.user_account, status='draft', deleted_at=None)
+                    buyer=self.request.user_account, status="draft", deleted_at=None
+                )
                 if draft_order.exists():
                     return Response(
                         {
@@ -87,9 +88,7 @@ class OrderListView(APIView):
             user = request.user_account
             role = request.user_account.role
             if role.name == "business_owner":
-                orders = Order.objects.filter(
-                    Q(buyer=user), deleted_at=None
-                ).distinct()
+                orders = Order.objects.filter(Q(buyer=user), deleted_at=None).distinct()
             elif role.name == "influencer":
                 # For all the order items, there will be a package in it and the package willl have influencer id
                 order_items = OrderItem.objects.filter(
@@ -111,7 +110,7 @@ class OrderListView(APIView):
                         "accepted": accepted,
                         "pending": pending,
                         "completed": completed,
-                        "rejected": rejected
+                        "rejected": rejected,
                     },
                     "message": "All Order Count retrieved successfully",
                 },
@@ -124,17 +123,14 @@ class OrderListView(APIView):
     def post(self, request):
         try:
             # Get the filters from the request
-            filter_serializer = OrderListFilterSerializer(
-                data=request.data)
+            filter_serializer = OrderListFilterSerializer(data=request.data)
             filter_serializer.is_valid(raise_exception=True)
             filters = filter_serializer.validated_data
 
             user = request.user_account
             role = request.user_account.role
             if role.name == "business_owner":
-                orders = Order.objects.filter(
-                    Q(buyer=user), deleted_at=None
-                ).distinct()
+                orders = Order.objects.filter(Q(buyer=user), deleted_at=None).distinct()
             elif role.name == "influencer":
                 # For all the order items, there will be a package in it and the package willl have influencer id
                 order_items = OrderItem.objects.filter(
@@ -144,36 +140,36 @@ class OrderListView(APIView):
                     Q(order_item_order_id__in=order_items), deleted_at=None
                 ).distinct()
 
-            if 'influencers' in filters:
+            if "influencers" in filters:
                 orders = orders.filter(
-                    order_item_order_id__package__influencer__in=filters['influencers'])
+                    order_item_order_id__package__influencer__in=filters["influencers"]
+                )
 
-            if 'buyers' in filters:
-                orders = orders.filter(buyer__in=filters['buyers'])
+            if "buyers" in filters:
+                orders = orders.filter(buyer__in=filters["buyers"])
 
-            if 'status' in filters:
-                orders = orders.filter(status__in=filters['status'])
+            if "status" in filters:
+                orders = orders.filter(status__in=filters["status"])
 
-            if 'service_masters' in filters:
+            if "service_masters" in filters:
                 orders = orders.filter(
-                    order_item_order_id__service_master__in=filters['service_masters'])
+                    order_item_order_id__service_master__in=filters["service_masters"]
+                )
 
-            if 'lt_created_at' in filters:
-                orders = orders.filter(created_at__lt=filters['lt_created_at'])
+            if "lt_created_at" in filters:
+                orders = orders.filter(created_at__lt=filters["lt_created_at"])
 
-            if 'gt_created_at' in filters:
-                orders = orders.filter(created_at__gt=filters['gt_created_at'])
+            if "gt_created_at" in filters:
+                orders = orders.filter(created_at__gt=filters["gt_created_at"])
 
-            if 'lt_rating' in filters:
-                orders = orders.filter(
-                    review_order_id__rating__lt=filters['lt_rating'])
+            if "lt_rating" in filters:
+                orders = orders.filter(review_order_id__rating__lt=filters["lt_rating"])
 
-            if 'gt_rating' in filters:
-                orders = orders.filter(
-                    review_order_id__rating__gt=filters['gt_rating'])
+            if "gt_rating" in filters:
+                orders = orders.filter(review_order_id__rating__gt=filters["gt_rating"])
 
-            if 'order_by' in filters:
-                orders = orders.order_by(filters['order_by'])
+            if "order_by" in filters:
+                orders = orders.order_by(filters["order_by"])
 
             pagination = Pagination(orders, request)
             serializer = OrderSerializer(pagination.getData(), many=True)
@@ -189,9 +185,11 @@ class OrderListView(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 # Retrieve-Update-Destroy API
 class OrderDetail(APIView):
     authentication_classes = [JWTAuthentication]
+
     def get_object(self, pk):
         try:
             return Order.objects.get(pk=pk, deleted_at=None)
@@ -222,7 +220,7 @@ class OrderDetail(APIView):
             if order is None:
                 return handleNotFound("Order")
 
-            if order.status != 'draft' and order.status != 'pending':
+            if order.status != "draft" and order.status != "pending":
                 return Response(
                     {
                         "isSuccess": False,
@@ -234,7 +232,8 @@ class OrderDetail(APIView):
                 )
 
             serializer = CreateOrderSerializer(
-                instance=order, data=request.data, context={'request': request})
+                instance=order, data=request.data, context={"request": request}
+            )
 
             if serializer.is_valid():
                 serializer.save()
@@ -270,6 +269,44 @@ class OrderDetail(APIView):
             )
         except Exception as e:
             return handleServerException(e)
+
+
+class UpdateOrderStatus(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self, pk):
+        try:
+            return Order.objects.get(pk=pk, deleted_at=None)
+        except Order.DoesNotExist:
+            return None
+
+    @swagger_auto_schema(request_body=OrderSerializer)
+    def put(self, request, pk):
+        try:
+            order = self.get_object(pk)
+            if order is None:
+                return handleNotFound("Order")
+
+            # Extract only the 'status' field from the request data
+            status_data = {"status": request.data.get("status")}
+
+            serializer = OrderSerializer(instance=order, data=status_data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": OrderSerializer(serializer.instance).data,
+                        "message": "Order status updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
 
 
 # ORDER-Item API-Endpoint
@@ -360,6 +397,7 @@ class OrderItemDetail(APIView):
             return handleServerException(e)
 
     authentication_classes = [JWTAuthentication]
+
     def delete(self, request, pk):
         try:
             orderItem = self.get_object(pk)
@@ -779,7 +817,7 @@ class OrderMessageAttachmentDetail(APIView):
             )
         except Exception as e:
             return handleServerException(e)
-    
+
     @swagger_auto_schema(request_body=OrderMessageAttachmentSerializer)
     def put(self, request, pk):
         try:
@@ -834,9 +872,7 @@ class TransactionList(APIView):
         try:
             transaction = Transaction.objects.all()
             pagination = Pagination(transaction, request)
-            serializer = TransactionSerializer(
-                pagination.getData(), many=True
-            )
+            serializer = TransactionSerializer(pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -858,9 +894,7 @@ class TransactionList(APIView):
                 return Response(
                     {
                         "isSuccess": True,
-                        "data": TransactionSerializer(
-                            serializer.instance
-                        ).data,
+                        "data": TransactionSerializer(serializer.instance).data,
                         "message": "Transaction data created successfully",
                     },
                     status=status.HTTP_201_CREATED,
