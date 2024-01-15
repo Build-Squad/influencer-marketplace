@@ -121,7 +121,6 @@ export default function CheckoutPage() {
   };
 
   const onSave = async () => {
-    console.log(cart);
     if (!cart?.orderId) {
       createOrder();
     } else {
