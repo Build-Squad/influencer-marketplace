@@ -242,7 +242,7 @@ class OrderDetail(APIView):
                     {
                         "isSuccess": True,
                         "data": OrderSerializer(serializer.instance).data,
-                        "message": "Order created successfully",
+                        "message": "Order updated successfully",
                     },
                     status=status.HTTP_201_CREATED,
                 )
