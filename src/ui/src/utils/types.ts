@@ -147,11 +147,6 @@ interface Window {
   phantom: any;
 }
 
-type OrderItemType = {
-  service: ServiceType;
-  orderItemMetaData: ServiceMasterMetaDataType[];
-};
-
 type WalletProviderType = {
   id: string;
   wallet_provider: string;
@@ -184,7 +179,16 @@ type InfleuncerType = {
   twitter_account: TwiiterAccountReadType;
 };
 
-type OrderItemOrderID = {
+type OrderItemMetaDataType = {
+  id: string;
+  label: string;
+  span: number;
+  field_type: string;
+  value: string;
+  order_item: string;
+};
+
+type OrderItemType = {
   id: string;
   package: PackageType;
   service_master: ServiceMasterType;
@@ -195,12 +199,13 @@ type OrderItemOrderID = {
   created_at: Date;
   platform_fee: string;
   order_id: string;
+  order_item_meta_data: OrderItemMetaDataType[];
 };
 
 type OrderType = {
   id: string;
   buyer: UserType;
-  order_item_order_id: OrderItemOrderID[];
+  order_item_order_id: OrderItemType[];
   amount: number;
   currency: CurrencyType;
   description: null;
