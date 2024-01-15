@@ -3,10 +3,12 @@ import { notification } from "@/src/components/shared/notification";
 import { postService, putService } from "@/src/services/httpServices";
 import Star from "@/public/svg/Star.svg";
 import Image from "next/image";
+import { OpenInFull } from "@mui/icons-material";
+import Mask_group from "@/public/svg/Mask_group.svg";
+
 import {
   Box,
   Button,
-  CircularProgress,
   Divider,
   Grid,
   Link,
@@ -47,10 +49,10 @@ const styles = {
 
 const OrderSummaryTable = ({
   order,
-  totalOrders,
+  totalOrders = 0,
 }: {
-  order: OrderType;
-  totalOrders: number;
+  order?: OrderType;
+  totalOrders?: number;
 }) => {
   const totalAmount = order?.order_item_order_id?.reduce(
     (acc: number, item: any) => {
@@ -82,7 +84,7 @@ const OrderSummaryTable = ({
                   {item?.service_master?.name}
                 </TableCell>
                 <TableCell align="center" sx={{ ...styles.bodyCellStyle }}>
-                  2
+                  1
                 </TableCell>
                 <TableCell align="right" sx={{ ...styles.bodyCellStyle }}>
                   {item?.price} {order?.currency?.symbol}
@@ -115,12 +117,42 @@ const OrderSummaryTable = ({
   );
 };
 
+const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
+  return (
+    <Box sx={{ mt: 5 }}>
+      {orderItem.map((item: any, index: number) => {
+        return (
+          <Box sx={{ mb: "20px" }}>
+            <Typography variant="h6" fontWeight={"bold"}>
+              {item.service_master.name} ({index + 1})
+            </Typography>
+            <Typography sx={{ mt: 2, color: "#9E9E9E" }}>
+              <Image
+                src={Mask_group}
+                height={14}
+                alt="Mask_group"
+                style={{ marginRight: "8px" }}
+              />
+              Content for {item.service_master.name}
+            </Typography>
+
+            <Divider sx={{ mt: 3 }} />
+          </Box>
+        );
+      })}
+    </Box>
+  );
+};
+
 export default function Orders() {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [rowSelectionModel, setRowSelectionModel] =
     React.useState<GridRowSelectionModel>([]);
+
+  const selectedOrder =
+    orders.find((item) => item.id == rowSelectionModel[0]) ?? orders[0];
 
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
@@ -253,9 +285,15 @@ export default function Orders() {
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
+        const totalAmount = params?.row?.order_item_order_id?.reduce(
+          (acc: number, item: any) => {
+            return acc + parseFloat(item.price);
+          },
+          0
+        );
         return (
           <Typography variant="subtitle1">
-            {params?.row?.amount} {params?.row?.currency?.symbol}
+            {totalAmount} {params?.row?.currency?.symbol}
           </Typography>
         );
       },
@@ -373,7 +411,6 @@ export default function Orders() {
             <DataGrid
               getRowId={(row) => row?.id}
               onRowSelectionModelChange={(newRowSelectionModel) => {
-                console.log(newRowSelectionModel);
                 setRowSelectionModel(newRowSelectionModel);
               }}
               rowSelectionModel={rowSelectionModel}
@@ -381,10 +418,9 @@ export default function Orders() {
               loading={loading}
               rows={orders}
               columns={columns}
-              disableRowSelectionOnClick
               disableColumnFilter
               hideFooter
-              getRowHeight={(params) => 100}
+              getRowHeight={(params) => 80}
               sx={{
                 backgroundColor: "#fff",
                 boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
@@ -434,11 +470,38 @@ export default function Orders() {
           borderTop: "none",
         }}
       >
-        <Box sx={{ padding: "20px 40px" }}>
-          <Typography variant="h5" fontWeight={"bold"}>
-            Order Details
-          </Typography>
-          <Typography variant="h6">Business: Name of Business</Typography>
+        <Box
+          sx={{
+            padding: "20px 40px",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
+          <Box>
+            <Typography variant="h5" fontWeight={"bold"}>
+              Order Details
+            </Typography>
+            <Typography variant="h6">
+              Business:{" "}
+              <Link
+                href={`/business/profile/${selectedOrder?.buyer?.id}`}
+                target="_blank"
+                component={NextLink}
+                sx={{
+                  color: "#0099FF",
+                  textDecoration: "none",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                {selectedOrder?.buyer?.username}
+              </Link>
+            </Typography>
+          </Box>
+
+          <OpenInFull fontSize="medium" sx={{ cursor: "pointer" }} />
         </Box>
         <Divider />
         <Box sx={{ padding: "20px 40px" }}>
@@ -446,9 +509,10 @@ export default function Orders() {
             Order Summary
           </Typography>
           <OrderSummaryTable
-            order={orders?.[0]}
-            totalOrders={orders?.[0]?.order_item_order_id?.length ?? 0}
+            order={selectedOrder}
+            totalOrders={selectedOrder?.order_item_order_id?.length ?? 0}
           />
+          <OrderSummaryDetails orderItem={selectedOrder?.order_item_order_id} />
         </Box>
       </Grid>
     </Grid>
