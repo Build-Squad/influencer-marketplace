@@ -5,6 +5,7 @@ import Star from "@/public/svg/Star.svg";
 import Image from "next/image";
 import { OpenInFull } from "@mui/icons-material";
 import Mask_group from "@/public/svg/Mask_group.svg";
+import { Attachment, Download } from "@mui/icons-material";
 
 import {
   Box,
@@ -117,27 +118,100 @@ const OrderSummaryTable = ({
   );
 };
 
+const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
+  switch (meta_data.field_type) {
+    case "text":
+    case "long_text":
+      return (
+        <Box sx={{ mb: 2 }}>
+          <Typography sx={{ mt: 2, color: "#9E9E9E" }}>
+            <Image
+              src={Mask_group}
+              height={14}
+              alt="Mask_group"
+              style={{ marginRight: "8px" }}
+            />
+            Instructions
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              position: "relative",
+              color: "#676767",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {meta_data?.value}
+          </Typography>
+        </Box>
+      );
+
+    case "media":
+      return (
+        <Box
+          sx={{
+            mb: 2,
+            borderRadius: "24px",
+            border: "1px solid #E8E8E8",
+            background: "#F8F8F8",
+            padding: "12px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Box sx={{ display: "flex", columnGap: "8px", alignItems: "center" }}>
+            <Attachment />
+            <Typography>Media</Typography>
+          </Box>
+          <Download />
+        </Box>
+      );
+
+    case "date_time":
+      return (
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+          <Box>
+            <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
+              Date of publishing
+            </Typography>
+            <Typography variant="subtitle1" sx={{ color: "#676767" }}>
+              23, Nov 2023
+            </Typography>
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
+              Time of Publishing
+            </Typography>
+            <Typography variant="subtitle1" sx={{ color: "#676767" }}>
+              00:15
+            </Typography>
+          </Box>
+        </Box>
+      );
+
+    default:
+      return null;
+  }
+};
+
 const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
   return (
     <Box sx={{ mt: 5 }}>
-      {orderItem.map((item: any, index: number) => {
+      {orderItem.map((eachOrderItem: any, index: number) => {
         return (
-          <Box sx={{ mb: "20px" }}>
+          <>
             <Typography variant="h6" fontWeight={"bold"}>
-              {item.service_master.name} ({index + 1})
-            </Typography>
-            <Typography sx={{ mt: 2, color: "#9E9E9E" }}>
-              <Image
-                src={Mask_group}
-                height={14}
-                alt="Mask_group"
-                style={{ marginRight: "8px" }}
-              />
-              Content for {item.service_master.name}
+              {eachOrderItem.service_master.name} ({index + 1})
             </Typography>
 
+            {eachOrderItem.order_item_meta_data.map((meta_data: any) => {
+              return <ContentTypeComponent meta_data={meta_data} />;
+            })}
+
             <Divider sx={{ mt: 3 }} />
-          </Box>
+          </>
         );
       })}
     </Box>
