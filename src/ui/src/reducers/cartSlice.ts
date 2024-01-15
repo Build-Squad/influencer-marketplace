@@ -3,8 +3,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type OrderItem = {
-  service: ServiceType;
+  order_item: OrderItemType;
   index: number;
+  service_id: string;
 };
 
 type ServiceAdded = {
@@ -79,25 +80,32 @@ export const cartSlice = createSlice({
       }
 
       // Always push a new item to the orderItems array
-      const serviceWithUpdatedMetaData = {
-        ...action.payload.service,
-        service_master: {
-          ...action.payload.service.service_master,
-          service_master_meta_data:
+      state.orderItems.push({
+        order_item: {
+          ...action.payload.service,
+          platform_fee: action.payload.service.platform_fees,
+          price: action.payload.service.platform_price,
+          order_item_meta_data:
             action.payload.service.service_master.service_master_meta_data.map(
-              (item) => ({ ...item, value: null })
+              (item) => {
+                return {
+                  service_master_meta_data_id: item.id,
+                  value: null,
+                  label: item.label,
+                  span: item.span,
+                  field_type: item.field_type,
+                };
+              }
             ),
         },
-      };
-      state.orderItems.push({
-        service: serviceWithUpdatedMetaData,
+        service_id: action.payload.service.id,
         index: state.orderItems.length,
       });
 
       // Set influencer, orderTotal, and orderTotalCurrency here
       state.influencer = action.payload.influencer;
       state.orderTotal = state.orderItems.reduce((total, item) => {
-        return total + Number(item.service.platform_price);
+        return total + Number(item.order_item.platform_price);
       }, 0);
       state.orderTotalCurrency = action.payload.service.currency;
     },
@@ -118,7 +126,7 @@ export const cartSlice = createSlice({
         state.orderItems.splice(action.payload.ind, 1);
       } else {
         const index = state.orderItems.findIndex(
-          (item) => item.service.id === action.payload?.service.id
+          (item) => item.order_item.id === action.payload.service.id
         );
 
         // Check if the item exists before trying to remove it
@@ -129,6 +137,7 @@ export const cartSlice = createSlice({
         // Always remove the item from the orderItems array
         state.orderItems.splice(index, 1);
       }
+
       // Find the service in the servicesAdded array
       const serviceAdded = state.servicesAdded.find(
         (item) => item.service.id === action.payload.service.id
@@ -159,7 +168,7 @@ export const cartSlice = createSlice({
 
       // Calculate the new orderTotal here
       state.orderTotal = state.orderItems.reduce((total, item) => {
-        return total + Number(item.service.platform_price);
+        return total + Number(item.order_item.platform_price);
       }, 0);
     },
 
@@ -169,21 +178,21 @@ export const cartSlice = createSlice({
       action: PayloadAction<UpdateOrderItemPayloadType>
     ) => {
       const orderItem = state.orderItems[action.payload.index];
-      const serviceMasterMetaDataIndex =
-        orderItem.service.service_master.service_master_meta_data.findIndex(
-          (item) => item.id === action.payload.service_master_meta_data_id
+      const orderItemMetaDataIndex =
+        orderItem.order_item.order_item_meta_data.findIndex(
+          (item) =>
+            item.service_master_meta_data_id ===
+            action.payload.service_master_meta_data_id
         );
-      if (serviceMasterMetaDataIndex !== -1) {
-        const updatedServiceMasterMetaData = {
-          ...orderItem.service.service_master.service_master_meta_data[
-            serviceMasterMetaDataIndex
-          ],
+      if (orderItemMetaDataIndex !== -1) {
+        const updatedOrderItemMetaData = {
+          ...orderItem.order_item.order_item_meta_data[orderItemMetaDataIndex],
           value: action.payload.value,
         };
-        orderItem.service.service_master.service_master_meta_data.splice(
-          serviceMasterMetaDataIndex,
+        orderItem.order_item.order_item_meta_data.splice(
+          orderItemMetaDataIndex,
           1,
-          updatedServiceMasterMetaData
+          updatedOrderItemMetaData
         );
       }
     },
