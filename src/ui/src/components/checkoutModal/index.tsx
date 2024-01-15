@@ -240,7 +240,7 @@ const CheckoutModal = ({
               fullWidth
               disabled={cart?.orderItems.length === 0}
               onClick={() => {
-                router.push("/checkout");
+                router.push("/business/checkout");
               }}
             >
               Proceed
