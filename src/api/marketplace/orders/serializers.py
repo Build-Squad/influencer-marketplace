@@ -84,12 +84,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class MetaDataSerializer(serializers.Serializer):
     value = serializers.CharField(allow_null=True)
-    service_master_meta_data_id = serializers.UUIDField(required=True)
+    service_master_meta_data_id = serializers.UUIDField(required=False)
     order_item_meta_data_id = serializers.UUIDField(required=False)
 
 
 class OrderItemSerializer(serializers.Serializer):
-    service_id = serializers.UUIDField(required=True)
+    service_id = serializers.UUIDField(required=False)
     meta_data = serializers.ListField(child=MetaDataSerializer())
     order_item_id = serializers.UUIDField(required=False)
 
@@ -106,8 +106,15 @@ class CreateOrderSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     {"order_item_meta_data_id": "Order item meta data with id {} does not exist.".format(meta_data['order_item_meta_data_id'])})
         else:
+            if service_master_meta_data_item is None:
+                raise serializers.ValidationError(
+                    {"service_master_meta_data_id": "Service master meta data id not provided.".format(meta_data['service_master_meta_data_id'])})
             order_item_meta_data = OrderItemMetaData.objects.create(
-                order_item=order_item, label=service_master_meta_data_item.label, value=meta_data['value'], field_type=service_master_meta_data_item.field_type, span=service_master_meta_data_item.span)
+                order_item=order_item, label=service_master_meta_data_item.label,
+                value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
+                span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
+                min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
+                order=service_master_meta_data_item.order)
         order_item_meta_data.value = meta_data['value']
         order_item_meta_data.save()
 
@@ -131,7 +138,11 @@ class CreateOrderSerializer(serializers.Serializer):
                 for service_master_meta_data_item in service_master_meta_data:
                     if service_master_meta_data_item.id == meta_data['service_master_meta_data_id']:
                         OrderItemMetaData.objects.create(
-                            order_item=order_item, label=service_master_meta_data_item.label, value=meta_data['value'], field_type=service_master_meta_data_item.field_type, span=service_master_meta_data_item.span)
+                            order_item=order_item, label=service_master_meta_data_item.label,
+                            value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
+                            span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
+                            min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
+                            order=service_master_meta_data_item.order)
         return order
 
     def update(self, instance, validated_data):
@@ -144,12 +155,7 @@ class CreateOrderSerializer(serializers.Serializer):
         # If an order item is not provided, the order item will be created
 
         for order_item_data in order_items:
-            try:
-                service = Service.objects.get(id=order_item_data['service_id'])
 
-            except ObjectDoesNotExist:
-                raise serializers.ValidationError(
-                    {"service_id": "Service with id {} does not exist.".format(order_item_data['service_id'])})
             if 'order_item_id' in order_item_data:
                 try:
                     order_item = OrderItem.objects.get(
@@ -161,21 +167,30 @@ class CreateOrderSerializer(serializers.Serializer):
                 if order.status != 'draft':
                     raise serializers.ValidationError(
                         {"order": "Order Items cannot be added to an order that has been paid for"})
+                try:
+                    service = Service.objects.get(
+                        id=order_item_data['service_id'])
+
+                except ObjectDoesNotExist:
+                    raise serializers.ValidationError(
+                        {"service_id": "Service with id {} does not exist.".format(order_item_data['service_id'])})
                 order_item = OrderItem.objects.create(
                     order_id=order, service_master=service.service_master, package=service.package, price=service.price, currency=service.currency, platform_fee=service.platform_fees)
 
             # Similar to the create method, the meta data will be updated if the order item meta data already exists
             # If it does not exist, it will be created
             for meta_data in order_item_data['meta_data']:
-                service_master_meta_data_item = ServiceMasterMetaData.objects.get(
-                    id=meta_data['service_master_meta_data_id'])
+                try:
+                    if 'service_master_meta_data_id' in meta_data:
+                        service_master_meta_data_item = ServiceMasterMetaData.objects.get(
+                            id=meta_data['service_master_meta_data_id'])
+                    else:
+                        service_master_meta_data_item = None
+                except ObjectDoesNotExist:
+                    service_master_meta_data_item = None
 
-                if service_master_meta_data_item:
-                    self._create_or_update_meta_data(
-                        order_item, meta_data, service_master_meta_data_item)
-                else:
-                    raise serializers.ValidationError(
-                        {"service_master_meta_data_id": "Service master meta data with id {} does not exist.".format(meta_data['service_master_meta_data_id'])})
+                self._create_or_update_meta_data(
+                    order_item, meta_data, service_master_meta_data_item)
 
         return order
 
