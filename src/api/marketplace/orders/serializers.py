@@ -9,14 +9,24 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
 
+class OrderItemMetaDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItemMetaData
+        fields = '__all__'
+
 class OrderItemReadSerializer(serializers.ModelSerializer):
     package = PackageSerializer(read_only=True)
     service_master = ServiceMasterReadSerializer(read_only=True)
     currency = CurrencySerializer(read_only=True)
+    order_item_meta_data = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
         fields = '__all__'
+
+    def get_order_item_meta_data(self, obj):
+        order_item_meta_data = OrderItemMetaData.objects.filter(order_item=obj)
+        return OrderItemMetaDataSerializer(order_item_meta_data, many=True).data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -70,11 +80,6 @@ class OrderSerializer(serializers.ModelSerializer):
             return CurrencySerializer(first_order_item.currency).data
         return None
 
-
-class OrderItemMetaDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItemMetaData
-        fields = '__all__'
 
 
 class MetaDataSerializer(serializers.Serializer):
