@@ -2,8 +2,8 @@
 
 import { notification } from "@/src/components/shared/notification";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
-import { resetCart, updateFieldValues } from "@/src/reducers/cartSlice";
-import { postService } from "@/src/services/httpServices";
+import { initializeCart, updateFieldValues } from "@/src/reducers/cartSlice";
+import { postService, putService } from "@/src/services/httpServices";
 import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
@@ -26,7 +26,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
 
 export default function CheckoutPage() {
   const dispatch = useAppDispatch();
@@ -64,10 +63,69 @@ export default function CheckoutPage() {
       );
       if (isSuccess) {
         notification("Order Details saved successfully!", "success");
+        const order = data?.data;
+        dispatch(
+          initializeCart({
+            orderId: order.id,
+            influencer: order.order_item_order_id[0].package.influencer,
+            orderItems: order.order_item_order_id,
+          })
+        );
       } else {
         notification(message, "error", 3000);
       }
     } finally {
+    }
+  };
+
+  const updateOrder = async () => {
+    const body = {
+      order_items: cart?.orderItems?.map((orderItem) => {
+        console.log(orderItem?.order_item?.id);
+        return {
+          service_id: orderItem?.service_id,
+          order_item_id: orderItem?.order_item?.id,
+          meta_data: orderItem?.order_item?.order_item_meta_data?.map(
+            (metaData) => {
+              return {
+                order_item_meta_data_id: metaData?.id,
+                service_master_meta_data_id:
+                  metaData?.service_master_meta_data_id,
+                value: metaData?.value,
+              };
+            }
+          ),
+        };
+      }),
+    };
+    try {
+      const { isSuccess, message, data } = await putService(
+        `/orders/order/${cart?.orderId}/`,
+        body
+      );
+      if (isSuccess) {
+        notification("Order Details saved successfully!", "success");
+        const order = data?.data;
+        dispatch(
+          initializeCart({
+            orderId: order.id,
+            influencer: order.order_item_order_id[0].package.influencer,
+            orderItems: order.order_item_order_id,
+          })
+        );
+      } else {
+        notification(message, "error", 3000);
+      }
+    } finally {
+    }
+  };
+
+  const onSave = async () => {
+    console.log(cart);
+    if (!cart?.orderId) {
+      createOrder();
+    } else {
+      updateOrder();
     }
   };
 
@@ -156,8 +214,11 @@ export default function CheckoutPage() {
                     p: 2,
                   }}
                 >
-                  {orderItem?.order_item?.service_master?.service_master_meta_data?.map(
-                    (formFields) => {
+                  {orderItem?.order_item?.order_item_meta_data
+                    .toSorted((a, b) => {
+                      return a?.order - b?.order;
+                    })
+                    ?.map((formFields) => {
                       return (
                         <Grid
                           md={formFields?.span}
@@ -186,7 +247,11 @@ export default function CheckoutPage() {
                                 dispatch(
                                   updateFieldValues({
                                     index: index,
-                                    service_master_meta_data_id: formFields?.id,
+                                    service_master_meta_data_id:
+                                      formFields?.service_master_meta_data_id
+                                        ? formFields?.service_master_meta_data_id
+                                        : "",
+                                    order_item_meta_data_id: formFields?.id,
                                     value: e.target.value,
                                   })
                                 );
@@ -210,7 +275,11 @@ export default function CheckoutPage() {
                                 dispatch(
                                   updateFieldValues({
                                     index: index,
-                                    service_master_meta_data_id: formFields?.id,
+                                    service_master_meta_data_id:
+                                      formFields?.service_master_meta_data_id
+                                        ? formFields?.service_master_meta_data_id
+                                        : "",
+                                    order_item_meta_data_id: formFields?.id,
                                     value: e.target.value,
                                   })
                                 );
@@ -242,7 +311,11 @@ export default function CheckoutPage() {
                                 dispatch(
                                   updateFieldValues({
                                     index: index,
-                                    service_master_meta_data_id: formFields?.id,
+                                    service_master_meta_data_id:
+                                      formFields?.service_master_meta_data_id
+                                        ? formFields?.service_master_meta_data_id
+                                        : "",
+                                    order_item_meta_data_id: formFields?.id,
                                     value: dayjs(e).format(
                                       "YYYY-MM-DD HH:mm:ss"
                                     ),
@@ -282,14 +355,13 @@ export default function CheckoutPage() {
                                   borderRadius: 8,
                                 }}
                               >
-                                {formFields?.placeholder}
+                                {formFields?.label}
                               </Button>
                             </Box>
                           )}
                         </Grid>
                       );
-                    }
-                  )}
+                    })}
                 </Grid>
               </Box>
             );
@@ -326,7 +398,7 @@ export default function CheckoutPage() {
                   mx: 2,
                 }}
                 onClick={() => {
-                  createOrder();
+                  onSave();
                 }}
               >
                 Save
