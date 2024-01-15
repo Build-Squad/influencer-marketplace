@@ -5,7 +5,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 type OrderItem = {
   order_item: OrderItemType;
   index: number;
-  service_id: string;
+  service_id?: string;
 };
 
 type ServiceAdded = {
@@ -14,6 +14,7 @@ type ServiceAdded = {
 };
 
 type CartState = {
+  orderId?: string | null;
   influencer: UserType | null;
   orderItems: OrderItem[];
   servicesAdded: ServiceAdded[];
@@ -34,7 +35,8 @@ type RemoveOrderItemPayloadType = {
 type UpdateOrderItemPayloadType = {
   index: number;
   value: string;
-  service_master_meta_data_id: string;
+  service_master_meta_data_id?: string;
+  order_item_meta_data_id?: string;
 };
 
 const initialState: CartState = {
@@ -83,6 +85,7 @@ export const cartSlice = createSlice({
       state.orderItems.push({
         order_item: {
           ...action.payload.service,
+          id: undefined,
           platform_fee: action.payload.service.platform_fees,
           price: action.payload.service.platform_price,
           order_item_meta_data:
@@ -94,6 +97,10 @@ export const cartSlice = createSlice({
                   label: item.label,
                   span: item.span,
                   field_type: item.field_type,
+                  min: item.min,
+                  max: item.max,
+                  placeholder: item.placeholder,
+                  order: item.order,
                 };
               }
             ),
@@ -178,12 +185,20 @@ export const cartSlice = createSlice({
       action: PayloadAction<UpdateOrderItemPayloadType>
     ) => {
       const orderItem = state.orderItems[action.payload.index];
-      const orderItemMetaDataIndex =
-        orderItem.order_item.order_item_meta_data.findIndex(
-          (item) =>
-            item.service_master_meta_data_id ===
-            action.payload.service_master_meta_data_id
-        );
+      let orderItemMetaDataIndex = -1;
+      if (action?.payload?.service_master_meta_data_id) {
+        orderItemMetaDataIndex =
+          orderItem.order_item.order_item_meta_data.findIndex(
+            (item) =>
+              item.service_master_meta_data_id ===
+              action.payload.service_master_meta_data_id
+          );
+      } else {
+        orderItemMetaDataIndex =
+          orderItem.order_item.order_item_meta_data.findIndex(
+            (item) => item.id === action.payload.order_item_meta_data_id
+          );
+      }
       if (orderItemMetaDataIndex !== -1) {
         const updatedOrderItemMetaData = {
           ...orderItem.order_item.order_item_meta_data[orderItemMetaDataIndex],
@@ -198,6 +213,7 @@ export const cartSlice = createSlice({
     },
 
     resetCart: (state) => {
+      state.orderId = null;
       state.influencer = null;
       state.orderItems = [];
       state.servicesAdded = [];
@@ -209,8 +225,61 @@ export const cartSlice = createSlice({
         country: null,
       };
     },
+
+    // Add this to your list of actions in your cart slice
+    initializeCart: (
+      state,
+      action: PayloadAction<{
+        orderId: string;
+        influencer: UserType | null;
+        orderItems: OrderItemType[];
+      }>
+    ) => {
+      state.orderId = action.payload.orderId;
+      state.influencer = action.payload.influencer;
+      state.orderItems = action.payload.orderItems.map((item) => {
+        return {
+          order_item: {
+            ...item,
+            platform_fee: item.platform_fee,
+            price: item.platform_price,
+            platform_price: (
+              parseFloat(item?.price?.toString()) +
+              parseFloat(item?.price?.toString()) *
+                (parseFloat(item?.platform_fee?.toString()) / 100)
+            )?.toString(),
+            order_item_meta_data: item.order_item_meta_data.map((item) => {
+              return {
+                id: item.id,
+                value: item.value,
+                label: item.label,
+                span: item.span,
+                field_type: item.field_type,
+                min: item.min,
+                max: item.max,
+                placeholder: item.placeholder,
+                order: item.order,
+              };
+            }),
+          },
+          service_id: undefined,
+          index: state.orderItems.length,
+        };
+      });
+      state.orderTotal = state.orderItems.reduce((total, item) => {
+        return total + Number(item.order_item.platform_price);
+      }, 0);
+      state.orderTotalCurrency = action.payload.orderItems[0].currency;
+    },
   },
 });
 
-export const { addOrderItem, removeOrderItem, resetCart, updateFieldValues } =
-  cartSlice.actions;
+// Don't forget to export it
+export const {
+  addOrderItem,
+  removeOrderItem,
+  resetCart,
+  updateFieldValues,
+  initializeCart,
+} = cartSlice.actions;
+

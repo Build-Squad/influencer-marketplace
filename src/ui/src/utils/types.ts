@@ -36,6 +36,7 @@ type ServiceMasterMetaDataType = {
   field_type: string;
   service_master_id: string;
   value: string | null;
+  order: number;
 };
 
 type ServiceMasterType = {
@@ -186,11 +187,15 @@ type OrderItemMetaDataType = {
   field_type: string;
   value: string | null;
   order_item?: string;
-  service_master_meta_data_id: string;
+  service_master_meta_data_id?: string;
+  min: string;
+  max: string;
+  placeholder: string;
+  order: number;
 };
 
 type OrderItemType = {
-  id: string;
+  id?: string;
   package: PackageType;
   service_master: ServiceMasterType;
   currency: CurrencyType;
