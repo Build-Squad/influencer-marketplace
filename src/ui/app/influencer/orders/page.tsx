@@ -1,11 +1,12 @@
 "use client";
 import { notification } from "@/src/components/shared/notification";
-import { postService } from "@/src/services/httpServices";
+import { postService, putService } from "@/src/services/httpServices";
 import Star from "@/public/svg/Star.svg";
 import Image from "next/image";
 import {
   Box,
   Button,
+  CircularProgress,
   Divider,
   Grid,
   Link,
@@ -22,6 +23,7 @@ import {
 import {
   DataGrid,
   GridRenderCellParams,
+  GridRowSelectionModel,
   GridTreeNodeWithRender,
 } from "@mui/x-data-grid";
 import NextLink from "next/link";
@@ -43,8 +45,19 @@ const styles = {
   },
 };
 
-const OrderSummaryTable = ({ order }: { order: OrderType }) => {
-  console.log(order);
+const OrderSummaryTable = ({
+  order,
+  totalOrders,
+}: {
+  order: OrderType;
+  totalOrders: number;
+}) => {
+  const totalAmount = order?.order_item_order_id?.reduce(
+    (acc: number, item: any) => {
+      return acc + parseFloat(item.price);
+    },
+    0
+  );
   return (
     <TableContainer>
       <Table>
@@ -66,7 +79,7 @@ const OrderSummaryTable = ({ order }: { order: OrderType }) => {
             return (
               <TableRow sx={styles.tableRowStyles}>
                 <TableCell align="left" sx={{ ...styles.bodyCellStyle }}>
-                  Post
+                  {item?.service_master?.name}
                 </TableCell>
                 <TableCell align="center" sx={{ ...styles.bodyCellStyle }}>
                   2
@@ -86,10 +99,14 @@ const OrderSummaryTable = ({ order }: { order: OrderType }) => {
               </Typography>
             </TableCell>
             <TableCell align="center" sx={{ ...styles.bodyCellStyle }}>
-              <Typography variant="h6">Total Quantity</Typography>
+              <Typography variant="h6" fontWeight={"bold"}>
+                {totalOrders}
+              </Typography>
             </TableCell>
             <TableCell align="right" sx={{ ...styles.bodyCellStyle }}>
-              <Typography variant="h6">Total Amount</Typography>
+              <Typography variant="h6" fontWeight={"bold"}>
+                {totalAmount}
+              </Typography>
             </TableCell>
           </TableRow>
         </TableBody>
@@ -100,7 +117,11 @@ const OrderSummaryTable = ({ order }: { order: OrderType }) => {
 
 export default function Orders() {
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
+  const [rowSelectionModel, setRowSelectionModel] =
+    React.useState<GridRowSelectionModel>([]);
+
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
     total_page_count: 0,
@@ -116,10 +137,10 @@ export default function Orders() {
         {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
+          status: ["pending"],
         }
       );
       if (isSuccess) {
-        console.log("data ==== ", data?.data);
         setOrders(data?.data);
         setPagination({
           ...pagination,
@@ -244,7 +265,10 @@ export default function Orders() {
       field: "status",
       flex: 1,
       minWidth: 200,
-      renderCell: (): React.ReactNode => {
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        const orderId = params?.row?.id;
         return (
           <Box sx={{ display: "flex", columnGap: "4px" }}>
             <Button
@@ -253,7 +277,9 @@ export default function Orders() {
               sx={{
                 borderRadius: "20px",
               }}
-              onClick={() => {}}
+              onClick={() => {
+                handleAction({ status: "accepted", orderId });
+              }}
             >
               Accept
             </Button>
@@ -263,7 +289,9 @@ export default function Orders() {
               sx={{
                 borderRadius: "20px",
               }}
-              onClick={() => {}}
+              onClick={() => {
+                handleAction({ status: "rejected", orderId });
+              }}
             >
               Decline
             </Button>
@@ -283,7 +311,39 @@ export default function Orders() {
       getOrders();
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [pagination.current_page_number, pagination.current_page_size]);
+  }, [
+    pagination.current_page_number,
+    pagination.current_page_size,
+    actionLoading,
+  ]);
+
+  const handleAction = async ({
+    status = "",
+    orderId,
+  }: {
+    status: string;
+    orderId: string;
+  }) => {
+    if (status) {
+      setActionLoading(true);
+      const { isSuccess, data, message } = await putService(
+        `orders/order/${orderId}/`,
+        {
+          status,
+        }
+      );
+
+      if (!isSuccess) {
+        notification(
+          message
+            ? message
+            : "Something went wrong, couldn't update order status",
+          "error"
+        );
+      }
+      setActionLoading(false);
+    }
+  };
 
   return (
     <Grid container sx={{ backgroundColor: "#FAFAFA" }}>
@@ -304,14 +364,19 @@ export default function Orders() {
           </Typography>
         </Box>
         <Typography variant="subtitle1" sx={{ mt: 1 }}>
-          Lorem ipsum dolor sit amet consectetur. In ac risus elit nec. Lacinia
-          massa orci et consequat. Ligula sed ac et bibendum. Adipiscing
-          sagittis nam aliquet malesuada elit lectus viverra eros eget.
+          See all your order request and click on accept/decline button to do
+          the action. Your declined order requests will be deleted on spot and
+          all other accepted requests will be seen in dashboard page.
         </Typography>
         <Grid container spacing={2} sx={{ mt: 3 }}>
           <Grid item xs={12}>
             <DataGrid
               getRowId={(row) => row?.id}
+              onRowSelectionModelChange={(newRowSelectionModel) => {
+                console.log(newRowSelectionModel);
+                setRowSelectionModel(newRowSelectionModel);
+              }}
+              rowSelectionModel={rowSelectionModel}
               autoHeight
               loading={loading}
               rows={orders}
@@ -380,7 +445,10 @@ export default function Orders() {
           <Typography variant="h6" fontWeight={"bold"}>
             Order Summary
           </Typography>
-          <OrderSummaryTable order={orders[0]} />
+          <OrderSummaryTable
+            order={orders?.[0]}
+            totalOrders={orders?.[0]?.order_item_order_id?.length ?? 0}
+          />
         </Box>
       </Grid>
     </Grid>
