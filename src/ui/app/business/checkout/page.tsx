@@ -65,7 +65,7 @@ export default function CheckoutPage() {
       if (isSuccess) {
         notification("Order Details saved successfully!", "success");
       } else {
-        notification(message, "error");
+        notification(message, "error", 3000);
       }
     } finally {
     }
