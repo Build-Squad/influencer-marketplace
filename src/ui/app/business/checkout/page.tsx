@@ -44,16 +44,16 @@ export default function CheckoutPage() {
     const body = {
       order_items: cart?.orderItems?.map((orderItem) => {
         return {
-          service_id: orderItem?.service?.id,
-          meta_data:
-            orderItem?.service?.service_master?.service_master_meta_data?.map(
-              (metaData) => {
-                return {
-                  service_master_meta_data_id: metaData?.id,
-                  value: metaData?.value,
-                };
-              }
-            ),
+          service_id: orderItem?.service_id,
+          meta_data: orderItem?.order_item?.order_item_meta_data?.map(
+            (metaData) => {
+              return {
+                service_master_meta_data_id:
+                  metaData?.service_master_meta_data_id,
+                value: metaData?.value,
+              };
+            }
+          ),
         };
       }),
     };
@@ -131,7 +131,7 @@ export default function CheckoutPage() {
                       fontWeight: "bold",
                     }}
                   >
-                    {orderItem.service?.package?.name}
+                    {orderItem?.order_item?.package?.name}
                   </Typography>
                   <Button
                     variant="outlined"
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
                     p: 2,
                   }}
                 >
-                  {orderItem?.service?.service_master?.service_master_meta_data?.map(
+                  {orderItem?.order_item?.service_master?.service_master_meta_data?.map(
                     (formFields) => {
                       return (
                         <Grid
