@@ -13,7 +13,7 @@ import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { useAppSelector } from "@/src/hooks/useRedux";
-import WalletConnectModal from "@/src/components/walletConnectModal";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { putService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
 
@@ -134,7 +134,7 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
             borderRadius: "20px",
             mt: 5,
           }}
-          onClick={startTwitterAuthentication}
+          onClick={() => startTwitterAuthentication({ role: "business_owner" })}
         >
           Login to X
         </Button>

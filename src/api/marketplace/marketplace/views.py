@@ -2,9 +2,7 @@ from django.shortcuts import redirect, render
 from accounts.serializers import UserSerializer
 from tweepy import Client, OAuth2UserHandler
 from django.http import (
-    JsonResponse,
     HttpResponse,
-    HttpResponseBadRequest,
     HttpResponseRedirect,
 )
 from decouple import config
@@ -15,6 +13,7 @@ from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 # Defines scope for OAuth2 with PKCE
@@ -44,20 +43,22 @@ def logoutUser(request):
     return response
 
 
-def authTwitterUser(request):
+def authTwitterUser(request, role):
+    request.session["role"] = role
     auth_url = oauth2_user_handler.get_authorization_url()
     return HttpResponseRedirect(auth_url)
 
 
 def twitterLoginCallback(request):
+    role = request.session.get("role", "")
     authorization_response_url = request.build_absolute_uri()
     try:
         # Authenticate User
         authentication_result = authenticateUser(authorization_response_url)
         userData = authentication_result["userData"]
         access_token = authentication_result["access_token"]
-        # Create JWT and send response
-        return createJWT(userData, access_token)
+        # Create USER and JWT and send response
+        return createJWT(userData, access_token, role)
     except Exception as e:
         logger.error("Error in twitterLoginCallback -", e)
         return HttpResponseRedirect(
@@ -95,7 +96,7 @@ def authenticateUser(authorization_response_url):
         )
 
 
-def createUser(userData, access_token):
+def createUser(userData, access_token, role):
     try:
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
@@ -148,7 +149,7 @@ def createUser(userData, access_token):
                 username=userData.username,
                 first_name=userData.name,
                 twitter_account_id=current_twitter_user.id,
-                role=Role.objects.filter(name="influencer").first(),
+                role=Role.objects.filter(name=role).first(),
             )
             new_user_account.save()
         else:
@@ -165,15 +166,19 @@ def createUser(userData, access_token):
         )
 
 
-def createJWT(userData, access_token):
+def createJWT(userData, access_token, role):
     try:
         # Creating/Updating twitter and user table
-        current_user = createUser(userData, access_token)
+        current_user = createUser(userData, access_token, role)
 
         # Creating a response object with JWT cookie
-        response = redirect(
-            f"{config('FRONT_END_URL')}influencer/?authenticationStatus=success"
-        )
+        if role == "business_owner":
+            redirect_url = f"{config('FRONT_END_URL')}business/?authenticationStatus=success"
+        elif role == "influencer":
+            redirect_url = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=success"
+
+
+        response = redirect(redirect_url)
 
         # Convert the UUID to string
         user_id = str(current_user.id)

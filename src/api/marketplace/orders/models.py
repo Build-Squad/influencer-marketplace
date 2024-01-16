@@ -114,6 +114,10 @@ class OrderItemMetaData(models.Model):
     order_item = models.ForeignKey(
         OrderItem, related_name='order_item_meta_data_order_item_id', on_delete=SET_NULL, null=True)
     value = models.TextField(blank=True, null=True)
+    min = models.CharField(max_length=100, blank=True, null=True)
+    max = models.CharField(max_length=100, blank=True, null=True)
+    placeholder = models.CharField(max_length=100, blank=True, null=True)
+    order = models.IntegerField(blank=True, null=True)
 
     class Meta:
         db_table = "order_item_meta_data"

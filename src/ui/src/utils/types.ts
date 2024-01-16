@@ -36,6 +36,7 @@ type ServiceMasterMetaDataType = {
   field_type: string;
   service_master_id: string;
   value: string | null;
+  order: number;
 };
 
 type ServiceMasterType = {
@@ -147,11 +148,6 @@ interface Window {
   phantom: any;
 }
 
-type OrderItemType = {
-  service: ServiceType;
-  orderItemMetaData: ServiceMasterMetaDataType[];
-};
-
 type WalletProviderType = {
   id: string;
   wallet_provider: string;
@@ -184,23 +180,37 @@ type InfleuncerType = {
   twitter_account: TwiiterAccountReadType;
 };
 
-type OrderItemOrderID = {
-  id: string;
+type OrderItemMetaDataType = {
+  id?: string;
+  label: string;
+  span: number;
+  field_type: string;
+  value: string | null;
+  order_item?: string;
+  service_master_meta_data_id?: string;
+  min: string;
+  max: string;
+  placeholder: string;
+  order: number;
+};
+
+type OrderItemType = {
+  id?: string;
   package: PackageType;
   service_master: ServiceMasterType;
   currency: CurrencyType;
-  quantity: null;
-  status: null;
   price: string;
-  created_at: Date;
+  created_at: Date | string;
   platform_fee: string;
-  order_id: string;
+  platform_price: string;
+  order_id?: string;
+  order_item_meta_data: OrderItemMetaDataType[];
 };
 
 type OrderType = {
   id: string;
   buyer: UserType;
-  order_item_order_id: OrderItemOrderID[];
+  order_item_order_id: OrderItemType[];
   amount: number;
   currency: CurrencyType;
   description: null;

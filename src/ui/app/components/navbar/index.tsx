@@ -82,13 +82,14 @@ const MENU_ITEMS: {
 
 const MenuItemsComponent = ({ items }: { items: string[] }) => {
   const cart = useAppSelector((state) => state.cart);
+  const user = useAppSelector((state) => state.user);
   const router = useRouter();
   const pathname = usePathname();
   return items ? (
     <>
       {items.map((key: string) => {
         const item = MENU_ITEMS[key];
-        const route = pathname.includes("business")
+        const route = user?.user?.role?.name?.includes("business")
           ? `/business${item?.route}`
           : pathname.includes("influencer")
           ? `/influencer${item?.route}`
@@ -310,11 +311,17 @@ export default function Navbar({
                 />
               )
             ) : (
-              <MenuItemsComponent items={["Home"]} />
+              <MenuItemsComponent items={["Home", "Explore"]} />
             )}
             <LoginMenu
               isTwitterUserLoggedIn={isTwitterUserLoggedIn}
-              twitterLogin={startTwitterAuthentication}
+              twitterLogin={() =>
+                startTwitterAuthentication({
+                  role: pathname.includes("business")
+                    ? "business_owner"
+                    : "influencer",
+                })
+              }
               setEmailOpen={setEmailOpen}
               setWalletOpen={setWalletOpen}
               logoutTwitterUser={logoutTwitterUser}

@@ -972,7 +972,7 @@ class OTPAuth(APIView):
                                 "message": "Only business owners can login via email",
                                 "errors": "Only business owners can login via email",
                             },
-                            status=status.HPPT_403_FORBIDDEN,
+                            status=status.HTTP_401_UNAUTHORIZED,
                         )
                     user.otp = otp
                     user.otp_expiration = otp_expiration
@@ -1281,7 +1281,7 @@ class WalletAuth(APIView):
                             "message": "Only business owners can login via wallet",
                             "errors": "Only business owners can login via wallet",
                         },
-                        status=status.HPPT_403_FORBIDDEN,
+                        status=status.HTTP_401_UNAUTHORIZED,
                     )
                 jwt_operations = JWTOperations()
                 user_id = str(user.id)
