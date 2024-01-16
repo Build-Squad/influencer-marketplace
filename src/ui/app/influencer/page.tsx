@@ -3,6 +3,9 @@ import Banner from "./components/banner";
 import AnalyticsContainer from "../components/analyticsContainer";
 import Footer from "@/src/components/shared/footer";
 import { Box, Typography } from "@mui/material";
+import GuideContainer from "./components/guideContainer";
+import FAQSection from "./components/faqSection";
+import ElevateSection from "./components/elevateSection";
 
 type Props = {};
 
@@ -13,17 +16,32 @@ export default function Influencer({}: Props) {
       <AnalyticsContainer />
       <Box
         sx={{
-          height: "400px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          marginX: "40px",
+          marginTop: "84px",
+          textAlign: "center",
         }}
       >
-        {/* Other Sections */}
-        <Typography variant="h3" fontWeight={"bold"}>
-          ... Remaining Sections ...
-        </Typography>
+        <GuideContainer />
       </Box>
+      <Box
+        sx={{
+          marginX: "40px",
+          marginTop: "84px",
+          textAlign: "center",
+        }}
+      >
+        <ElevateSection />
+      </Box>
+      <Box
+        sx={{
+          marginX: "40px",
+          marginTop: "84px",
+          textAlign: "center",
+        }}
+      >
+        <FAQSection />
+      </Box>
+
       <Footer />
     </Fragment>
   );
