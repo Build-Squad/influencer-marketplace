@@ -150,19 +150,34 @@ export const cartSlice = createSlice({
       }
 
       // Find the service in the servicesAdded array
-      const serviceAdded = state.servicesAdded.find(
-        (item) => item.item?.package?.id === action.payload.packageId
-      );
-
-      if (serviceAdded && serviceAdded.quantity > 1) {
-        // If the service exists and its quantity is more than 1, decrement its quantity
-        serviceAdded.quantity -= 1;
-      } else if (serviceAdded && serviceAdded.quantity === 1) {
-        // If the service exists and its quantity is 1, remove the service from the servicesAdded array
-        state.servicesAdded = state.servicesAdded.filter(
-          (item) => item.item?.package?.id === action.payload.packageId
+      let servicesAdded: ServiceAdded[] = [];
+      // Decrement the quantity of the service
+      // If the quantity is 0, remove the service from the servicesAdded array
+      // Also update the platform_price
+      state.orderItems.forEach((item) => {
+        const serviceAdded = servicesAdded.find(
+          (service) => service.item?.package.id === action.payload.packageId
         );
-      }
+        if (serviceAdded) {
+          serviceAdded.quantity -= 1;
+          if (serviceAdded.quantity === 0) {
+            // Remove the service from the servicesAdded array
+            const index = servicesAdded.findIndex(
+              (service) => service.item?.package.id === action.payload.packageId
+            );
+            servicesAdded.splice(index, 1);
+          } else {
+            serviceAdded.platform_price = (
+              parseFloat(serviceAdded.platform_price) -
+              parseFloat(item.order_item?.price?.toString()) +
+              parseFloat(item.order_item?.price?.toString()) *
+                (parseFloat(item.order_item?.platform_fee?.toString()) / 100)
+            )?.toString();
+          }
+        }
+      });
+
+      state.servicesAdded = servicesAdded;
 
       // If there are no more order items, reset influencer, orderTotal, and orderTotalCurrency here
       if (state.orderItems.length === 0) {
