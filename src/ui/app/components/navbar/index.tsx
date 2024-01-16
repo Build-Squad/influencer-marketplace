@@ -293,7 +293,7 @@ export default function Navbar({
           >
             {isTwitterUserLoggedIn ? (
               // Business menu items
-              user?.user?.role?.name.includes("business") ? (
+              user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
                   items={[
                     "Home",
