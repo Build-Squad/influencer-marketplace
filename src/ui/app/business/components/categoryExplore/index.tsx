@@ -1,44 +1,49 @@
 "use client";
 import { Typography, Grid, Box } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CategoryExploreCards from "./categoryExploreCards";
 import { CategoriesType } from "./types";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { getService } from "@/src/services/httpServices";
+import { notification } from "@/src/components/shared/notification";
 
 type Props = {};
-
-const dummyData: Array<CategoriesType> = [
-  {
-    name: "FitFI",
-    coverImage: "/category_explore_1.png",
-    description:
-      "Lorem ipsum dolor sit amet consectetur. Tempus vestibulum elementum donec nec diam nec sapien sit.",
-  },
-  {
-    name: "InfluenceFi",
-    coverImage: "/category_explore_2.png",
-    description:
-      "Lorem ipsum dolor sit amet consectetur. Tempus vestibulum elementum donec nec diam nec sapien sit.",
-  },
-  {
-    name: "CommunicationFi",
-    coverImage: "/category_explore_3.png",
-    description:
-      "Lorem ipsum dolor sit amet consectetur. Tempus vestibulum elementum donec nec diam nec sapien sit.",
-  },
-  {
-    name: "MetaFI",
-    coverImage: "/category_explore_4.png",
-    description:
-      "Lorem ipsum dolor sit amet consectetur. Tempus vestibulum elementum donec nec diam nec sapien sit.",
-  },
-];
 
 const CARDS_PER_GROUP = 4;
 
 export default function InfluencersContainer({}: Props) {
-  const [topInfluencers, setTopInfluencers] =
-    useState<CategoriesType[]>(dummyData);
+  const [allCategoryMasters, setAllCategoryMasters] = React.useState<
+    CategoriesType[]
+  >([]);
+
+  const getCategoryMasters = async () => {
+    const { isSuccess, data, message } = await getService(
+      "/account/category-master/",
+      {
+        page_size: 8,
+        page_number: 1,
+      }
+    );
+    if (isSuccess) {
+      const _allCategoryMasters = data?.data?.map(
+        (categoryMaster: CategoryMasterType) => {
+          return {
+            ...categoryMaster,
+            coverImage: `/category_explore_${
+              Math.floor(Math.random() * 4) + 1
+            }.png`,
+          };
+        }
+      );
+      setAllCategoryMasters(_allCategoryMasters);
+    } else {
+      notification(message ? message : "Something went wrong", "error");
+    }
+  };
+
+  useEffect(() => {
+    getCategoryMasters();
+  }, []);
 
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
 
@@ -46,13 +51,13 @@ export default function InfluencersContainer({}: Props) {
     setCurrentGroupIndex((prevIndex) =>
       prevIndex > 0
         ? prevIndex - 1
-        : Math.floor(topInfluencers.length / CARDS_PER_GROUP) - 1
+        : Math.floor(allCategoryMasters.length / CARDS_PER_GROUP) - 1
     );
   };
 
   const handleForward = () => {
     setCurrentGroupIndex((prevIndex) =>
-      prevIndex < Math.floor(topInfluencers.length / CARDS_PER_GROUP) - 1
+      prevIndex < Math.floor(allCategoryMasters.length / CARDS_PER_GROUP) - 1
         ? prevIndex + 1
         : 0
     );
@@ -60,7 +65,7 @@ export default function InfluencersContainer({}: Props) {
   const startCardIndex = currentGroupIndex * CARDS_PER_GROUP;
   const endCardIndex = startCardIndex + CARDS_PER_GROUP;
 
-  const displayedInfluencers = topInfluencers.slice(
+  const displayedCategories = allCategoryMasters.slice(
     startCardIndex,
     endCardIndex
   );
@@ -91,7 +96,7 @@ export default function InfluencersContainer({}: Props) {
               justifyContent: "center",
             }}
           >
-            {displayedInfluencers.map((inf, index) => (
+            {displayedCategories.map((inf, index) => (
               <CategoryExploreCards category={inf} key={index} />
             ))}
           </Box>
