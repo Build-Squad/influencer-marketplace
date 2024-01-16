@@ -131,71 +131,16 @@ const CheckoutModal = ({
                     </TableCell>
                   </TableRow>
                 )}
-                {cart?.servicesAdded.map((orderItem, index) => {
-                  const service = orderItem?.service;
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>{service?.package?.name}</TableCell>
-                      <TableCell>
-                        {/* A counter */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Button
-                            color="secondary"
-                            sx={{
-                              borderRadius: "50%",
-                              minWidth: 0,
-                              width: 30,
-                              height: 30,
-                              p: 0,
-                              mr: 1,
-                            }}
-                            onClick={() => {
-                              removeItemFromCart(service);
-                            }}
-                          >
-                            -
-                          </Button>
-                          <Box
-                            sx={{
-                              p: "0px 8px",
-                              border: "1px solid #e8e8e8",
-                              borderRadius: 2,
-                              backgroundColor: "#f8f8f8",
-                            }}
-                          >
-                            {orderItem?.quantity}
-                          </Box>
-                          <Button
-                            color="secondary"
-                            sx={{
-                              borderRadius: "50%",
-                              minWidth: 0,
-                              width: 30,
-                              height: 30,
-                              p: 0,
-                              ml: 1,
-                            }}
-                            onClick={() => {
-                              addItemToCart(service);
-                            }}
-                          >
-                            +
-                          </Button>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        {Number(service?.platform_price)?.toFixed(2)}{" "}
-                        {service.currency.symbol}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {cart?.servicesAdded.map((orderItem) => (
+                  <TableRow key={orderItem?.item.id}>
+                    <TableCell>{orderItem?.item?.package?.name}</TableCell>
+                    <TableCell>{orderItem?.quantity} </TableCell>
+                    <TableCell>
+                      {Number(orderItem?.platform_price)?.toFixed(2)}{" "}
+                      {orderItem?.item?.currency?.symbol}
+                    </TableCell>
+                  </TableRow>
+                ))}
                 <TableRow>
                   {/* Total */}
                   <TableCell
