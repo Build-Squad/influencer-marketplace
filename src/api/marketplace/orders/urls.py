@@ -16,7 +16,8 @@ from .views import (
     TransactionList,
     TransactionDetail,
     ReviewList,
-    ReviewDetail
+    ReviewDetail,
+    UpdateOrderStatus
 )
 
 urlpatterns = [
@@ -24,6 +25,7 @@ urlpatterns = [
 
     path("order/", OrderList.as_view(), name="create-order"),
     path('order/<uuid:pk>/', OrderDetail.as_view(), name="order-details"),
+    path("update-status/<uuid:pk>/", UpdateOrderStatus.as_view(), name="update-order-status"),
 
     path("order-item/", OrderItemList.as_view(), name="order-item-list"),
     path('order-item/<uuid:pk>/', OrderItemDetail.as_view(), name="order-item-details"),

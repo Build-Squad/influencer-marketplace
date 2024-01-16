@@ -243,6 +243,7 @@ export default function Navbar({
             onClick={() => {
               router.push("/");
             }}
+            style={{ cursor: "pointer" }}
           />
         </Box>
         {isTwitterUserLoggedIn ? null : (

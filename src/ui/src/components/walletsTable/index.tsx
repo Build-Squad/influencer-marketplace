@@ -14,7 +14,9 @@ import { notification } from "../shared/notification";
 import EmptyWalletIcon from "@/public/svg/No_wallets_connected.svg";
 import Image from "next/image";
 
-type Props = {};
+type Props = {
+  walletOpen: boolean;
+};
 
 type walletsType = {
   addr: string;
@@ -32,7 +34,7 @@ const styles = {
   },
 };
 
-export default function WalletsTable({}: Props) {
+export default function WalletsTable({ walletOpen }: Props) {
   const [userWallets, setUserWallets] = useState<walletsType>();
   const getUserWallets = async () => {
     const { isSuccess, data, message } = await getService("/account/wallets/");
@@ -54,23 +56,31 @@ export default function WalletsTable({}: Props) {
 
   useEffect(() => {
     getUserWallets();
-  }, []);
+  }, [walletOpen]);
 
   return (
     <Box>
       <TableContainer>
         <Table sx={{ minWidth: 650 }}>
-          <TableHead
-            sx={{
-              border: "2px solid black",
-              borderRadius: "12px",
-            }}
-          >
-            <TableRow>
-              <TableCell align="left" sx={styles.headerCellStyle}>
+          <TableHead>
+            <TableRow
+              sx={{
+                ".MuiTableCell-head": {
+                  border: "2px solid black",
+                  borderRadius: "12px",
+                },
+              }}
+            >
+              <TableCell
+                align="left"
+                sx={{ ...styles.headerCellStyle, borderRight: "0 !important" }}
+              >
                 Address
               </TableCell>
-              <TableCell align="left" sx={styles.headerCellStyle}>
+              <TableCell
+                align="left"
+                sx={{ ...styles.headerCellStyle, borderLeft: "0 !important" }}
+              >
                 Wallet Name
               </TableCell>
             </TableRow>

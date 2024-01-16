@@ -148,7 +148,7 @@ export default function Banner({}: Props) {
               <FiltersComponent
                 formik={formik}
                 type={"FOLLOWERS"}
-                data={{ name: "upperPriceLimit", label: "Max. Followers" }}
+                data={{ name: "upperFollowerLimit", label: "Max. Followers" }}
               />
             </Grid>
           </Grid>
