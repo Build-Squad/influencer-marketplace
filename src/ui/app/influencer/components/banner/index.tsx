@@ -54,7 +54,7 @@ export default function Banner({}: Props) {
                 fontSize: "16px",
               }}
               size="large"
-              onClick={startTwitterAuthentication}
+              onClick={() => startTwitterAuthentication({ role: "influencer" })}
               endIcon={<ArrowCircleRightOutlined />}
             >
               Connect with X

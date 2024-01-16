@@ -315,7 +315,13 @@ export default function Navbar({
             )}
             <LoginMenu
               isTwitterUserLoggedIn={isTwitterUserLoggedIn}
-              twitterLogin={startTwitterAuthentication}
+              twitterLogin={() =>
+                startTwitterAuthentication({
+                  role: pathname.includes("business")
+                    ? "business_owner"
+                    : "influencer",
+                })
+              }
               setEmailOpen={setEmailOpen}
               setWalletOpen={setWalletOpen}
               logoutTwitterUser={logoutTwitterUser}
