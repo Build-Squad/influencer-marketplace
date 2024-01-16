@@ -28,11 +28,13 @@ type OrderItem = {
 type OrderItemFormProps = {
   orderItem: OrderItem;
   index: number;
+  disableDelete: boolean;
 };
 
 export default function OrderItemForm({
   orderItem,
   index,
+  disableDelete,
 }: OrderItemFormProps) {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
@@ -95,27 +97,28 @@ export default function OrderItemForm({
         >
           {orderItem?.order_item?.package?.name}
         </Typography>
-
-        <ConfirmDelete
-          title="this order item"
-          onConfirm={() => {
-            deleteOrderItem();
-          }}
-          loading={loading}
-          hide={true}
-          deleteElement={
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{
-                borderRadius: 7,
-              }}
-              startIcon={<DeleteIcon />}
-            >
-              Delete
-            </Button>
-          }
-        />
+        {!disableDelete && (
+          <ConfirmDelete
+            title="this order item"
+            onConfirm={() => {
+              deleteOrderItem();
+            }}
+            loading={loading}
+            hide={true}
+            deleteElement={
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{
+                  borderRadius: 7,
+                }}
+                startIcon={<DeleteIcon />}
+              >
+                Delete
+              </Button>
+            }
+          />
+        )}
       </Box>
       <Divider
         sx={{
