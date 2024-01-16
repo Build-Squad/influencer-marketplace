@@ -1,12 +1,12 @@
 "use client";
+import Star from "@/public/svg/Star.svg";
 import { notification } from "@/src/components/shared/notification";
 import { postService, putService } from "@/src/services/httpServices";
-import Star from "@/public/svg/Star.svg";
-import Image from "next/image";
 import { OpenInFull } from "@mui/icons-material";
-import Mask_group from "@/public/svg/Mask_group.svg";
-import { Attachment, Download } from "@mui/icons-material";
+import Image from "next/image";
 
+import OrderSummaryDetails from "@/src/components/dashboardComponents/orderSummaryDetails";
+import OrderSummaryTable from "@/src/components/dashboardComponents/orderSummaryTable";
 import {
   Box,
   Button,
@@ -14,12 +14,6 @@ import {
   Grid,
   Link,
   Pagination,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -31,192 +25,6 @@ import {
 } from "@mui/x-data-grid";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
-
-const styles = {
-  headerCellStyle: {
-    fontSize: "20px",
-    paddingX: 0,
-    paddingY: "10px",
-  },
-  bodyCellStyle: {
-    fontSize: "16px",
-    paddingX: "0",
-    paddingY: "4px",
-  },
-  tableRowStyles: {
-    "& td, & th": { border: 0 },
-  },
-};
-
-const OrderSummaryTable = ({
-  order,
-  totalOrders = 0,
-}: {
-  order?: OrderType;
-  totalOrders?: number;
-}) => {
-  const totalAmount = order?.order_item_order_id?.reduce(
-    (acc: number, item: any) => {
-      return acc + parseFloat(item.price);
-    },
-    0
-  );
-  return (
-    <TableContainer>
-      <Table>
-        <TableHead>
-          <TableRow sx={styles.tableRowStyles}>
-            <TableCell align="left" sx={{ ...styles.headerCellStyle }}>
-              Services
-            </TableCell>
-            <TableCell align="center" sx={{ ...styles.headerCellStyle }}>
-              Quantity
-            </TableCell>
-            <TableCell align="right" sx={{ ...styles.headerCellStyle }}>
-              Amount
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {order?.order_item_order_id.map((item: any) => {
-            return (
-              <TableRow sx={styles.tableRowStyles}>
-                <TableCell align="left" sx={{ ...styles.bodyCellStyle }}>
-                  {item?.service_master?.name}
-                </TableCell>
-                <TableCell align="center" sx={{ ...styles.bodyCellStyle }}>
-                  1
-                </TableCell>
-                <TableCell align="right" sx={{ ...styles.bodyCellStyle }}>
-                  {item?.price} {order?.currency?.symbol}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-        <TableBody>
-          <TableRow sx={styles.tableRowStyles}>
-            <TableCell align="left" sx={{ ...styles.bodyCellStyle }}>
-              <Typography variant="h6" fontWeight={"bold"}>
-                Total
-              </Typography>
-            </TableCell>
-            <TableCell align="center" sx={{ ...styles.bodyCellStyle }}>
-              <Typography variant="h6" fontWeight={"bold"}>
-                {totalOrders}
-              </Typography>
-            </TableCell>
-            <TableCell align="right" sx={{ ...styles.bodyCellStyle }}>
-              <Typography variant="h6" fontWeight={"bold"}>
-                {totalAmount}
-              </Typography>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-};
-
-const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
-  switch (meta_data.field_type) {
-    case "text":
-    case "long_text":
-      return (
-        <Box sx={{ mb: 2 }}>
-          <Typography sx={{ mt: 2, color: "#9E9E9E" }}>
-            <Image
-              src={Mask_group}
-              height={14}
-              alt="Mask_group"
-              style={{ marginRight: "8px" }}
-            />
-            Instructions
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              position: "relative",
-              color: "#676767",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {meta_data?.value}
-          </Typography>
-        </Box>
-      );
-
-    case "media":
-      return (
-        <Box
-          sx={{
-            mb: 2,
-            borderRadius: "24px",
-            border: "1px solid #E8E8E8",
-            background: "#F8F8F8",
-            padding: "12px 24px",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          <Box sx={{ display: "flex", columnGap: "8px", alignItems: "center" }}>
-            <Attachment />
-            <Typography>Media</Typography>
-          </Box>
-          <Download />
-        </Box>
-      );
-
-    case "date_time":
-      return (
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Box>
-            <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
-              Date of publishing
-            </Typography>
-            <Typography variant="subtitle1" sx={{ color: "#676767" }}>
-              23, Nov 2023
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
-              Time of Publishing
-            </Typography>
-            <Typography variant="subtitle1" sx={{ color: "#676767" }}>
-              00:15
-            </Typography>
-          </Box>
-        </Box>
-      );
-
-    default:
-      return null;
-  }
-};
-
-const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
-  return (
-    <Box sx={{ mt: 5 }}>
-      {orderItem.map((eachOrderItem: any, index: number) => {
-        return (
-          <>
-            <Typography variant="h6" fontWeight={"bold"}>
-              {eachOrderItem.service_master.name} ({index + 1})
-            </Typography>
-
-            {eachOrderItem.order_item_meta_data.map((meta_data: any) => {
-              return <ContentTypeComponent meta_data={meta_data} />;
-            })}
-
-            <Divider sx={{ mt: 3 }} />
-          </>
-        );
-      })}
-    </Box>
-  );
-};
 
 export default function Orders() {
   const [loading, setLoading] = useState(false);
