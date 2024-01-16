@@ -14,6 +14,7 @@ import React from "react";
 import OrderSummaryTable from "../orderSummaryTable";
 import OrderSummaryDetails from "../orderSummaryDetails";
 import { Close, Edit } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
 
 type OrderDetailsProps = {
   order: OrderType | null;
@@ -21,6 +22,7 @@ type OrderDetailsProps = {
 };
 
 export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
+  const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -61,7 +63,11 @@ export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
         >
           {order?.status === "pending" && (
             <Tooltip title="Edit Details" placement="top" arrow>
-              <IconButton onClick={() => onClose()}>
+              <IconButton
+                onClick={() => {
+                  router.push(`/business/order/${order?.id}/`);
+                }}
+              >
                 <Edit />
               </IconButton>
             </Tooltip>
