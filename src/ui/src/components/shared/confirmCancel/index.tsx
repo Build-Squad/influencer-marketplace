@@ -32,7 +32,7 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export const ConfirmDelete: React.FC<Props> = ({
+export const ConfirmCancel: React.FC<Props> = ({
   onConfirm,
   title,
   loading,
@@ -48,7 +48,9 @@ export const ConfirmDelete: React.FC<Props> = ({
       }}
     >
       <Tooltip title="Delete">
-        <Box onClick={() => setOpen(true)}>{deleteElement}</Box>
+        <Box onClick={() => setOpen(true)} sx={{ width: "100%" }}>
+          {deleteElement}
+        </Box>
       </Tooltip>
       <Dialog
         open={open}
@@ -63,7 +65,7 @@ export const ConfirmDelete: React.FC<Props> = ({
           }}
         >
           <Typography variant="h6">
-            Are you sure you want to delete {title}?
+            Are you sure you want to cancel {title}?
           </Typography>
         </DialogTitle>
         <DialogActions
@@ -80,7 +82,7 @@ export const ConfirmDelete: React.FC<Props> = ({
             variant="outlined"
             color="secondary"
           >
-            Cancel
+            No
           </Button>
           <Button
             onClick={() => {
@@ -96,10 +98,10 @@ export const ConfirmDelete: React.FC<Props> = ({
               <>
                 {" "}
                 <CircularProgress color="error" sx={{ mr: 1 }} size={24} />{" "}
-                {"Deleting"}{" "}
+                {"Cancelling"}{" "}
               </>
             ) : (
-              "Delete"
+              "Yes"
             )}
           </Button>
         </DialogActions>

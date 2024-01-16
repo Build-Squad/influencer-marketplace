@@ -116,6 +116,7 @@ class ServiceMasterMetaData(models.Model):
     span = models.IntegerField(blank=True, null=True)
     field_type = models.CharField(choices=TYPE_CHOICES,
                                   max_length=50, default='text')
+    order = models.IntegerField(blank=True, null=True)
     service_master_id = models.ForeignKey(
         ServiceMaster, related_name='service_master_meta_data_id', on_delete=models.SET_NULL, null=True)
 

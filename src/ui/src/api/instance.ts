@@ -16,7 +16,7 @@ instance.interceptors.response.use(
       sessionStorage.clear();
       // window.location.href = "/";
     }
-    return error;
+    throw error;
   }
 );
 
