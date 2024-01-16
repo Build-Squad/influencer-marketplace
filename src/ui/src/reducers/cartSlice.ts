@@ -1,6 +1,7 @@
 // A cart slice that will keep track of the current influencer for the order and the order's information
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { notification } from "../components/shared/notification";
 
 type OrderItem = {
   order_item: OrderItemType;
@@ -64,6 +65,14 @@ export const cartSlice = createSlice({
         state.orderTotal > 0 &&
         state.orderTotalCurrency.id !== action.payload.service.currency.id
       ) {
+        return;
+      }
+
+      if (state?.influencer?.id !== action.payload.influencer?.id) {
+        notification(
+          "Please select services from the same influencer",
+          "error"
+        );
         return;
       }
 
@@ -150,7 +159,7 @@ export const cartSlice = createSlice({
       }
 
       // Find the service in the servicesAdded array
-      let servicesAdded: ServiceAdded[] = [];
+      let servicesAdded: ServiceAdded[] = [...state.servicesAdded];
       // Decrement the quantity of the service
       // If the quantity is 0, remove the service from the servicesAdded array
       // Also update the platform_price
@@ -168,10 +177,8 @@ export const cartSlice = createSlice({
             servicesAdded.splice(index, 1);
           } else {
             serviceAdded.platform_price = (
-              parseFloat(serviceAdded.platform_price) -
-              parseFloat(item.order_item?.price?.toString()) +
-              parseFloat(item.order_item?.price?.toString()) *
-                (parseFloat(item.order_item?.platform_fee?.toString()) / 100)
+              Number(serviceAdded.platform_price) -
+              Number(item.order_item.platform_price)
             )?.toString();
           }
         }
