@@ -30,8 +30,10 @@ import React, { useEffect, useState } from "react";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 import dayjs from "dayjs";
+import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 
 export default function BusinessDashboardPage() {
+  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
@@ -326,7 +328,11 @@ export default function BusinessDashboardPage() {
               arrow
               disableInteractive
             >
-              <IconButton>
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row);
+                }}
+              >
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
@@ -469,6 +475,12 @@ export default function BusinessDashboardPage() {
           </Box>
         </Grid>
       </Grid>
+      <OrderDetails
+        order={selectedOrder}
+        onClose={() => {
+          setSelectedOrder(null);
+        }}
+      />
     </Box>
   );
 }
