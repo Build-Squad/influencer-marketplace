@@ -22,7 +22,7 @@ export default function BusinessProfile({}: Props) {
   // Change while adding newer fields in business user model
   useEffect(() => {
     setUserDetails({
-      username: user?.first_name ?? "Anonymous User",
+      username: user?.username ?? "Anonymous User",
       isTwitterAccountConnected: !!user?.twitter_account,
       isWalletConnected: !!user?.wallets?.length,
       businessDetails: {
