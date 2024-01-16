@@ -3,15 +3,15 @@ import { Box, Button, Typography } from "@mui/material";
 import React, { useState } from "react";
 import Image from "next/image";
 import { CheckCircle } from "@mui/icons-material";
-import Article3_Business from "@/public/svg/Article3_Business.svg";
-import Article2_Business from "@/public/svg/Article2_Business.svg";
-import Article1_Business from "@/public/svg/Article1_Business.svg";
+import Article3_Business from "@/public/svg/Article3_Influencer.svg";
+import Article2_Business from "@/public/svg/Article2_Influencer.svg";
+import Article1_Business from "@/public/svg/Article1_Influencer.svg";
 type Props = {};
 
 const TABS = [
-  "Impactful Services",
+  "Customize Services",
   "Decentralized Community",
-  "X Web3 Influencers",
+  "Lasting Replationships",
 ];
 
 const FirstTabComponent = () => {
@@ -19,20 +19,20 @@ const FirstTabComponent = () => {
     <>
       <Box sx={{ flex: 1, textAlign: "left" }}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Tailored Services from X Web3 Influencers:
+          Set prices, tailor services, personalize offerings.
         </Typography>
         <Typography sx={{ mt: 3 }} variant="h6">
-          Xfluencer is not just another influencer marketplace—it's a dedicated
-          space for X Web3 influencers.
+          If you have a knack for creating captivating and shareable content,
+          this service is for you
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Our platform is curated specifically for those influencers who have
-            mastered the art of engaging their audience on one of the most
-            dynamic social media platforms.
+            As an influencer, you can set your own prices based on factors such
+            as the complexity of the content, the engagement you can guarantee,
+            and the level of creativity involved.
           </Typography>
         </Box>
 
@@ -41,9 +41,9 @@ const FirstTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Choose from a range of services including posts, reposts, replies,
-            pinned tweets, likes, and quoted posts, all delivered by influencers
-            with a proven track record on X.
+            Businesses are always on the lookout for influencers who can produce
+            content that resonates with their target audience, and by offering
+            this service, you position yourself as a valuable asset.
           </Typography>
         </Box>
       </Box>
@@ -65,16 +65,16 @@ const SecondTabComponent = () => {
     <>
       <Box sx={{ flex: 1, textAlign: "left" }}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Community Building Through Decentralization
+          Enhanced Security Through Web3 Integration
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Xfluencer fosters a sense of community by embracing
-            decentralization. Influencers and users alike become part of a
-            network where transparency and trust are paramount.
+            With the integration of web3 wallets, our platform ensures that all
+            transactions are secure, transparent, and tamper-proof. Bid farewell
+            to concerns about delayed payments or disputes.
           </Typography>
         </Box>
 
@@ -83,9 +83,9 @@ const SecondTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            This decentralized approach encourages collaboration, innovation,
-            and a shared commitment to the growth of the Web3 influencer
-            ecosystem.
+            By leveraging blockchain technology, we create a trustless
+            environment that prioritizes the security of both influencers and
+            businesses.
           </Typography>
         </Box>
       </Box>
@@ -105,17 +105,18 @@ const ThirdTabComponent = () => {
     <>
       <Box sx={{ flex: 1, textAlign: "left" }}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Diverse Range of Impactful Services
+          Build Lasting Relationships
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Our platform offers a diverse array of services tailored to meet the
-            dynamic needs of businesses. From attention-grabbing posts and
-            strategic reposts to engaging replies and prominently placed pinned
-            tweets.
+            Build Lasting Relationships:Our platform is designed to foster
+            long-term partnerships between influencers and businesses. By
+            offering your services through our marketplace, you gain exposure to
+            a diverse range of clients seeking authentic and impactful
+            collaborations.
           </Typography>
         </Box>
 
@@ -124,9 +125,8 @@ const ThirdTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Our influencers provide a spectrum of services to amplify your brand
-            message. Tailor your campaign to align with your brand's unique
-            narrative and objectives.
+            This not only boosts your income but also establishes your brand as
+            a go-to influencer in your niche.
           </Typography>
         </Box>
       </Box>
@@ -157,7 +157,7 @@ export default function ElevateSection({}: Props) {
           Revolutionize Your Engagement
         </Typography>
         <Typography sx={{ fontSize: "40px" }}>
-          Elevate Your Business with Xfluencer
+          Take your Influencer-Ship to the next level
         </Typography>
         <Box
           sx={{ display: "flex", justifyContent: "center", marginTop: "14px" }}
@@ -175,14 +175,13 @@ export default function ElevateSection({}: Props) {
               return (
                 <Box
                   sx={{
-                    cursor:"pointer",
+                    cursor: "pointer",
                     display: "flex",
                     paddingX: "56px",
                     alignItems: "center",
                     columnGap: "8px",
                     borderRadius: selectedTab == index ? "30px" : "none",
-                    border:
-                      selectedTab == index ? "1px solid black" : "none",
+                    border: selectedTab == index ? "1px solid black" : "none",
                     paddingY: "18px",
                   }}
                   onClick={() => {

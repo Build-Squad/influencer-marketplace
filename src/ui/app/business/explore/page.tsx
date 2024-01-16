@@ -31,87 +31,12 @@ const dummyData: Array<TopInfluencersType> = [
     followers: "Hyderabad, India",
     minPrice: 100,
     maxPrice: 500,
-  },
-  {
-    id: "2",
-    name: "Shyam Visamsetty",
-    twitterUsername: "shyamvisamsetty",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread"],
-    followers: "Madrid, Spain",
-    minPrice: 100,
-    maxPrice: 200,
-  },
-  {
-    id: "3",
-    name: "Mudit Sethi",
-    twitterUsername: "alphamudit",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Like", "Repost", "Thread"],
-    followers: "Punjab, India",
-    minPrice: 1200,
-    maxPrice: 2800,
-  },
-  {
-    id: "4",
-    name: "Laxmi Jangid",
-    twitterUsername: "laxjangid1",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread", "Post"],
-    followers: "Madrid, Spain",
-    minPrice: 11200,
-    maxPrice: 34400,
-  },
-  {
-    id: "5",
-    name: "Mudit Sethi",
-    twitterUsername: "alphamudit",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Like", "Repost", "Thread"],
-    followers: "Punjab, India",
-    minPrice: 1200,
-    maxPrice: 2800,
-  },
-  {
-    id: "6",
-    name: "Laxmi Jangid",
-    twitterUsername: "laxjangid1",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread", "Post"],
-    followers: "Madrid, Spain",
-    minPrice: 11200,
-    maxPrice: 34400,
-  },
-  {
-    id: "7",
-    name: "Parikshit Singh",
-    twitterUsername: "ParikshitSingh567",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Story", "Post", "Repost", "Thread"],
-    followers: "Hyderabad, India",
-    minPrice: 100,
-    maxPrice: 500,
-  },
-  {
-    id: "8",
-    name: "Shyam Visamsetty",
-    twitterUsername: "shyamvisamsetty",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread"],
-    followers: "Madrid, Spain",
-    minPrice: 100,
-    maxPrice: 200,
-  },
+  }
 ];
 
 export default function Explore({}: Props) {
+  const filterData = localStorage.getItem("filterData");
+  console.log(JSON.parse(filterData ?? ""));
   const [topInfluencers, setTopInfluencers] =
     useState<TopInfluencersType[]>(dummyData);
 
