@@ -1281,7 +1281,7 @@ class WalletAuth(APIView):
                             "message": "Only business owners can login via wallet",
                             "errors": "Only business owners can login via wallet",
                         },
-                        status=status.HPPT_403_FORBIDDEN,
+                        status=status.HTTP_401_UNAUTHORIZED,
                     )
                 jwt_operations = JWTOperations()
                 user_id = str(user.id)
