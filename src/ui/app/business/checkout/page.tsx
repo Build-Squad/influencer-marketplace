@@ -1,9 +1,18 @@
 "use client";
 
+import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
-import { initializeCart, updateFieldValues } from "@/src/reducers/cartSlice";
-import { postService, putService } from "@/src/services/httpServices";
+import {
+  initializeCart,
+  resetCart,
+  updateFieldValues,
+} from "@/src/reducers/cartSlice";
+import {
+  deleteService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
 import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
@@ -26,18 +35,37 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function CheckoutPage() {
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const user = useAppSelector((state) => state.user);
   const route = useRouter();
+  const [loading, setLoading] = useState(false);
 
   if (!user) {
     notification("You need to login first", "error");
     route.push("/");
     return null;
   }
+
+  const deleteOrder = async () => {
+    try {
+      setLoading(true);
+      const { isSuccess, message } = await deleteService(
+        `/orders/order/${cart?.orderId}/`
+      );
+      if (isSuccess) {
+        notification("Order cancelled successfully!", "success");
+        dispatch(resetCart());
+      } else {
+        notification(message, "error", 3000);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const createOrder = async () => {
     const body = {
@@ -121,10 +149,15 @@ export default function CheckoutPage() {
   };
 
   const onSave = async () => {
-    if (!cart?.orderId) {
-      createOrder();
-    } else {
-      updateOrder();
+    try {
+      setLoading(true);
+      if (!cart?.orderId) {
+        createOrder();
+      } else {
+        updateOrder();
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -373,7 +406,7 @@ export default function CheckoutPage() {
                 alignItems: "center",
               }}
             >
-              <Button
+              {/* <Button
                 variant="outlined"
                 color="secondary"
                 sx={{
@@ -385,7 +418,7 @@ export default function CheckoutPage() {
                 }}
               >
                 Clear
-              </Button>
+              </Button> */}
               <Button
                 variant="contained"
                 color="secondary"
@@ -394,13 +427,13 @@ export default function CheckoutPage() {
                   mt: 1,
                   borderRadius: 8,
                   minWidth: 100,
-                  mx: 2,
                 }}
                 onClick={() => {
                   onSave();
                 }}
+                disabled={loading}
               >
-                Save
+                {loading ? "Saving..." : "Save"}
               </Button>
             </Box>
           </Grid>
@@ -510,12 +543,12 @@ export default function CheckoutPage() {
                     </TableRow>
                   )}
                   {cart?.servicesAdded.map((orderItem) => (
-                    <TableRow key={orderItem?.service.id}>
-                      <TableCell>{orderItem?.service?.package?.name}</TableCell>
+                    <TableRow key={orderItem?.item.id}>
+                      <TableCell>{orderItem?.item?.package?.name}</TableCell>
                       <TableCell>{orderItem?.quantity} </TableCell>
                       <TableCell>
-                        {Number(orderItem?.service?.platform_price)?.toFixed(2)}{" "}
-                        {orderItem?.service?.currency?.symbol}
+                        {Number(orderItem?.platform_price)?.toFixed(2)}{" "}
+                        {orderItem?.item?.currency?.symbol}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -548,6 +581,28 @@ export default function CheckoutPage() {
               </Typography>
             </Box>
             <Box>
+              <ConfirmCancel
+                title="this order"
+                onConfirm={() => {
+                  deleteOrder();
+                }}
+                loading={loading}
+                hide
+                deleteElement={
+                  <Button
+                    color="secondary"
+                    disableElevation
+                    fullWidth
+                    variant="outlined"
+                    disabled={loading}
+                    sx={{
+                      borderRadius: "20px",
+                    }}
+                  >
+                    Cancel Order
+                  </Button>
+                }
+              />
               <Button
                 disableElevation
                 fullWidth
@@ -558,7 +613,9 @@ export default function CheckoutPage() {
                   color: "black",
                   border: "1px solid black",
                   borderRadius: "20px",
+                  mt: 2,
                 }}
+                disabled={loading || !cart?.orderId}
               >
                 Make Payment
               </Button>
