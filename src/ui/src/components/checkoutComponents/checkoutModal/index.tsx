@@ -4,6 +4,11 @@ import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { Box, Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import CheckoutTable from "../checkoutTable";
+import { resetCart } from "@/src/reducers/cartSlice";
+import { deleteService } from "@/src/services/httpServices";
+import { notification } from "../../shared/notification";
+import { useState } from "react";
+import { ConfirmCancel } from "../../shared/confirmCancel";
 
 type CheckoutModalProps = {
   open: boolean;
@@ -19,6 +24,28 @@ const CheckoutModal = ({
   const router = useRouter();
   const cart = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(false);
+
+  const deleteOrder = async () => {
+    try {
+      if (!cart?.orderId) {
+        dispatch(resetCart());
+        return;
+      }
+      setLoading(true);
+      const { isSuccess, message } = await deleteService(
+        `/orders/order/${cart?.orderId}/`
+      );
+      if (isSuccess) {
+        notification("Order cancelled successfully!", "success");
+        dispatch(resetCart());
+      } else {
+        notification(message, "error", 3000);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -74,22 +101,35 @@ const CheckoutModal = ({
               justifyContent: "space-between",
             }}
           >
-            <Button
-              variant="outlined"
-              onClick={() => {
+            <ConfirmCancel
+              title="this order"
+              onConfirm={() => {
+                deleteOrder();
                 handleClose();
               }}
-              color="secondary"
-              sx={{ borderRadius: 5, mx: 1 }}
-              fullWidth
-            >
-              Cancel
-            </Button>
+              loading={loading}
+              hide
+              sx={{
+                width: "100%",
+                mx: 1,
+              }}
+              deleteElement={
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  sx={{ borderRadius: 5 }}
+                  fullWidth
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+              }
+            />
             <Button
               variant="contained"
               color="secondary"
-              sx={{ borderRadius: 5, mx: 1 }}
               fullWidth
+              sx={{ borderRadius: 5, mx: 1 }}
               disabled={cart?.orderItems.length === 0}
               onClick={() => {
                 router.push("/business/checkout");
