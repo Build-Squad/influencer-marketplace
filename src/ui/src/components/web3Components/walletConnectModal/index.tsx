@@ -9,12 +9,16 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React, { useEffect } from "react";
-import CustomModal from "../shared/customModal";
-import { notification } from "../shared/notification";
+import CustomModal from "../../shared/customModal";
+import { notification } from "../../shared/notification";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
     (await import("@solana/wallet-adapter-material-ui")).WalletMultiButton,
+  { ssr: false }
+);
+const SignMessageDynamic = dynamic(
+  async () => (await import("../signMessage")).SignMessage,
   { ssr: false }
 );
 
@@ -152,15 +156,7 @@ export default function WalletConnectModal({
             alignItems: "center",
           }}
         >
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{ borderRadius: 8 }}
-            onClick={onSubmit}
-            disabled={!walletAddress}
-          >
-            Save & Continue
-          </Button>
+          <SignMessageDynamic onSignMessageSuccess={onSubmit} />
         </Grid>
       </Grid>
     </CustomModal>
