@@ -88,7 +88,7 @@ export default function BusinessDashboardPage() {
         setOrderCount({
           accepted: data?.data?.accepted,
           completed: data?.data?.completed,
-          pending: data?.data?.pending,
+          pending: 0,
           rejected: data?.data?.rejected,
         });
       } else {
@@ -173,7 +173,7 @@ export default function BusinessDashboardPage() {
         }));
         setSelectedCard(3);
       },
-      value: 3,
+      value: 4,
       icon: (
         <RejectedOrders
           style={{
