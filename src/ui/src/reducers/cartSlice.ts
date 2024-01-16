@@ -9,8 +9,10 @@ type OrderItem = {
 };
 
 type ServiceAdded = {
-  service: ServiceType;
+  service?: ServiceType;
+  item: ServiceType | OrderItemType;
   quantity: number;
+  platform_price: string;
 };
 
 type CartState = {
@@ -67,17 +69,31 @@ export const cartSlice = createSlice({
 
       // Find the service in the servicesAdded array
       const serviceAdded = state.servicesAdded.find(
-        (item) => item.service.id === action.payload.service.id
+        (item) => item.item?.package?.id === action.payload.service.package.id
       );
 
       if (serviceAdded) {
         // If the service exists, increment its quantity
         serviceAdded.quantity += 1;
+        serviceAdded.platform_price = (
+          parseFloat(serviceAdded.platform_price) +
+          parseFloat(action.payload.service?.price?.toString()) +
+          parseFloat(action.payload.service?.price?.toString()) *
+            (parseFloat(action.payload.service?.platform_fees?.toString()) /
+              100)
+        )?.toString();
       } else {
         // If the service doesn't exist, push a new item to the servicesAdded array with quantity 1
         state.servicesAdded.push({
           service: action.payload.service,
+          item: action.payload.service,
           quantity: 1,
+          platform_price: (
+            parseFloat(action.payload.service?.price?.toString()) +
+            parseFloat(action.payload.service?.price?.toString()) *
+              (parseFloat(action.payload.service?.platform_fees?.toString()) /
+                100)
+          )?.toString(),
         });
       }
 
@@ -147,7 +163,7 @@ export const cartSlice = createSlice({
 
       // Find the service in the servicesAdded array
       const serviceAdded = state.servicesAdded.find(
-        (item) => item.service.id === action.payload.service.id
+        (item) => item.item.id === action.payload.service.id
       );
 
       if (serviceAdded && serviceAdded.quantity > 1) {
@@ -156,7 +172,7 @@ export const cartSlice = createSlice({
       } else if (serviceAdded && serviceAdded.quantity === 1) {
         // If the service exists and its quantity is 1, remove the service from the servicesAdded array
         state.servicesAdded = state.servicesAdded.filter(
-          (item) => item.service.id !== action.payload.service.id
+          (item) => item.item.id !== action.payload.service.id
         );
       }
 
@@ -266,6 +282,37 @@ export const cartSlice = createSlice({
           index: state.orderItems.length,
         };
       });
+
+      let servicesAdded: ServiceAdded[] = [];
+      action.payload.orderItems.forEach((item) => {
+        const serviceAdded = servicesAdded.find(
+          (service) => service.item?.package.id === item.package.id
+        );
+        if (serviceAdded) {
+          serviceAdded.quantity += 1;
+          serviceAdded.platform_price = (
+            parseFloat(serviceAdded.platform_price) +
+            parseFloat(item?.price?.toString()) +
+            parseFloat(item?.price?.toString()) *
+              (parseFloat(item?.platform_fee?.toString()) / 100)
+          )?.toString();
+        } else {
+          servicesAdded.push({
+            item: {
+              ...item,
+            },
+            quantity: 1,
+            platform_price: (
+              parseFloat(item?.price?.toString()) +
+              parseFloat(item?.price?.toString()) *
+                (parseFloat(item?.platform_fee?.toString()) / 100)
+            )?.toString(),
+          });
+        }
+      });
+
+      state.servicesAdded = servicesAdded;
+
       state.orderTotal = state.orderItems.reduce((total, item) => {
         return total + Number(item.order_item.platform_price);
       }, 0);
