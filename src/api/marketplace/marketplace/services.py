@@ -60,8 +60,10 @@ class JWTOperations:
 class Pagination:
     def __init__(self, qs, request):
         self.qs = qs
-        self.page_number = request.GET.get('page_number', 1)
-        self.page_size = request.GET.get('page_size', 10)
+        self.page_number = request.data.get(
+            'page_number', request.GET.get('page_number', 1))
+        self.page_size = request.data.get(
+            'page_size', request.GET.get('page_size', 10))
         self.total_data_count = qs.count()
         self.setValidPagination()
         i = self.page_size * (self.page_number - 1)
