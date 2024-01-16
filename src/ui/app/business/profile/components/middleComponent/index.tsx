@@ -134,7 +134,7 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
             borderRadius: "20px",
             mt: 5,
           }}
-          onClick={startTwitterAuthentication}
+          onClick={() => startTwitterAuthentication({ role: "business_owner" })}
         >
           Login to X
         </Button>
