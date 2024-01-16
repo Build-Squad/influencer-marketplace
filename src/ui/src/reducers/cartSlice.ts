@@ -30,8 +30,8 @@ type AddOrderItemPayloadType = {
 };
 
 type RemoveOrderItemPayloadType = {
-  service: ServiceType;
-  ind?: number;
+  packageId: string;
+  index: number;
 };
 
 type UpdateOrderItemPayloadType = {
@@ -137,33 +137,21 @@ export const cartSlice = createSlice({
       state,
       action: PayloadAction<RemoveOrderItemPayloadType>
     ) => {
-      if (action.payload.ind !== undefined) {
+      if (action.payload.index !== undefined) {
         // If there is an index, remove the item at that index
         // Check that it is a valid index
         if (
-          action.payload.ind < 0 ||
-          action.payload.ind >= state.orderItems.length
+          action.payload.index < 0 ||
+          action.payload.index >= state.orderItems.length
         ) {
           return;
         }
-        state.orderItems.splice(action.payload.ind, 1);
-      } else {
-        const index = state.orderItems.findIndex(
-          (item) => item.order_item.id === action.payload.service.id
-        );
-
-        // Check if the item exists before trying to remove it
-        if (index === -1) {
-          return;
-        }
-
-        // Always remove the item from the orderItems array
-        state.orderItems.splice(index, 1);
+        state.orderItems.splice(action.payload.index, 1);
       }
 
       // Find the service in the servicesAdded array
       const serviceAdded = state.servicesAdded.find(
-        (item) => item.item.id === action.payload.service.id
+        (item) => item.item?.package?.id === action.payload.packageId
       );
 
       if (serviceAdded && serviceAdded.quantity > 1) {
@@ -172,7 +160,7 @@ export const cartSlice = createSlice({
       } else if (serviceAdded && serviceAdded.quantity === 1) {
         // If the service exists and its quantity is 1, remove the service from the servicesAdded array
         state.servicesAdded = state.servicesAdded.filter(
-          (item) => item.item.id !== action.payload.service.id
+          (item) => item.item?.package?.id === action.payload.packageId
         );
       }
 
@@ -186,6 +174,7 @@ export const cartSlice = createSlice({
           symbol: "",
           country: null,
         };
+        state.servicesAdded = [];
         return;
       }
 
