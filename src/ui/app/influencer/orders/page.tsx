@@ -10,6 +10,9 @@ import { Attachment, Download } from "@mui/icons-material";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
   Divider,
   Grid,
   Link,
@@ -219,6 +222,11 @@ const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
 };
 
 export default function Orders() {
+  const [open, setOpen] = React.useState(false);
+  const [selectedAction, setSelectedAction] = useState({
+    status: "",
+    orderId: "",
+  });
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -390,7 +398,8 @@ export default function Orders() {
                 borderRadius: "20px",
               }}
               onClick={() => {
-                handleAction({ status: "accepted", orderId });
+                setSelectedAction({ status: "Accept", orderId });
+                handleClickOpen();
               }}
             >
               Accept
@@ -402,7 +411,8 @@ export default function Orders() {
                 borderRadius: "20px",
               }}
               onClick={() => {
-                handleAction({ status: "rejected", orderId });
+                setSelectedAction({ status: "Decline", orderId });
+                handleClickOpen();
               }}
             >
               Decline
@@ -429,22 +439,17 @@ export default function Orders() {
     actionLoading,
   ]);
 
-  const handleAction = async ({
-    status = "",
-    orderId,
-  }: {
-    status: string;
-    orderId: string;
-  }) => {
-    if (status) {
+  const handleAction = async () => {
+    if (selectedAction.status) {
+      const status =
+        selectedAction.status == "Accept" ? "accepted" : "rejected";
       setActionLoading(true);
       const { isSuccess, data, message } = await putService(
-        `orders/update-status/${orderId}/`,
+        `orders/update-status/${selectedAction.orderId}/`,
         {
-          status,
+          status: status,
         }
       );
-
       if (!isSuccess) {
         notification(
           message
@@ -455,6 +460,15 @@ export default function Orders() {
       }
       setActionLoading(false);
     }
+    handleClose();
+  };
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
   };
 
   return (
@@ -589,6 +603,31 @@ export default function Orders() {
           <OrderSummaryDetails orderItem={selectedOrder?.order_item_order_id} />
         </Box>
       </Grid>
+
+      {/* Model */}
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Are you sure you want to {selectedAction.status} this order?
+        </DialogTitle>
+        <DialogActions>
+          <Button color="secondary" variant="outlined" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={handleAction}
+            autoFocus
+          >
+            {selectedAction.status}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 }
