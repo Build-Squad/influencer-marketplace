@@ -33,6 +33,10 @@ export default function CheckoutPage() {
 
   const deleteOrder = async () => {
     try {
+      if (!cart?.orderId) {
+        dispatch(resetCart());
+        return;
+      }
       setLoading(true);
       const { isSuccess, message } = await deleteService(
         `/orders/order/${cart?.orderId}/`
@@ -179,7 +183,12 @@ export default function CheckoutPage() {
         >
           {cart?.orderItems?.map((orderItem, index: number) => {
             return (
-              <OrderItemForm key={index} orderItem={orderItem} index={index} />
+              <OrderItemForm
+                key={index}
+                orderItem={orderItem}
+                index={index}
+                disableDelete={cart?.orderItems?.length === 1}
+              />
             );
           })}
           <Grid item xs={12}>
