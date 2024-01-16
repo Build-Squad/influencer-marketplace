@@ -52,6 +52,27 @@ export default function CheckoutPage() {
     }
   };
 
+  const updateStatus = async () => {
+    const { isSuccess, data, message } = await putService(
+      `orders/update-status/${cart?.orderId}/`,
+      {
+        status: "pending",
+      }
+    );
+
+    if (isSuccess) {
+      notification("Payment successfully done!", "success");
+      dispatch(resetCart());
+    } else {
+      notification(
+        message
+          ? message
+          : "Something went wrong, couldn't update order status",
+        "error"
+      );
+    }
+  };
+
   const createOrder = async () => {
     const body = {
       order_items: cart?.orderItems?.map((orderItem) => {
@@ -331,6 +352,9 @@ export default function CheckoutPage() {
                   mt: 2,
                 }}
                 disabled={loading || !cart?.orderId}
+                onClick={() => {
+                  updateStatus();
+                }}
               >
                 Make Payment
               </Button>

@@ -68,7 +68,10 @@ export const cartSlice = createSlice({
         return;
       }
 
-      if (state?.influencer?.id !== action.payload.influencer?.id) {
+      if (
+        state?.influencer &&
+        state?.influencer?.id !== action.payload.influencer?.id
+      ) {
         notification(
           "Please select services from the same influencer",
           "error"
