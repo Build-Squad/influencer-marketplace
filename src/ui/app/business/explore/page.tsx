@@ -162,7 +162,7 @@ export default function Explore({}: Props) {
           container
           spacing={3}
           mt={0}
-          justifyContent={"center"}
+          justifyContent={"flex-start"}
           alignItems={"center"}
         >
           {influencersData?.map((inf, index) => {
