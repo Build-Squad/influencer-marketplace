@@ -87,13 +87,16 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   const pathname = usePathname();
   return items ? (
     <>
-      {items.map((key: string) => {
+      {items?.map((key: string) => {
         const item = MENU_ITEMS[key];
 
-        // if key is explore, then dont check for the role but simply send it to /business/explore
         let route = "";
-        if (key === "Explore") {
-          route = `/business${item?.route}`;
+        if (!user?.user?.role) {
+          if (pathname.includes("business")) {
+            route = `/business${item?.route}`;
+          } else if (pathname.includes("influencer")) {
+            route = `/influencer${item?.route}`;
+          }
         } else {
           route = user?.user?.role?.name?.includes("business")
             ? `/business${item?.route}`
@@ -303,22 +306,20 @@ export default function Navbar({
               // Business menu items
               user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
-                  items={[
-                    "Home",
-                    "Explore",
-                    "Dashboard",
-                    "Cart",
-                    "Notifications",
-                  ]}
+                  items={["Home", "Explore", "Dashboard", "Cart"]}
                 />
               ) : (
                 // Influencer menu items
-                <MenuItemsComponent
-                  items={["Home", "Orders", "Dashboard", "Notifications"]}
-                />
+                <MenuItemsComponent items={["Home", "Orders", "Dashboard"]} />
               )
             ) : (
-              <MenuItemsComponent items={["Home", "Explore"]} />
+              <>
+                {pathname.includes("business") ? (
+                  <MenuItemsComponent items={["Home", "Explore"]} />
+                ) : (
+                  <MenuItemsComponent items={["Home"]} />
+                )}
+              </>
             )}
             <LoginMenu
               isTwitterUserLoggedIn={isTwitterUserLoggedIn}
