@@ -76,7 +76,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
         <Grid item xs={12} sm={6} md={2} lg={2}>
           <CustomAutoComplete
             customFilter={{
-              role: userRoleName === "influencer" ? "business_owner" : "",
+              role:
+                userRoleName === "influencer" ? "business_owner" : "influencer",
             }}
             label={`Search ${
               userRoleName === "influencer" ? "Business" : "Influencer"
