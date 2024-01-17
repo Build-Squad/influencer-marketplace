@@ -155,7 +155,7 @@ export default function Explore({}: Props) {
         <Box sx={{ display: "flex", alignItems: "baseline", columnGap: "8px" }}>
           <Typography variant="h5">Top Matches</Typography> -
           <Typography variant="subtitle1" sx={{ fontStyle: "italic" }}>
-            20 Results
+            {influencersData?.length ?? 0} Results
           </Typography>
         </Box>
         <Grid
