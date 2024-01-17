@@ -1,4 +1,4 @@
-import { object, number, string, array } from "yup";
+import { object, number, string } from "yup";
 
 interface ExploreFilterType {
   languages: Array<LanguageType>;
@@ -9,6 +9,7 @@ interface ExploreFilterType {
   upperFollowerLimit: number | null;
   lowerFollowerLimit: number | null;
   searchString: string;
+  isVerified: boolean;
 }
 
 const ExploreFilterSchema = object({
@@ -28,6 +29,7 @@ const ExploreFilterInitialValues: ExploreFilterType = {
   upperFollowerLimit: 50000,
   lowerFollowerLimit: 0,
   searchString: "",
+  isVerified: false,
 };
 
 export { ExploreFilterSchema, ExploreFilterInitialValues };
