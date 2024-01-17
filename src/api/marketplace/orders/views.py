@@ -199,6 +199,27 @@ class OrderDetail(APIView):
     def get(self, request, pk):
         try:
             order = self.get_object(pk)
+            # Check that the order belongs to the user
+            # Two cases:
+            # 1. User is a business owner and the order belongs to the user i.e. buyer
+            # 2. User is an influencer and the order belongs to the user i.e. influencer in the package
+            if (
+                request.user_account.role.name == "business_owner"
+                and order.buyer.id != request.user_account.id
+            ) or (
+                request.user_account.role.name == "influencer"
+                and order.order_item_order_id[0].package.influencer.id
+                != request.user_account.id
+            ):
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "You are not authorized to view this order",
+                        "data": None,
+                        "errors": "You are not authorized to view this order",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             if order is None:
                 return handleNotFound("order")
             serializer = OrderSerializer(order)

@@ -29,12 +29,20 @@ type OrderItemFormProps = {
   orderItem: OrderItem;
   index: number;
   disableDelete: boolean;
+  sx?: any;
+  updateFunction?: (
+    orderItemId: string,
+    orderItemMetaDataId: string,
+    value: string | null
+  ) => Promise<void>;
 };
 
 export default function OrderItemForm({
   orderItem,
   index,
   disableDelete,
+  sx,
+  updateFunction,
 }: OrderItemFormProps) {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
@@ -79,7 +87,7 @@ export default function OrderItemForm({
         boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
         width: "100%",
         p: 2,
-        m: 2,
+        ...sx,
       }}
     >
       <Box
@@ -95,7 +103,7 @@ export default function OrderItemForm({
             fontWeight: "bold",
           }}
         >
-          {orderItem?.order_item?.package?.name}
+          {`${index + 1}. ${orderItem?.order_item?.package?.name}`}
         </Typography>
         {!disableDelete && (
           <ConfirmDelete
@@ -162,6 +170,17 @@ export default function OrderItemForm({
                     value={formFields?.value}
                     name={formFields?.id}
                     onChange={(e) => {
+                      console.log(e.target.value, formFields);
+                      if (updateFunction) {
+                        updateFunction(
+                          orderItem?.order_item?.id
+                            ? orderItem?.order_item?.id
+                            : "",
+                          formFields?.id ? formFields?.id : "",
+                          e.target.value
+                        );
+                        return;
+                      }
                       dispatch(
                         updateFieldValues({
                           index: index,
@@ -190,6 +209,16 @@ export default function OrderItemForm({
                     name={formFields?.id}
                     value={formFields?.value}
                     onChange={(e) => {
+                      if (updateFunction) {
+                        updateFunction(
+                          orderItem?.order_item?.id
+                            ? orderItem?.order_item?.id
+                            : "",
+                          formFields?.id ? formFields?.id : "",
+                          e.target.value
+                        );
+                        return;
+                      }
                       dispatch(
                         updateFieldValues({
                           index: index,
@@ -226,6 +255,16 @@ export default function OrderItemForm({
                         : null
                     }
                     onChange={(e) => {
+                      if (updateFunction) {
+                        updateFunction(
+                          orderItem?.order_item?.id
+                            ? orderItem?.order_item?.id
+                            : "",
+                          formFields?.id ? formFields?.id : "",
+                          dayjs(e).format("YYYY-MM-DD HH:mm:ss")
+                        );
+                        return;
+                      }
                       dispatch(
                         updateFieldValues({
                           index: index,

@@ -115,7 +115,6 @@ export default function CheckoutPage() {
   const updateOrder = async () => {
     const body = {
       order_items: cart?.orderItems?.map((orderItem) => {
-        console.log(orderItem?.order_item?.id);
         return {
           service_id: orderItem?.service_id,
           order_item_id: orderItem?.order_item?.id,
@@ -209,6 +208,9 @@ export default function CheckoutPage() {
                 orderItem={orderItem}
                 index={index}
                 disableDelete={cart?.orderItems?.length === 1}
+                sx={{
+                  m: 2,
+                }}
               />
             );
           })}

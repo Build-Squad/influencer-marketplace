@@ -57,7 +57,7 @@ const OrderSummaryTable = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {order?.order_item_order_id.map((item: any) => {
+          {order?.order_item_order_id?.map((item: any) => {
             return (
               <TableRow sx={styles.tableRowStyles}>
                 <TableCell align="left" sx={{ ...styles.bodyCellStyle }}>

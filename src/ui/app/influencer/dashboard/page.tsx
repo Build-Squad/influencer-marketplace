@@ -10,7 +10,7 @@ import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import StatusChip from "@/src/components/shared/statusChip";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Box,
@@ -37,7 +37,7 @@ export default function BusinessDashboardPage() {
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
-    status: ["accepted", "rejected", "completed"],
+    status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
@@ -115,7 +115,7 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["accepted", "rejected", "completed"],
+          status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
         }));
         setSelectedCard(0);
       },
@@ -133,7 +133,7 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["accepted"],
+          status: [ORDER_STATUS.ACCEPTED],
         }));
         setSelectedCard(1);
       },
@@ -151,7 +151,7 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["completed"],
+          status: [ORDER_STATUS.COMPLETED],
         }));
         setSelectedCard(2);
       },
@@ -169,7 +169,7 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["rejected"],
+          status: [ORDER_STATUS.REJECTED],
         }));
         setSelectedCard(3);
       },
@@ -398,7 +398,7 @@ export default function BusinessDashboardPage() {
         </Grid>
         <Grid item xs={12}>
           <DataGrid
-            getRowId={(row) => row?.id}
+            getRowId={(row) => (row?.id ? row?.id : 0)}
             autoHeight
             loading={loading}
             rows={orders}

@@ -3,6 +3,7 @@
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
 import { postService } from "@/src/services/httpServices";
+import { ORDER_STATUS } from "@/src/utils/consts";
 import React, { useEffect } from "react";
 
 export default function BusinessLayout({
@@ -18,7 +19,7 @@ export default function BusinessLayout({
     const { isSuccess, data, message } = await postService(
       `orders/order-list/`,
       {
-        status: ["draft"],
+        status: [ORDER_STATUS.DRAFT],
       }
     );
     if (isSuccess) {
