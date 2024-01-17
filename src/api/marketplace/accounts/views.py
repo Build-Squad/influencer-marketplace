@@ -106,16 +106,11 @@ class RoleDetail(APIView):
 class TwitterAccountList(APIView):
     def get(self, request):
         try:
-            languages_string = request.GET.get("languages", "")
-            languages = languages_string.split(",") if languages_string else []
+            languages = request.GET.getlist("languages[]", [])
 
-            service_types_string = request.GET.get("serviceTypes", "")
-            serviceTypes = (
-                service_types_string.split(",") if service_types_string else []
-            )
+            serviceTypes = request.GET.getlist("serviceTypes[]", [])
 
-            categories_string = request.GET.get("categories", "")
-            categories = categories_string.split(",") if categories_string else []
+            categories = request.GET.getlist("categories[]", [])
 
             upperPriceLimit = request.GET.get("upperPriceLimit", "")
             lowerPriceLimit = request.GET.get("lowerPriceLimit", "")
@@ -130,17 +125,17 @@ class TwitterAccountList(APIView):
             twitterAccount = TwitterAccount.objects.all()
 
             # From the account model itself.
-            if upperFollowerLimit or upperFollowerLimit.strip() != "":
+            if upperFollowerLimit:
                 twitterAccount = twitterAccount.filter(
                     followers_count__lte=upperFollowerLimit
                 )
 
-            if lowerFollowerLimit or lowerFollowerLimit.strip() != "":
+            if lowerFollowerLimit:
                 twitterAccount = twitterAccount.filter(
                     followers_count__gte=lowerFollowerLimit
                 )
 
-            if searchString or searchString.strip() != "":
+            if searchString:
                 twitterAccount = twitterAccount.filter(
                     Q(user_name__icontains=searchString)
                     | Q(name__icontains=searchString)
@@ -190,7 +185,7 @@ class TwitterAccountList(APIView):
                     id__in=twitter_accounts_to_exclude
                 )
 
-            if upperPriceLimit or upperPriceLimit.strip() != "":
+            if upperPriceLimit:
                 twitter_accounts_to_exclude = [
                     twitter_account.id
                     for twitter_account in twitterAccount
@@ -209,7 +204,7 @@ class TwitterAccountList(APIView):
                     id__in=twitter_accounts_to_exclude
                 )
 
-            if lowerPriceLimit or lowerPriceLimit.strip() != "":
+            if lowerPriceLimit:
                 twitter_accounts_to_exclude = [
                     twitter_account.id
                     for twitter_account in twitterAccount
@@ -610,7 +605,7 @@ class AccountCategoryDetail(APIView):
 class UserList(APIView):
     def get(self, request):
         try:
-            role = request.query_params.get('role')
+            role = request.query_params.get("role")
             if role is not None:
                 users = User.objects.filter(role__name=role)
             else:
@@ -1227,8 +1222,7 @@ class WalletAuth(APIView):
             wallet_provider = WalletProvider.objects.get(wallet_provider=name)
             return wallet_provider
         except WalletProvider.DoesNotExist:
-            wallet_provider = WalletProvider.objects.create(
-                wallet_provider=name)
+            wallet_provider = WalletProvider.objects.create(wallet_provider=name)
             wallet_provider.save()
             return wallet_provider
 
@@ -1331,7 +1325,8 @@ class WalletConnect(APIView):
         # Only connect the wallet to the user
         try:
             serializer = WalletConnectSerializer(
-                data=request.data, context={"request": request})
+                data=request.data, context={"request": request}
+            )
             if serializer.is_valid():
                 wallet = self.get_object(request.data["wallet_address_id"])
                 if wallet:

@@ -1,13 +1,15 @@
 "use client";
 import { Box, Grid, Pagination, Typography } from "@mui/material";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ExploreFilterInitialValues, ExploreFilterSchema } from "./validation";
 import ExploreFilters from "./components/exploreFilters";
 import Footer from "@/src/components/shared/footer";
 import InfluencersCards from "../components/influencersContainer/influencersCards";
+import { getService } from "@/src/services/httpServices";
+import { notification } from "@/src/components/shared/notification";
 
-type TopInfluencersType = {
+type InfluencersType = {
   id: string;
   name: string;
   twitterUsername: string;
@@ -20,39 +22,89 @@ type TopInfluencersType = {
 
 type Props = {};
 
-const dummyData: Array<TopInfluencersType> = [
-  {
-    id: "1",
-    name: "Parikshit Singh",
-    twitterUsername: "ParikshitSingh567",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Story", "Post", "Repost", "Thread"],
-    followers: "Hyderabad, India",
-    minPrice: 100,
-    maxPrice: 500,
+const formatTwitterFollowers = (followersCount: any) => {
+  if (followersCount >= 1000000) {
+    // Convert to millions format
+    return `${(followersCount / 1000000).toFixed(1)}M`;
+  } else if (followersCount >= 1000) {
+    // Convert to thousands format
+    return `${(followersCount / 1000).toFixed(1)}K`;
+  } else {
+    // Leave as is
+    return followersCount?.toString();
   }
-];
+};
 
 export default function Explore({}: Props) {
-  const filterData = localStorage.getItem("filterData");
-  console.log(JSON.parse(filterData ?? ""));
-  const [topInfluencers, setTopInfluencers] =
-    useState<TopInfluencersType[]>(dummyData);
+  const [influencersData, setInfluencersData] = useState<InfluencersType[]>();
 
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
     total_page_count: 10,
     current_page_number: 1,
-    current_page_size: 5,
+    current_page_size: 12,
   });
   const formik = useFormik({
     initialValues: ExploreFilterInitialValues,
     onSubmit: (values) => {
-      console.log(values);
+      getInfluencers();
     },
     validationSchema: ExploreFilterSchema,
   });
+
+  useEffect(() => {
+    let filterData: any = localStorage.getItem("filterData");
+    filterData = filterData ? JSON.parse(filterData) : null;
+    if (filterData) {
+      formik.setValues(filterData);
+    }
+    localStorage.removeItem("filterData");
+    getInfluencers();
+  }, []);
+
+  const getInfluencers = async () => {
+    const { isSuccess, data, message } = await getService(
+      "/account/twitter-account/",
+      {
+        page_number: pagination.current_page_number,
+        page_size: pagination.current_page_size,
+        ...formik.values,
+        languages: formik.values.languages.map((item) => item.langEnglishName),
+        categories: formik.values.categories.map((item) => item.name),
+        serviceTypes: formik.values.serviceTypes.map((item) => item.name),
+      }
+    );
+    if (isSuccess) {
+      const filteredData = data?.data?.map((inf: any) => {
+        return {
+          id: inf.user_id,
+          name: inf.name || "",
+          twitterUsername: inf.user_name || "",
+          profileUrl: inf.profile_image_url || "",
+          services: inf.service_types
+            ? inf.service_types.map((service: any) => service.serviceType)
+            : [],
+
+          followers: formatTwitterFollowers(inf.followers_count),
+          minPrice:
+            inf.service_types && inf.service_types.length > 0
+              ? Math.min(
+                  ...inf.service_types.map((service: any) => service.price)
+                )
+              : 0,
+          maxPrice:
+            inf.service_types && inf.service_types.length > 0
+              ? Math.max(
+                  ...inf.service_types.map((service: any) => service.price)
+                )
+              : 0,
+        };
+      });
+      setInfluencersData(filteredData);
+    } else {
+      notification(message ? message : "Something went wrong", "error");
+    }
+  };
 
   const handlePaginationChange = (
     event: React.ChangeEvent<unknown>,
@@ -90,7 +142,7 @@ export default function Explore({}: Props) {
           justifyContent={"center"}
           alignItems={"center"}
         >
-          {topInfluencers.map((inf, index) => {
+          {influencersData?.map((inf, index) => {
             return <InfluencersCards influencer={inf} key={index} />;
           })}
         </Grid>

@@ -29,7 +29,7 @@ const BannerFilterInitialValues: BannerFilterType = {
   upperFollowerLimit: 50000,
   lowerFollowerLimit: 0,
   searchString: "",
-  isVerified: true,
+  isVerified: false,
 };
 
 export { BannerFilterSchema, BannerFilterInitialValues };
