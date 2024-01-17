@@ -209,6 +209,9 @@ export default function CheckoutPage() {
                 orderItem={orderItem}
                 index={index}
                 disableDelete={cart?.orderItems?.length === 1}
+                sx={{
+                  m: 2,
+                }}
               />
             );
           })}

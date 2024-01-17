@@ -29,12 +29,14 @@ type OrderItemFormProps = {
   orderItem: OrderItem;
   index: number;
   disableDelete: boolean;
+  sx?: any;
 };
 
 export default function OrderItemForm({
   orderItem,
   index,
   disableDelete,
+  sx,
 }: OrderItemFormProps) {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
@@ -79,7 +81,7 @@ export default function OrderItemForm({
         boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
         width: "100%",
         p: 2,
-        m: 2,
+        ...sx,
       }}
     >
       <Box
@@ -95,7 +97,7 @@ export default function OrderItemForm({
             fontWeight: "bold",
           }}
         >
-          {orderItem?.order_item?.package?.name}
+          {`${index + 1}. ${orderItem?.order_item?.package?.name}`}
         </Typography>
         {!disableDelete && (
           <ConfirmDelete
