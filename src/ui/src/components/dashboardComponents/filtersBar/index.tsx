@@ -417,7 +417,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             label="Order Date To"
             value={
               filters.lt_created_at
-                ? dayjs(filters.lt_created_at, ISO_DATE_TIME_FORMAT)
+                ? dayjs(filters.lt_created_at, FORM_DATE_FORMAT)
                 : null
             }
             onChange={(newValue) => {
@@ -433,7 +433,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 setFilters((prev) => {
                   return {
                     ...prev,
-                    lt_created_at: dayjs(newValue).format(FORM_DATE_FORMAT),
+                    lt_created_at: dayjs(newValue).format(ISO_DATE_TIME_FORMAT),
                   };
                 });
               }
