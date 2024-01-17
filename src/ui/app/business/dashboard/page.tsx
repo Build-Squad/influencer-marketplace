@@ -459,7 +459,7 @@ export default function BusinessDashboardPage() {
         </Grid>
         <Grid item xs={12}>
           <DataGrid
-            getRowId={(row) => row?.id}
+            getRowId={(row) => (row?.id ? row?.id : 0)}
             autoHeight
             loading={loading}
             rows={orders}

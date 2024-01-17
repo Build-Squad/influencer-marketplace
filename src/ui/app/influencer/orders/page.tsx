@@ -305,7 +305,7 @@ export default function Orders() {
         <Grid container spacing={2} sx={{ mt: 3 }}>
           <Grid item xs={12}>
             <DataGrid
-              getRowId={(row) => row?.id}
+              getRowId={(row) => (row.id ? row.id : 0)}
               onRowSelectionModelChange={(newRowSelectionModel) => {
                 setRowSelectionModel(newRowSelectionModel);
               }}
