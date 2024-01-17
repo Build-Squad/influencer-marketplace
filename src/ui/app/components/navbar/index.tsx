@@ -89,11 +89,18 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
     <>
       {items.map((key: string) => {
         const item = MENU_ITEMS[key];
-        const route = user?.user?.role?.name?.includes("business")
-          ? `/business${item?.route}`
-          : pathname.includes("influencer")
-          ? `/influencer${item?.route}`
-          : "";
+
+        // if key is explore, then dont check for the role but simply send it to /business/explore
+        let route = "";
+        if (key === "Explore") {
+          route = `/business${item?.route}`;
+        } else {
+          route = user?.user?.role?.name?.includes("business")
+            ? `/business${item?.route}`
+            : pathname.includes("influencer")
+            ? `/influencer${item?.route}`
+            : "";
+        }
 
         return (
           <Box
