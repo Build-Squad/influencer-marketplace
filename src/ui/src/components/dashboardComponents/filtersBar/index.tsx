@@ -1,24 +1,17 @@
 "use client";
 
-import {
-  Autocomplete,
-  Badge,
-  Box,
-  Grid,
-  TextField,
-  Typography,
-} from "@mui/material";
-import React, { useEffect } from "react";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import CustomAutoComplete from "../../shared/customAutoComplete";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { FORM_DATE_FORMAT } from "@/src/utils/consts";
-import { DatePicker } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
-import FilterChip from "../../shared/filterChip";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import filterCount from "@/src/services/filterCount";
+import { FORM_DATE_FORMAT, ISO_DATE_TIME_FORMAT } from "@/src/utils/consts";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import { Badge, Box, Grid, TextField, Typography } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import dayjs from "dayjs";
+import React, { useEffect } from "react";
+import CustomAutoComplete from "../../shared/customAutoComplete";
+import FilterChip from "../../shared/filterChip";
 
 type FilterBarProps = {
   filters: OrderFilterType;
@@ -76,7 +69,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
         <Grid item xs={12} sm={6} md={2} lg={2}>
           <CustomAutoComplete
             customFilter={{
-              role: userRoleName === "influencer" ? "business_owner" : "",
+              role:
+                userRoleName === "influencer" ? "business_owner" : "influencer",
             }}
             label={`Search ${
               userRoleName === "influencer" ? "Business" : "Influencer"
@@ -389,7 +383,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 setFilters((prev) => {
                   return {
                     ...prev,
-                    gt_created_at: dayjs(newValue).format(FORM_DATE_FORMAT),
+                    gt_created_at: dayjs(newValue).format(ISO_DATE_TIME_FORMAT),
                   };
                 });
               }
@@ -439,7 +433,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 setFilters((prev) => {
                   return {
                     ...prev,
-                    lt_created_at: dayjs(newValue).format(FORM_DATE_FORMAT),
+                    lt_created_at: dayjs(newValue).format(ISO_DATE_TIME_FORMAT),
                   };
                 });
               }

@@ -156,11 +156,13 @@ class OrderListView(APIView):
                     order_item_order_id__service_master__in=filters["service_masters"]
                 )
 
-            if "lt_created_at" in filters:
-                orders = orders.filter(created_at__lt=filters["lt_created_at"])
-
             if "gt_created_at" in filters:
-                orders = orders.filter(created_at__gt=filters["gt_created_at"])
+                gt_created_at = filters["gt_created_at"].date()
+                orders = orders.filter(created_at__date__gte=gt_created_at)
+
+            if "lt_created_at" in filters:
+                lt_created_at = filters["lt_created_at"].date()
+                orders = orders.filter(created_at__date__lte=lt_created_at)
 
             if "lt_rating" in filters:
                 orders = orders.filter(review_order_id__rating__lt=filters["lt_rating"])
