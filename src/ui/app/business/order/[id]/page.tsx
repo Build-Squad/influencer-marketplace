@@ -2,7 +2,7 @@
 
 import OrderItemForm from "@/src/components/checkoutComponents/orderItemForm";
 import { notification } from "@/src/components/shared/notification";
-import { getService } from "@/src/services/httpServices";
+import { getService, putService } from "@/src/services/httpServices";
 import { Box, Button, FormLabel, Grid, Link, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -38,6 +38,74 @@ export default function OrderDetailPage({
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateOrder = async () => {
+    const body = {
+      order_items: order?.order_item_order_id?.map((orderItem) => {
+        return {
+          order_item_id: orderItem?.id,
+          meta_data: orderItem?.order_item_meta_data?.map((metaData) => {
+            return {
+              order_item_meta_data_id: metaData?.id,
+              service_master_meta_data_id:
+                metaData?.service_master_meta_data_id,
+              value: metaData?.value,
+            };
+          }),
+        };
+      }),
+    };
+    try {
+      const { isSuccess, message } = await putService(
+        `/orders/order/${params?.id}/`,
+        body
+      );
+      if (isSuccess) {
+        notification("Order Details saved successfully!", "success");
+        await getOrderDetails();
+      } else {
+        notification(message, "error", 3000);
+      }
+    } finally {
+    }
+  };
+
+  const updateOrderItemMetaData = async (
+    orderItemId: string,
+    orderItemMetaDataId: string,
+    value: string | null
+  ) => {
+    // The function will find the relevant order item and update the metadata in the order
+
+    // First, create a copy of the order
+    const orderCopy = { ...order };
+
+    // Then find the order item
+    const orderItem = orderCopy?.order_item_order_id?.find(
+      (orderItem) => orderItem.id === orderItemId
+    );
+
+    // If order item not found, return
+    if (!orderItem) {
+      return;
+    }
+
+    // Find the order item meta data
+    const orderItemMetaData = orderItem?.order_item_meta_data?.find(
+      (orderItemMetaData) => orderItemMetaData.id === orderItemMetaDataId
+    );
+
+    // If order item meta data not found, return
+    if (!orderItemMetaData) {
+      return;
+    }
+
+    // Update the value
+    orderItemMetaData.value = value;
+
+    // Update the order
+    setOrder(orderCopy);
   };
 
   useEffect(() => {
@@ -166,6 +234,7 @@ export default function OrderDetailPage({
                 }}
                 index={index}
                 disableDelete={order?.order_item_order_id?.length === 1}
+                updateFunction={updateOrderItemMetaData}
               />
             );
           })}
@@ -187,7 +256,7 @@ export default function OrderDetailPage({
                   minWidth: 100,
                 }}
                 onClick={() => {
-                  // onSave();
+                  updateOrder();
                 }}
                 disabled={loading}
               >
