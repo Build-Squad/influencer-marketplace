@@ -3,10 +3,14 @@
 import OrderItemForm from "@/src/components/checkoutComponents/orderItemForm";
 import { notification } from "@/src/components/shared/notification";
 import { getService } from "@/src/services/httpServices";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Button, FormLabel, Grid, Link, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useEffect, useState } from "react";
+import NextLink from "next/link";
+import StatusChip from "@/src/components/shared/statusChip";
+import dayjs from "dayjs";
+import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 
 export default function OrderDetailPage({
   params,
@@ -27,7 +31,7 @@ export default function OrderDetailPage({
       );
       if (isSuccess) {
         setOrder(data?.data);
-        setInfluencer(data?.data?.order_item_order_id[0]?.influencer_id);
+        setInfluencer(data?.data?.order_item_order_id[0]?.package?.influencer);
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
@@ -42,6 +46,22 @@ export default function OrderDetailPage({
     }
   }, [params.id]);
 
+  if (!order) {
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h6">Order details not found</Typography>
+      </Box>
+    );
+  }
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Grid
@@ -51,12 +71,12 @@ export default function OrderDetailPage({
           px: 2,
         }}
       >
-        <Grid item xs={0} md={2} lg={2} sm={0}></Grid>
+        <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
         <Grid
           item
           xs={12}
-          md={8}
-          lg={8}
+          md={9}
+          lg={9}
           sm={12}
           sx={{
             p: 2,
@@ -71,6 +91,55 @@ export default function OrderDetailPage({
           >
             Edit Order Details
           </Typography>
+          {order && (
+            <Box
+              sx={{
+                borderRadius: 4,
+                backgroundColor: "#ffffff",
+                boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+                width: "100%",
+                p: 2,
+                my: 2,
+              }}
+            >
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={3} lg={3} sm={12}>
+                  <FormLabel>Influencer</FormLabel>
+                  <Typography variant="body1">
+                    <Link
+                      component={NextLink}
+                      href={`/influencer/profile/${influencer?.id}`}
+                      target="_blank"
+                      underline="hover"
+                      sx={{
+                        color: "#09F",
+                      }}
+                    >
+                      {influencer?.twitter_account?.user_name}
+                    </Link>
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={3} lg={3} sm={12}>
+                  <FormLabel>Total Amount</FormLabel>
+                  <Typography variant="body1">
+                    {order?.amount + " " + order?.currency?.symbol}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={3} lg={3} sm={12}>
+                  <FormLabel>Status</FormLabel>
+                  <Box>
+                    <StatusChip status={order?.status ? order?.status : ""} />
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={3} lg={3} sm={12}>
+                  <FormLabel>Order Date</FormLabel>
+                  <Typography variant="body1">
+                    {dayjs(order?.created_at).format(DISPLAY_DATE_FORMAT)}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
           {order?.order_item_order_id?.map((orderItem, index: number) => {
             return (
               <OrderItemForm
@@ -111,7 +180,7 @@ export default function OrderDetailPage({
             </Box>
           </Grid>
         </Grid>
-        <Grid item xs={0} md={2} lg={2} sm={0}></Grid>
+        <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
       </Grid>
     </LocalizationProvider>
   );
