@@ -1,20 +1,22 @@
 "use client";
 
+import { ORDER_STATUS } from "@/src/utils/consts";
+import { Close } from "@mui/icons-material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
   Divider,
   Drawer,
   IconButton,
+  Link,
   Tooltip,
   Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React from "react";
-import OrderSummaryTable from "../orderSummaryTable";
-import OrderSummaryDetails from "../orderSummaryDetails";
-import { Close, Edit } from "@mui/icons-material";
+import NextLink from "next/link";
 import { useRouter } from "next/navigation";
+import OrderSummaryDetails from "../orderSummaryDetails";
 
 type OrderDetailsProps = {
   order: OrderType | null;
@@ -61,15 +63,27 @@ export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
             cursor: "pointer",
           }}
         >
-          {order?.status === "pending" && (
-            <Tooltip title="Edit Details" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  router.push(`/business/order/${order?.id}/`);
+          {order?.status === ORDER_STATUS.PENDING && (
+            <Tooltip
+              title="Go To Order"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <Link
+                href={`/business/order/${order?.id}`}
+                component={NextLink}
+                sx={{
+                  textDecoration: "none",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
                 }}
               >
-                <Edit />
-              </IconButton>
+                <IconButton>
+                  <OpenInNewIcon color="secondary" />
+                </IconButton>
+              </Link>
             </Tooltip>
           )}
           <Tooltip title="Close" placement="top" arrow>
