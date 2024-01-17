@@ -84,10 +84,10 @@ const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
         return (
           <>
             <Typography variant="h6" fontWeight={"bold"}>
-              {index + 1}. {eachOrderItem.service_master.name}
+              {index + 1}. {eachOrderItem?.package.name}
             </Typography>
 
-            {eachOrderItem.order_item_meta_data.map((meta_data: any) => {
+            {eachOrderItem?.order_item_meta_data?.map((meta_data: any) => {
               return <ContentTypeComponent meta_data={meta_data} />;
             })}
 
