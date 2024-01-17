@@ -208,14 +208,14 @@ type OrderItemType = {
 };
 
 type OrderType = {
-  id: string;
-  buyer: UserType;
-  order_item_order_id: OrderItemType[];
-  amount: number;
-  currency: CurrencyType;
-  description: null;
-  status: string;
-  created_at: Date;
+  id?: string;
+  buyer?: UserType;
+  order_item_order_id?: OrderItemType[];
+  amount?: number;
+  currency?: CurrencyType;
+  description?: null;
+  status?: string;
+  created_at?: Date;
 };
 
 type OrderFilterType = {
