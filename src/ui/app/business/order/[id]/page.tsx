@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import NextLink from "next/link";
 import StatusChip from "@/src/components/shared/statusChip";
 import dayjs from "dayjs";
-import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
 
 export default function OrderDetailPage({
   params,
@@ -58,6 +58,22 @@ export default function OrderDetailPage({
         }}
       >
         <Typography variant="h6">Order details not found</Typography>
+      </Box>
+    );
+  }
+
+  if (order && order?.status !== ORDER_STATUS.PENDING) {
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h6">Only Pending orders can be edited</Typography>
       </Box>
     );
   }
