@@ -20,3 +20,12 @@ export const PACKAGE_STATUS = {
 export const LOGIN_STATUS_SUCCESS = "User successfully logged in!";
 export const LOGIN_STATUS_FAILED = "Failed user login. Please try again!";
 export const LOGOUT_SUCCESS = "User successfully logged out!";
+
+export const ORDER_STATUS = {
+  COMPLETED: "completed",
+  PENDING: "pending",
+  CANCELLED: "cancelled",
+  REJECTED: "rejected",
+  DRAFT: "draft",
+  ACCEPTED: "accepted",
+};
