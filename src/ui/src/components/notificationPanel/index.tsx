@@ -43,6 +43,17 @@ export default function NotificationPanel() {
       });
       if (isSuccess) {
         setNotifications(data?.data?.notifications);
+        if (unreadCount !== data?.data?.unread_count) {
+          const newNotificationCount = data?.data?.unread_count - unreadCount;
+          if (newNotificationCount > 0) {
+            notification(
+              `You have ${newNotificationCount} new notification${
+                newNotificationCount > 1 ? "s" : ""
+              }`,
+              "success"
+            );
+          }
+        }
         setUnreadCount(data?.data?.unread_count);
         setPagination({
           ...pagination,
