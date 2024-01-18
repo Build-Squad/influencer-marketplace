@@ -22,6 +22,7 @@ import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 
 import { getService } from "@/src/services/httpServices";
+import NotificationPanel from "@/src/components/notificationPanel";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
@@ -115,10 +116,11 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
               justifyContent: "center",
             }}
             onClick={() => {
+              if (route.includes("/notifications")) return;
               router.push(route);
             }}
           >
-            {item?.route === "/checkout" ? (
+            {item?.route.includes("/checkout") ? (
               <Badge badgeContent={cart?.orderItems.length} color="secondary">
                 <Image
                   src={pathname == route ? item?.icon : item?.disabledIcon}
@@ -126,6 +128,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                   height={16}
                 />
               </Badge>
+            ) : item?.route.includes("/notifications") ? (
+              <NotificationPanel />
             ) : (
               <Image
                 src={pathname == route ? item?.icon : item?.disabledIcon}
@@ -224,7 +228,6 @@ export default function Navbar({
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
-    console.log("categoriesAdded", categoriesAdded);
     if (categoriesAdded && status === "success" && isTwitterUserLoggedIn) {
       getWallets();
     }
@@ -306,11 +309,19 @@ export default function Navbar({
               // Business menu items
               user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
-                  items={["Home", "Explore", "Dashboard", "Cart"]}
+                  items={[
+                    "Home",
+                    "Explore",
+                    "Dashboard",
+                    "Cart",
+                    "Notifications",
+                  ]}
                 />
               ) : (
                 // Influencer menu items
-                <MenuItemsComponent items={["Home", "Orders", "Dashboard"]} />
+                <MenuItemsComponent
+                  items={["Home", "Orders", "Dashboard", "Notifications"]}
+                />
               )
             ) : (
               <>
