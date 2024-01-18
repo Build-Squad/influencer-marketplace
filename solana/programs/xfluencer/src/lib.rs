@@ -61,11 +61,6 @@ pub mod xfluencer {
 
 }
 
-#[account]
-pub struct TestAcount {
-    pub my_pubkey: Pubkey,
-    pub flag : bool
-}
 
 
 #[account]
