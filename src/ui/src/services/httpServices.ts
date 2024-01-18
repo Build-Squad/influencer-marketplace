@@ -156,7 +156,7 @@ const putService = async (url: string, data: unknown, params?: any) => {
   }
 };
 
-const patchService = async (url: string, data: unknown, params?: any) => {
+const patchService = async (url: string, data?: unknown, params?: any) => {
   try {
     const response = await instance.patch(url, data, { params });
     return {

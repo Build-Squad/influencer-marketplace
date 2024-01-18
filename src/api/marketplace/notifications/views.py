@@ -20,6 +20,8 @@ class NotificationListView(APIView):
       # Apply a filter to get all the notifications of the logged in user
       notifications = Notification.objects.filter(
           user=user).order_by('-created_at')
+      # Count the number of unread notifications
+      unread_count = notifications.filter(is_read=False).count()
       # Also add a filter to get only the unread notifications if provided in the query params
       is_read = request.query_params.get('is_read', None)
       if is_read is not None:
@@ -32,7 +34,10 @@ class NotificationListView(APIView):
       return Response(
           {
               "isSuccess": True,
-              "data": serializer.data,
+              "data": {
+                  "notifications": serializer.data,
+                  "unread_count": unread_count,
+              },
               "message": "All Notifications retrieved successfully",
               "pagination": pagination.getPageInfo(),
           },
