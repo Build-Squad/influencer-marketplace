@@ -237,6 +237,17 @@ type OrderFilterType = {
   };
 };
 
+type NotificationType = {
+  id: string;
+  title: string;
+  message: string;
+  created_at: string;
+  updated_at: string;
+  is_read: boolean;
+  slug: string;
+  user: string;
+};
+
 interface SVGIcon
   extends React.FunctionComponent<React.SVGAttributes<HTMLOrSVGElement>> {}
 
