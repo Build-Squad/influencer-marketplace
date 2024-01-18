@@ -133,6 +133,7 @@ INSTALLED_APPS = [
     "packages",
     "core",
     "orders",
+    "notifications",
     "corsheaders",
     "drf_yasg",
 ]
