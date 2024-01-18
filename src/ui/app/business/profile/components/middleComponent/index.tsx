@@ -8,14 +8,15 @@ import {
 } from "@mui/material";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
-import { putService } from "@/src/services/httpServices";
+import { getService, putService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import EditSvg from "@/public/svg/Edit.svg";
 
 type Props = {};
 
@@ -146,22 +147,57 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
 const DetailsComponent = () => {
   const user = useAppSelector((state) => state.user?.user);
   const [formData, setFormData] = useState({
-    businessName: "",
-    username: "",
+    business_name: "",
+    industry: "",
+    founded: "",
+    headquarters: "",
+    bio: "",
+    user_email: "",
+    phone: "",
+    website: "",
+    twitter_account: "",
+    linked_in: "",
   });
+
+  const getBusinessDetails = async () => {
+    try {
+      const { isSuccess, message, data } = await getService(
+        `/account/business-meta-data/${user?.id}/`
+      );
+      if (isSuccess) {
+        setFormData({
+          business_name: data.data.business_name ?? "",
+          industry: data.data.industry ?? "",
+          founded: data.data.founded ?? "",
+          headquarters: data.data.headquarters ?? "",
+          bio: data.data.bio ?? "",
+          user_email: data.data.user_email ?? "",
+          phone: data.data.phone ?? "",
+          website: data.data.website ?? "",
+          twitter_account: data.data.twitter_account ?? "",
+          linked_in: data.data.linked_in ?? "",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch options:", error);
+    }
+  };
+
+  useEffect(() => {
+    getBusinessDetails();
+  }, []);
 
   // TODO: Apply debouncing and call update user details API
   const handleChange = async (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     const { isSuccess, message, data } = await putService(
-      `/account/user/${user?.id}/`,
+      `/account/business-meta-data/${user?.id}/`,
       {
-        // Replace this with formData fields
-        username: formData.username,
+        [e.target.name]: e.target.value,
       }
     );
     if (isSuccess) {
-      console.log(data);
+      getBusinessDetails();
     } else {
       notification(
         message ? message : "Something went wrong, try again later",
@@ -170,40 +206,173 @@ const DetailsComponent = () => {
     }
   };
   return (
-    <Box>
-      <Typography variant="h6">Basic Details</Typography>
-      <Divider light />
-      <Typography
-        variant="subtitle1"
-        fontWeight={"bold"}
-        sx={{ mt: 2, color: "#C7C7C7" }}
-      >
-        Business name
-      </Typography>
-      <TextField
-        color="secondary"
-        fullWidth
-        name="businessName"
-        variant="standard"
-        onChange={handleChange}
-        value={formData.businessName}
-      />
-      <Typography
-        variant="subtitle1"
-        fontWeight={"bold"}
-        sx={{ mt: 2, color: "#C7C7C7" }}
-      >
-        Username
-      </Typography>
-      <TextField
-        color="secondary"
-        fullWidth
-        name="username"
-        variant="standard"
-        onChange={handleChange}
-        value={formData.username}
-      />
-    </Box>
+    <>
+      <Box>
+        <Typography variant="h6">Basic Details</Typography>
+        <Divider light />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Business name <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="business_name"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.business_name}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Industry <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="industry"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.industry}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Founded In <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="founded"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.founded}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Headquarters <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="headquarters"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.headquarters}
+        />
+      </Box>
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h6">About</Typography>
+        <Divider light />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Bio <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          multiline
+          rows={5}
+          color="secondary"
+          fullWidth
+          name="bio"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.bio}
+        />
+      </Box>
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h6">Contact Details</Typography>
+        <Divider light />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Email <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="user_email"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.user_email}
+          disabled
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Phone <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="phone"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.phone}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Website <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="website"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.website}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          X <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="twitter_account"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.twitter_account}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          linked In <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="linked_in"
+          variant="standard"
+          onChange={handleChange}
+          value={formData.linked_in}
+        />
+      </Box>
+    </>
   );
 };
 

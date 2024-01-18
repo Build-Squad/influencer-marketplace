@@ -19,7 +19,8 @@ from .views import (
     EmailVerification,
     WalletAuth,
     WalletConnect,
-    WalletList
+    WalletList,
+    BusinessAccountMetaDataDetail
 )
 
 urlpatterns = [
@@ -44,6 +45,10 @@ urlpatterns = [
 
     path("user/", UserList.as_view(), name="user-list"),
     path("user/<uuid:pk>/", UserDetail.as_view(), name="user-detail"),
+
+
+
+    path("business-meta-data/<uuid:userId>/", BusinessAccountMetaDataDetail.as_view(), name="business-account-meta-data-detail"),
 
     path("bank-account/", BankAccountList.as_view(), name="bank-account-list"),
     path("bank-account/<uuid:pk>/", BankAccountDetail.as_view(), name="bank-account-detail"),
