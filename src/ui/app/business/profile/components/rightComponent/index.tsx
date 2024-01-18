@@ -20,6 +20,10 @@ const getProfileCompletedStatus: (
 };
 
 export default function RightComponent({ userDetails }: Props) {
+  const emptyFields = Object.entries(userDetails.businessDetails)
+    .filter(([key, value]) => value === "")
+    .map(([key]) => key);
+
   return (
     <Box
       sx={{
@@ -72,6 +76,9 @@ export default function RightComponent({ userDetails }: Props) {
             {!userDetails.isTwitterAccountConnected ? (
               <li>Connect your X Account</li>
             ) : null}
+            {emptyFields.map((field) => (
+              <li key={field}>Fill in your {field.replace("_", " ")}</li>
+            ))}
           </ul>
         </Box>
       </Box>

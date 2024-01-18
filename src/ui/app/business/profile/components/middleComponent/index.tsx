@@ -23,20 +23,44 @@ import WalletConnectModal from "@/src/components/web3Components/walletConnectMod
 import { getService, putService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
 import EditSvg from "@/public/svg/Edit.svg";
-import {
-  BasicBusinessDetailsDefault,
-  BasicBusinessDetailsType,
-  UserDetailsType,
-} from "../../type";
+import { UserDetailsType } from "../../type";
+
+const debounce = (fn: Function, ms = 500) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
+};
 
 type Props = {
   setUserDetails: Dispatch<SetStateAction<UserDetailsType>>;
   userDetails: UserDetailsType;
 };
 
-const ConnectWalletComponent = () => {
+const ConnectWalletComponent = ({ setUserDetails, userDetails }: Props) => {
   const [connectWallet, setConnectWallet] = useState<boolean>(false);
   const [walletOpen, setWalletOpen] = useState<boolean>(false);
+
+  const getUserWallets = async () => {
+    const { isSuccess, data, message } = await getService("/account/wallets/");
+    if (isSuccess) {
+      const allWallets = data?.data ?? [];
+      setUserDetails((prevState: any) => {
+        return {
+          ...prevState,
+          isWalletConnected: !!allWallets?.length,
+        };
+      });
+    } else {
+      notification(message ? message : "Something went wrong", "error");
+    }
+  };
+
+  useEffect(() => {
+    getUserWallets();
+  }, [walletOpen]);
+
   return (
     <>
       <Box sx={{ display: "flex", columnGap: "4px" }}>
@@ -93,41 +117,45 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
   const user = useAppSelector((state) => state.user?.user);
   const userTwitterDetails = user?.twitter_account;
 
-  return userTwitterDetails ? (
-    <Box sx={{ display: "flex", columnGap: "8px" }}>
-      <Avatar
-        alt="Influencer profile image"
-        src={userTwitterDetails.profile_image_url}
-        variant="circular"
-        sx={{
-          height: "68px",
-          width: "68px",
-        }}
-      />
-      <Box sx={{ mt: 1 }}>
-        <Typography variant="h6" fontWeight={"bold"}>
-          {userTwitterDetails.name}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ lineHeight: "10px" }}>
-          @{userTwitterDetails.user_name}
-        </Typography>
-        <Button
-          variant={"contained"}
-          color="secondary"
+  if (userTwitterDetails) {
+    return (
+      <Box sx={{ display: "flex", columnGap: "8px" }}>
+        <Avatar
+          alt="Influencer profile image"
+          src={userTwitterDetails.profile_image_url}
+          variant="circular"
           sx={{
-            borderRadius: "20px",
-            mt: 2,
+            height: "68px",
+            width: "68px",
           }}
-          onClick={() => {
-            logoutTwitterUser();
-            window.location.href = `${pathname}?tab=${tabName}`;
-          }}
-        >
-          Disconnect
-        </Button>
+        />
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="h6" fontWeight={"bold"}>
+            {userTwitterDetails.name}
+          </Typography>
+          <Typography variant="subtitle1" sx={{ lineHeight: "10px" }}>
+            @{userTwitterDetails.user_name}
+          </Typography>
+          <Button
+            variant={"contained"}
+            color="secondary"
+            sx={{
+              borderRadius: "20px",
+              mt: 2,
+            }}
+            onClick={() => {
+              logoutTwitterUser();
+              window.location.href = `${pathname}?tab=${tabName}`;
+            }}
+          >
+            Disconnect
+          </Button>
+        </Box>
       </Box>
-    </Box>
-  ) : (
+    );
+  }
+
+  return (
     <>
       <Box sx={{ display: "flex", columnGap: "4px" }}>
         <Image src={Star_Coloured} alt={"Star_Coloured"} height={25} />
@@ -156,14 +184,6 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
       </Box>
     </>
   );
-};
-
-const debounce = (fn: Function, ms = 500) => {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  return function (this: any, ...args: any[]) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn.apply(this, args), ms);
-  };
 };
 
 const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
@@ -376,12 +396,30 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   );
 };
 
-export default function MiddleComponent({
-  setUserDetails,
-  userDetails,
-}: Props) {
+const MiddleComponent = ({ setUserDetails, userDetails }: Props) => {
   const searchParams = useSearchParams();
   const tabName = searchParams.get("tab");
+
+  let componentToRender = null;
+
+  if (tabName === "wallet") {
+    componentToRender = (
+      <ConnectWalletComponent
+        setUserDetails={setUserDetails}
+        userDetails={userDetails}
+      />
+    );
+  } else if (tabName === "connect_x") {
+    componentToRender = <ConnectXComponent tabName={tabName} />;
+  } else if (tabName === "details") {
+    componentToRender = (
+      <DetailsComponent
+        setUserDetails={setUserDetails}
+        userDetails={userDetails}
+      />
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -391,16 +429,9 @@ export default function MiddleComponent({
         borderRadius: "16px",
       }}
     >
-      {tabName === "wallet" ? (
-        <ConnectWalletComponent />
-      ) : tabName === "connect_x" ? (
-        <ConnectXComponent tabName={tabName} />
-      ) : tabName === "details" ? (
-        <DetailsComponent
-          setUserDetails={setUserDetails}
-          userDetails={userDetails}
-        />
-      ) : null}
+      {componentToRender}
     </Box>
   );
-}
+};
+
+export default MiddleComponent;
