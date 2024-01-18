@@ -233,8 +233,11 @@ export default function OrderDetailPage({
                   index: index,
                 }}
                 index={index}
-                disableDelete={order?.order_item_order_id?.length === 1}
+                disableDelete={true}
                 updateFunction={updateOrderItemMetaData}
+                sx={{
+                  my: 2,
+                }}
               />
             );
           })}
