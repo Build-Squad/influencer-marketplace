@@ -1,4 +1,4 @@
-from api.marketplace.marketplace.authentication import JWTAuthentication
+from marketplace.authentication import JWTAuthentication
 from marketplace.services import Pagination, handleNotFound
 from notifications.serializers import NotificationSerializer
 from notifications.models import Notification
@@ -10,14 +10,8 @@ from rest_framework import status
 # Create your views here.
 
 
-class NotificationView(APIView):
+class NotificationListView(APIView):
   authentication_classes = [JWTAuthentication]
-
-  def get_object(self, pk, user):
-    try:
-      return Notification.objects.get(pk=pk, user=user)
-    except Notification.DoesNotExist:
-      return None
 
   # Get Call to fetch all the notifications of the logged in user
   def get(self, request):
@@ -39,7 +33,7 @@ class NotificationView(APIView):
           {
               "isSuccess": True,
               "data": serializer.data,
-              "message": "All Order retrieved successfully",
+              "message": "All Notifications retrieved successfully",
               "pagination": pagination.getPageInfo(),
           },
           status=status.HTTP_200_OK,
@@ -47,6 +41,15 @@ class NotificationView(APIView):
     except Exception as e:
       return handleServerException(e)
 
+
+class NotificationDetailView(APIView):
+  authentication_classes = [JWTAuthentication]
+
+  def get_object(self, pk, user):
+    try:
+      return Notification.objects.get(pk=pk, user=user)
+    except Notification.DoesNotExist:
+      return None
   # Patch call to mark a notification as read
   def patch(self, request, pk):
     try:
