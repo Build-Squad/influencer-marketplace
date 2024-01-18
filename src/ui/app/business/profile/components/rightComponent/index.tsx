@@ -1,25 +1,22 @@
 import { Box, Button, Typography, LinearProgress } from "@mui/material";
 import React from "react";
+import { UserDetailsType } from "../../type";
 
 type Props = {
-  userDetails: {
-    username: string;
-    isTwitterAccountConnected: boolean;
-    isWalletConnected: boolean;
-    businessDetails: {
-      username: string;
-    };
-  };
+  userDetails: UserDetailsType;
 };
+
 const getProfileCompletedStatus: (
   userDetails: Props["userDetails"]
 ) => string = (userDetails) => {
   let count = 0;
   if (userDetails.isTwitterAccountConnected) count += 5;
   if (userDetails.isWalletConnected) count += 5;
-  // TODD: Calculate based on info added
-  if (userDetails.businessDetails) count += 7;
-  return `${count} / 20`;
+  if (userDetails.businessDetails)
+    count += Object.values(userDetails.businessDetails).filter(
+      (value) => value !== ""
+    ).length;
+  return `${count} / ${10 + Object.keys(userDetails.businessDetails).length}`;
 };
 
 export default function RightComponent({ userDetails }: Props) {
@@ -74,10 +71,6 @@ export default function RightComponent({ userDetails }: Props) {
 
             {!userDetails.isTwitterAccountConnected ? (
               <li>Connect your X Account</li>
-            ) : null}
-
-            {!userDetails.businessDetails.username ? (
-              <li>Add username</li>
             ) : null}
           </ul>
         </Box>

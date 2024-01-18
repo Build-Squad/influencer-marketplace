@@ -8,7 +8,13 @@ import {
 } from "@mui/material";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
@@ -17,8 +23,16 @@ import WalletConnectModal from "@/src/components/web3Components/walletConnectMod
 import { getService, putService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
 import EditSvg from "@/public/svg/Edit.svg";
+import {
+  BasicBusinessDetailsDefault,
+  BasicBusinessDetailsType,
+  UserDetailsType,
+} from "../../type";
 
-type Props = {};
+type Props = {
+  setUserDetails: Dispatch<SetStateAction<UserDetailsType>>;
+  userDetails: UserDetailsType;
+};
 
 const ConnectWalletComponent = () => {
   const [connectWallet, setConnectWallet] = useState<boolean>(false);
@@ -144,67 +158,53 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
   );
 };
 
-const DetailsComponent = () => {
-  const user = useAppSelector((state) => state.user?.user);
-  const [formData, setFormData] = useState({
-    business_name: "",
-    industry: "",
-    founded: "",
-    headquarters: "",
-    bio: "",
-    user_email: "",
-    phone: "",
-    website: "",
-    twitter_account: "",
-    linked_in: "",
-  });
+const debounce = (fn: Function, ms = 500) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
+};
 
-  const getBusinessDetails = async () => {
+const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
+  const user = useAppSelector((state) => state.user?.user);
+
+  const handleChange = async (e: any) => {
     try {
-      const { isSuccess, message, data } = await getService(
-        `/account/business-meta-data/${user?.id}/`
+      const { isSuccess, message, data } = await putService(
+        `/account/business-meta-data/${user?.id}/`,
+        {
+          [e.target.name]: e.target.value,
+        }
       );
       if (isSuccess) {
-        setFormData({
-          business_name: data.data.business_name ?? "",
-          industry: data.data.industry ?? "",
-          founded: data.data.founded ?? "",
-          headquarters: data.data.headquarters ?? "",
-          bio: data.data.bio ?? "",
-          user_email: data.data.user_email ?? "",
-          phone: data.data.phone ?? "",
-          website: data.data.website ?? "",
-          twitter_account: data.data.twitter_account ?? "",
-          linked_in: data.data.linked_in ?? "",
-        });
+        notification(message);
+      } else {
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
       }
-    } catch (error) {
-      console.error("Failed to fetch options:", error);
+    } catch (e) {
+      console.log(e);
     }
   };
 
-  useEffect(() => {
-    getBusinessDetails();
-  }, []);
+  const debouncedHandleChange = debounce(handleChange, 1000);
 
-  // TODO: Apply debouncing and call update user details API
-  const handleChange = async (e: any) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    const { isSuccess, message, data } = await putService(
-      `/account/business-meta-data/${user?.id}/`,
-      {
+  // First updating the form fields and calling the update API after 1 second
+  // This is to avoid multiple API calls.
+  // Adding memoisation to avoid function update on rerenders as it will hinder with our debounce function
+  const updatedHandleChange = useCallback((e: any) => {
+    setUserDetails((prevState) => ({
+      ...prevState,
+      businessDetails: {
+        ...prevState.businessDetails,
         [e.target.name]: e.target.value,
-      }
-    );
-    if (isSuccess) {
-      getBusinessDetails();
-    } else {
-      notification(
-        message ? message : "Something went wrong, try again later",
-        "error"
-      );
-    }
-  };
+      },
+    }));
+    debouncedHandleChange(e);
+  }, []);
   return (
     <>
       <Box>
@@ -222,8 +222,8 @@ const DetailsComponent = () => {
           fullWidth
           name="business_name"
           variant="standard"
-          onChange={handleChange}
-          value={formData.business_name}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.business_name}
         />
         <Typography
           variant="subtitle1"
@@ -237,8 +237,8 @@ const DetailsComponent = () => {
           fullWidth
           name="industry"
           variant="standard"
-          onChange={handleChange}
-          value={formData.industry}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.industry}
         />
         <Typography
           variant="subtitle1"
@@ -252,8 +252,8 @@ const DetailsComponent = () => {
           fullWidth
           name="founded"
           variant="standard"
-          onChange={handleChange}
-          value={formData.founded}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.founded}
         />
         <Typography
           variant="subtitle1"
@@ -267,8 +267,8 @@ const DetailsComponent = () => {
           fullWidth
           name="headquarters"
           variant="standard"
-          onChange={handleChange}
-          value={formData.headquarters}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.headquarters}
         />
       </Box>
       <Box sx={{ mt: 5 }}>
@@ -288,8 +288,8 @@ const DetailsComponent = () => {
           fullWidth
           name="bio"
           variant="standard"
-          onChange={handleChange}
-          value={formData.bio}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.bio}
         />
       </Box>
       <Box sx={{ mt: 5 }}>
@@ -307,8 +307,8 @@ const DetailsComponent = () => {
           fullWidth
           name="user_email"
           variant="standard"
-          onChange={handleChange}
-          value={formData.user_email}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.user_email}
           disabled
         />
         <Typography
@@ -323,8 +323,8 @@ const DetailsComponent = () => {
           fullWidth
           name="phone"
           variant="standard"
-          onChange={handleChange}
-          value={formData.phone}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.phone}
         />
         <Typography
           variant="subtitle1"
@@ -338,8 +338,8 @@ const DetailsComponent = () => {
           fullWidth
           name="website"
           variant="standard"
-          onChange={handleChange}
-          value={formData.website}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.website}
         />
         <Typography
           variant="subtitle1"
@@ -353,8 +353,8 @@ const DetailsComponent = () => {
           fullWidth
           name="twitter_account"
           variant="standard"
-          onChange={handleChange}
-          value={formData.twitter_account}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.twitter_account}
         />
         <Typography
           variant="subtitle1"
@@ -368,15 +368,18 @@ const DetailsComponent = () => {
           fullWidth
           name="linked_in"
           variant="standard"
-          onChange={handleChange}
-          value={formData.linked_in}
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.linked_in}
         />
       </Box>
     </>
   );
 };
 
-export default function MiddleComponent({}: Props) {
+export default function MiddleComponent({
+  setUserDetails,
+  userDetails,
+}: Props) {
   const searchParams = useSearchParams();
   const tabName = searchParams.get("tab");
   return (
@@ -393,7 +396,10 @@ export default function MiddleComponent({}: Props) {
       ) : tabName === "connect_x" ? (
         <ConnectXComponent tabName={tabName} />
       ) : tabName === "details" ? (
-        <DetailsComponent />
+        <DetailsComponent
+          setUserDetails={setUserDetails}
+          userDetails={userDetails}
+        />
       ) : null}
     </Box>
   );

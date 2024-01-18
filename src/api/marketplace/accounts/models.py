@@ -153,7 +153,7 @@ class BusinessAccountMetaData(models.Model):
     user_account = models.ForeignKey(
         User,
         related_name="user_business_meta_data",
-        on_delete=models.CASCADE,
+        on_delete=SET_NULL,
         null=True,
         blank=True,
     )

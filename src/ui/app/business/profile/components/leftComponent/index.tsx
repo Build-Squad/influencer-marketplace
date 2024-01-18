@@ -9,16 +9,10 @@ import connect_x_unselected from "@/public/svg/connect_x_unselected.svg";
 import connect_x from "@/public/svg/connect_x.svg";
 import Details_unselected from "@/public/svg/Details_unselected.svg";
 import Details from "@/public/svg/Details.svg";
+import { UserDetailsType } from "../../type";
 
 type Props = {
-  userDetails: {
-    username: string;
-    isTwitterAccountConnected: boolean;
-    isWalletConnected: boolean;
-    businessDetails: {
-      username: string;
-    };
-  };
+  userDetails: UserDetailsType;
 };
 
 type CardDetailsType = {
@@ -63,7 +57,11 @@ const getCardDetails: (
       heading: "Business Details",
       subHeading: "Adding your details increases trust in your business.",
       isMandatory: false,
-      tabProgressString: "0 / 5",
+      tabProgressString: `${
+        Object.values(userDetails.businessDetails).filter(
+          (value) => value !== ""
+        ).length
+      } / ${Object.keys(userDetails.businessDetails).length}`,
     },
   ];
 };
