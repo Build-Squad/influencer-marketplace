@@ -16,12 +16,11 @@ from .models import (
     OrderItem,
     OrderAttachment,
     OrderItemTracking,
-    OrderMessage,
-    OrderMessageAttachment,
     Transaction,
     Review,
 )
 from .serializers import (
+    CreateOrderMessageSerializer,
     CreateOrderSerializer,
     OrderListFilterSerializer,
     OrderSerializer,
@@ -29,7 +28,6 @@ from .serializers import (
     OrderAttachmentSerializer,
     OrderItemTrackingSerializer,
     OrderMessageSerializer,
-    OrderMessageAttachmentSerializer,
     TransactionSerializer,
     ReviewSerializer,
 )
@@ -663,130 +661,46 @@ class OrderItemTrackingDetail(APIView):
 
 
 # ORDER-Message API-Endpoint
-# List-Create-API
+
+# Get Order Messages
 class OrderMessageList(APIView):
-    def get(self, request):
-        try:
-            orderMessage = OrderMessage.objects.all()
-            pagination = Pagination(orderMessage, request)
-            serializer = OrderMessageSerializer(pagination.getData(), many=True)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "All Order Message data retrieved successfully",
-                    "pagination": pagination.getPageInfo(),
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-    @swagger_auto_schema(request_body=OrderMessageSerializer)
-    def post(self, request):
-        try:
-            serializer = OrderMessageSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": OrderMessageSerializer(serializer.instance).data,
-                        "message": "Order Message data created successfully",
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
-            else:
-                return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-
-# Retrieve-Update-Destroy API
-class OrderMessageDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return OrderMessage.objects.get(pk=pk)
-        except OrderMessage.DoesNotExist:
-            return None
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request, pk):
         try:
-            orderMessage = self.get_object(pk)
-            if orderMessage is None:
-                return handleNotFound("Order Message")
-            serializer = OrderMessageSerializer(orderMessage)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "Order Message data retrieved successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-    @swagger_auto_schema(request_body=OrderMessageSerializer)
-    def put(self, request, pk):
-        try:
-            orderMessage = self.get_object(pk)
-            if orderMessage is None:
-                return handleNotFound("Order Message")
+            order = Order.objects.get(pk=pk)
+            if order is None:
+                return handleNotFound("Order")
+            # Check that the order belongs to the user
+            # Two cases:
+            # 1. User is a business owner and the order belongs to the user i.e. buyer
+            # 2. User is an influencer and the order belongs to the user i.e. influencer in the package
+            if (
+                request.user_account.role.name == "business_owner"
+                and order.buyer.id != request.user_account.id
+            ) or (
+                request.user_account.role.name == "influencer"
+                and order.order_item_order_id[0].package.influencer.id
+                != request.user_account.id
+            ):
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "You are not authorized to view this order chat",
+                        "data": None,
+                        "errors": "You are not authorized to view this order chat",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            orderMessages = order.order_message_order_id.all().order_by("-created_at")
+            pagination = Pagination(orderMessages, request)
             serializer = OrderMessageSerializer(
-                instance=orderMessage, data=request.data
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": OrderMessageSerializer(serializer.instance).data,
-                        "message": "Order Message data updated successfully",
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-    def delete(self, request, pk):
-        try:
-            orderMessage = self.get_object(pk)
-            if orderMessage is None:
-                return handleNotFound("Order Message")
-            try:
-                orderMessage.delete()
-            except ValidationError as e:
-                return handleDeleteNotAllowed("Order Message")
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": None,
-                    "message": "Order Message deleted successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-
-# ORDER-Message Attachment API-Endpoint
-# List-Create-API
-class OrderMessageAttachmentList(APIView):
-    def get(self, request):
-        try:
-            orderMessageAttachment = OrderMessageAttachment.objects.all()
-            pagination = Pagination(orderMessageAttachment, request)
-            serializer = OrderMessageAttachmentSerializer(
-                pagination.getData(), many=True
-            )
+                pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
                     "data": serializer.data,
-                    "message": "All Order Message Attachment data retrieved successfully",
+                    "message": "All Order Messages retrieved successfully",
                     "pagination": pagination.getPageInfo(),
                 },
                 status=status.HTTP_200_OK,
@@ -794,96 +708,72 @@ class OrderMessageAttachmentList(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    @swagger_auto_schema(request_body=OrderMessageAttachmentSerializer)
+    def patch(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+            # Update the status of the order message to read for the messages that bolong to the user in the order
+            if order is None:
+                return handleNotFound("Order")
+            # Check that the order belongs to the user
+            # Two cases:
+            # 1. User is a business owner and the order belongs to the user i.e. buyer
+            # 2. User is an influencer and the order belongs to the user i.e. influencer in the package
+            if (
+                request.user_account.role.name == "business_owner"
+                and order.buyer.id != request.user_account.id
+            ) or (
+                request.user_account.role.name == "influencer"
+                and order.order_item_order_id[0].package.influencer.id
+                != request.user_account.id
+            ):
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "You are not authorized to view this order chat",
+                        "data": None,
+                        "errors": "You are not authorized to view this order chat",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            orderMessages = order.order_message_order_id.filter(
+                Q(sender_id=request.user_account) | Q(
+                    receiver_id=request.user_account)
+            )
+            orderMessages.update(status='read')
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Order Messages marked as read successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+# List-Create-API
+
+
+class OrderMessageCreateView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=CreateOrderMessageSerializer)
     def post(self, request):
         try:
-            serializer = OrderMessageAttachmentSerializer(data=request.data)
+            serializer = CreateOrderMessageSerializer(
+                data=request.data, context={"request": request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
-                        "data": OrderMessageAttachmentSerializer(
-                            serializer.instance
-                        ).data,
-                        "message": "Order Message Attachment data created successfully",
+                        "data": OrderMessageSerializer(serializer.instance).data,
+                        "message": "Message sent successfully",
                     },
                     status=status.HTTP_201_CREATED,
                 )
             else:
                 return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-
-# Retrieve-Update-Destroy API
-class OrderMessageAttachmentDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return OrderMessageAttachment.objects.get(pk=pk)
-        except OrderMessageAttachment.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        try:
-            orderMessageAttachment = self.get_object(pk)
-            if orderMessageAttachment is None:
-                return handleNotFound("Order Message Attachment")
-            serializer = OrderMessageSerializer(orderMessageAttachment)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "Order Message Attachment data retrieved successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-    @swagger_auto_schema(request_body=OrderMessageAttachmentSerializer)
-    def put(self, request, pk):
-        try:
-            orderMessageAttachment = self.get_object(pk)
-            if orderMessageAttachment is None:
-                return handleNotFound("Order Message Attachment")
-            serializer = OrderMessageAttachmentSerializer(
-                instance=orderMessageAttachment, data=request.data
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": OrderMessageAttachmentSerializer(
-                            serializer.instance
-                        ).data,
-                        "message": "Order Message Attachment data updated successfully",
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-    def delete(self, request, pk):
-        try:
-            orderMessageAttachment = self.get_object(pk)
-            if orderMessageAttachment is None:
-                return handleNotFound("Order Message Attachment")
-            try:
-                orderMessageAttachment.delete()
-            except ValidationError as e:
-                return handleDeleteNotAllowed("Order Message Attachment")
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": None,
-                    "message": "Order Message Attachment deleted successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
         except Exception as e:
             return handleServerException(e)
 
