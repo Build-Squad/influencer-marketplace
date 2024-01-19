@@ -1,5 +1,6 @@
-from locale import currency
+from email import message
 from accounts.serializers import UserSerializer
+from accounts.models import User
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service, ServiceMasterMetaData
@@ -15,7 +16,6 @@ from .models import (
     Transaction,
     Review,
 )
-from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -24,6 +24,7 @@ class OrderItemMetaDataSerializer(serializers.ModelSerializer):
         model = OrderItemMetaData
         fields = '__all__'
 
+# Serializer for the GET details of an order
 class OrderItemReadSerializer(serializers.ModelSerializer):
     package = PackageSerializer(read_only=True)
     service_master = ServiceMasterReadSerializer(read_only=True)
@@ -43,12 +44,14 @@ class OrderItemReadSerializer(serializers.ModelSerializer):
         return OrderItemMetaDataSerializer(order_item_meta_data, many=True).data
 
 
+# Not being used
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = "__all__"
 
 
+# Serializer to define the schema for the POST search request for the list of orders
 class OrderListFilterSerializer(serializers.Serializer):
     influencers = serializers.ListField(child=serializers.UUIDField(), required=False)
     buyers = serializers.ListField(child=serializers.UUIDField(), required=False)
@@ -65,6 +68,7 @@ class OrderListFilterSerializer(serializers.Serializer):
     order_by = serializers.CharField(required=False)
 
 
+# The response schema for the list of orders from the POST search request
 class OrderSerializer(serializers.ModelSerializer):
     buyer = UserSerializer(read_only=True)
     order_item_order_id = OrderItemReadSerializer(many=True, read_only=True)
@@ -93,6 +97,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return None
 
 
+# The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):
     value = serializers.CharField(allow_null=True)
     service_master_meta_data_id = serializers.UUIDField(required=False)
@@ -259,11 +264,66 @@ class OrderMessageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class CreateOrderMessageSerializer(serializers.Serializer):
+    message = serializers.CharField(required=True)
+    order_id = serializers.UUIDField(required=True)
+
+    def create(self, validated_data):
+        message = validated_data['message']
+        order_id = validated_data['order_id']
+        order = Order.objects.get(id=order_id)
+
+        # Check that the order is either accepted or pending
+        if order.status not in ['accepted', 'pending']:
+            raise serializers.ValidationError(
+                {"order": "Only accepted or pending orders can have messages"})
+
+        # Check that the sender is either the buyer or the influencer from package
+        sender = self.context['request'].user_account
+        if sender.id != order.buyer.id and sender.id != order.order_item_order_id.first().package.influencer.id:
+            raise serializers.ValidationError(
+                {"sender": "Only the buyer or the influencer can send a message"})
+
+        # Find the receiver
+        if sender.id == order.buyer.id:
+            receiver_id = order.order_item_order_id.first().package.influencer.id
+        else:
+            receiver_id = order.buyer.id
+        sender_user = User.objects.get(id=sender.id)
+        receiver_user = User.objects.get(id=receiver_id)
+
+        order_message = OrderMessage.objects.create(
+            message=message, sender_id=sender_user, receiver_id=receiver_user, order_id=order)
+        return order_message
+
+
 class OrderMessageAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderMessageAttachment
         fields = "__all__"
 
+
+class OrderMessageListFilterSerializer(serializers.Serializer):
+    status = serializers.ListField(
+        child=serializers.CharField(), required=False)
+    service_masters = serializers.ListField(
+        child=serializers.UUIDField(), required=False
+    )
+
+
+class LastMessageSerializer(serializers.Serializer):
+    message = OrderMessageSerializer(read_only=True)
+    order_unread_messages_count = serializers.IntegerField(read_only=True)
+
+
+class OrderDetailSerializer(serializers.Serializer):
+    order = OrderSerializer(read_only=True)
+    order_message = LastMessageSerializer(read_only=True)
+
+
+class UserOrderMessagesSerializer(serializers.Serializer):
+    orders = OrderDetailSerializer(many=True, read_only=True)
+    total_unread_messages_count = serializers.IntegerField(read_only=True)
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:

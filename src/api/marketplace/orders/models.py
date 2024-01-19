@@ -143,7 +143,8 @@ class OrderMessage(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='OrderMessage', default=uuid.uuid4, editable=False)
-    status = models.CharField(choices=STATUS_CHOICES, max_length=50, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='sent')
     message = models.TextField(blank=True, null=True)
     sender_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sender_id', on_delete=SET_NULL, null=True)
     receiver_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='receiver_id', on_delete=SET_NULL, null=True)
