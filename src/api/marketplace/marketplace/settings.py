@@ -241,7 +241,7 @@ USE_TZ = True
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # web accessible folder
-STATIC_ROOT = '/home/xidev/xfluencer/influencer-marketplace/src/api/marketplace/static/'
+STATIC_ROOT = config("STATIC_ROOT")
 # URL prefix for static files.
 STATIC_URL = 'static/'
 # List of finder classes that know how to find static files in
