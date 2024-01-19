@@ -24,6 +24,7 @@ import { getService, putService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
 import EditSvg from "@/public/svg/Edit.svg";
 import { UserDetailsType } from "../../type";
+import Info_Profile from "@/public/Info_Profile.png";
 
 const debounce = (fn: Function, ms = 500) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -396,6 +397,46 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   );
 };
 
+const InfoComponent = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+      }}
+    >
+      <Box sx={{ flex: 1 }}>
+        <ul>
+          <li>
+            <Typography variant="subtitle1">
+              Adding details earns Influencer’s trust
+            </Typography>
+          </li>
+          <li>
+            <Typography variant="subtitle1">
+              Each point increases your profile completion percentage
+            </Typography>
+          </li>
+          <li>
+            <Typography variant="subtitle1">
+              See profile preview to know how your business profile will be seen
+              by the influencer.
+            </Typography>
+          </li>
+        </ul>
+      </Box>
+      <Box sx={{}}>
+        <Image
+          src={Info_Profile}
+          alt="Info_Profile"
+          style={{ height: "224px", width: "256px" }}
+        />
+      </Box>
+    </Box>
+  );
+};
+
 const MiddleComponent = ({ setUserDetails, userDetails }: Props) => {
   const searchParams = useSearchParams();
   const tabName = searchParams.get("tab");
@@ -421,16 +462,29 @@ const MiddleComponent = ({ setUserDetails, userDetails }: Props) => {
   }
 
   return (
-    <Box
-      sx={{
-        padding: "20px",
-        backgroundColor: "#FFF",
-        margin: "20px",
-        borderRadius: "16px",
-      }}
-    >
-      {componentToRender}
-    </Box>
+    <>
+      <Box
+        sx={{
+          padding: "20px",
+          backgroundColor: "#FFF",
+          margin: "20px",
+          borderRadius: "16px",
+        }}
+      >
+        <InfoComponent />
+      </Box>
+
+      <Box
+        sx={{
+          padding: "20px",
+          backgroundColor: "#FFF",
+          margin: "20px",
+          borderRadius: "16px",
+        }}
+      >
+        {componentToRender}
+      </Box>
+    </>
   );
 };
 
