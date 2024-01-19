@@ -1,10 +1,11 @@
 from django.contrib import admin
 
-from .models import User, TwitterAccount, CategoryMaster, AccountCategory, Role, Wallet, WalletNetwork, WalletProvider
+from .models import User, TwitterAccount, CategoryMaster, AccountCategory, Role, Wallet, WalletNetwork, WalletProvider, BusinessAccountMetaData
 # Register your models here.
 
 admin.site.register(User)
 admin.site.register(TwitterAccount)
+admin.site.register(BusinessAccountMetaData)
 admin.site.register(CategoryMaster)
 admin.site.register(AccountCategory)
 admin.site.register(Role)

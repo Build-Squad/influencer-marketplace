@@ -16,7 +16,14 @@ from .models import (
     Wallet,
     WalletNetwork,
     WalletProvider,
+    BusinessAccountMetaData,
 )
+
+
+class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessAccountMetaData
+        fields = "__all__"
 
 
 class CategoryMasterSerializer(serializers.ModelSerializer):

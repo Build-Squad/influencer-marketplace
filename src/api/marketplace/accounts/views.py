@@ -22,6 +22,7 @@ from rest_framework import status
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
+    BusinessAccountMetaData,
     TwitterAccount,
     CategoryMaster,
     AccountCategory,
@@ -33,6 +34,7 @@ from .models import (
     WalletProvider,
 )
 from .serializers import (
+    BusinessAccountMetaDataSerializer,
     CreateAccountCategorySerializer,
     DeleteAccountCategorySerializer,
     OTPAuthenticationSerializer,
@@ -1372,5 +1374,56 @@ class WalletList(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class BusinessAccountMetaDataDetail(APIView):
+    def get_object(self, userId):
+        try:
+            return BusinessAccountMetaData.objects.get(user_account=userId)
+        except BusinessAccountMetaData.DoesNotExist:
+            return None
+
+    def get(self, request, userId):
+        try:
+            businessAccountMetaData = self.get_object(userId)
+            if businessAccountMetaData is None:
+                return handleNotFound("Business Account Meta Data")
+            serializer = BusinessAccountMetaDataSerializer(businessAccountMetaData)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Business Meta Data retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    @swagger_auto_schema(request_body=BusinessAccountMetaDataSerializer)
+    def put(self, request, userId):
+        try:
+            businessAccountMetaData = self.get_object(userId)
+            if businessAccountMetaData is None:
+                return handleNotFound("Business Account Meta Data")
+            serializer = BusinessAccountMetaDataSerializer(
+                instance=businessAccountMetaData, data=request.data
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": BusinessAccountMetaDataSerializer(
+                            serializer.instance
+                        ).data,
+                        "message": "Business Meta Data updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)
