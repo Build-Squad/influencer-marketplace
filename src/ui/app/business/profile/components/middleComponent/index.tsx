@@ -8,20 +8,60 @@ import {
 } from "@mui/material";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
-import { putService } from "@/src/services/httpServices";
+import { getService, putService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import EditSvg from "@/public/svg/Edit.svg";
+import { UserDetailsType } from "../../type";
+import Info_Profile from "@/public/Info_Profile.png";
 
-type Props = {};
+const debounce = (fn: Function, ms = 500) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
+};
 
-const ConnectWalletComponent = () => {
+type Props = {
+  setUserDetails: Dispatch<SetStateAction<UserDetailsType>>;
+  userDetails: UserDetailsType;
+};
+
+const ConnectWalletComponent = ({ setUserDetails, userDetails }: Props) => {
   const [connectWallet, setConnectWallet] = useState<boolean>(false);
   const [walletOpen, setWalletOpen] = useState<boolean>(false);
+
+  const getUserWallets = async () => {
+    const { isSuccess, data, message } = await getService("/account/wallets/");
+    if (isSuccess) {
+      const allWallets = data?.data ?? [];
+      setUserDetails((prevState: any) => {
+        return {
+          ...prevState,
+          isWalletConnected: !!allWallets?.length,
+        };
+      });
+    } else {
+      notification(message ? message : "Something went wrong", "error");
+    }
+  };
+
+  useEffect(() => {
+    getUserWallets();
+  }, [walletOpen]);
+
   return (
     <>
       <Box sx={{ display: "flex", columnGap: "4px" }}>
@@ -78,41 +118,45 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
   const user = useAppSelector((state) => state.user?.user);
   const userTwitterDetails = user?.twitter_account;
 
-  return userTwitterDetails ? (
-    <Box sx={{ display: "flex", columnGap: "8px" }}>
-      <Avatar
-        alt="Influencer profile image"
-        src={userTwitterDetails.profile_image_url}
-        variant="circular"
-        sx={{
-          height: "68px",
-          width: "68px",
-        }}
-      />
-      <Box sx={{ mt: 1 }}>
-        <Typography variant="h6" fontWeight={"bold"}>
-          {userTwitterDetails.name}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ lineHeight: "10px" }}>
-          @{userTwitterDetails.user_name}
-        </Typography>
-        <Button
-          variant={"contained"}
-          color="secondary"
+  if (userTwitterDetails) {
+    return (
+      <Box sx={{ display: "flex", columnGap: "8px" }}>
+        <Avatar
+          alt="Influencer profile image"
+          src={userTwitterDetails.profile_image_url}
+          variant="circular"
           sx={{
-            borderRadius: "20px",
-            mt: 2,
+            height: "68px",
+            width: "68px",
           }}
-          onClick={() => {
-            logoutTwitterUser();
-            window.location.href = `${pathname}?tab=${tabName}`;
-          }}
-        >
-          Disconnect
-        </Button>
+        />
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="h6" fontWeight={"bold"}>
+            {userTwitterDetails.name}
+          </Typography>
+          <Typography variant="subtitle1" sx={{ lineHeight: "10px" }}>
+            @{userTwitterDetails.user_name}
+          </Typography>
+          <Button
+            variant={"contained"}
+            color="secondary"
+            sx={{
+              borderRadius: "20px",
+              mt: 2,
+            }}
+            onClick={() => {
+              logoutTwitterUser();
+              window.location.href = `${pathname}?tab=${tabName}`;
+            }}
+          >
+            Disconnect
+          </Button>
+        </Box>
       </Box>
-    </Box>
-  ) : (
+    );
+  }
+
+  return (
     <>
       <Box sx={{ display: "flex", columnGap: "4px" }}>
         <Image src={Star_Coloured} alt={"Star_Coloured"} height={25} />
@@ -143,89 +187,305 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
   );
 };
 
-const DetailsComponent = () => {
+const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   const user = useAppSelector((state) => state.user?.user);
-  const [formData, setFormData] = useState({
-    businessName: "",
-    username: "",
-  });
 
-  // TODO: Apply debouncing and call update user details API
   const handleChange = async (e: any) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    const { isSuccess, message, data } = await putService(
-      `/account/user/${user?.id}/`,
-      {
-        // Replace this with formData fields
-        username: formData.username,
-      }
-    );
-    if (isSuccess) {
-      console.log(data);
-    } else {
-      notification(
-        message ? message : "Something went wrong, try again later",
-        "error"
+    try {
+      const { isSuccess, message, data } = await putService(
+        `/account/business-meta-data/${user?.id}/`,
+        {
+          [e.target.name]: e.target.value,
+        }
       );
+      if (isSuccess) {
+        notification(message);
+      } else {
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
+      }
+    } catch (e) {
+      console.log(e);
     }
   };
+
+  const debouncedHandleChange = debounce(handleChange, 1000);
+
+  // First updating the form fields and calling the update API after 1 second
+  // This is to avoid multiple API calls.
+  // Adding memoisation to avoid function update on rerenders as it will hinder with our debounce function
+  const updatedHandleChange = useCallback((e: any) => {
+    setUserDetails((prevState) => ({
+      ...prevState,
+      businessDetails: {
+        ...prevState.businessDetails,
+        [e.target.name]: e.target.value,
+      },
+    }));
+    debouncedHandleChange(e);
+  }, []);
   return (
-    <Box>
-      <Typography variant="h6">Basic Details</Typography>
-      <Divider light />
-      <Typography
-        variant="subtitle1"
-        fontWeight={"bold"}
-        sx={{ mt: 2, color: "#C7C7C7" }}
-      >
-        Business name
-      </Typography>
-      <TextField
-        color="secondary"
-        fullWidth
-        name="businessName"
-        variant="standard"
-        onChange={handleChange}
-        value={formData.businessName}
-      />
-      <Typography
-        variant="subtitle1"
-        fontWeight={"bold"}
-        sx={{ mt: 2, color: "#C7C7C7" }}
-      >
-        Username
-      </Typography>
-      <TextField
-        color="secondary"
-        fullWidth
-        name="username"
-        variant="standard"
-        onChange={handleChange}
-        value={formData.username}
-      />
+    <>
+      <Box>
+        <Typography variant="h6">Basic Details</Typography>
+        <Divider light />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Business name <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="business_name"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.business_name}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Industry <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="industry"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.industry}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Founded In <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="founded"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.founded}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Headquarters <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="headquarters"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.headquarters}
+        />
+      </Box>
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h6">About</Typography>
+        <Divider light />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Bio <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          multiline
+          rows={5}
+          color="secondary"
+          fullWidth
+          name="bio"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.bio}
+        />
+      </Box>
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h6">Contact Details</Typography>
+        <Divider light />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Email <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="user_email"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.user_email}
+          disabled
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Phone <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="phone"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.phone}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          Website <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="website"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.website}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          X <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="twitter_account"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.twitter_account}
+        />
+        <Typography
+          variant="subtitle1"
+          fontWeight={"bold"}
+          sx={{ mt: 2, color: "#C7C7C7" }}
+        >
+          linked In <Image src={EditSvg} height={16} alt="EditSvg" />
+        </Typography>
+        <TextField
+          color="secondary"
+          fullWidth
+          name="linked_in"
+          variant="standard"
+          onChange={updatedHandleChange}
+          value={userDetails.businessDetails.linked_in}
+        />
+      </Box>
+    </>
+  );
+};
+
+const InfoComponent = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+      }}
+    >
+      <Box sx={{ flex: 1 }}>
+        <ul>
+          <li>
+            <Typography variant="subtitle1">
+              Adding details earns Influencer’s trust
+            </Typography>
+          </li>
+          <li>
+            <Typography variant="subtitle1">
+              Each point increases your profile completion percentage
+            </Typography>
+          </li>
+          <li>
+            <Typography variant="subtitle1">
+              See profile preview to know how your business profile will be seen
+              by the influencer.
+            </Typography>
+          </li>
+        </ul>
+      </Box>
+      <Box sx={{}}>
+        <Image
+          src={Info_Profile}
+          alt="Info_Profile"
+          style={{ height: "224px", width: "256px" }}
+        />
+      </Box>
     </Box>
   );
 };
 
-export default function MiddleComponent({}: Props) {
+const MiddleComponent = ({ setUserDetails, userDetails }: Props) => {
   const searchParams = useSearchParams();
   const tabName = searchParams.get("tab");
+
+  let componentToRender = null;
+
+  if (tabName === "wallet") {
+    componentToRender = (
+      <ConnectWalletComponent
+        setUserDetails={setUserDetails}
+        userDetails={userDetails}
+      />
+    );
+  } else if (tabName === "connect_x") {
+    componentToRender = <ConnectXComponent tabName={tabName} />;
+  } else if (tabName === "details") {
+    componentToRender = (
+      <DetailsComponent
+        setUserDetails={setUserDetails}
+        userDetails={userDetails}
+      />
+    );
+  }
+
   return (
-    <Box
-      sx={{
-        padding: "20px",
-        backgroundColor: "#FFF",
-        margin: "20px",
-        borderRadius: "16px",
-      }}
-    >
-      {tabName === "wallet" ? (
-        <ConnectWalletComponent />
-      ) : tabName === "connect_x" ? (
-        <ConnectXComponent tabName={tabName} />
-      ) : tabName === "details" ? (
-        <DetailsComponent />
-      ) : null}
-    </Box>
+    <>
+      <Box
+        sx={{
+          padding: "20px",
+          backgroundColor: "#FFF",
+          margin: "20px",
+          borderRadius: "16px",
+        }}
+      >
+        <InfoComponent />
+      </Box>
+
+      <Box
+        sx={{
+          padding: "20px",
+          backgroundColor: "#FFF",
+          margin: "20px",
+          borderRadius: "16px",
+        }}
+      >
+        {componentToRender}
+      </Box>
+    </>
   );
-}
+};
+
+export default MiddleComponent;
