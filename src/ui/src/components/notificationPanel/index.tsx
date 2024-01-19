@@ -50,7 +50,8 @@ export default function NotificationPanel() {
               `You have ${newNotificationCount} new notification${
                 newNotificationCount > 1 ? "s" : ""
               }`,
-              "success"
+              "success",
+              3000
             );
           }
         }
@@ -61,7 +62,6 @@ export default function NotificationPanel() {
           total_page_count: data?.pagination?.total_page_count,
         });
       } else {
-        notification(message ? message : "Something went wrong", "error");
       }
     } finally {
     }
