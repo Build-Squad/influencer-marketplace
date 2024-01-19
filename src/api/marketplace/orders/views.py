@@ -16,12 +16,14 @@ from .models import (
     OrderItem,
     OrderAttachment,
     OrderItemTracking,
+    OrderMessage,
     Transaction,
     Review,
 )
 from .serializers import (
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
+    OrderDetailSerializer,
     OrderListFilterSerializer,
     OrderSerializer,
     OrderItemSerializer,
@@ -30,6 +32,8 @@ from .serializers import (
     OrderMessageSerializer,
     TransactionSerializer,
     ReviewSerializer,
+    OrderMessageListFilterSerializer,
+    UserOrderMessagesSerializer
 )
 from rest_framework import status
 from django.db.models import Q
@@ -185,6 +189,80 @@ class OrderListView(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class UserOrderMessagesView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=OrderMessageListFilterSerializer)
+    def post(self, request):
+        try:
+            # Get the filters from the request
+            filter_serializer = OrderMessageListFilterSerializer(
+                data=request.data)
+            filter_serializer.is_valid(raise_exception=True)
+            filters = filter_serializer.validated_data
+
+            user = request.user_account
+            role = request.user_account.role
+            if role.name == "business_owner":
+                orders = Order.objects.filter(
+                    Q(buyer=user), deleted_at=None).distinct()
+            elif role.name == "influencer":
+                # For all the order items, there will be a package in it and the package willl have influencer id
+                order_items = OrderItem.objects.filter(
+                    Q(package__influencer=user), deleted_at=None
+                ).distinct()
+                orders = Order.objects.filter(
+                    Q(order_item_order_id__in=order_items), deleted_at=None
+                ).distinct()
+
+            if "status" in filters:
+                orders = orders.filter(status__in=filters["status"])
+
+            if "service_masters" in filters:
+                orders = orders.filter(
+                    order_item_order_id__service_master__in=filters["service_masters"]
+                )
+            total_unread_count = 0
+            data = []
+            for order in orders:
+                order_messages = OrderMessage.objects.filter(order_id=order)
+                if order_messages.exists():
+                    last_message = order_messages.last()
+                    unread_count = order_messages.filter(status='sent').count()
+                    total_unread_count += unread_count
+                    message_data = {
+                        'message': last_message,
+                        'order_unread_messages_count': unread_count,
+                        'created_at': last_message.created_at  # Store the timestamp
+                    }
+                else:
+                    message_data = {
+                        'message': {},
+                        'order_unread_messages_count': 0,
+                        'created_at': None  # No timestamp for orders without messages
+                    }
+                data.append({
+                    'order': order,
+                    'order_message': message_data
+                })
+            # The data should be sorted by the created_at field of the last message
+            data.sort(key=lambda x: x['order_message']['created_at']
+                      or x['order'].created_at, reverse=True)
+            serializer = UserOrderMessagesSerializer({
+                'orders': data,
+                'total_unread_messages_count': total_unread_count
+            })
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Order Messages retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
 
 # Retrieve-Update-Destroy API
 class OrderDetail(APIView):
