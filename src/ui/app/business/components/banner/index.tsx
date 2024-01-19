@@ -7,14 +7,17 @@ import Arrow from "@/public/svg/Arrow.svg";
 import Star from "@/public/svg/Star.svg";
 import FiltersComponent from "@/src/components/shared/filtersComponent";
 import { useFormik } from "formik";
+import { useRouter } from "next/navigation";
 
 type Props = {};
 
 export default function Banner({}: Props) {
+  const router = useRouter();
   const formik = useFormik({
     initialValues: BannerFilterInitialValues,
     onSubmit: (values) => {
-      console.log(values);
+      localStorage.setItem("filterData", JSON.stringify(values));
+      router.push("business/explore");
     },
     validationSchema: BannerFilterSchema,
   });
@@ -148,7 +151,7 @@ export default function Banner({}: Props) {
               <FiltersComponent
                 formik={formik}
                 type={"FOLLOWERS"}
-                data={{ name: "upperPriceLimit", label: "Max. Followers" }}
+                data={{ name: "upperFollowerLimit", label: "Max. Followers" }}
               />
             </Grid>
           </Grid>

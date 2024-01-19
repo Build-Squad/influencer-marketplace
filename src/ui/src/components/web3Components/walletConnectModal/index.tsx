@@ -9,12 +9,16 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React, { useEffect } from "react";
-import CustomModal from "../shared/customModal";
-import { notification } from "../shared/notification";
+import CustomModal from "../../shared/customModal";
+import { notification } from "../../shared/notification";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
     (await import("@solana/wallet-adapter-material-ui")).WalletMultiButton,
+  { ssr: false }
+);
+const SignMessageDynamic = dynamic(
+  async () => (await import("../signMessage")).SignMessage,
   { ssr: false }
 );
 
@@ -31,13 +35,11 @@ export default function WalletConnectModal({
 }: WalletConnectModalProps) {
   const { publicKey, wallet } = useWallet();
   const dispatch = useAppDispatch();
-  const [walletAddress, setWalletAddress] = React.useState<string>("");
-  const [walletProvider, setWalletProvider] = React.useState<string>("");
 
   const onSubmit = async () => {
     const requestBody = {
-      wallet_address_id: walletAddress,
-      wallet_provider_id: walletProvider,
+      wallet_address_id: publicKey?.toBase58(),
+      wallet_provider_id: wallet?.adapter?.name,
       wallet_network_id: "solana",
     };
     const { isSuccess, data, message } = await postService(
@@ -57,13 +59,6 @@ export default function WalletConnectModal({
       );
     }
   };
-
-  useEffect(() => {
-    if (wallet && publicKey) {
-      setWalletProvider(wallet.adapter.name);
-      setWalletAddress(publicKey.toBase58());
-    }
-  }, [wallet, publicKey]);
 
   return (
     <CustomModal
@@ -152,15 +147,7 @@ export default function WalletConnectModal({
             alignItems: "center",
           }}
         >
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{ borderRadius: 8 }}
-            onClick={onSubmit}
-            disabled={!walletAddress}
-          >
-            Save & Continue
-          </Button>
+          <SignMessageDynamic onSignMessageSuccess={onSubmit} />
         </Grid>
       </Grid>
     </CustomModal>

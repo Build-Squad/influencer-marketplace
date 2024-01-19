@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from django.db.models import SET_NULL
-
+from django.apps import apps
 
 class Country(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Country', default=uuid.uuid4, editable=False)
@@ -20,7 +20,7 @@ class Currency(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     symbol = models.CharField(max_length=100, blank=True, null=True)
     country = models.ForeignKey(Country, related_name='currency_country_id', on_delete=SET_NULL,
-                                         null=True)
+                                null=True, blank=True)
 
     class Meta:
         db_table = "currency"

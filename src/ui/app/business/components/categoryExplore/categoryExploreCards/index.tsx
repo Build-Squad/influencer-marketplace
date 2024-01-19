@@ -21,7 +21,6 @@ export default function CategoryExploreCards({ category }: Props) {
       <Card
         sx={{
           cursor: "pointer",
-          maxWidth: 345,
           borderRadius: "16px",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
           textAlign: "start",
@@ -37,7 +36,16 @@ export default function CategoryExploreCards({ category }: Props) {
           >
             {category?.name}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{
+              maxHeight: "70px",
+              whiteSpace: "wrap",
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+            }}
+          >
             {category?.description}
           </Typography>
           <Box

@@ -43,6 +43,8 @@ export default function InfluencersCards({ influencer }: Props) {
             justifyContent: "center",
             alignItems: "center",
             textAlign: "center",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
           }}
         >
           <Avatar

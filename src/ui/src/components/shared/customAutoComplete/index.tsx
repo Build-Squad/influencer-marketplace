@@ -142,7 +142,13 @@ const CustomAutoComplete = ({
       multiple={true}
       value={value}
       options={options}
-      sx={sx}
+      sx={{
+        ...sx,
+        ".MuiAutocomplete-inputRoot": {
+          flexWrap: "nowrap",
+          overflow: "hidden",
+        },
+      }}
       getOptionDisabled={getOptionDisabled}
       getOptionLabel={getOptionLabel}
       inputValue={search}

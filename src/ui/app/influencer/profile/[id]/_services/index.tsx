@@ -1,6 +1,6 @@
 "use client";
 
-import CheckoutModal from "@/src/components/checkoutModal";
+import CheckoutModal from "@/src/components/checkoutComponents/checkoutModal";
 import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
 import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
 import { notification } from "@/src/components/shared/notification";

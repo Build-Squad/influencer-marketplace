@@ -5,14 +5,17 @@ import CompletedOrders from "@/public/svg/completedOrders.svg?icon";
 import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
 import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
+import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import StatusChip from "@/src/components/shared/statusChip";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Box,
   Grid,
+  IconButton,
   Link,
   Pagination,
   Rating,
@@ -29,11 +32,12 @@ import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 
 export default function BusinessDashboardPage() {
+  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
-    status: ["accepted", "rejected", "completed"],
+    status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
@@ -45,7 +49,7 @@ export default function BusinessDashboardPage() {
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 5,
+    current_page_size: 10,
   });
 
   const getOrders = async () => {
@@ -84,7 +88,7 @@ export default function BusinessDashboardPage() {
         setOrderCount({
           accepted: data?.data?.accepted,
           completed: data?.data?.completed,
-          pending: data?.data?.pending,
+          pending: 0,
           rejected: data?.data?.rejected,
         });
       } else {
@@ -111,7 +115,7 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["accepted", "rejected", "completed"],
+          status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
         }));
         setSelectedCard(0);
       },
@@ -129,7 +133,7 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["accepted"],
+          status: [ORDER_STATUS.ACCEPTED],
         }));
         setSelectedCard(1);
       },
@@ -147,7 +151,7 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["completed"],
+          status: [ORDER_STATUS.COMPLETED],
         }));
         setSelectedCard(2);
       },
@@ -165,11 +169,11 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: ["rejected"],
+          status: [ORDER_STATUS.REJECTED],
         }));
         setSelectedCard(3);
       },
-      value: 3,
+      value: 4,
       icon: (
         <RejectedOrders
           style={{
@@ -281,6 +285,40 @@ export default function BusinessDashboardPage() {
       },
     },
     {
+      field: "action",
+      headerName: "Action",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row);
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
+      },
+    },
+    {
       field: "created_at",
       headerName: "Order Date",
       flex: 1,
@@ -313,7 +351,7 @@ export default function BusinessDashboardPage() {
               name="read-only"
               value={params?.row?.rating}
               size="small"
-              disabled={true}
+              readOnly
             />
           </Box>
         );
@@ -360,7 +398,7 @@ export default function BusinessDashboardPage() {
         </Grid>
         <Grid item xs={12}>
           <DataGrid
-            getRowId={(row) => row?.id}
+            getRowId={(row) => (row?.id ? row?.id : 0)}
             autoHeight
             loading={loading}
             rows={orders}
@@ -411,6 +449,12 @@ export default function BusinessDashboardPage() {
           </Box>
         </Grid>
       </Grid>
+      <OrderDetails
+        order={selectedOrder}
+        onClose={() => {
+          setSelectedOrder(null);
+        }}
+      />
     </Box>
   );
 }

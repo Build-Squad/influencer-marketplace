@@ -3,7 +3,7 @@
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import EmailLoginModal from "@/src/components/emailLoginModal";
 import SnackbarComp from "@/src/components/shared/snackBarComp";
-import WalletConnectModal from "@/src/components/walletConnectModal";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { AppStore, makeStore } from "@/src/store";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";

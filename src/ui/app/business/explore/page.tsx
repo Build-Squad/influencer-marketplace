@@ -1,13 +1,15 @@
 "use client";
 import { Box, Grid, Pagination, Typography } from "@mui/material";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ExploreFilterInitialValues, ExploreFilterSchema } from "./validation";
 import ExploreFilters from "./components/exploreFilters";
 import Footer from "@/src/components/shared/footer";
 import InfluencersCards from "../components/influencersContainer/influencersCards";
+import { getService } from "@/src/services/httpServices";
+import { notification } from "@/src/components/shared/notification";
 
-type TopInfluencersType = {
+type InfluencersType = {
   id: string;
   name: string;
   twitterUsername: string;
@@ -20,114 +22,112 @@ type TopInfluencersType = {
 
 type Props = {};
 
-const dummyData: Array<TopInfluencersType> = [
-  {
-    id: "1",
-    name: "Parikshit Singh",
-    twitterUsername: "ParikshitSingh567",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Story", "Post", "Repost", "Thread"],
-    followers: "Hyderabad, India",
-    minPrice: 100,
-    maxPrice: 500,
-  },
-  {
-    id: "2",
-    name: "Shyam Visamsetty",
-    twitterUsername: "shyamvisamsetty",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread"],
-    followers: "Madrid, Spain",
-    minPrice: 100,
-    maxPrice: 200,
-  },
-  {
-    id: "3",
-    name: "Mudit Sethi",
-    twitterUsername: "alphamudit",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Like", "Repost", "Thread"],
-    followers: "Punjab, India",
-    minPrice: 1200,
-    maxPrice: 2800,
-  },
-  {
-    id: "4",
-    name: "Laxmi Jangid",
-    twitterUsername: "laxjangid1",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread", "Post"],
-    followers: "Madrid, Spain",
-    minPrice: 11200,
-    maxPrice: 34400,
-  },
-  {
-    id: "5",
-    name: "Mudit Sethi",
-    twitterUsername: "alphamudit",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Like", "Repost", "Thread"],
-    followers: "Punjab, India",
-    minPrice: 1200,
-    maxPrice: 2800,
-  },
-  {
-    id: "6",
-    name: "Laxmi Jangid",
-    twitterUsername: "laxjangid1",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread", "Post"],
-    followers: "Madrid, Spain",
-    minPrice: 11200,
-    maxPrice: 34400,
-  },
-  {
-    id: "7",
-    name: "Parikshit Singh",
-    twitterUsername: "ParikshitSingh567",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Story", "Post", "Repost", "Thread"],
-    followers: "Hyderabad, India",
-    minPrice: 100,
-    maxPrice: 500,
-  },
-  {
-    id: "8",
-    name: "Shyam Visamsetty",
-    twitterUsername: "shyamvisamsetty",
-    profileUrl:
-      "https://miro.medium.com/v2/resize:fit:720/format:webp/0*1WJiB8mUJKcylomi.jpg",
-    services: ["Post", "Repost", "Thread"],
-    followers: "Madrid, Spain",
-    minPrice: 100,
-    maxPrice: 200,
-  },
-];
+const formatTwitterFollowers = (followersCount: any) => {
+  if (followersCount >= 1000000) {
+    // Convert to millions format
+    return `${(followersCount / 1000000).toFixed(1)}M`;
+  } else if (followersCount >= 1000) {
+    // Convert to thousands format
+    return `${(followersCount / 1000).toFixed(1)}K`;
+  } else {
+    // Leave as is
+    return followersCount?.toString();
+  }
+};
 
 export default function Explore({}: Props) {
-  const [topInfluencers, setTopInfluencers] =
-    useState<TopInfluencersType[]>(dummyData);
+  const [influencersData, setInfluencersData] = useState<InfluencersType[]>();
 
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
     total_page_count: 10,
     current_page_number: 1,
-    current_page_size: 5,
+    current_page_size: 12,
   });
   const formik = useFormik({
     initialValues: ExploreFilterInitialValues,
     onSubmit: (values) => {
-      console.log(values);
+      getInfluencers();
     },
     validationSchema: ExploreFilterSchema,
   });
+
+  useEffect(() => {
+    let filterData: any = localStorage.getItem("filterData");
+    filterData = filterData ? JSON.parse(filterData) : null;
+    // if (filterData) {
+    //   formik.setValues(filterData);
+    // }
+    // Causing a bug, even tho the value of formik data is changed, the function getInfluencers is still accessing the old values
+    //  Temporary fix is passing the values inside filterData if any.
+
+    if (filterData) {
+      formik.setValues(filterData);
+    }
+
+    getInfluencers(filterData);
+
+    localStorage.removeItem("filterData");
+  }, []);
+
+  const getInfluencers = async (filterData?: any) => {
+    // Temporary fix
+    const filtersObject = filterData
+      ? {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          ...filterData,
+          languages: filterData.languages.map(
+            (item: any) => item.langEnglishName
+          ),
+          categories: filterData.categories.map((item: any) => item.name),
+          serviceTypes: filterData.serviceTypes.map((item: any) => item.name),
+        }
+      : {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          ...formik.values,
+          languages: formik.values.languages.map(
+            (item) => item.langEnglishName
+          ),
+          categories: formik.values.categories.map((item) => item.name),
+          serviceTypes: formik.values.serviceTypes.map((item) => item.name),
+        };
+    const { isSuccess, data, message } = await getService(
+      "/account/twitter-account/",
+      filtersObject
+    );
+    if (isSuccess) {
+      const filteredData = data?.data?.map((inf: any) => {
+        return {
+          id: inf.user_id,
+          name: inf.name || "",
+          twitterUsername: inf.user_name || "",
+          profileUrl: inf.profile_image_url || "",
+          services: inf.service_types
+            ? inf.service_types.map((service: any) => service.serviceType)
+            : [],
+
+          followers: formatTwitterFollowers(inf.followers_count),
+          minPrice:
+            inf.service_types && inf.service_types.length > 0
+              ? Math.min(
+                  ...inf.service_types.map((service: any) => service.price)
+                )
+              : 0,
+          maxPrice:
+            inf.service_types && inf.service_types.length > 0
+              ? Math.max(
+                  ...inf.service_types.map((service: any) => service.price)
+                )
+              : 0,
+        };
+      });
+      setInfluencersData(filteredData);
+    } else {
+      notification(message ? message : "Something went wrong", "error");
+    }
+  };
 
   const handlePaginationChange = (
     event: React.ChangeEvent<unknown>,
@@ -155,17 +155,17 @@ export default function Explore({}: Props) {
         <Box sx={{ display: "flex", alignItems: "baseline", columnGap: "8px" }}>
           <Typography variant="h5">Top Matches</Typography> -
           <Typography variant="subtitle1" sx={{ fontStyle: "italic" }}>
-            20 Results
+            {influencersData?.length ?? 0} Results
           </Typography>
         </Box>
         <Grid
           container
           spacing={3}
           mt={0}
-          justifyContent={"center"}
+          justifyContent={"flex-start"}
           alignItems={"center"}
         >
-          {topInfluencers.map((inf, index) => {
+          {influencersData?.map((inf, index) => {
             return <InfluencersCards influencer={inf} key={index} />;
           })}
         </Grid>

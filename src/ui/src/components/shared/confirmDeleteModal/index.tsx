@@ -78,6 +78,7 @@ export const ConfirmDelete: React.FC<Props> = ({
               setOpen(false);
             }}
             variant="outlined"
+            color="secondary"
           >
             Cancel
           </Button>
@@ -88,8 +89,8 @@ export const ConfirmDelete: React.FC<Props> = ({
                 setOpen(false);
               }
             }}
-            variant="outlined"
-            color="error"
+            variant="contained"
+            color="secondary"
           >
             {loading ? (
               <>

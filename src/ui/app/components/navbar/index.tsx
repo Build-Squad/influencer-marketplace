@@ -22,6 +22,7 @@ import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 
 import { getService } from "@/src/services/httpServices";
+import NotificationPanel from "@/src/components/notificationPanel";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
@@ -82,17 +83,28 @@ const MENU_ITEMS: {
 
 const MenuItemsComponent = ({ items }: { items: string[] }) => {
   const cart = useAppSelector((state) => state.cart);
+  const user = useAppSelector((state) => state.user);
   const router = useRouter();
   const pathname = usePathname();
   return items ? (
     <>
-      {items.map((key: string) => {
+      {items?.map((key: string) => {
         const item = MENU_ITEMS[key];
-        const route = pathname.includes("business")
-          ? `/business${item?.route}`
-          : pathname.includes("influencer")
-          ? `/influencer${item?.route}`
-          : "";
+
+        let route = "";
+        if (!user?.user?.role) {
+          if (pathname.includes("business")) {
+            route = `/business${item?.route}`;
+          } else if (pathname.includes("influencer")) {
+            route = `/influencer${item?.route}`;
+          }
+        } else {
+          route = user?.user?.role?.name?.includes("business")
+            ? `/business${item?.route}`
+            : pathname.includes("influencer")
+            ? `/influencer${item?.route}`
+            : "";
+        }
 
         return (
           <Box
@@ -104,10 +116,11 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
               justifyContent: "center",
             }}
             onClick={() => {
+              if (route.includes("/notifications")) return;
               router.push(route);
             }}
           >
-            {item?.route === "/checkout" ? (
+            {item?.route.includes("/checkout") ? (
               <Badge badgeContent={cart?.orderItems.length} color="secondary">
                 <Image
                   src={pathname == route ? item?.icon : item?.disabledIcon}
@@ -115,6 +128,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                   height={16}
                 />
               </Badge>
+            ) : item?.route.includes("/notifications") ? (
+              <NotificationPanel />
             ) : (
               <Image
                 src={pathname == route ? item?.icon : item?.disabledIcon}
@@ -213,7 +228,6 @@ export default function Navbar({
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
-    console.log("categoriesAdded", categoriesAdded);
     if (categoriesAdded && status === "success" && isTwitterUserLoggedIn) {
       getWallets();
     }
@@ -226,7 +240,7 @@ export default function Navbar({
         boxShadow: "none",
         borderBottom: "1px solid #D3D3D3",
         position: "sticky",
-        top:0,
+        top: 0,
         zIndex: 2,
       }}
     >
@@ -243,6 +257,7 @@ export default function Navbar({
             onClick={() => {
               router.push("/");
             }}
+            style={{ cursor: "pointer" }}
           />
         </Box>
         {isTwitterUserLoggedIn ? null : (
@@ -292,7 +307,7 @@ export default function Navbar({
           >
             {isTwitterUserLoggedIn ? (
               // Business menu items
-              user?.user?.role?.name.includes("business") ? (
+              user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
                   items={[
                     "Home",
@@ -309,11 +324,23 @@ export default function Navbar({
                 />
               )
             ) : (
-              <MenuItemsComponent items={["Home"]} />
+              <>
+                {pathname.includes("business") ? (
+                  <MenuItemsComponent items={["Home", "Explore"]} />
+                ) : (
+                  <MenuItemsComponent items={["Home"]} />
+                )}
+              </>
             )}
             <LoginMenu
               isTwitterUserLoggedIn={isTwitterUserLoggedIn}
-              twitterLogin={startTwitterAuthentication}
+              twitterLogin={() =>
+                startTwitterAuthentication({
+                  role: pathname.includes("business")
+                    ? "business_owner"
+                    : "influencer",
+                })
+              }
               setEmailOpen={setEmailOpen}
               setWalletOpen={setWalletOpen}
               logoutTwitterUser={logoutTwitterUser}

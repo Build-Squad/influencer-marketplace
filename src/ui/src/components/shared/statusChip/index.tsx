@@ -4,10 +4,10 @@ import { Chip } from "@mui/material";
 import React from "react";
 
 type StatusChipProps = {
-  status: "accepted" | "rejected" | "pending" | "completed" | "draft";
+  status: string;
 };
 
-const colorMap = {
+const colorMap: any = {
   accepted: "#D2E1FF",
   rejected: "#FDEADC",
   pending: "#F5F6C9",
