@@ -1,5 +1,5 @@
-from locale import currency
 from accounts.serializers import UserSerializer
+from accounts.models import User
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service, ServiceMasterMetaData
@@ -15,7 +15,6 @@ from .models import (
     Transaction,
     Review,
 )
-from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -257,6 +256,39 @@ class OrderMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderMessage
         fields = "__all__"
+
+
+class CreateOrderMessageSerializer(serializers.Serializer):
+    message = serializers.CharField(required=True)
+    order_id = serializers.UUIDField(required=True)
+
+    def create(self, validated_data):
+        message = validated_data['message']
+        order_id = validated_data['order_id']
+        order = Order.objects.get(id=order_id)
+
+        # Check that the order is either accepted or pending
+        if order.status not in ['accepted', 'pending']:
+            raise serializers.ValidationError(
+                {"order": "Only accepted or pending orders can have messages"})
+
+        # Check that the sender is either the buyer or the influencer from package
+        sender = self.context['request'].user_account
+        if sender.id != order.buyer.id and sender.id != order.order_item_order_id.first().package.influencer.id:
+            raise serializers.ValidationError(
+                {"sender": "Only the buyer or the influencer can send a message"})
+
+        # Find the receiver
+        if sender.id == order.buyer.id:
+            receiver_id = order.order_item_order_id.first().package.influencer.id
+        else:
+            receiver_id = order.buyer.id
+        sender_user = User.objects.get(id=sender.id)
+        receiver_user = User.objects.get(id=receiver_id)
+
+        order_message = OrderMessage.objects.create(
+            message=message, sender_id=sender_user, receiver_id=receiver_user, order_id=order)
+        return order_message
 
 
 class OrderMessageAttachmentSerializer(serializers.ModelSerializer):
