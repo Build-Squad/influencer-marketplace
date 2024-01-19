@@ -15,7 +15,8 @@ from .views import (
     ReviewList,
     ReviewDetail,
     UpdateOrderStatus,
-    OrderMessageCreateView
+    OrderMessageCreateView,
+    UserOrderMessagesView
 )
 
 urlpatterns = [
@@ -33,6 +34,9 @@ urlpatterns = [
 
     path("order-item-tracking/", OrderItemTrackingList.as_view(), name="order-item-tracking-list"),
     path('order-item-tracking/<uuid:pk>/', OrderItemTrackingDetail.as_view(), name="order-item-tracking-details"),
+
+    path("user-order-messages/", UserOrderMessagesView.as_view(),
+         name="user-order-messages"),
 
     path("order-message/<uuid:pk>/",
          OrderMessageList.as_view(), name="order-message-list"),
