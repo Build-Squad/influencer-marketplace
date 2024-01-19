@@ -1,3 +1,4 @@
+from email import message
 from accounts.serializers import UserSerializer
 from accounts.models import User
 from core.serializers import CurrencySerializer
@@ -23,6 +24,7 @@ class OrderItemMetaDataSerializer(serializers.ModelSerializer):
         model = OrderItemMetaData
         fields = '__all__'
 
+# Serializer for the GET details of an order
 class OrderItemReadSerializer(serializers.ModelSerializer):
     package = PackageSerializer(read_only=True)
     service_master = ServiceMasterReadSerializer(read_only=True)
@@ -42,12 +44,14 @@ class OrderItemReadSerializer(serializers.ModelSerializer):
         return OrderItemMetaDataSerializer(order_item_meta_data, many=True).data
 
 
+# Not being used
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = "__all__"
 
 
+# Serializer to define the schema for the POST search request for the list of orders
 class OrderListFilterSerializer(serializers.Serializer):
     influencers = serializers.ListField(child=serializers.UUIDField(), required=False)
     buyers = serializers.ListField(child=serializers.UUIDField(), required=False)
@@ -64,6 +68,7 @@ class OrderListFilterSerializer(serializers.Serializer):
     order_by = serializers.CharField(required=False)
 
 
+# The response schema for the list of orders from the POST search request
 class OrderSerializer(serializers.ModelSerializer):
     buyer = UserSerializer(read_only=True)
     order_item_order_id = OrderItemReadSerializer(many=True, read_only=True)
@@ -92,6 +97,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return None
 
 
+# The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):
     value = serializers.CharField(allow_null=True)
     service_master_meta_data_id = serializers.UUIDField(required=False)
@@ -296,6 +302,28 @@ class OrderMessageAttachmentSerializer(serializers.ModelSerializer):
         model = OrderMessageAttachment
         fields = "__all__"
 
+
+class OrderMessageListFilterSerializer(serializers.Serializer):
+    status = serializers.ListField(
+        child=serializers.CharField(), required=False)
+    service_masters = serializers.ListField(
+        child=serializers.UUIDField(), required=False
+    )
+
+
+class LastMessageSerializer(serializers.Serializer):
+    message = OrderMessageSerializer(read_only=True)
+    order_unread_messages_count = serializers.IntegerField(read_only=True)
+
+
+class OrderDetailSerializer(serializers.Serializer):
+    order = OrderSerializer(read_only=True)
+    order_message = LastMessageSerializer(read_only=True)
+
+
+class UserOrderMessagesSerializer(serializers.Serializer):
+    orders = OrderDetailSerializer(many=True, read_only=True)
+    total_unread_messages_count = serializers.IntegerField(read_only=True)
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
