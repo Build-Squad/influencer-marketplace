@@ -10,14 +10,12 @@ from .views import (
     OrderItemTrackingDetail,
     OrderListView,
     OrderMessageList,
-    OrderMessageDetail,
-    OrderMessageAttachmentList,
-    OrderMessageAttachmentDetail,
     TransactionList,
     TransactionDetail,
     ReviewList,
     ReviewDetail,
-    UpdateOrderStatus
+    UpdateOrderStatus,
+    OrderMessageCreateView
 )
 
 urlpatterns = [
@@ -36,11 +34,10 @@ urlpatterns = [
     path("order-item-tracking/", OrderItemTrackingList.as_view(), name="order-item-tracking-list"),
     path('order-item-tracking/<uuid:pk>/', OrderItemTrackingDetail.as_view(), name="order-item-tracking-details"),
 
-    path("order-message/", OrderMessageList.as_view(), name="order-message-list"),
-    path('order-message/<uuid:pk>/', OrderMessageDetail.as_view(), name="order-message-details"),
-
-    path("order-message-attachment/", OrderMessageAttachmentList.as_view(), name="order-message-attachment-list"),
-    path('order-message-attachment/<uuid:pk>/', OrderMessageAttachmentDetail.as_view(), name="order-message-attachment-details"),
+    path("order-message/<uuid:pk>/",
+         OrderMessageList.as_view(), name="order-message-list"),
+    path("order-message/", OrderMessageCreateView.as_view(),
+         name="order-message-create"),
 
     path("transaction/", TransactionList.as_view(), name="transaction-list"),
     path('transaction/<uuid:pk>/', TransactionDetail.as_view(), name="transactiont-details"),
