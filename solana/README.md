@@ -113,7 +113,7 @@ anchor build
 Finally, you are ready to deply to DEVNET with the simple command:
 
 ```bash
-anchor deploy
+anchor deploy --provider.cluster devnet
 ```
 You should see the word "Deploy success".
 
