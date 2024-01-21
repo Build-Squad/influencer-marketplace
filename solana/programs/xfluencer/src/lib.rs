@@ -4,13 +4,6 @@ use anchor_lang::solana_program::entrypoint::ProgramResult;
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
 use spl_token::instruction::AuthorityType;
 
-
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token::{transfer_checked,  Token,  TransferChecked},
-};
-
-
 declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
 
 #[program]
@@ -39,7 +32,7 @@ pub mod xfluencer {
         let escrow_seed: String = format!("{}{}", "escrow".to_string(), order_code.to_string());
         let escrow_pda_seed: &[u8] = escrow_seed.as_bytes();
 
-        // Find the Escrow PDA address with seed
+        // Set the Vault Authority to the Escrow PDA
         let (vault_authority, _vault_authority_bump) 
             = Pubkey::find_program_address(&[escrow_pda_seed], ctx.program_id);
 
@@ -50,7 +43,7 @@ pub mod xfluencer {
              Some(vault_authority),
         )?;
 
-        // Transfer token to Vault
+        // Transfer Tokens to the Vault
         token::transfer(
              ctx.accounts.into_transfer_to_pda_context(),
              ctx.accounts.escrow_account.amount,
@@ -58,6 +51,29 @@ pub mod xfluencer {
 
         Ok(())
     }
+
+    pub fn cancel(ctx: Context<Cancel>, order_code: u64,) -> ProgramResult {
+        // Make Seed
+        let escrow_seed: String = format!("{}{}", "escrow".to_string(), order_code.to_string());
+        let escrow_pda_seed: &[u8] = escrow_seed.as_bytes();
+        let (_vault_authority, vault_authority_bump) = Pubkey::find_program_address(&[escrow_pda_seed], ctx.program_id);
+        let authority_seeds = &[&escrow_pda_seed[..], &[vault_authority_bump]];
+
+        // Transfer token to buyer.
+        token::transfer(
+            ctx.accounts.into_transfer_to_buyer_context().with_signer(&[&authority_seeds[..]]),
+            ctx.accounts.escrow_account.amount,
+        )?;
+
+        // Close vault account
+        token::close_account(
+            ctx.accounts.into_close_contest().with_signer(&[&authority_seeds[..]]),
+        )?;
+
+        Ok(())
+    }
+
+  
 
 }
 
@@ -82,6 +98,10 @@ pub struct EscrowAccount {
     pub delivery_time: i64, // (8)
     pub trial_day: u16, // (2)
 }
+
+
+
+
 
 
 impl EscrowAccount {
@@ -140,6 +160,32 @@ pub struct CreateEscrow<'info> {
 }
 
 
+#[derive(Accounts)]
+#[instruction(order_code: u64)]
+pub struct Cancel<'info> {
+    /// CHECK: safe
+    #[account(mut, signer)]
+    pub buyer: AccountInfo<'info>,
+    #[account(mut)]
+    pub buyer_deposit_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub vault_account: Account<'info, TokenAccount>,
+    /// CHECK: safe
+    pub vault_authority: AccountInfo<'info>,
+    #[account(
+        mut,
+        constraint = escrow_account.buyer_key == *buyer.key,
+        constraint = escrow_account.buyer_deposit_token_account == *buyer_deposit_token_account.to_account_info().key,
+        constraint = escrow_account.order_code == order_code,
+        constraint = escrow_account.status == 0,
+        close = buyer
+    )]
+    pub escrow_account: Box<Account<'info, EscrowAccount>>,
+    /// CHECK: safe
+    pub token_program: AccountInfo<'info>,
+}
+
+
 impl<'info> CreateEscrow<'info> {
     fn into_transfer_to_pda_context(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
         let cpi_accounts = Transfer {
@@ -154,6 +200,26 @@ impl<'info> CreateEscrow<'info> {
         let cpi_accounts = SetAuthority {
             account_or_mint: self.vault_account.to_account_info().clone(),
             current_authority: self.buyer.clone(),
+        };
+        CpiContext::new(self.token_program.clone(), cpi_accounts)
+    }
+}
+
+impl<'info> Cancel<'info> {
+    fn into_transfer_to_buyer_context(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
+        let cpi_accounts = Transfer {
+            from: self.vault_account.to_account_info().clone(),
+            to: self.buyer_deposit_token_account.to_account_info().clone(),
+            authority: self.vault_authority.clone(),
+        };
+        CpiContext::new(self.token_program.clone(), cpi_accounts)
+    }
+
+    fn into_close_contest(&self) -> CpiContext<'_, '_, '_, 'info, CloseAccount<'info>> {
+        let cpi_accounts = CloseAccount {
+            account: self.vault_account.to_account_info().clone(),
+            destination: self.buyer.clone(),
+            authority: self.vault_authority.clone(),
         };
         CpiContext::new(self.token_program.clone(), cpi_accounts)
     }

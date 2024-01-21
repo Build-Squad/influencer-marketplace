@@ -1,4 +1,3 @@
-
 import * as anchor from "@coral-xyz/anchor";
 
 import {
@@ -8,10 +7,10 @@ import {
     getMint,
   } from "@solana/spl-token";
 
-import { Program } from "@project-serum/anchor";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 
-import { Xfluencer } from "../target/types/xfluencer";
+//import { Program } from "@project-serum/anchor";
+//import { Xfluencer } from "../target/types/xfluencer";
 
 export async function createNewMint(
     provider: anchor.Provider,
@@ -78,6 +77,7 @@ export async function airdrop(
       ),
       getMint(provider.connection, mintPk),
     ]);
+
     await mintTo(
       provider.connection,
       wallet.payer,
@@ -87,6 +87,7 @@ export async function airdrop(
       balance * 10 ** mintInfo.decimals,
       []
     );
-    await new Promise((e) => setTimeout(e, 1000)); // Small wait to ensure funds added before proceeding
+    // Add Small timeout to ensure funds added before proceeding
+    await new Promise((e) => setTimeout(e, 1000)); 
     return associatedTokenAcc;
   }
