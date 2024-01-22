@@ -337,31 +337,31 @@ export default function BusinessDashboardPage() {
         );
       },
     },
-    {
-      field: "review_order_id__rating",
-      headerName: "Rating",
-      flex: 1,
-      renderCell: (
-        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
-      ): React.ReactNode => {
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Rating
-              name="read-only"
-              value={params?.row?.rating}
-              size="small"
-              readOnly
-            />
-          </Box>
-        );
-      },
-    },
+    // {
+    //   field: "review_order_id__rating",
+    //   headerName: "Rating",
+    //   flex: 1,
+    //   renderCell: (
+    //     params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+    //   ): React.ReactNode => {
+    //     return (
+    //       <Box
+    //         sx={{
+    //           display: "flex",
+    //           justifyContent: "center",
+    //           alignItems: "center",
+    //         }}
+    //       >
+    //         <Rating
+    //           name="read-only"
+    //           value={params?.row?.rating}
+    //           size="small"
+    //           readOnly
+    //         />
+    //       </Box>
+    //     );
+    //   },
+    // },
   ];
 
   useEffect(() => {
