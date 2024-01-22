@@ -31,7 +31,6 @@ type NavbarProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
   emailOpen: boolean;
   walletOpen: boolean;
-  setConnectWallet: React.Dispatch<React.SetStateAction<boolean>>;
   categoryOpen: boolean;
 };
 
@@ -153,7 +152,6 @@ export default function Navbar({
   setCategoryOpen,
   emailOpen,
   walletOpen,
-  setConnectWallet,
   categoryOpen,
 }: NavbarProps) {
   const {
@@ -172,16 +170,6 @@ export default function Navbar({
 
   const params = useSearchParams();
   const user = useAppSelector((state) => state.user);
-
-  const getWallets = async () => {
-    const { isSuccess, message, data } = await getService(`/account/wallets/`);
-    if (isSuccess) {
-      if (data?.data?.length === 0) {
-        setWalletOpen(true);
-        setConnectWallet(true);
-      }
-    }
-  };
 
   useEffect(() => {
     if (!emailOpen) {
@@ -217,21 +205,11 @@ export default function Navbar({
     }
   }, [isTwitterUserLoggedIn, isAccountSetupComplete]);
 
-  // Check for the wallet open after the categroy selection
-  // But also check if category selection check is complete
-
   useEffect(() => {
     if (!categoryOpen) {
       checkAccountSetup();
     }
   }, [categoryOpen]);
-
-  useEffect(() => {
-    const status = params.get("authenticationStatus");
-    if (categoriesAdded && status === "success" && isTwitterUserLoggedIn) {
-      getWallets();
-    }
-  }, [categoriesAdded, isTwitterUserLoggedIn]);
 
   return (
     <AppBar
