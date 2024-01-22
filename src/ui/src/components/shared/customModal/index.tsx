@@ -1,7 +1,8 @@
 "use client";
 
-import { Box, Modal } from "@mui/material";
+import { Box, IconButton, Modal, Tooltip } from "@mui/material";
 import React from "react";
+import CloseIcon from "@mui/icons-material/Close";
 
 type CustomModalProps = {
   open: boolean;
@@ -51,6 +52,19 @@ const CustomModal = ({ open, setOpen, children, sx }: CustomModalProps) => {
           ...sx,
         }}
       >
+        {/* Add a close icon */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Tooltip title="Close">
+            <IconButton onClick={() => setOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
         {children}
       </Box>
     </Modal>
