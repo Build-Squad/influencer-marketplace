@@ -114,6 +114,8 @@ class TwitterAccountList(APIView):
 
             categories = request.GET.getlist("categories[]", [])
 
+            collaborationIds = request.GET.getlist("collaborationIds[]", [])
+
             upperPriceLimit = request.GET.get("upperPriceLimit", "")
             lowerPriceLimit = request.GET.get("lowerPriceLimit", "")
             upperFollowerLimit = request.GET.get("upperFollowerLimit", "")
@@ -145,6 +147,11 @@ class TwitterAccountList(APIView):
 
             if isVerified:
                 twitterAccount = twitterAccount.filter(verified=isVerified)
+
+            if collaborationIds:
+                twitterAccount = TwitterAccount.objects.filter(
+                    user_twitter_account_id__in=collaborationIds
+                )
 
             if categories:
                 for category in categories:
