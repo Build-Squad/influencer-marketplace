@@ -66,6 +66,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             </Badge>
           </Box>
         </Grid>
+        <Grid item xs={12} sm={12} md={3} lg={3}></Grid>
         <Grid item xs={12} sm={6} md={2} lg={2}>
           <CustomAutoComplete
             customFilter={{
@@ -270,9 +271,9 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={1.5} lg={1.5}>
-          {/* Rating more than and rating less than */}
-          <TextField
+        {/* <Grid item xs={12} sm={6} md={1.5} lg={1.5}> */}
+        {/* Rating more than and rating less than */}
+        {/* <TextField
             label="Rating more than"
             type="number"
             value={filters.gt_rating}
@@ -306,11 +307,11 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 borderRadius: 8,
               },
             }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={1.5} lg={1.5}>
-          {/* Rating more than and rating less than */}
-          <TextField
+          /> */}
+        {/* </Grid> */}
+        {/* <Grid item xs={12} sm={6} md={1.5} lg={1.5}> */}
+        {/* Rating more than and rating less than */}
+        {/* <TextField
             label="Rating less than"
             type="number"
             value={filters.lt_rating}
@@ -344,8 +345,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 borderRadius: 8,
               },
             }}
-          />
-        </Grid>
+          /> */}
+        {/* </Grid> */}
         <Grid item xs={12} sm={6} md={2} lg={2}>
           <DatePicker
             slotProps={{
