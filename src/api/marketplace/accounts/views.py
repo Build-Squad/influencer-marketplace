@@ -1336,7 +1336,7 @@ class WalletConnect(APIView):
                         {
                             "isSuccess": False,
                             "data": None,
-                            "message": "Wallet already connected",
+                            "message": "This wallet is already connected with another account",
                         },
                         status=status.HTTP_200_OK,
                     )
