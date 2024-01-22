@@ -186,6 +186,11 @@ export default function BusinessDashboardPage() {
 
   const columns = [
     {
+      field: "order_code",
+      headerName: "Order ID",
+      flex: 1,
+    },
+    {
       field: "buyer__username",
       headerName: "Business",
       flex: 1,
@@ -332,31 +337,31 @@ export default function BusinessDashboardPage() {
         );
       },
     },
-    {
-      field: "review_order_id__rating",
-      headerName: "Rating",
-      flex: 1,
-      renderCell: (
-        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
-      ): React.ReactNode => {
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Rating
-              name="read-only"
-              value={params?.row?.rating}
-              size="small"
-              readOnly
-            />
-          </Box>
-        );
-      },
-    },
+    // {
+    //   field: "review_order_id__rating",
+    //   headerName: "Rating",
+    //   flex: 1,
+    //   renderCell: (
+    //     params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+    //   ): React.ReactNode => {
+    //     return (
+    //       <Box
+    //         sx={{
+    //           display: "flex",
+    //           justifyContent: "center",
+    //           alignItems: "center",
+    //         }}
+    //       >
+    //         <Rating
+    //           name="read-only"
+    //           value={params?.row?.rating}
+    //           size="small"
+    //           readOnly
+    //         />
+    //       </Box>
+    //     );
+    //   },
+    // },
   ];
 
   useEffect(() => {

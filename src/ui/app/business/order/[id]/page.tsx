@@ -173,7 +173,7 @@ export default function OrderDetailPage({
               my: 2,
             }}
           >
-            Edit Order Details
+            Edit Order Details: {order?.order_code}
           </Typography>
           {order && (
             <Box

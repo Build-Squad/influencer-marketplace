@@ -1,6 +1,7 @@
 "use client";
 
 import NotificationIcon from "@/public/svg/Notification.svg";
+import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import { getService, patchService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_TIME_FORMAT } from "@/src/utils/consts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -18,10 +19,12 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { notification } from "../shared/notification";
 
 export default function NotificationPanel() {
+  const route = useRouter();
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notificationsAnchor, setNotificationsAnchor] = React.useState(null);
   const openNotifications = Boolean(notificationsAnchor);
@@ -43,18 +46,6 @@ export default function NotificationPanel() {
       });
       if (isSuccess) {
         setNotifications(data?.data?.notifications);
-        if (unreadCount !== data?.data?.unread_count) {
-          const newNotificationCount = data?.data?.unread_count - unreadCount;
-          if (newNotificationCount > 0) {
-            notification(
-              `You have ${newNotificationCount} new notification${
-                newNotificationCount > 1 ? "s" : ""
-              }`,
-              "success",
-              3000
-            );
-          }
-        }
         setUnreadCount(data?.data?.unread_count);
         setPagination({
           ...pagination,
@@ -146,7 +137,7 @@ export default function NotificationPanel() {
     <>
       <Badge badgeContent={unreadCount} color="secondary">
         <Image
-          src={NotificationIcon}
+          src={openNotifications ? NotificationIcon : NotificationDisabledIcon}
           alt={"Notification"}
           height={16}
           onClick={handleClickNotifications}
@@ -166,213 +157,229 @@ export default function NotificationPanel() {
           vertical: "top",
           horizontal: "right",
         }}
-        PaperProps={{
-          sx: {
-            width: 600,
-            borderRadius: "none",
-            boxShadow: "0px 3px 7px #00000026",
-            minHeight: 300,
-            maxHeight: 700,
-            overflow: "auto",
-            px: 2,
-            py: 1,
+        slotProps={{
+          paper: {
+            sx: {
+              width: 600,
+              borderRadius: "none",
+              boxShadow: "0px 3px 7px #00000026",
+              minHeight: 300,
+              maxHeight: 700,
+              overflow: "auto",
+              px: 2,
+              py: 1,
+            },
           },
         }}
       >
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Typography
-            sx={{
-              fontSize: { xs: 14, md: 18 },
-              fontWeight: 500,
-              color: "secondary.main",
-            }}
-          >
-            Notifications
-          </Typography>
-
-          <Stack direction="row" alignItems="center">
-            <Typography variant="body2">Show only unread</Typography>
-            <Switch
-              checked={onlyUnread ? onlyUnread : false}
-              onChange={handleOnlyUnread}
-              inputProps={{ "aria-label": "controlled" }}
-              color="secondary"
-            />
-          </Stack>
-        </Stack>
-        <Divider sx={{ mt: 1 }} />
-        {unreadCount > 0 && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-end",
-            }}
+        <Box key="header" sx={{ mt: 1 }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
           >
             <Typography
               sx={{
-                mt: 1,
-                fontFamily: "Merriweather Sans, sans-serif",
-                fontSize: 12,
-                fontWeight: 200,
-                textAlign: "end",
-                cursor: "pointer",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
-              }}
-              onClick={() => {
-                markAllAsRead();
+                fontSize: { xs: 14, md: 18 },
+                fontWeight: 500,
+                color: "secondary.main",
               }}
             >
-              Mark all as read
+              Notifications
             </Typography>
-          </Box>
-        )}
-        {notifications?.length > 0 ? (
-          <>
-            <Box>
-              {notifications.map((item: NotificationType) => (
-                <Box
-                  key={item.id}
-                  sx={{
-                    backgroundColor: "#f9f9f9",
-                    mt: 1,
-                    borderRadius: "4px",
-                    borderLeft: "5px solid #000",
-                    py: 1,
-                    px: 2,
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      {/* Title */}
-                      <Tooltip
-                        title={item.title}
-                        placement="top"
-                        arrow
-                        // Only show tooltip if title is truncated
-                        disableHoverListener={item?.title?.length < 30}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: 16,
-                            fontWeight: 400,
-                            color: "secondary.main",
-                          }}
-                        >
-                          {item?.title?.length > 30 ? (
-                            <>{item?.title?.slice(0, 30)}...</>
-                          ) : (
-                            <>{item?.title}</>
-                          )}
-                        </Typography>
-                      </Tooltip>
-                      {/* Time Stramp */}
-                    </Stack>
-                    <Stack
-                      direction="row"
-                      spacing={1.5}
-                      alignItems="center"
-                      justifyContent="flex-end"
-                    >
-                      <Typography
-                        sx={{
-                          fontSize: 12,
-                          fontWeight: 200,
-                        }}
-                      >
-                        {dayjs(item.created_at).format(
-                          DISPLAY_DATE_TIME_FORMAT
-                        )}
-                      </Typography>
-                      {/* Read/Unread */}
-                      {item.is_read ? (
-                        <CheckCircleIcon
-                          sx={{ height: 20, width: 20, color: "success.main" }}
-                        />
-                      ) : (
-                        <Tooltip title="Mark as read" placement="right" arrow>
-                          <RadioButtonUncheckedIcon
-                            sx={{ height: 20, width: 20, cursor: "pointer" }}
-                            onClick={() => {
-                              markAsRead(item.id);
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </Stack>
-                  </Stack>
-                  <Tooltip
-                    title={item.message}
-                    placement="top"
-                    arrow
-                    // Only show tooltip if message is truncated
-                    disableHoverListener={item?.message?.length < 100}
-                  >
-                    <Typography
-                      sx={{
-                        display: "-webkit-box",
-                        overflow: "hidden",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 2,
-                        color: "#666666",
-                        fontSize: 12,
-                        fontWeight: 400,
-                      }}
-                    >
-                      {item?.message?.length > 100
-                        ? `${item?.message?.slice(0, 100)}...`
-                        : item?.message}
-                    </Typography>
-                  </Tooltip>
-                </Box>
-              ))}
-            </Box>
+
+            <Stack direction="row" alignItems="center">
+              <Typography variant="body2">Show only unread</Typography>
+              <Switch
+                checked={onlyUnread ? onlyUnread : false}
+                onChange={handleOnlyUnread}
+                inputProps={{ "aria-label": "controlled" }}
+                color="secondary"
+              />
+            </Stack>
+          </Stack>
+          <Divider sx={{ mt: 1 }} />
+          {unreadCount > 0 && (
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                mt: 2,
+                flexDirection: "row",
+                justifyContent: "flex-end",
               }}
             >
-              <Pagination
-                count={pagination.total_page_count}
-                page={pagination.current_page_number}
-                onChange={handlePaginationChange}
+              <Typography
+                sx={{
+                  mt: 1,
+                  fontFamily: "Merriweather Sans, sans-serif",
+                  fontSize: 12,
+                  fontWeight: 200,
+                  textAlign: "end",
+                  cursor: "pointer",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+                onClick={() => {
+                  markAllAsRead();
+                }}
+              >
+                Mark all as read
+              </Typography>
+            </Box>
+          )}
+          {notifications?.length > 0 ? (
+            <>
+              <Box>
+                {notifications.map((item: NotificationType) => (
+                  <Box
+                    key={item.id}
+                    sx={{
+                      backgroundColor: "#f9f9f9",
+                      mt: 1,
+                      borderRadius: "4px",
+                      borderLeft: "5px solid #000",
+                      py: 1,
+                      px: 2,
+                      cursor: item?.slug ? "pointer" : "default",
+                    }}
+                    onClick={() => {
+                      if (item?.slug) {
+                        route.push(item.slug);
+                        handleCloseNotifications();
+                      }
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        {/* Title */}
+                        <Tooltip
+                          title={item.title}
+                          placement="top"
+                          arrow
+                          // Only show tooltip if title is truncated
+                          disableHoverListener={item?.title?.length < 30}
+                        >
+                          <Typography
+                            sx={{
+                              fontSize: 16,
+                              fontWeight: 400,
+                              color: "secondary.main",
+                            }}
+                          >
+                            {item?.title?.length > 30 ? (
+                              <>{item?.title?.slice(0, 30)}...</>
+                            ) : (
+                              <>{item?.title}</>
+                            )}
+                          </Typography>
+                        </Tooltip>
+                        {/* Time Stramp */}
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={1.5}
+                        alignItems="center"
+                        justifyContent="flex-end"
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: 12,
+                            fontWeight: 200,
+                          }}
+                        >
+                          {dayjs(item.created_at).format(
+                            DISPLAY_DATE_TIME_FORMAT
+                          )}
+                        </Typography>
+                        {/* Read/Unread */}
+                        {item.is_read ? (
+                          <CheckCircleIcon
+                            sx={{
+                              height: 20,
+                              width: 20,
+                              color: "success.main",
+                            }}
+                          />
+                        ) : (
+                          <Tooltip title="Mark as read" placement="right" arrow>
+                            <RadioButtonUncheckedIcon
+                              sx={{ height: 20, width: 20, cursor: "pointer" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markAsRead(item.id);
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </Stack>
+                    </Stack>
+                    <Tooltip
+                      title={item.message}
+                      placement="top"
+                      arrow
+                      // Only show tooltip if message is truncated
+                      disableHoverListener={item?.message?.length < 100}
+                    >
+                      <Typography
+                        sx={{
+                          display: "-webkit-box",
+                          overflow: "hidden",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 2,
+                          color: "#666666",
+                          fontSize: 12,
+                          fontWeight: 400,
+                        }}
+                      >
+                        {item?.message?.length > 100
+                          ? `${item?.message?.slice(0, 100)}...`
+                          : item?.message}
+                      </Typography>
+                    </Tooltip>
+                  </Box>
+                ))}
+              </Box>
+              <Box
                 sx={{
                   display: "flex",
                   justifyContent: "center",
+                  alignItems: "center",
+                  mt: 2,
                 }}
-                color="secondary"
-                shape="rounded"
-              />
-            </Box>
-          </>
-        ) : (
-          <Stack
-            justifyContent="center"
-            alignItems="center"
-            sx={{ mt: "10vh", mb: "10vh" }}
-          >
-            <Typography
-              color="#10375C"
-              fontFamily="Montserrat, sans-serif"
-              fontWeight="500"
+              >
+                <Pagination
+                  count={pagination.total_page_count}
+                  page={pagination.current_page_number}
+                  onChange={handlePaginationChange}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                  color="secondary"
+                  shape="rounded"
+                />
+              </Box>
+            </>
+          ) : (
+            <Stack
+              justifyContent="center"
+              alignItems="center"
+              sx={{ mt: "10vh", mb: "10vh" }}
             >
-              No notifications found.
-            </Typography>
-          </Stack>
-        )}
+              <Typography
+                color="#10375C"
+                fontFamily="Montserrat, sans-serif"
+                fontWeight="500"
+              >
+                No notifications found.
+              </Typography>
+            </Stack>
+          )}
+        </Box>
       </Menu>
     </>
   );
