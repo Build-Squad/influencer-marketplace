@@ -4,11 +4,11 @@ import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import { useAppDispatch } from "@/src/hooks/useRedux";
 import { loginReducer } from "@/src/reducers/userSlice";
 import { postService } from "@/src/services/httpServices";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import { useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React from "react";
 import CustomModal from "../../shared/customModal";
 import { notification } from "../../shared/notification";
 
@@ -133,7 +133,7 @@ export default function WalletConnectModal({
             >
               {connect
                 ? "Connect your Wallet"
-                : "By logging in, you agree to our Terms & Conditions and Privacy Policy"}
+                : "By signing the message, you agree to our Terms & Conditions and Privacy Policy"}
             </Typography>
           </Box>
         </Grid>

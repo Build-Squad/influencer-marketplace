@@ -48,7 +48,7 @@ export const SignMessage = ({ onSignMessageSuccess }: SignMessageProps) => {
         },
       }}
     >
-      {loading ? "Signing In..." : "Sign In"}
+      {loading ? "Signing." : "Sign This Message"}
     </Button>
   );
 };
