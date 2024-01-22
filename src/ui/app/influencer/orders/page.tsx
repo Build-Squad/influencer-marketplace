@@ -89,6 +89,11 @@ export default function Orders() {
 
   const columns = [
     {
+      field: "order_code",
+      headerName: "Order ID",
+      flex: 1,
+    },
+    {
       field: "buyer__username",
       flex: 1,
       minWidth: 200,
@@ -280,7 +285,7 @@ export default function Orders() {
   };
 
   return (
-    <Grid container sx={{ backgroundColor: "#FAFAFA" }}>
+    <Grid container sx={{ backgroundColor: "#FAFAFA", minHeight: "100vh" }}>
       <Grid
         item
         xs={9}
@@ -395,6 +400,12 @@ export default function Orders() {
                 {selectedOrder?.buyer?.username}
               </Link>
             </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", columnGap: 1 }}>
+              <Typography variant="h6">Order ID: </Typography>
+              <Typography variant="subtitle1">
+                {selectedOrder?.order_code}
+              </Typography>
+            </Box>
           </Box>
 
           <OpenInFull fontSize="medium" sx={{ cursor: "pointer" }} />

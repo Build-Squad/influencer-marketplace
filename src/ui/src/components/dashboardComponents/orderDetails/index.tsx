@@ -53,7 +53,7 @@ export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
         }}
       >
         <Typography variant="h6" fontWeight={"bold"}>
-          Order Summary
+          Order: {order?.order_code}
         </Typography>
         <Box
           sx={{

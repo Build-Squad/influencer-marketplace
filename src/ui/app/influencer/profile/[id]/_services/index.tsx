@@ -23,6 +23,7 @@ import {
   Typography,
 } from "@mui/material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 type ServiceProps = {
@@ -38,6 +39,7 @@ const Services = ({
   wallets,
   setOpen,
 }: ServiceProps) => {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const loggedInUser = useAppSelector((state) => state.user?.user);
@@ -528,6 +530,7 @@ const Services = ({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 addItemToCart(service);
+                                router.push(`/business/checkout/`);
                               }}
                               disabled={
                                 service?.package?.influencer?.id ===

@@ -22,12 +22,12 @@ export default function CheckoutPage() {
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const user = useAppSelector((state) => state.user);
-  const route = useRouter();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   if (!user) {
     notification("You need to login first", "error");
-    route.push("/");
+    router.push("/");
     return null;
   }
 
@@ -63,6 +63,7 @@ export default function CheckoutPage() {
     if (isSuccess) {
       notification("Payment successfully done!", "success");
       dispatch(resetCart());
+      router.push(`/business/dashboard`);
     } else {
       notification(
         message

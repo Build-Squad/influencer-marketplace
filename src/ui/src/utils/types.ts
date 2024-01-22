@@ -216,6 +216,7 @@ type OrderType = {
   description?: null;
   status?: string;
   created_at?: Date;
+  order_code?: string;
 };
 
 type OrderFilterType = {

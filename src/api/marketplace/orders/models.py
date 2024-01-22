@@ -1,3 +1,4 @@
+from enum import unique
 from django.db import models
 import uuid
 from django.db.models import SET_NULL
@@ -5,6 +6,17 @@ from django.conf import settings
 from core.models import Currency
 from packages.models import Package, ServiceMaster
 from django.utils import timezone
+import random
+import string
+
+
+def generate_order_code():
+    while True:
+        code = ''.join(random.choices(
+            string.ascii_uppercase + string.digits, k=12))
+        code = '-'.join(code[i:i+4] for i in range(0, len(code), 4))
+        if not Order.objects.filter(order_code=code).exists():
+            return code
 
 
 class Order(models.Model):
@@ -28,6 +40,8 @@ class Order(models.Model):
                               max_length=50, default='draft')
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    order_code = models.CharField(
+        max_length=16, default=generate_order_code, unique=True)
 
     class Meta:
         db_table = "order" 
@@ -49,10 +63,19 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     
+    STATUS_CHOICES = (
+        ('pending', 'pending'),
+        ('in_progress', 'in_progress'),
+        ('completed', 'completed'),
+        ('cancelled', 'cancelled'),
+        ('rejected', 'rejected')
+    )
+
     id = models.UUIDField(primary_key=True, verbose_name='OrderItem', default=uuid.uuid4, editable=False)
     service_master = models.ForeignKey(ServiceMaster, related_name='order_item_service_master_id', on_delete=SET_NULL, null=True)
     quantity = models.IntegerField(blank=True, null=True)
-    status = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='pending')
     order_id = models.ForeignKey(Order, related_name='order_item_order_id', on_delete=SET_NULL, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='order_item_currency_id', on_delete=SET_NULL, null=True)
@@ -143,7 +166,8 @@ class OrderMessage(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='OrderMessage', default=uuid.uuid4, editable=False)
-    status = models.CharField(choices=STATUS_CHOICES, max_length=50, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='sent')
     message = models.TextField(blank=True, null=True)
     sender_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sender_id', on_delete=SET_NULL, null=True)
     receiver_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='receiver_id', on_delete=SET_NULL, null=True)

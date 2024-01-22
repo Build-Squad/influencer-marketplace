@@ -10,12 +10,23 @@ import React from "react";
 import { CategoriesType } from "../types";
 import Arrow from "@/public/svg/Arrow.svg";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { ExploreFilterInitialValues } from "@/app/business/explore/validation";
 
 type Props = {
   category: CategoriesType;
 };
 
 export default function CategoryExploreCards({ category }: Props) {
+  const router = useRouter();
+  const handleClick = (category: CategoriesType) => {
+    localStorage.setItem(
+      "filterData",
+      JSON.stringify({ ...ExploreFilterInitialValues, categories: [category] })
+    );
+    router.push("business/explore");
+  };
+
   return (
     <Grid item xs={12} sm={6} md={2.8} lg={2.8} key={category?.name}>
       <Card
@@ -27,7 +38,11 @@ export default function CategoryExploreCards({ category }: Props) {
         }}
       >
         <CardMedia sx={{ height: 140 }} image={category?.coverImage} />
-        <CardContent>
+        <CardContent
+          onClick={() => {
+            handleClick(category);
+          }}
+        >
           <Typography
             gutterBottom
             variant="h6"

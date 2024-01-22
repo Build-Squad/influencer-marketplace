@@ -86,6 +86,8 @@ ALLOWED_HOSTS = [
     "dev-api.xfluencer.io",
     "3.9.194.155",
     "localhost",
+    "3.11.123.186",
+    "api.xfluencer.io"
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
@@ -96,6 +98,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://xfluencer.io",
     "https://13.41.134.64",
     "http://127.0.0.1:3000",
+    "https://api.xfluencer.io",
+    "https://3.11.123.186",
 ]
 
 CORS_ORIGIN_WHITELIST = [
@@ -104,6 +108,8 @@ CORS_ORIGIN_WHITELIST = [
     "https://xfluencer.io",
     "https://13.41.134.64",
     "http://127.0.0.1:3000",
+    "https://api.xfluencer.io",
+    "https://3.11.123.186",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -112,6 +118,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://xfluencer.io",
     "https://13.41.134.64",
     "http://127.0.0.1:3000",
+    "https://api.xfluencer.io",
+    "https://3.11.123.186",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -242,7 +250,7 @@ USE_TZ = True
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # web accessible folder
-STATIC_ROOT = '/home/xidev/xfluencer/influencer-marketplace/src/api/marketplace/static/'
+STATIC_ROOT = config("STATIC_ROOT")
 # URL prefix for static files.
 STATIC_URL = 'static/'
 # List of finder classes that know how to find static files in
