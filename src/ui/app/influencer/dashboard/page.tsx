@@ -186,6 +186,11 @@ export default function BusinessDashboardPage() {
 
   const columns = [
     {
+      field: "order_code",
+      headerName: "Order ID",
+      flex: 1,
+    },
+    {
       field: "buyer__username",
       headerName: "Business",
       flex: 1,
