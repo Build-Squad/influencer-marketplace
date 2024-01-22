@@ -74,6 +74,7 @@ export default function InfluencersCards({ influencer }: Props) {
               columnGap: "4px",
               mt: 2,
               overflow: "hidden",
+              justifyContent: "center",
               width: "100%",
             }}
           >

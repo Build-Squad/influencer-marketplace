@@ -107,7 +107,7 @@ export default function Orders() {
             }}
           >
             <Link
-              href={`/business/profile/${params?.row?.buyer?.id}`}
+              href={`/business/profile/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"
               component={NextLink}
               sx={{
