@@ -6,7 +6,12 @@ import { ConfirmDelete } from "@/src/components/shared/confirmDeleteModal";
 import { notification } from "@/src/components/shared/notification";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { addOrderItem, resetCart } from "@/src/reducers/cartSlice";
-import { deleteService, getService } from "@/src/services/httpServices";
+import {
+  deleteService,
+  getService,
+  putService,
+} from "@/src/services/httpServices";
+import { SERVICE_STATUS } from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import {
@@ -25,6 +30,8 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+import PublishedWithChangesIcon from "@mui/icons-material/PublishedWithChanges";
+import UnpublishedIcon from "@mui/icons-material/Unpublished";
 
 type ServiceProps = {
   currentInfluencer: UserType | null;
@@ -107,6 +114,35 @@ const Services = ({
       }
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const updateService = async (service: ServiceType, action: string) => {
+    try {
+      setLoading(true);
+      const requestBody = {
+        status: action,
+        package: {
+          status: action,
+        },
+      };
+      const { message, data, errors, isSuccess } = await putService(
+        `/packages/service/${service?.id}/`,
+        requestBody
+      );
+      if (isSuccess) {
+        notification(message);
+        getServices();
+      } else {
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -358,12 +394,54 @@ const Services = ({
                                 justifyContent: "center",
                               }}
                             >
+                              {service?.status === SERVICE_STATUS.DRAFT ? (
+                                <Tooltip title="Publish">
+                                  <IconButton
+                                    color="info"
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: "secondary.main",
+                                    }}
+                                    onClick={() => {
+                                      updateService(
+                                        service,
+                                        SERVICE_STATUS.PUBLISHED
+                                      );
+                                    }}
+                                    disableRipple
+                                    disableFocusRipple
+                                  >
+                                    <PublishedWithChangesIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip title="Unpublish">
+                                  <IconButton
+                                    color="info"
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: "secondary.main",
+                                    }}
+                                    onClick={() => {
+                                      updateService(
+                                        service,
+                                        SERVICE_STATUS.DRAFT
+                                      );
+                                    }}
+                                    disableRipple
+                                    disableFocusRipple
+                                  >
+                                    <UnpublishedIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
                               <Tooltip title="Edit">
                                 <IconButton
                                   color="info"
                                   size="small"
                                   sx={{
                                     backgroundColor: "secondary.main",
+                                    ml: 1,
                                   }}
                                   onClick={() => {
                                     setSelectedService(service);
