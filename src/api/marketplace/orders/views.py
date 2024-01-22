@@ -1,4 +1,5 @@
 from accounts.models import Wallet
+from orders.services import create_notification_for_order
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -392,7 +393,9 @@ class UpdateOrderStatus(APIView):
             serializer = OrderSerializer(instance=order, data=status_data, partial=True)
 
             if serializer.is_valid():
+                old_status = order.status
                 serializer.save()
+                create_notification_for_order(order, old_status, status_data["status"])
                 return Response(
                     {
                         "isSuccess": True,
