@@ -11,7 +11,7 @@ import {
   LinearProgress,
   Typography,
 } from "@mui/material";
-import { BasicBusinessDetailsType, UserDetailsType } from "../../profile/type";
+import { BasicBusinessDetailsType } from "../../profile/type";
 import {
   LocationOn,
   Email,
@@ -22,6 +22,15 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/src/hooks/useRedux";
+import BasicBadge from "@/public/svg/BasicBadge.svg";
+import SilverBadge from "@/public/svg/SilverBadge.svg";
+import BronzeBadge from "@/public/svg/BronzeBadge.svg";
+import GoldBadge from "@/public/svg/GoldBadge.svg";
+import BlurredBasicBadge from "@/public/svg/Blurred_Basic.svg";
+import BlurredSilverBadge from "@/public/svg/Blurred_Silver.svg";
+import BlurredBronzeBadge from "@/public/svg/Blurred_Bronze.svg";
+import BlurredGoldBadge from "@/public/svg/Blurred_Gold.svg";
+import Image from "next/image";
 
 type Props = {
   params: {
@@ -37,6 +46,41 @@ const styles = {
     textAlign: "right",
   },
 };
+
+const BADGES = [
+  {
+    id: "BASIC",
+    icon: BasicBadge,
+    blurredIcon: BlurredBasicBadge,
+    name: "Startup Shell  (0-25 %)",
+    description:
+      "The basic form of the turtle, symbolizing the starting point for businesses on the platform.",
+  },
+  {
+    id: "BRONZE",
+    icon: BronzeBadge,
+    blurredIcon: BlurredSilverBadge,
+    name: "Branded Banditurtle  (25-50 %)",
+    description:
+      "With the addition of a headband, the turtle is embracing its identity, marking the first steps towards recognition.",
+  },
+  {
+    id: "SILVER",
+    icon: SilverBadge,
+    blurredIcon: BlurredBronzeBadge,
+    name: "Badge-Adorned Warrior  (50-75 %)",
+    description:
+      "Now sporting a chest badge in addition to the headband, this turtle is showcasing its achievements and additional profile details.",
+  },
+  {
+    id: "GOLD",
+    icon: GoldBadge,
+    blurredIcon: BlurredGoldBadge,
+    name: "Swordmaster Tycoon  (75-100 %)",
+    description:
+      "The ultimate evolution with two swords, a headband, and a chest badge, signifying the business's complete mastery and excellence on the platform.",
+  },
+];
 
 const getProfileCompletedStatus: (businessDetails: any) => string = (
   businessDetails
@@ -154,6 +198,11 @@ export default function BusinessProfilePreview({ params }: Props) {
     }
   };
 
+  const getCurrentBadgeIndex = () => {
+    const per = getProgressPercentage();
+    return per <= 25 ? 0 : per <= 50 ? 1 : per <= 75 ? 2 : per <= 100 ? 3 : 0;
+  };
+
   useEffect(() => {
     getAccount();
   }, []);
@@ -164,7 +213,7 @@ export default function BusinessProfilePreview({ params }: Props) {
         px: 5,
         display: "flex",
         backgroundColor: "#FAFAFA",
-        height: "94vh",
+        height: "100%",
         justifyContent: "space-between",
       }}
     >
@@ -349,6 +398,51 @@ export default function BusinessProfilePreview({ params }: Props) {
               color="secondary"
             />
           )}
+        </Box>
+        <Box
+          sx={{
+            mt: 2,
+            padding: "20px",
+            backgroundColor: "#FFF",
+            borderRadius: "16px",
+          }}
+        >
+          <Typography fontWeight={"bold"}>Badges</Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              columnGap: "16px",
+              alignItems: "center",
+              mt: 2,
+            }}
+          >
+            {BADGES.map((badge, index) => {
+              return (
+                <Box>
+                  <Image
+                    src={
+                      getCurrentBadgeIndex() === index
+                        ? badge.icon
+                        : badge.blurredIcon
+                    }
+                    alt={badge.name}
+                    style={{
+                      width: getCurrentBadgeIndex() === index ? "54px" : "40px",
+                      height:
+                        getCurrentBadgeIndex() === index ? "54px" : "40px",
+                    }}
+                  />
+                </Box>
+              );
+            })}
+          </Box>
+          <Typography fontWeight={"bold"} sx={{ mt: 2 }}>
+            {BADGES[getCurrentBadgeIndex()].name}
+          </Typography>
+          <Typography variant="subtitle1" sx={{ color: "#626262" }}>
+            {BADGES[getCurrentBadgeIndex()].description}
+          </Typography>
         </Box>
       </Box>
     </Box>
