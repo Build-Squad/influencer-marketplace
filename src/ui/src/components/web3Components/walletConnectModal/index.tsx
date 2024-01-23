@@ -55,7 +55,8 @@ export default function WalletConnectModal({
     } else {
       notification(
         message ? message : "Something went wrong, please try again later",
-        "error"
+        "error",
+        5000
       );
     }
   };
@@ -99,7 +100,7 @@ export default function WalletConnectModal({
           >
             <WalletMultiButtonDynamic
               color="secondary"
-              variant="contained"
+              variant="outlined"
               sx={{
                 borderRadius: 8,
                 "& .MuiButton-root": {
