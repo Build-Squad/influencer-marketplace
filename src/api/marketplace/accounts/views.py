@@ -105,6 +105,26 @@ class RoleDetail(APIView):
             return handleServerException(e)
 
 
+class TopInfluencers(APIView):
+    def get(self, request):
+        try:
+            twitterAccount = TwitterAccount.objects.all().order_by('-followers_count')[:8]
+            # Paginate the results
+            pagination = Pagination(twitterAccount, request)
+            serializer = TwitterAccountSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Top 8 Twitter Account retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
 class TwitterAccountList(APIView):
     def get(self, request):
         try:
