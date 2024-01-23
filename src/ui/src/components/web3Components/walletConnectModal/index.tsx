@@ -4,13 +4,22 @@ import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import { useAppDispatch } from "@/src/hooks/useRedux";
 import { loginReducer } from "@/src/reducers/userSlice";
 import { postService } from "@/src/services/httpServices";
-import { Box, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import React from "react";
 import CustomModal from "../../shared/customModal";
 import { notification } from "../../shared/notification";
+
+const SOLANA_ADDRESS_REGEX = "^[1-9A-HJ-NP-Za-km-z]{32,44}";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -26,15 +35,18 @@ type WalletConnectModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   connect?: boolean;
+  onlyAddress?: boolean;
 };
 
 export default function WalletConnectModal({
   open,
   setOpen,
   connect = false,
+  onlyAddress = false,
 }: WalletConnectModalProps) {
   const { publicKey, wallet } = useWallet();
   const dispatch = useAppDispatch();
+  const [rawWalletAddress, setRawWalletAddress] = React.useState<string>("");
 
   const onSubmit = async () => {
     const requestBody = {
@@ -60,6 +72,39 @@ export default function WalletConnectModal({
       );
     }
   };
+
+  const onAddition = async () => {
+    if (!rawWalletAddress.match(SOLANA_ADDRESS_REGEX)) {
+      notification("Invalid Solana Wallet Address", "error", 5000);
+      return;
+    }
+    const requestBody = {
+      wallet_address_id: rawWalletAddress,
+      // wallet_provider_id: null,
+      wallet_network_id: "solana",
+    };
+    const { isSuccess, data, message } = await postService(
+      "/account/connect-wallet/",
+      requestBody
+    );
+    if (isSuccess) {
+      notification(message);
+      setOpen(false);
+    } else {
+      notification(
+        message ? message : "Something went wrong, please try again later",
+        "error",
+        5000
+      );
+    }
+  };
+
+  // On close, reset the rawWalletAddress
+  React.useEffect(() => {
+    if (!open) {
+      setRawWalletAddress("");
+    }
+  }, [open]);
 
   return (
     <CustomModal
@@ -122,7 +167,7 @@ export default function WalletConnectModal({
         >
           <Box
             sx={{
-              mt: 4,
+              mt: 2,
             }}
           >
             <Typography
@@ -133,7 +178,7 @@ export default function WalletConnectModal({
               }}
             >
               {connect
-                ? "Connect your Wallet"
+                ? "Connect your Wallet to Xfluencer"
                 : "By signing the message, you agree to our Terms & Conditions and Privacy Policy"}
             </Typography>
           </Box>
@@ -150,6 +195,77 @@ export default function WalletConnectModal({
         >
           <SignMessageDynamic onSignMessageSuccess={onSubmit} />
         </Grid>
+        {onlyAddress && (
+          <>
+            <Divider
+              sx={{
+                mt: 2,
+                mb: 2,
+                width: "100%",
+              }}
+            >
+              OR
+            </Divider>
+            <Grid
+              item
+              xs={12}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+              }}
+            >
+              <TextField
+                label="Solana Wallet Address"
+                placeholder="Enter your Solana Wallet Address"
+                variant="outlined"
+                value={rawWalletAddress}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    borderRadius: 8,
+                  },
+                  minWidth: "300px",
+                }}
+                size="small"
+                fullWidth
+                color="secondary"
+                onChange={(e) => setRawWalletAddress(e.target.value)}
+              />
+              <Box
+                sx={{
+                  mt: 2,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: "grey",
+                    textAlign: "center",
+                  }}
+                >
+                  {`Add your Solana Wallet Address without connecting your wallet to the app.`}
+                </Typography>
+              </Box>
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{
+                  mt: 2,
+                  borderRadius: 8,
+                  "& .MuiButton-root": {
+                    borderRadius: 8,
+                    color: "#ffffff",
+                  },
+                }}
+                disabled={!rawWalletAddress.match(SOLANA_ADDRESS_REGEX)}
+                onClick={onAddition}
+              >
+                Add Wallet
+              </Button>
+            </Grid>
+          </>
+        )}
       </Grid>
     </CustomModal>
   );
