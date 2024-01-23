@@ -31,3 +31,13 @@ export const ORDER_STATUS = {
   DRAFT: "draft",
   ACCEPTED: "accepted",
 };
+
+export const SERVICE_STATUS = {
+  DRAFT: "draft",
+  PUBLISHED: "published",
+};
+
+export const ROLE_NAME = {
+  INFLUENCER: "influencer",
+  BUSINESS_OWNER: "business_owner",
+}

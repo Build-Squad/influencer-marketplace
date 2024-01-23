@@ -1,13 +1,15 @@
 "use client";
 
-import { Box, Modal } from "@mui/material";
+import { Box, IconButton, Modal, Tooltip } from "@mui/material";
 import React from "react";
+import CloseIcon from "@mui/icons-material/Close";
 
 type CustomModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
   sx?: any;
+  customCloseButton?: boolean;
 };
 
 const customStyle = {
@@ -23,7 +25,13 @@ const customStyle = {
   borderRadius: 4,
 };
 
-const CustomModal = ({ open, setOpen, children, sx }: CustomModalProps) => {
+const CustomModal = ({
+  open,
+  setOpen,
+  children,
+  sx,
+  customCloseButton = false,
+}: CustomModalProps) => {
   // On pressing escape key, close the modal
   React.useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
@@ -51,6 +59,20 @@ const CustomModal = ({ open, setOpen, children, sx }: CustomModalProps) => {
           ...sx,
         }}
       >
+        {!customCloseButton && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Tooltip title="Close">
+              <IconButton onClick={() => setOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
         {children}
       </Box>
     </Modal>

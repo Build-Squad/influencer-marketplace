@@ -33,8 +33,10 @@ export default function CheckoutPage() {
 
   const deleteOrder = async () => {
     try {
+      const influencerId = cart?.influencer?.id;
       if (!cart?.orderId) {
         dispatch(resetCart());
+        router.push(`/influencer/profile/${influencerId}`);
         return;
       }
       setLoading(true);
@@ -44,6 +46,7 @@ export default function CheckoutPage() {
       if (isSuccess) {
         notification("Order cancelled successfully!", "success");
         dispatch(resetCart());
+        router.push(`/influencer/profile/${influencerId}`);
       } else {
         notification(message, "error", 3000);
       }
@@ -53,6 +56,11 @@ export default function CheckoutPage() {
   };
 
   const updateStatus = async () => {
+    if (user?.user?.wallets?.length === 0) {
+      notification("You need to add a wallet first", "error", 3000);
+      return;
+    }
+
     const { isSuccess, data, message } = await putService(
       `orders/update-status/${cart?.orderId}/`,
       {
@@ -359,7 +367,7 @@ export default function CheckoutPage() {
                   updateStatus();
                 }}
               >
-                Make Payment
+                Make Offer
               </Button>
             </Box>
           </Box>
