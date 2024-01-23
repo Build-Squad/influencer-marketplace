@@ -3,6 +3,7 @@
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import EmailLoginModal from "@/src/components/emailLoginModal";
 import SnackbarComp from "@/src/components/shared/snackBarComp";
+import WalletContextProvider from "@/src/components/shared/walletContextProvider";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { AppStore, makeStore } from "@/src/store";
 import type { Metadata } from "next";
@@ -11,13 +12,12 @@ import { useSearchParams } from "next/navigation";
 import { SnackbarProvider } from "notistack";
 import { useRef, useState } from "react";
 import { Provider } from "react-redux";
+import { persistStore } from "redux-persist";
+import { PersistGate } from "redux-persist/integration/react";
 import ThemeRegistry from "./ThemeRegistry";
 import Navbar from "./components/navbar";
 import "./globals.css";
 import { loginStatusType } from "./utils/types";
-import { PersistGate } from "redux-persist/integration/react";
-import { persistStore } from "redux-persist";
-import WalletContextProvider from "@/src/components/shared/walletContextProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,7 +47,6 @@ export default function RootLayout({
   const [emailOpen, setEmailOpen] = useState<boolean>(false);
   const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
   const [walletOpen, setWalletOpen] = useState<boolean>(false);
-  const [connectWallet, setConnectWallet] = useState<boolean>(false);
 
   return (
     <html lang="en">
@@ -72,7 +71,6 @@ export default function RootLayout({
                     setLoginStatus={setLoginStatus}
                     emailOpen={emailOpen}
                     walletOpen={walletOpen}
-                    setConnectWallet={setConnectWallet}
                     categoryOpen={categoryOpen}
                   />
                   {children}
@@ -96,7 +94,6 @@ export default function RootLayout({
                   <WalletConnectModal
                     open={walletOpen}
                     setOpen={setWalletOpen}
-                    connect={connectWallet}
                   />
                 </WalletContextProvider>
               </ThemeRegistry>

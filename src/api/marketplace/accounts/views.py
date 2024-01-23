@@ -134,6 +134,8 @@ class TwitterAccountList(APIView):
 
             categories = request.GET.getlist("categories[]", [])
 
+            collaborationIds = request.GET.getlist("collaborationIds[]", [])
+
             upperPriceLimit = request.GET.get("upperPriceLimit", "")
             lowerPriceLimit = request.GET.get("lowerPriceLimit", "")
             upperFollowerLimit = request.GET.get("upperFollowerLimit", "")
@@ -165,6 +167,11 @@ class TwitterAccountList(APIView):
 
             if isVerified:
                 twitterAccount = twitterAccount.filter(verified=isVerified)
+
+            if collaborationIds:
+                twitterAccount = TwitterAccount.objects.filter(
+                    user_twitter_account_id__in=collaborationIds
+                )
 
             if categories:
                 for category in categories:
@@ -1282,11 +1289,23 @@ class WalletAuth(APIView):
                         serializer.validated_data["wallet_address_id"], "business_owner"
                     )
                     wallet.user_id = user
-                    wallet.is_primary = True  # Mark the wallet as primary
                     wallet.save()
                 else:
                     user = User.objects.get(username=wallet.user_id)
                 wallet = self.get_wallet(request.data["wallet_address_id"])
+
+                # Mark this wallet as primary
+                wallet.is_primary = True
+                wallet.save()
+
+                # Mark all other wallets as non-primary
+                added_wallets = Wallet.objects.filter(
+                    user_id=user)
+                for added_wallet in added_wallets:
+                    if added_wallet.id != wallet.id:
+                        added_wallet.is_primary = False
+                        added_wallet.save()
+
                 user = User.objects.get(username=wallet.user_id)
                 # Only allow business owners to login
                 if user.role.name != "business_owner":
@@ -1356,12 +1375,24 @@ class WalletConnect(APIView):
                         {
                             "isSuccess": False,
                             "data": None,
-                            "message": "Wallet already connected",
+                            "message": "This wallet is already connected with another account on Xfluencer\n Please use another wallet or login with the account that is connected with this wallet",
                         },
                         status=status.HTTP_200_OK,
                     )
                 else:
-                    serializer.save()
+                    wallet = serializer.save()
+                # Mark the wallet as primary
+                wallet.is_primary = True
+                wallet.save()
+
+                # Mark all other wallets as non-primary
+                added_wallets = Wallet.objects.filter(
+                    user_id=request.user_account)
+                for added_wallet in added_wallets:
+                    if added_wallet.id != wallet.id:
+                        added_wallet.is_primary = False
+                        added_wallet.save()
+
                 return Response(
                     {
                         "isSuccess": True,

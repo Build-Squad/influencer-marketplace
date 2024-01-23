@@ -8,7 +8,9 @@ import {
   Divider,
   FormLabel,
   Grid,
+  IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -20,6 +22,7 @@ import CustomModal from "../../shared/customModal";
 import { notification } from "../../shared/notification";
 import { serviceFormInitialValues, serviceFormSchema } from "./validation";
 import dayjs from "dayjs";
+import CloseIcon from "@mui/icons-material/Close";
 
 type CreateUpdateServiceProps = {
   serviceItem?: ServiceType | null;
@@ -151,7 +154,12 @@ const CreateUpdateService = ({
   }, [serviceItem, open]);
 
   return (
-    <CustomModal open={open} setOpen={setOpen} sx={{ p: 0, minHeight: "50vh" }}>
+    <CustomModal
+      open={open}
+      setOpen={setOpen}
+      sx={{ p: 0, minHeight: "50vh" }}
+      customCloseButton={true}
+    >
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <form onSubmit={formik.handleSubmit}>
           <Grid container>
@@ -172,6 +180,18 @@ const CreateUpdateService = ({
                   p: 4,
                 }}
               >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    width: "100%",
+                    p: 1,
+                  }}
+                >
+                  <Typography variant="h6">
+                    {serviceItem ? "Update" : "Create"} Service
+                  </Typography>
+                </Box>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                   <FormLabel component="legend">
                     Select Service Master
@@ -242,7 +262,7 @@ const CreateUpdateService = ({
                         return false;
                       }
                     }}
-                  />
+                  />{" "}
                 </Grid>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                   <FormLabel component="legend">Name</FormLabel>
@@ -325,6 +345,19 @@ const CreateUpdateService = ({
                   p: 4,
                 }}
               >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    width: "100%",
+                  }}
+                >
+                  <Tooltip title="Close">
+                    <IconButton onClick={() => setOpen(false)}>
+                      <CloseIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
                   <FormLabel component="legend">Select Currency</FormLabel>
                   <CustomAutoComplete

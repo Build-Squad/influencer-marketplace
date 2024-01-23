@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { UserDetailsType } from "../../type";
 import Image from "next/image";
 import NoMissingData from "@/public/no_missing_info.png";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/src/hooks/useRedux";
 
 type Props = {
   userDetails: UserDetailsType;
@@ -22,11 +24,12 @@ const getProfileCompletedStatus: (
 };
 
 export default function RightComponent({ userDetails }: Props) {
+  const router = useRouter();
   const [isProfileComplete, setIsProfileComplete] = useState(false);
+  const userId = useAppSelector((state) => state.user?.user?.id);
 
   useEffect(() => {
     const percentage = getProgressPercentage();
-
     if (percentage === 100) {
       setIsProfileComplete(true);
     } else {
@@ -65,6 +68,9 @@ export default function RightComponent({ userDetails }: Props) {
         sx={{
           borderRadius: "20px",
           fontWeight: "bold",
+        }}
+        onClick={() => {
+          router.push(`/business/profile-preview/${userId}`);
         }}
       >
         See Profile Preview
