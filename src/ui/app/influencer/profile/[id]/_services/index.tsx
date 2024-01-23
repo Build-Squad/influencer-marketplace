@@ -262,7 +262,11 @@ const Services = ({
                         setSelectedService(null);
                         setOpenModal(true);
                       } else {
-                        notification("Please add a wallet first", "error");
+                        notification(
+                          "You need to add or connect a wallet before creating a service",
+                          "error",
+                          5000
+                        );
                         setOpen(true);
                       }
                     }}
