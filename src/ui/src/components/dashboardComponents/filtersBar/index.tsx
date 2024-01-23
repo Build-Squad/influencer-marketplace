@@ -517,7 +517,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                           );
                         return {
                           ...prev,
-                          buyers: new_influencers?.length
+                          influencers: new_influencers?.length
                             ? new_influencers
                             : undefined,
                           objects: {
