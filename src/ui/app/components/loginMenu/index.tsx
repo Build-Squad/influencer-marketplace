@@ -1,11 +1,11 @@
 "use client";
 
-import { Box, List, ListItem, Menu } from "@mui/material";
+import { Box, List, ListItem, Menu, Typography } from "@mui/material";
 import * as React from "react";
 import ProfileIcon from "@/public/svg/Profile.svg";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LoginRounded } from "@mui/icons-material";
+import { Lock } from "@mui/icons-material";
 import { useAppSelector } from "@/src/hooks/useRedux";
 
 type LoginMenuProps = {
@@ -100,8 +100,18 @@ export default function LoginMenu({
           style={{ cursor: "pointer" }}
         />
       ) : (
-        <Box sx={{ cursor: "pointer" }} onClick={handleClick}>
-          <LoginRounded />
+        <Box
+          sx={{
+            cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={handleClick}
+        >
+          <Lock style={{ fontSize: "16px" }} />
+          <Typography sx={{ fontSize: "10px" }}>Login</Typography>
         </Box>
       )}
 
