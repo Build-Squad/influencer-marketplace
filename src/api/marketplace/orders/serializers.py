@@ -66,6 +66,7 @@ class OrderListFilterSerializer(serializers.Serializer):
     lt_amount = serializers.FloatField(required=False)
     gt_amount = serializers.FloatField(required=False)
     order_by = serializers.CharField(required=False)
+    search = serializers.CharField(required=False, allow_blank=True)
 
 
 # The response schema for the list of orders from the POST search request
@@ -309,6 +310,7 @@ class OrderMessageListFilterSerializer(serializers.Serializer):
     service_masters = serializers.ListField(
         child=serializers.UUIDField(), required=False
     )
+    search = serializers.CharField(required=False, allow_blank=True)
 
 
 class LastMessageSerializer(serializers.Serializer):
