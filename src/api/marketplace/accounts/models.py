@@ -145,7 +145,7 @@ class BusinessAccountMetaData(models.Model):
     industry = models.CharField(max_length=100, blank=True, null=True)
     founded = models.CharField(max_length=100, blank=True, null=True)
     headquarters = models.CharField(max_length=100, blank=True, null=True)
-    bio = models.CharField(max_length=2048, blank=True, null=True)
+    bio = models.TextField(null=True, blank=True)
     phone = models.CharField(max_length=100, blank=True, null=True)
     website = models.CharField(max_length=100, blank=True, null=True)
     twitter_account = models.CharField(max_length=100, blank=True, null=True)
