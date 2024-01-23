@@ -163,7 +163,7 @@ const CustomAutoComplete = ({
             error={error}
             disabled={disabled}
             type={type}
-            size="small"
+            size="medium"
             sx={{
               height: "100%",
             }}
