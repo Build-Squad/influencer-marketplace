@@ -440,9 +440,22 @@ export default function BusinessProfilePreview({ params }: Props) {
           <Typography fontWeight={"bold"} sx={{ mt: 2 }}>
             {BADGES[getCurrentBadgeIndex()].name}
           </Typography>
-          <Typography variant="subtitle1" sx={{ color: "#626262" }}>
-            {BADGES[getCurrentBadgeIndex()].description}
-          </Typography>
+          {user?.role?.name === "business_owner" ? (
+            isProfileComplete ? (
+              <Typography variant="subtitle1" sx={{ color: "#626262" }}>
+                Profile complete! Enjoy your upgraded badge & enhanced platform
+                experience.
+              </Typography>
+            ) : (
+              <Typography variant="subtitle1" sx={{ color: "#626262" }}>
+                Complete missing details on your profile to upgrade your Badge.
+              </Typography>
+            )
+          ) : (
+            <Typography variant="subtitle1" sx={{ color: "#626262" }}>
+              {BADGES[getCurrentBadgeIndex()].description}
+            </Typography>
+          )}
         </Box>
       </Box>
     </Box>
