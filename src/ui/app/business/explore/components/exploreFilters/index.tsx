@@ -66,12 +66,9 @@ export default function ExploreFilters({ formik }: any) {
               sx={{
                 display: "flex",
                 alignItems: "center",
-                "&.MuiGrid-item": {
-                  paddingTop: "0px",
-                },
               }}
             >
-              <Typography>Verified</Typography>
+              <Typography>X-Verified</Typography>
               <Switch
                 color="secondary"
                 checked={formik.values.isVerified}
