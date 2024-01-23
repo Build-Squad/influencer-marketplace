@@ -598,12 +598,16 @@ const ProfileLayout = ({
                                       </TableCell>
                                       <TableCell>
                                         <Typography>
-                                          {wallet?.wallet_provider_id?.wallet_provider
-                                            ?.charAt(0)
-                                            .toUpperCase() +
-                                            wallet?.wallet_provider_id?.wallet_provider?.slice(
-                                              1
-                                            )}
+                                          {wallet?.wallet_provider_id
+                                            ? `${
+                                                wallet?.wallet_provider_id?.wallet_provider
+                                                  ?.charAt(0)
+                                                  .toUpperCase() +
+                                                wallet?.wallet_provider_id?.wallet_provider?.slice(
+                                                  1
+                                                )
+                                              }`
+                                            : "N/A"}
                                         </Typography>
                                       </TableCell>
                                       <TableCell>{/* Action Menu */}</TableCell>
@@ -648,6 +652,7 @@ const ProfileLayout = ({
         open={openWalletConnectModal}
         setOpen={setOpenWalletConnectModal}
         connect={true}
+        onlyAddress={true}
       />
       <CategorySelectionModal
         open={categoryOpen}
