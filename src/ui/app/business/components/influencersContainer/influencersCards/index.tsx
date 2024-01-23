@@ -25,6 +25,7 @@ export default function InfluencersCards({ influencer }: Props) {
       md={2.8}
       lg={2.8}
       key={influencer?.twitterUsername}
+      sx={{ minWidth: "320px" }}
     >
       <Card
         sx={{
@@ -72,6 +73,9 @@ export default function InfluencersCards({ influencer }: Props) {
               alignItems: "center",
               columnGap: "4px",
               mt: 2,
+              overflow: "hidden",
+              justifyContent: "center",
+              width: "100%",
             }}
           >
             <Typography variant="subtitle1" fontWeight={"bold"}>

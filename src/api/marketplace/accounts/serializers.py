@@ -4,7 +4,8 @@ from rest_framework import serializers
 from uuid import UUID
 
 from core.serializers import LanguageMasterSerializer
-from packages.models import Service
+from orders.models import Order, OrderItem
+from packages.models import Package, Service
 from .models import (
     AccountLanguage,
     TwitterAccount,
@@ -21,9 +22,27 @@ from .models import (
 
 
 class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
+    influencer_ids = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = BusinessAccountMetaData
         fields = "__all__"
+
+    def get_influencer_ids(self, business_meta_data):
+        completed_orders = Order.objects.filter(
+            buyer=business_meta_data.user_account, status="completed"
+        )
+        influencer_ids = set()
+
+        for completed_order in completed_orders:
+            completed_order_items = OrderItem.objects.filter(order_id=completed_order)
+            package_ids = completed_order_items.values_list("package_id", flat=True)
+            influencers = Package.objects.filter(id__in=package_ids).values_list(
+                "influencer_id", flat=True
+            )
+            influencer_ids.update(influencers)
+
+        return list(influencer_ids)
 
 
 class CategoryMasterSerializer(serializers.ModelSerializer):

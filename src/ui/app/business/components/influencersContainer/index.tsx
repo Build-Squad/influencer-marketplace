@@ -60,7 +60,7 @@ export default function InfluencersContainer({ topInfluencers }: Props) {
               display: "flex",
               flexWrap: "wrap",
               gap: "20px",
-              justifyContent: "center",
+              justifyContent: "flex-start",
             }}
           >
             {displayedInfluencers.map((inf, index) => (
