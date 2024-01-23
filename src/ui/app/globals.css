@@ -1,3 +1,15 @@
-.mui-pybdga-MuiModal-root-MuiDialog-root .MuiDialogContent-root .MuiListItem-root .MuiButton-root {
-  color: white !important;
+.MuiDialogContent-root .MuiListItem-root .MuiButton-root {
+  background-color: #f4f4f4 !important;
+  color: #000 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.MuiDialogTitle-root {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  color: #fff !important;
+}
+
+.MuiDialog-paper {
+  border-radius: 16px !important;
 }
