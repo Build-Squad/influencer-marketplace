@@ -173,6 +173,15 @@ class OrderListView(APIView):
             if "gt_rating" in filters:
                 orders = orders.filter(review_order_id__rating__gt=filters["gt_rating"])
 
+            if "search" in filters:
+                orders = orders.filter(
+                    Q(buyer__first_name__icontains=filters["search"])
+                    | Q(buyer__last_name__icontains=filters["search"])
+                    | Q(order_item_order_id__package__influencer__first_name__icontains=filters["search"])
+                    | Q(order_item_order_id__package__influencer__last_name__icontains=filters["search"])
+                    | Q(order_code__icontains=filters["search"])
+                )
+
             if "order_by" in filters:
                 orders = orders.order_by(filters["order_by"])
 
@@ -224,13 +233,23 @@ class UserOrderMessagesView(APIView):
                 orders = orders.filter(
                     order_item_order_id__service_master__in=filters["service_masters"]
                 )
+            if "search" in filters:
+                orders = orders.filter(
+                    Q(buyer__first_name__icontains=filters["search"])
+                    | Q(buyer__last_name__icontains=filters["search"])
+                    | Q(order_item_order_id__package__influencer__first_name__icontains=filters["search"])
+                    | Q(order_item_order_id__package__influencer__last_name__icontains=filters["search"])
+                    | Q(order_code__icontains=filters["search"])
+                )
             total_unread_count = 0
             data = []
             for order in orders:
                 order_messages = OrderMessage.objects.filter(order_id=order)
                 if order_messages.exists():
                     last_message = order_messages.last()
-                    unread_count = order_messages.filter(status='sent').count()
+                    unread_count = order_messages.filter(status='sent',
+                                                         receiver_id=request.user_account
+                                                         ).count()
                     total_unread_count += unread_count
                     message_data = {
                         'message': last_message,
