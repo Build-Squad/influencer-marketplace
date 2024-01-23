@@ -12,6 +12,8 @@ import LoginMenu from "../loginMenu";
 
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
+import MessagesIcon from "@/public/svg/Messages.svg";
+import MessagesDisabledIcon from "@/public/svg/Messages_disabled.svg";
 import DashboardIcon from "@/public/svg/Dashboard.svg";
 import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
 import ExploreIcon from "@/public/svg/Explore.svg";
@@ -21,7 +23,6 @@ import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 
-import { getService } from "@/src/services/httpServices";
 import NotificationPanel from "@/src/components/notificationPanel";
 
 type NavbarProps = {
@@ -59,6 +60,12 @@ const MENU_ITEMS: {
     route: "/dashboard",
     icon: DashboardIcon,
     disabledIcon: DashboardDisabledIcon,
+  },
+  Messages: {
+    label: "Messages",
+    route: "/messages",
+    icon: MessagesIcon,
+    disabledIcon: MessagesDisabledIcon,
   },
   Cart: {
     label: "My cart",
@@ -291,6 +298,7 @@ export default function Navbar({
                     "Home",
                     "Explore",
                     "Dashboard",
+                    "Messages",
                     "Cart",
                     "Notifications",
                   ]}
@@ -298,7 +306,13 @@ export default function Navbar({
               ) : (
                 // Influencer menu items
                 <MenuItemsComponent
-                  items={["Home", "Orders", "Dashboard", "Notifications"]}
+                  items={[
+                    "Home",
+                    "Orders",
+                    "Dashboard",
+                    "Messages",
+                    "Notifications",
+                  ]}
                 />
               )
             ) : (
