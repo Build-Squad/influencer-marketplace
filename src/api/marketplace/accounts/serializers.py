@@ -215,8 +215,8 @@ class WalletAuthSerializer(serializers.Serializer):
 
 class WalletConnectSerializer(serializers.Serializer):
     wallet_address_id = serializers.CharField(max_length=100)
-    wallet_provider_id = serializers.CharField(max_length=100)
-    wallet_network_id = serializers.CharField(max_length=100)
+    wallet_provider_id = serializers.CharField(max_length=100, required=False)
+    wallet_network_id = serializers.CharField(max_length=100, required=False)
 
     def get_or_create_wallet_provider(self, name):
         try:
@@ -238,23 +238,25 @@ class WalletConnectSerializer(serializers.Serializer):
     # From the request.user_account, add a wallet to that particular user id
     def create(self, validated_data):
         wallet_address_id = validated_data.pop("wallet_address_id")
-        wallet_provider_id = self.get_or_create_wallet_provider(
-            validated_data.pop("wallet_provider_id")
-        )
-        wallet_network_id = self.get_or_create_wallet_network(
-            validated_data.pop("wallet_network_id")
-        )
+        if "wallet_provider_id" in validated_data:
+            wallet_provider_id = self.get_or_create_wallet_provider(
+                validated_data.pop("wallet_provider_id")
+            )
+        else:
+            wallet_provider_id = None
+        if "wallet_network_id" in validated_data:
+            wallet_network_id = self.get_or_create_wallet_network(
+                validated_data.pop("wallet_network_id")
+            )
+        else:
+            wallet_network_id = None
         user_account = self.context["request"].user_account
-
-        # Check if there are any other wallets for the user
-        other_wallets = Wallet.objects.filter(user_id=user_account).exists()
 
         wallet = Wallet.objects.create(
             wallet_address_id=wallet_address_id,
             wallet_provider_id=wallet_provider_id,
             wallet_network_id=wallet_network_id,
             user_id=user_account,
-            is_primary=not other_wallets,  # Set is_primary to True if there are no other wallets
         )
 
         return wallet
