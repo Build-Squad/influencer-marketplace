@@ -1336,7 +1336,7 @@ class WalletConnect(APIView):
                         {
                             "isSuccess": False,
                             "data": None,
-                            "message": "This wallet is already connected with another account",
+                            "message": "This wallet is already connected with another account on Xfluencer, please use another wallet or login with the account that is connected with this wallet",
                         },
                         status=status.HTTP_200_OK,
                     )
