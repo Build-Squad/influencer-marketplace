@@ -20,7 +20,7 @@ import {
 import dayjs from "dayjs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { notification } from "../shared/notification";
 
 export default function NotificationPanel() {
@@ -36,6 +36,7 @@ export default function NotificationPanel() {
     current_page_number: 1,
     current_page_size: 10,
   });
+  const unreadCountRef = useRef<number>(0);
 
   const getNotifications = async () => {
     try {
@@ -46,7 +47,19 @@ export default function NotificationPanel() {
       });
       if (isSuccess) {
         setNotifications(data?.data?.notifications);
+        if (data?.data?.unread_count > unreadCountRef.current) {
+          const new_notifications_count =
+            data?.data?.unread_count - unreadCountRef.current;
+          notification(
+            `${new_notifications_count} new notification${
+              new_notifications_count > 1 ? "s" : ""
+            }`,
+            "success",
+            3000
+          );
+        }
         setUnreadCount(data?.data?.unread_count);
+        unreadCountRef.current = data?.data?.unread_count; // update the ref value
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,

@@ -36,7 +36,7 @@ export const SignMessage = ({ onSignMessageSuccess }: SignMessageProps) => {
 
   return (
     <Button
-      variant="outlined"
+      variant="contained"
       color="secondary"
       onClick={onClick}
       disabled={!publicKey || !signMessage}
@@ -48,7 +48,7 @@ export const SignMessage = ({ onSignMessageSuccess }: SignMessageProps) => {
         },
       }}
     >
-      {loading ? "Signing." : "Sign This Message"}
+      {loading ? "Signing....." : "Sign This Message"}
     </Button>
   );
 };
