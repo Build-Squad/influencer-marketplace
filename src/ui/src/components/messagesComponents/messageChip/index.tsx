@@ -11,40 +11,36 @@ type MessageChipType = {
 
 export default function MessageChip({ message }: MessageChipType) {
   return (
-    // If the message is from the user, then the chip will be on the right side
-    // Otherwise, it will be on the left side
-
-    <Chip
-      label={
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <Typography variant="body1">{message.message}</Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: message.isMe ? "grey" : "grey",
-            }}
-          >
-            {dayjs(message.created_at).format(DISPLAY_DATE_TIME_FORMAT)}
-          </Typography>
-        </Box>
-      }
+    <Box
       sx={{
         display: "flex",
-        justifyContent: message.isMe ? "flex-end" : "flex-start",
-        my: 1,
-        mx: 1,
-        p: 1,
-        borderRadius: 8,
+        flexDirection: "column",
+        wordBreak: "break-word", // Add this line
         maxWidth: "50%",
         height: "auto",
+        p: 2,
+        m: 1,
+        borderRadius: 8,
+        border: message.isMe ? "" : "1px solid #000",
+        backgroundColor: message.isMe ? "rgba(0, 0, 0, 0.8)" : "#fff",
       }}
-      color="secondary"
-      variant={message.isMe ? "filled" : "outlined"}
-    />
+    >
+      <Typography
+        variant="body1"
+        sx={{
+          color: message.isMe ? "#fff" : "#000",
+        }}
+      >
+        {message.message}
+      </Typography>
+      <Typography
+        variant="caption"
+        sx={{
+          color: "grey",
+        }}
+      >
+        {dayjs(message.created_at).format(DISPLAY_DATE_TIME_FORMAT)}
+      </Typography>
+    </Box>
   );
 }
