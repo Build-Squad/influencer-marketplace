@@ -25,6 +25,7 @@ from rest_framework import status
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
+    AccountRegion,
     BusinessAccountMetaData,
     TwitterAccount,
     CategoryMaster,
@@ -481,6 +482,21 @@ class AccountRegionList(APIView):
         try:
             user_id = request.data.get("user_id")
             region_id = request.data.get("region_id")
+
+            # Check if the user already has an AccountRegion
+            account_region = AccountRegion.objects.filter(user_account=user_id).first()
+            if account_region:
+                # If an AccountRegion exists, update the region
+                account_region.region_id = region_id
+                account_region.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": AccountRegionSerializer(account_region).data,
+                        "message": "Account Region updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
 
             # Create a new AccountRegion instance
             account_region_data = {"user_account": user_id, "region": region_id}
