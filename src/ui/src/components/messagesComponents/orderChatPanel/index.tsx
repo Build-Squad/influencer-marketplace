@@ -38,7 +38,11 @@ export default function OrderChatPanel({
     try {
       setLoading(true);
       const { isSuccess, message, data } = await getService(
-        `/orders/order-message/${selectedOrderChat?.order?.id}/`
+        `/orders/order-message/${selectedOrderChat?.order?.id}/`,
+        {
+          page_size: 10000,
+          page_number: 1,
+        }
       );
       if (isSuccess) {
         data?.data?.forEach((message: MessageType) => {
@@ -105,11 +109,27 @@ export default function OrderChatPanel({
           }}
         >
           <Box sx={{ p: 2, display: "flex", alignItems: "center" }}>
-            <Avatar
-              sx={{
-                mr: 1,
-              }}
-            />
+            {selectedOrderChat?.order?.order_item_order_id && (
+              <>
+                {user?.id === selectedOrderChat?.order?.buyer?.id ? (
+                  <Avatar
+                    src={
+                      selectedOrderChat?.order?.order_item_order_id[0]?.package
+                        ?.influencer?.twitter_account?.profile_image_url
+                    }
+                    sx={{
+                      mr: 1,
+                    }}
+                  />
+                ) : (
+                  <Avatar
+                    sx={{
+                      mr: 1,
+                    }}
+                  />
+                )}
+              </>
+            )}
             <Box
               sx={{
                 display: "flex",
