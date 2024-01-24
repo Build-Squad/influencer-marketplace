@@ -1,9 +1,11 @@
 "use client";
 
-import { DISPLAY_DATE_TIME_FORMAT } from "@/src/utils/consts";
+import { DISPLAY_DATE_TIME_FORMAT, MESSAGE_STATUS } from "@/src/utils/consts";
 import { Box, Chip, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import React from "react";
+import DoneIcon from "@mui/icons-material/Done";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
 
 type MessageChipType = {
   message: MessageType;
@@ -15,7 +17,7 @@ export default function MessageChip({ message }: MessageChipType) {
       sx={{
         display: "flex",
         flexDirection: "column",
-        wordBreak: "break-word", // Add this line
+        wordBreak: "break-word",
         maxWidth: "50%",
         height: "auto",
         p: 2,
@@ -33,14 +35,37 @@ export default function MessageChip({ message }: MessageChipType) {
       >
         {message.message}
       </Typography>
-      <Typography
-        variant="caption"
+      <Box
         sx={{
-          color: "grey",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
         }}
       >
-        {dayjs(message.created_at).format(DISPLAY_DATE_TIME_FORMAT)}
-      </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            color: "grey",
+            mr: 1,
+          }}
+        >
+          {dayjs(message.created_at).format(DISPLAY_DATE_TIME_FORMAT)}
+        </Typography>
+        {message?.isMe && (
+          <>
+            {message?.status === MESSAGE_STATUS.READ ? (
+              <DoneAllIcon
+                sx={{
+                  color: "grey",
+                  fontSize: 16,
+                }}
+              />
+            ) : (
+              <DoneIcon sx={{ color: "grey", fontSize: 16 }} />
+            )}
+          </>
+        )}
+      </Box>
     </Box>
   );
 }
