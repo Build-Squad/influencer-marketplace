@@ -17,8 +17,8 @@ export default function ExploreFilters({ formik }: any) {
       </Box>
       <Box sx={{ flex: 1 }}>
         <form onSubmit={formik.handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={4} sm={4} md={2} lg={2} sx={{ mb: 2 }}>
+          <Grid container spacing={2} alignItems={"center"} sx={{mb:2}}>
+            <Grid item xs={4} sm={4} md={2} lg={2}>
               <FiltersComponent formik={formik} type={"LANGUAGE"} />
             </Grid>
             <Grid item xs={4} sm={4} md={2} lg={2}>
@@ -66,12 +66,9 @@ export default function ExploreFilters({ formik }: any) {
               sx={{
                 display: "flex",
                 alignItems: "center",
-                "&.MuiGrid-item": {
-                  paddingTop: "0px",
-                },
               }}
             >
-              <Typography>Verified</Typography>
+              <Typography>X-Verified</Typography>
               <Switch
                 color="secondary"
                 checked={formik.values.isVerified}

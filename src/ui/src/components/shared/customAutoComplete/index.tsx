@@ -21,6 +21,7 @@ type CustomAutoCompleteProps = {
   isMulti?: Boolean;
   getOptionDisabled?: (option: unknown) => boolean;
   customFilter?: object;
+  size?: "small" | "medium";
 };
 
 const CustomAutoComplete = ({
@@ -40,6 +41,7 @@ const CustomAutoComplete = ({
   getOptionDisabled,
   isMulti = false,
   customFilter,
+  size = "small",
 }: CustomAutoCompleteProps) => {
   const [selected, setSelected] = React.useState<unknown>(null); // This is the value that is selected from the options[]
   const [options, setOptions] = React.useState<unknown[]>([]);
@@ -60,6 +62,10 @@ const CustomAutoComplete = ({
         ...customFilter,
       });
       if (isSuccess) {
+        if (value && !isMulti) {
+          setOptions([value]);
+          return;
+        }
         setOptions([...options, ...data?.data]);
       }
     } catch (error) {
@@ -106,7 +112,12 @@ const CustomAutoComplete = ({
       getOptions();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [search, pagination, customFilter]); // Add customFilter to the dependency array
+  }, [
+    search,
+    pagination.current_page_size,
+    pagination.current_page_number,
+    customFilter,
+  ]); // Add customFilter to the dependency array
 
   React.useEffect(() => {
     // Reset options and pagination
@@ -129,11 +140,7 @@ const CustomAutoComplete = ({
   // If value is not undefined, then we need to check if the value is there in the options, if not then we need to add the value to the options
   React.useEffect(() => {
     if (value && !isMulti) {
-      const found = options.find((option) => option === value);
-      if (!found) {
-        setOptions([...options, value]);
-      }
-      setSelected(value);
+      setOptions([value]);
     }
   }, [value]);
 
@@ -163,7 +170,7 @@ const CustomAutoComplete = ({
             error={error}
             disabled={disabled}
             type={type}
-            size="small"
+            size={size}
             sx={{
               height: "100%",
             }}

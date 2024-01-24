@@ -1,6 +1,13 @@
 "use client";
 import React from "react";
-import { Box, Button, Grid, Switch, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { BannerFilterSchema, BannerFilterInitialValues } from "./validation";
 import Image from "next/image";
 import Arrow from "@/public/svg/Arrow.svg";
@@ -89,80 +96,50 @@ export default function Banner({}: Props) {
         }}
       >
         <form onSubmit={formik.handleSubmit}>
-          <Grid container spacing={2} justifyContent={"space-around"}>
-            <Grid item xs={3} sm={3} md={3} lg={3} sx={{ mb: 2 }}>
-              <FiltersComponent formik={formik} type={"LANGUAGE"} />
-            </Grid>
-            <Grid item xs={3} sm={3} md={3} lg={3}>
-              <FiltersComponent formik={formik} type={"SERVICES"} />
-            </Grid>
-            <Grid item xs={3} sm={3} md={3} lg={3}>
-              <FiltersComponent formik={formik} type={"CATEGORIES"} />
-            </Grid>
-            <Grid
-              item
-              xs={3}
-              sm={3}
-              md={3}
-              lg={3}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                "&.MuiGrid-item": {
-                  paddingTop: "0px",
-                },
-              }}
-            >
-              <Typography>Verified</Typography>
-              <Switch
-                color="secondary"
-                checked={formik.values.isVerified}
-                onChange={(e: any) => {
-                  formik.setFieldValue("isVerified", e.target.checked);
-                }}
-              />
-            </Grid>
-          </Grid>
-          <Grid container spacing={2} justifyContent={"center"}>
-            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
-              <FiltersComponent
-                formik={formik}
-                type={"PRICE"}
-                data={{ name: "lowerPriceLimit", label: "Min. Price($)" }}
-              />
-            </Grid>
-            <span style={{ marginTop: "24px", marginLeft: "10px" }}>-</span>
-            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
-              <FiltersComponent
-                formik={formik}
-                type={"PRICE"}
-                data={{ name: "upperPriceLimit", label: "Max. Price($)" }}
-              />
-            </Grid>
-            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
-              <FiltersComponent
-                formik={formik}
-                type={"FOLLOWERS"}
-                data={{ name: "lowerFollowerLimit", label: "Min. Followers" }}
-              />
-            </Grid>
-            <span style={{ marginTop: "24px", marginLeft: "10px" }}>-</span>
-            <Grid item xs={2.5} sm={2.5} md={2.5} lg={2.5}>
-              <FiltersComponent
-                formik={formik}
-                type={"FOLLOWERS"}
-                data={{ name: "upperFollowerLimit", label: "Max. Followers" }}
-              />
-            </Grid>
-          </Grid>
           <Grid
             container
-            spacing={2}
-            justifyContent={"space-around"}
-            sx={{ paddingTop: "16px" }}
+            spacing={1}
+            justifyContent={"space-between"}
+            alignItems={"center"}
           >
-            <Grid item xs={12} sm={12} md={12} lg={12}>
-              <FiltersComponent formik={formik} type={"SEARCH"} />
+            <Grid item xs={6} sm={6} md={6} lg={5}>
+              <TextField
+                color="secondary"
+                name="platform"
+                value="Twitter"
+                disabled
+                sx={{
+                  cursor: "not-allowed",
+                  ".MuiInputBase-root": {
+                    borderRadius: "24px",
+                    backgroundColor: "white",
+                  },
+                  ".MuiOutlinedInput-notchedOutline": {
+                    border: "1px solid black",
+                  },
+                }}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={6} sm={6} md={6} lg={5}>
+              <FiltersComponent formik={formik} type={"CATEGORIES"} />
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={2}>
+              <Button
+                size="large"
+                type="submit"
+                variant="contained"
+                color="secondary"
+                sx={{
+                  borderRadius: "12px",
+                  fontWeight: "bold",
+                  px: 5,
+                  py: 1,
+                }}
+              >
+                Search
+              </Button>
             </Grid>
           </Grid>
         </form>

@@ -220,6 +220,7 @@ type OrderType = {
 };
 
 type OrderFilterType = {
+  search?: string;
   influencers?: string[];
   buyers?: string[];
   status?: string[];
@@ -247,6 +248,34 @@ type NotificationType = {
   is_read: boolean;
   slug: string;
   user: string;
+};
+
+type MessageType = {
+  id: string;
+  status: string;
+  message: string;
+  created_at: string;
+  sender_id: string;
+  receiver_id: string;
+  order_id: string;
+  is_read: boolean;
+  isMe?: boolean;
+};
+
+type OrderChatMessageType = {
+  message: MessageType;
+  order_unread_messages_count: number;
+};
+
+type OrderChatType = {
+  order: OrderType;
+  order_message: OrderChatMessageType;
+};
+
+type ChatDisplayType = {
+  username?: string;
+  profile_image_url?: string | null;
+  message?: OrderChatMessageType;
 };
 
 interface SVGIcon

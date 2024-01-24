@@ -2,7 +2,7 @@ export const DISPLAY_DATE_FORMAT = "DD MMM YYYY";
 
 export const DISPLAY_TIME_FORMAT = "HH:mm A";
 
-export const DISPLAY_DATE_TIME_FORMAT = "DD MMM YYYY HH:mm A";
+export const DISPLAY_DATE_TIME_FORMAT = "DD MMM YYYY hh:mm A";
 
 export const ISO_DATE_TIME_FORMAT = "YYYY-MM-DDTHH:mm:ss.SSS";
 
@@ -31,3 +31,13 @@ export const ORDER_STATUS = {
   DRAFT: "draft",
   ACCEPTED: "accepted",
 };
+
+export const SERVICE_STATUS = {
+  DRAFT: "draft",
+  PUBLISHED: "published",
+};
+
+export const ROLE_NAME = {
+  INFLUENCER: "influencer",
+  BUSINESS_OWNER: "business_owner",
+}

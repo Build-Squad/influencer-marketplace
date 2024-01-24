@@ -12,6 +12,8 @@ import LoginMenu from "../loginMenu";
 
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
+import MessagesIcon from "@/public/svg/Messages.svg";
+import MessagesDisabledIcon from "@/public/svg/Messages_disabled.svg";
 import DashboardIcon from "@/public/svg/Dashboard.svg";
 import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
 import ExploreIcon from "@/public/svg/Explore.svg";
@@ -21,7 +23,6 @@ import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 
-import { getService } from "@/src/services/httpServices";
 import NotificationPanel from "@/src/components/notificationPanel";
 
 type NavbarProps = {
@@ -31,7 +32,6 @@ type NavbarProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
   emailOpen: boolean;
   walletOpen: boolean;
-  setConnectWallet: React.Dispatch<React.SetStateAction<boolean>>;
   categoryOpen: boolean;
 };
 
@@ -60,6 +60,12 @@ const MENU_ITEMS: {
     route: "/dashboard",
     icon: DashboardIcon,
     disabledIcon: DashboardDisabledIcon,
+  },
+  Messages: {
+    label: "Messages",
+    route: "/messages",
+    icon: MessagesIcon,
+    disabledIcon: MessagesDisabledIcon,
   },
   Cart: {
     label: "My cart",
@@ -153,7 +159,6 @@ export default function Navbar({
   setCategoryOpen,
   emailOpen,
   walletOpen,
-  setConnectWallet,
   categoryOpen,
 }: NavbarProps) {
   const {
@@ -172,16 +177,6 @@ export default function Navbar({
 
   const params = useSearchParams();
   const user = useAppSelector((state) => state.user);
-
-  const getWallets = async () => {
-    const { isSuccess, message, data } = await getService(`/account/wallets/`);
-    if (isSuccess) {
-      if (data?.data?.length === 0) {
-        setWalletOpen(true);
-        setConnectWallet(true);
-      }
-    }
-  };
 
   useEffect(() => {
     if (!emailOpen) {
@@ -217,21 +212,11 @@ export default function Navbar({
     }
   }, [isTwitterUserLoggedIn, isAccountSetupComplete]);
 
-  // Check for the wallet open after the categroy selection
-  // But also check if category selection check is complete
-
   useEffect(() => {
     if (!categoryOpen) {
       checkAccountSetup();
     }
   }, [categoryOpen]);
-
-  useEffect(() => {
-    const status = params.get("authenticationStatus");
-    if (categoriesAdded && status === "success" && isTwitterUserLoggedIn) {
-      getWallets();
-    }
-  }, [categoriesAdded, isTwitterUserLoggedIn]);
 
   return (
     <AppBar
@@ -313,6 +298,7 @@ export default function Navbar({
                     "Home",
                     "Explore",
                     "Dashboard",
+                    "Messages",
                     "Cart",
                     "Notifications",
                   ]}
@@ -320,7 +306,13 @@ export default function Navbar({
               ) : (
                 // Influencer menu items
                 <MenuItemsComponent
-                  items={["Home", "Orders", "Dashboard", "Notifications"]}
+                  items={[
+                    "Home",
+                    "Orders",
+                    "Dashboard",
+                    "Messages",
+                    "Notifications",
+                  ]}
                 />
               )
             ) : (

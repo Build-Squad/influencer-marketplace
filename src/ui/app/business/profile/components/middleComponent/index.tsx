@@ -211,7 +211,7 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
     }
   };
 
-  const debouncedHandleChange = debounce(handleChange, 1000);
+  const debouncedHandleChange = debounce(handleChange, 500);
 
   // First updating the form fields and calling the update API after 1 second
   // This is to avoid multiple API calls.
