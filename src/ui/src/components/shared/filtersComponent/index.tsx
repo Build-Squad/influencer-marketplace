@@ -54,6 +54,7 @@ export default function FiltersComponent({
               return "";
             }
           }}
+          size="medium"
         />
       );
     case "SERVICES":
@@ -81,6 +82,7 @@ export default function FiltersComponent({
               return "";
             }
           }}
+          size="medium"
         />
       );
     case "CATEGORIES":
@@ -108,6 +110,7 @@ export default function FiltersComponent({
               return "";
             }
           }}
+          size="medium"
         />
       );
     // Provide data object with name and label

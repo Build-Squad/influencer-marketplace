@@ -2,7 +2,7 @@ export const DISPLAY_DATE_FORMAT = "DD MMM YYYY";
 
 export const DISPLAY_TIME_FORMAT = "HH:mm A";
 
-export const DISPLAY_DATE_TIME_FORMAT = "DD MMM YYYY HH:mm A";
+export const DISPLAY_DATE_TIME_FORMAT = "DD MMM YYYY hh:mm A";
 
 export const ISO_DATE_TIME_FORMAT = "YYYY-MM-DDTHH:mm:ss.SSS";
 
