@@ -147,6 +147,7 @@ class AccountRegion(models.Model):
         on_delete=SET_NULL,
         null=True,
         blank=True,
+        unique=True,
     )
     region = models.ForeignKey(
         RegionMaster,
