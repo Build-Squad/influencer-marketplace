@@ -1,7 +1,7 @@
 import { object, number, string } from "yup";
 
 interface ExploreFilterType {
-  languages: Array<LanguageType>;
+  regions: Array<RegionType>;
   serviceTypes: Array<ServiceMasterType>;
   categories: Array<CategoryMasterType>;
   upperPriceLimit: number | null;
@@ -21,7 +21,7 @@ const ExploreFilterSchema = object({
 });
 
 const ExploreFilterInitialValues: ExploreFilterType = {
-  languages: [],
+  regions: [],
   serviceTypes: [],
   categories: [],
   upperPriceLimit: null,

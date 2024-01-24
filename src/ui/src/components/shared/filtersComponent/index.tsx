@@ -37,6 +37,7 @@ export default function FiltersComponent({
           apiEndpoint="/core/language-master"
           label="Language"
           value={formik.values.languages}
+          helperText="Enter keywords for languages"
           onChange={(value: any) => {
             formik.setFieldValue("languages", value);
           }}
@@ -56,6 +57,34 @@ export default function FiltersComponent({
           }}
         />
       );
+      case "REGION":
+        return (
+          <CustomAutoComplete
+            isMulti={true}
+            sx={styles.inputBoxBorderStyles}
+            apiEndpoint="/core/regions-master/"
+            label="Region"
+            value={formik.values.regions}
+            helperText="Enter keywords for Region"
+            onChange={(value: any) => {
+              formik.setFieldValue("regions", value);
+            }}
+            onClear={() => {
+              formik.setFieldValue("regions", []);
+            }}
+            getOptionLabel={(option) => {
+              if (typeof option === "object" && option) {
+                if ("regionName" in option) {
+                  return option.regionName as string;
+                } else {
+                  return "";
+                }
+              } else {
+                return "";
+              }
+            }}
+          />
+        );
     case "SERVICES":
       return (
         <CustomAutoComplete
@@ -64,6 +93,7 @@ export default function FiltersComponent({
           apiEndpoint="/packages/servicemaster"
           label="Type of service"
           value={formik.values.serviceTypes}
+          helperText="Enter keywords for services"
           onChange={(value: any) => {
             formik.setFieldValue("serviceTypes", value);
           }}
@@ -91,6 +121,7 @@ export default function FiltersComponent({
           apiEndpoint="/account/category-master"
           label="Category"
           value={formik.values.categories}
+          helperText="Enter keywords for categories"
           onChange={(value: any) => {
             formik.setFieldValue("categories", value);
           }}

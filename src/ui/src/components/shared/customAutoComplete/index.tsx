@@ -1,14 +1,7 @@
 "use client";
 
 import { getService } from "@/src/services/httpServices";
-import {
-  Autocomplete,
-  Box,
-  Checkbox,
-  Chip,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Autocomplete, Checkbox, TextField, Typography } from "@mui/material";
 import React from "react";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
@@ -157,12 +150,15 @@ const CustomAutoComplete = ({
   const getRenderString = (tagValue: any, getTagProps: any) => {
     let text = "";
     tagValue.map((option: any, index: any) => {
-      text += `${getOptionLabel && getOptionLabel(option)}, `;
+      text +=
+        getOptionLabel &&
+        getOptionLabel(option) + (index == tagValue.length - 1 ? "" : ", ");
     });
 
     return (
       <Typography
         sx={{
+          ml: 1,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -175,6 +171,7 @@ const CustomAutoComplete = ({
 
   return isMulti ? (
     <Autocomplete
+      key={value}
       multiple={true}
       value={value}
       options={options}
