@@ -171,6 +171,7 @@ type TwiiterAccountReadType = {
   twitter_id: string;
   name: string;
   user_name: string;
+  profile_image_url: string;
 };
 
 type InfleuncerType = {

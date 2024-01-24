@@ -41,9 +41,7 @@ export default function BusinessMessages() {
     if (isSuccess) {
       setOrderChats(data?.data?.orders);
       setTotalUnreadMessages(data?.data?.total_unread_messages_count);
-    } else {
-      notification(message ? message : "Something went wrong", "error");
-    }
+    } 
   };
 
   useEffect(() => {
@@ -57,6 +55,30 @@ export default function BusinessMessages() {
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
   }, [filters]);
+
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          // In the center of this component
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontStyle: "italic",
+          }}
+        >
+          Please login to view Messages
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Grid container spacing={2}>
@@ -95,6 +117,9 @@ export default function BusinessMessages() {
                         orderChat?.order?.order_item_order_id[0]?.package
                           ?.influencer?.twitter_account?.user_name,
                       message: orderChat?.order_message,
+                      profile_image_url:
+                        orderChat?.order?.order_item_order_id[0]?.package
+                          ?.influencer?.twitter_account?.profile_image_url,
                     };
                   }
                 }
@@ -158,7 +183,7 @@ export default function BusinessMessages() {
                 fontStyle: "italic",
               }}
             >
-              Select an order to view messages
+              Select an order to view Chat
             </Typography>
           </Box>
         )}

@@ -185,7 +185,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TwitterReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = TwitterAccount
-        fields = ("id", "twitter_id", "name", "user_name")
+        fields = ("id", "twitter_id", "name", "user_name", "profile_image_url")
 
 
 class InfluencerSerializer(serializers.ModelSerializer):
