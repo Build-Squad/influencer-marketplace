@@ -21,6 +21,7 @@ type CustomAutoCompleteProps = {
   isMulti?: Boolean;
   getOptionDisabled?: (option: unknown) => boolean;
   customFilter?: object;
+  size?: "small" | "medium";
 };
 
 const CustomAutoComplete = ({
@@ -40,6 +41,7 @@ const CustomAutoComplete = ({
   getOptionDisabled,
   isMulti = false,
   customFilter,
+  size = "small",
 }: CustomAutoCompleteProps) => {
   const [selected, setSelected] = React.useState<unknown>(null); // This is the value that is selected from the options[]
   const [options, setOptions] = React.useState<unknown[]>([]);
@@ -168,7 +170,7 @@ const CustomAutoComplete = ({
             error={error}
             disabled={disabled}
             type={type}
-            size="medium"
+            size={size}
             sx={{
               height: "100%",
             }}
