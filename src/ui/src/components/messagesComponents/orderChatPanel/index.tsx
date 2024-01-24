@@ -75,7 +75,12 @@ export default function OrderChatPanel({
     );
     if (isSuccess) {
       setToSendMessage("");
-      getAllMessages();
+      await getAllMessages();
+      // Scroll to bottom
+      const messagesContainer = document.getElementById("messagesContainer");
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
     } else {
       notification(message ? message : "Something went wrong", "error");
     }
@@ -178,6 +183,7 @@ export default function OrderChatPanel({
           display: "flex",
           flexDirection: "column-reverse",
         }}
+        id="messagesContainer"
       >
         {messages.map((message, index) => (
           <Box
@@ -205,6 +211,7 @@ export default function OrderChatPanel({
               },
               my: 1,
             }}
+            multiline
             InputProps={{
               endAdornment: (
                 <IconButton
