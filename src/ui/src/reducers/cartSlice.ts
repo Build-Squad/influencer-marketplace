@@ -65,6 +65,7 @@ export const cartSlice = createSlice({
         state.orderTotal > 0 &&
         state.orderTotalCurrency.id !== action.payload.service.currency.id
       ) {
+        notification("Please select services with the same currency", "error");
         return;
       }
 
