@@ -306,7 +306,7 @@ class OrderDetail(APIView):
                 and order.buyer.id != request.user_account.id
             ) or (
                 request.user_account.role.name == "influencer"
-                and order.order_item_order_id[0].package.influencer.id
+                and order.order_item_order_id.all()[0].package.influencer.id
                 != request.user_account.id
             ):
                 return Response(
@@ -780,7 +780,7 @@ class OrderMessageList(APIView):
                 and order.buyer.id != request.user_account.id
             ) or (
                 request.user_account.role.name == "influencer"
-                and order.order_item_order_id[0].package.influencer.id
+                and order.order_item_order_id.all()[0].package.influencer.id
                 != request.user_account.id
             ):
                 return Response(
@@ -823,7 +823,7 @@ class OrderMessageList(APIView):
                 and order.buyer.id != request.user_account.id
             ) or (
                 request.user_account.role.name == "influencer"
-                and order.order_item_order_id[0].package.influencer.id
+                and order.order_item_order_id.all()[0].package.influencer.id
                 != request.user_account.id
             ):
                 return Response(
@@ -836,9 +836,7 @@ class OrderMessageList(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             orderMessages = order.order_message_order_id.filter(
-                Q(sender_id=request.user_account) | Q(
-                    receiver_id=request.user_account)
-            )
+                receiver_id=request.user_account, status='sent')
             orderMessages.update(status='read')
             return Response(
                 {
