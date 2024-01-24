@@ -38,6 +38,7 @@ export default function OrderChatFilterBar({
   return (
     <Box sx={{ my: 1 }}>
       <TextField
+        size="small"
         color="secondary"
         fullWidth
         label="Search Order"
@@ -56,19 +57,7 @@ export default function OrderChatFilterBar({
           my: 1,
         }}
         InputProps={{
-          endAdornment: (
-            <IconButton
-              sx={{
-                backgroundColor: "#000",
-              }}
-            >
-              <SearchIcon
-                sx={{
-                  color: "#fff",
-                }}
-              />
-            </IconButton>
-          ),
+          endAdornment: <SearchIcon />,
         }}
       />
       <CustomAutoComplete
