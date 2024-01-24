@@ -33,11 +33,6 @@ def create_notification_for_order(order, old_status, new_status):
     order_items = OrderItem.objects.filter(order_id=order)
     influencer = order_items[0].package.influencer
 
-    print('buyer', buyer)
-    print('influencer', influencer)
-    print('old_status', old_status)
-    print('new_status', new_status)
-
     if old_status == 'draft' and new_status == 'pending':
         # Case 1
         message = 'You have a new order from ' + buyer.username
