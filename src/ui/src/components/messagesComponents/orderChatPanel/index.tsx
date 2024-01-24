@@ -18,6 +18,8 @@ import {
 import React, { useEffect } from "react";
 import { notification } from "../../shared/notification";
 import MessageChip from "../messageChip";
+import { ORDER_STATUS } from "@/src/utils/consts";
+import StatusChip from "../../shared/statusChip";
 
 type OrderChatPanelType = {
   selectedOrderChat: OrderChatType;
@@ -96,6 +98,9 @@ export default function OrderChatPanel({
         <Box
           sx={{
             borderBottom: "1px solid rgba(0,0,0,0.1)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <Box sx={{ p: 2, display: "flex", alignItems: "center" }}>
@@ -134,6 +139,13 @@ export default function OrderChatPanel({
               </Typography>
             </Box>
           </Box>
+          <StatusChip
+            status={
+              selectedOrderChat?.order?.status
+                ? selectedOrderChat?.order?.status
+                : ""
+            }
+          />
         </Box>
       </Grid>
 
@@ -159,41 +171,64 @@ export default function OrderChatPanel({
         ))}
       </Grid>
       <Grid item>
-        <TextField
-          color="secondary"
-          fullWidth
-          placeholder="Type a message"
-          variant="outlined"
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 8,
-            },
-            my: 1,
-          }}
-          InputProps={{
-            endAdornment: (
-              <IconButton
-                sx={{
-                  backgroundColor: "#000",
-                }}
-                onClick={sendMessage}
-              >
-                <SendIcon
+        {selectedOrderChat?.order?.status === ORDER_STATUS.PENDING ||
+        selectedOrderChat?.order?.status === ORDER_STATUS.ACCEPTED ? (
+          <TextField
+            color="secondary"
+            fullWidth
+            placeholder="Type a message"
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 8,
+              },
+              my: 1,
+            }}
+            InputProps={{
+              endAdornment: (
+                <IconButton
                   sx={{
-                    color: "#fff",
+                    backgroundColor: "#000",
                   }}
-                />
-              </IconButton>
-            ),
-          }}
-          value={toSendMessage}
-          onChange={(e) => setToSendMessage(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              sendMessage();
-            }
-          }}
-        />
+                  onClick={sendMessage}
+                >
+                  <SendIcon
+                    sx={{
+                      color: "#fff",
+                    }}
+                  />
+                </IconButton>
+              ),
+            }}
+            value={toSendMessage}
+            onChange={(e) => setToSendMessage(e.target.value)}
+            onKeyUp={(e) => {
+              if (e.key === "Enter") {
+                sendMessage();
+              }
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              borderTop: "1px solid rgba(0,0,0,0.1)",
+              my: 2,
+              p: 1,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontStyle: "italic",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              Order is closed
+            </Typography>
+          </Box>
+        )}
       </Grid>
     </Grid>
   );
