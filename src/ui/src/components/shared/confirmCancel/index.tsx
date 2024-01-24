@@ -62,6 +62,8 @@ export const ConfirmCancel: React.FC<Props> = ({
         <DialogTitle
           sx={{
             m: 1,
+            backgroundColor: "#fff !important",
+            color: "#000 !important",
           }}
         >
           <Typography variant="h6">

@@ -430,7 +430,13 @@ export default function Orders() {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
+        <DialogTitle
+          id="alert-dialog-title"
+          sx={{
+            backgroundColor: "#fff !important",
+            color: "#000 !important",
+          }}
+        >
           Are you sure you want to {selectedAction.status} this order?
         </DialogTitle>
         <DialogActions>
