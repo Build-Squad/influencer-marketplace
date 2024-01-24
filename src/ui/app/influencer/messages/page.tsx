@@ -95,6 +95,9 @@ export default function BusinessMessages() {
                         orderChat?.order?.order_item_order_id[0]?.package
                           ?.influencer?.twitter_account?.user_name,
                       message: orderChat?.order_message,
+                      profile_image_url:
+                        orderChat?.order?.order_item_order_id[0]?.package
+                          ?.influencer?.twitter_account?.profile_image_url,
                     };
                   }
                 } else {

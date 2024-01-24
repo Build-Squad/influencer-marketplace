@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Avatar, Typography, Chip, Divider } from "@mui/material";
+import { Box, Avatar, Typography, Chip, Divider, Tooltip } from "@mui/material";
 import dayjs from "dayjs";
 import React from "react";
 import StatusChip from "../../shared/statusChip";
@@ -59,30 +59,55 @@ export default function OrderChatCard({
             alignItems: "center",
           }}
         >
-          <Avatar
-            sx={{
-              mr: 1,
-              bgcolor: stringToColor(
-                chatDisplayDetails?.username ? chatDisplayDetails?.username : ""
-              ),
-            }}
-          >
-            {chatDisplayDetails?.username?.charAt(0)?.toUpperCase()}
-          </Avatar>
+          {chatDisplayDetails?.profile_image_url ? (
+            <Avatar
+              src={chatDisplayDetails?.profile_image_url}
+              sx={{
+                mr: 1,
+              }}
+            />
+          ) : (
+            <Avatar
+              sx={{
+                mr: 1,
+                bgcolor: stringToColor(
+                  chatDisplayDetails?.username
+                    ? chatDisplayDetails?.username
+                    : ""
+                ),
+              }}
+            >
+              {chatDisplayDetails?.username?.charAt(0)?.toUpperCase()}
+            </Avatar>
+          )}
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
             }}
           >
-            <Typography
-              variant="body1"
-              sx={{
-                fontWeight: "bold",
-              }}
-            >
-              @{chatDisplayDetails?.username}
-            </Typography>
+            {chatDisplayDetails?.username && (
+              <Tooltip
+                title={chatDisplayDetails?.username}
+                placement="top-start"
+                disableHoverListener={
+                  chatDisplayDetails?.username?.length <= 20
+                }
+              >
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  {`@${
+                    chatDisplayDetails?.username?.length > 20
+                      ? chatDisplayDetails?.username?.substring(0, 20) + "..."
+                      : chatDisplayDetails?.username
+                  }`}
+                </Typography>
+              </Tooltip>
+            )}
             <Box
               sx={{
                 display: "flex",

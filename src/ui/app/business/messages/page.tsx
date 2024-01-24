@@ -41,9 +41,7 @@ export default function BusinessMessages() {
     if (isSuccess) {
       setOrderChats(data?.data?.orders);
       setTotalUnreadMessages(data?.data?.total_unread_messages_count);
-    } else {
-      notification(message ? message : "Something went wrong", "error");
-    }
+    } 
   };
 
   useEffect(() => {
@@ -95,6 +93,9 @@ export default function BusinessMessages() {
                         orderChat?.order?.order_item_order_id[0]?.package
                           ?.influencer?.twitter_account?.user_name,
                       message: orderChat?.order_message,
+                      profile_image_url:
+                        orderChat?.order?.order_item_order_id[0]?.package
+                          ?.influencer?.twitter_account?.profile_image_url,
                     };
                   }
                 }
