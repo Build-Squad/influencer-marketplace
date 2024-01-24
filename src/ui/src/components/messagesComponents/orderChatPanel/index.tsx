@@ -45,6 +45,7 @@ export default function OrderChatPanel({
           message.isMe = message.sender_id === user?.id;
         });
         setMessages(data?.data);
+        await markAsRead();
       }
     } finally {
       setLoading(false);
@@ -123,10 +124,10 @@ export default function OrderChatPanel({
                   }}
                 >
                   @
-                  {
-                    selectedOrderChat?.order?.order_item_order_id[0]?.package
-                      ?.influencer?.twitter_account?.user_name
-                  }
+                  {user?.id === selectedOrderChat?.order?.buyer?.id
+                    ? selectedOrderChat?.order?.order_item_order_id[0]?.package
+                        ?.influencer?.twitter_account?.user_name
+                    : selectedOrderChat?.order?.buyer?.username}
                 </Typography>
               )}
               <Typography
