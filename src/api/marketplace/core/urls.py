@@ -6,6 +6,7 @@ from .views import (
     CurrencyDetailView,
     LanguageListView,
     LanguageDetailView,
+    RegionListView,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path("currency/<str:pk>/", CurrencyDetailView.as_view()),
     path("language-master/", LanguageListView.as_view()),
     path("language-master/<str:pk>/", LanguageDetailView.as_view()),
+    path("regions-master/", RegionListView.as_view()),
 ]

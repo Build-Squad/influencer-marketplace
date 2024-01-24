@@ -3,11 +3,12 @@ from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
 from uuid import UUID
 
-from core.serializers import LanguageMasterSerializer
+from core.serializers import LanguageMasterSerializer, RegionMasterSerializer
 from orders.models import Order, OrderItem
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
+    AccountRegion,
     TwitterAccount,
     CategoryMaster,
     AccountCategory,
@@ -126,6 +127,14 @@ class AccountLanguageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AccountLanguage
+        fields = "__all__"
+
+
+class AccountRegionSerializer(serializers.ModelSerializer):
+    category = RegionMasterSerializer(read_only=True)
+
+    class Meta:
+        model = AccountRegion
         fields = "__all__"
 
 
