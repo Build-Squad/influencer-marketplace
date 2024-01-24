@@ -48,6 +48,14 @@ export default function BusinessMessages() {
 
   useEffect(() => {
     getAllChats();
+
+    // Set up the interval
+    const intervalId = setInterval(() => {
+      getAllChats();
+    }, 30000); // 30000 milliseconds = 30 seconds
+
+    // Clear the interval when the component is unmounted
+    return () => clearInterval(intervalId);
   }, [filters]);
 
   return (
