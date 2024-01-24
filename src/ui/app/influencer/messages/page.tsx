@@ -168,7 +168,7 @@ export default function BusinessMessages() {
                 fontStyle: "italic",
               }}
             >
-              Select an order to view messages
+              Select an order to view Chat
             </Typography>
           </Box>
         )}

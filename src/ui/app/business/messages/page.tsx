@@ -56,6 +56,30 @@ export default function BusinessMessages() {
     return () => clearInterval(intervalId);
   }, [filters]);
 
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          // In the center of this component
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontStyle: "italic",
+          }}
+        >
+          Please login to view Messages
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Grid container spacing={2}>
       <Grid
@@ -159,7 +183,7 @@ export default function BusinessMessages() {
                 fontStyle: "italic",
               }}
             >
-              Select an order to view messages
+              Select an order to view Chat
             </Typography>
           </Box>
         )}

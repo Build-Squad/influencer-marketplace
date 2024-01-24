@@ -185,17 +185,39 @@ export default function OrderChatPanel({
         }}
         id="messagesContainer"
       >
-        {messages.map((message, index) => (
+        {messages?.length > 0 ? (
+          <>
+            {messages.map((message, index) => (
+              <Box
+                key={message?.id}
+                sx={{
+                  display: "flex",
+                  justifyContent: message?.isMe ? "flex-end" : "flex-start",
+                }}
+              >
+                <MessageChip message={message} />
+              </Box>
+            ))}
+          </>
+        ) : (
           <Box
-            key={message?.id}
             sx={{
+              height: "100%",
               display: "flex",
-              justifyContent: message?.isMe ? "flex-end" : "flex-start",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <MessageChip message={message} />
+            <Typography
+              variant="h6"
+              sx={{
+                fontStyle: "italic",
+              }}
+            >
+              No Messages Found
+            </Typography>
           </Box>
-        ))}
+        )}
       </Grid>
       <Grid item>
         {selectedOrderChat?.order?.status === ORDER_STATUS.PENDING ||
