@@ -88,14 +88,14 @@ export default function BusinessMessages() {
                           ?.influencer?.twitter_account?.user_name,
                       message: orderChat?.order_message,
                     };
-                  } else {
-                    chatDisplayDetails = {
-                      username: orderChat?.order?.buyer?.username
-                        ? orderChat?.order?.buyer?.username
-                        : "",
-                      message: orderChat?.order_message,
-                    };
                   }
+                } else {
+                  chatDisplayDetails = {
+                    username: orderChat?.order?.buyer?.username
+                      ? orderChat?.order?.buyer?.username
+                      : "",
+                    message: orderChat?.order_message,
+                  };
                 }
                 return (
                   <OrderChatCard
