@@ -47,17 +47,17 @@ export default function NotificationPanel() {
       });
       if (isSuccess) {
         setNotifications(data?.data?.notifications);
-        if (data?.data?.unread_count > unreadCountRef.current) {
-          const new_notifications_count =
-            data?.data?.unread_count - unreadCountRef.current;
-          notification(
-            `${new_notifications_count} new notification${
-              new_notifications_count > 1 ? "s" : ""
-            }`,
-            "success",
-            3000
-          );
-        }
+        // if (data?.data?.unread_count > unreadCountRef.current) {
+        //   const new_notifications_count =
+        //     data?.data?.unread_count - unreadCountRef.current;
+        //   notification(
+        //     `${new_notifications_count} new notification${
+        //       new_notifications_count > 1 ? "s" : ""
+        //     }`,
+        //     "success",
+        //     3000
+        //   );
+        // }
         setUnreadCount(data?.data?.unread_count);
         unreadCountRef.current = data?.data?.unread_count; // update the ref value
         setPagination({

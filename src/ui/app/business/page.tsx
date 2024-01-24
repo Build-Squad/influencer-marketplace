@@ -30,12 +30,7 @@ export default function BusinessHome() {
 
   const getTopInfluencers = async () => {
     const { isSuccess, data, message } = await getService(
-      "/account/twitter-account/",
-      {
-        page_number: 1,
-        page_size: 8,
-        lowerFollowerLimit: "500",
-      }
+      "/account/top-influencers/"
     );
     if (isSuccess) {
       const filteredData = data?.data?.map((inf: any) => {

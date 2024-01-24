@@ -40,7 +40,7 @@ export default function Explore({}: Props) {
 
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
-    total_page_count: 10,
+    total_page_count: 0,
     current_page_number: 1,
     current_page_size: 12,
   });
@@ -122,6 +122,11 @@ export default function Explore({}: Props) {
                 )
               : 0,
         };
+      });
+      setPagination({
+        ...pagination,
+        total_data_count: data?.pagination?.total_data_count,
+        total_page_count: data?.pagination?.total_page_count,
       });
       setInfluencersData(filteredData);
     } else {

@@ -23,6 +23,8 @@ import { useAppSelector } from "@/src/hooks/useRedux";
 import { deleteService, putService } from "@/src/services/httpServices";
 import { notification } from "../../shared/notification";
 import { useRouter } from "next/navigation";
+import DraftsIcon from "@mui/icons-material/Drafts";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 type ServiceCardProps = {
   service: ServiceType;
@@ -145,6 +147,7 @@ export default function ServiceCard({
             sx={{
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <Typography
@@ -157,17 +160,17 @@ export default function ServiceCard({
               {service?.package?.name}
             </Typography>
             {service?.package?.influencer?.id === loggedInUser?.id && (
-              <Chip
-                sx={{
-                  mr: 2,
-                }}
-                label={
-                  service?.package?.status.charAt(0).toUpperCase() +
-                  service?.package?.status.slice(1)
-                }
-                color="secondary"
-                variant={service.status === "draft" ? "filled" : "outlined"}
-              />
+              <>
+                {service?.package?.status === SERVICE_STATUS.DRAFT ? (
+                  <Tooltip title="Draft">
+                    <DraftsIcon sx={{ color: "grey" }} />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Published">
+                    <CheckCircleIcon sx={{ color: "success.main" }} />
+                  </Tooltip>
+                )}
+              </>
             )}
           </Box>
           <Box
