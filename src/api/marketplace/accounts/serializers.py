@@ -1,7 +1,6 @@
 from unicodedata import category
 from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
-from uuid import UUID
 
 from core.serializers import LanguageMasterSerializer
 from orders.models import Order, OrderItem
