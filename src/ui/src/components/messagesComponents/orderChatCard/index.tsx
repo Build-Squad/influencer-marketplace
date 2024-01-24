@@ -3,6 +3,7 @@
 import { Box, Avatar, Typography, Chip, Divider } from "@mui/material";
 import dayjs from "dayjs";
 import React from "react";
+import StatusChip from "../../shared/statusChip";
 
 type OrderChatCardType = {
   orderChat: OrderChatType;
@@ -82,14 +83,27 @@ export default function OrderChatCard({
             >
               @{chatDisplayDetails?.username}
             </Typography>
-            <Typography
-              variant="body2"
+            <Box
               sx={{
-                color: "#000",
+                display: "flex",
+                alignItems: "center",
               }}
             >
-              #{orderChat?.order?.order_code}
-            </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#000",
+                  mr: 1,
+                }}
+              >
+                #{orderChat?.order?.order_code}
+              </Typography>
+              <StatusChip
+                status={
+                  orderChat?.order?.status ? orderChat?.order?.status : ""
+                }
+              />
+            </Box>
           </Box>
         </Box>
         <Box
