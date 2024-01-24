@@ -131,12 +131,9 @@ class AccountLanguageSerializer(serializers.ModelSerializer):
 
 
 class AccountRegionSerializer(serializers.ModelSerializer):
-    region = RegionMasterSerializer(read_only=True)
-
     class Meta:
         model = AccountRegion
         fields = "__all__"
-        
 
 
 class WalletProviderSerializer(serializers.ModelSerializer):

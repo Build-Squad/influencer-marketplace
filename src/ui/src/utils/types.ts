@@ -135,7 +135,7 @@ type UserType = {
   wallets: WalletType[] | null;
   region?: {
     id: string;
-    region: RegionType;
+    region: string;
     user_account: string;
   }[];
 };

@@ -5,7 +5,7 @@ import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
-import { getService } from "@/src/services/httpServices";
+import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -91,15 +91,11 @@ const ProfileLayout = ({
   useEffect(() => {
     if (currentUser?.region?.length) {
       const regionOfUser = regions.find(
-        (item) => item.id === currentUser?.region?.[0].region?.id
+        (item) => item.id === currentUser?.region?.[0].region
       );
       setUserRegion(regionOfUser);
     }
   }, [currentUser]);
-
-  useEffect(() => {
-    console.log("userRegion ==== ", userRegion);
-  }, [userRegion]);
 
   const getUserDetails = async () => {
     const { isSuccess, message, data } = await getService(
@@ -149,7 +145,23 @@ const ProfileLayout = ({
     const selectedRegion: RegionType | undefined = regions.find(
       (region) => region.regionName === e.target.value
     );
-    setUserRegion(selectedRegion);
+
+    const { isSuccess, data, message } = await postService(
+      "/account/account-region/",
+      {
+        user_id: currentUser?.id,
+        region_id: selectedRegion?.id,
+      }
+    );
+    if (isSuccess) {
+      setUserRegion(selectedRegion);
+      notification(message);
+    } else {
+      notification(
+        message ? message : "Something went wrong, please try again later",
+        "error"
+      );
+    }
   };
 
   return (
@@ -392,8 +404,7 @@ const ProfileLayout = ({
                           </>
                         ) : (
                           <Typography>
-                            {/* {currentUser?.region?.regionName ??
-                              "No region added"} */}
+                            {userRegion?.regionName ?? "No region added"}
                           </Typography>
                         )}
                         <Box
