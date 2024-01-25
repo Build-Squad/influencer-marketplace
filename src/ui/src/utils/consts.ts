@@ -41,3 +41,9 @@ export const ROLE_NAME = {
   INFLUENCER: "influencer",
   BUSINESS_OWNER: "business_owner",
 }
+
+export const MESSAGE_STATUS = {
+  READ: "read",
+  SENT: "sent",
+  DELIVERED: "delivered",
+};

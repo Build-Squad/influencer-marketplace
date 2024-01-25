@@ -1,7 +1,6 @@
 from unicodedata import category
 from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
-from uuid import UUID
 
 from core.serializers import LanguageMasterSerializer
 from orders.models import Order, OrderItem
@@ -185,7 +184,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TwitterReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = TwitterAccount
-        fields = ("id", "twitter_id", "name", "user_name")
+        fields = ("id", "twitter_id", "name", "user_name", "profile_image_url")
 
 
 class InfluencerSerializer(serializers.ModelSerializer):

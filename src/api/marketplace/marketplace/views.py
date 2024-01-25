@@ -68,32 +68,34 @@ def twitterLoginCallback(request):
 
 # Helper functions
 def authenticateUser(authorization_response_url):
-    try:
-        access_token_obj = oauth2_user_handler.fetch_token(authorization_response_url)
-        access_token = access_token_obj["access_token"]
-
-        client = Client(access_token)
-
-        userData = client.get_me(
-            user_auth=False,
-            user_fields=[
-                "description",
-                "profile_image_url",
-                "public_metrics",
-                "verified",
-                "created_at",
-                "location",
-                "url",
-            ],
-        ).data
-        logger.info("Twitter User Authenticated", userData)
-        return {"userData": userData, "access_token": access_token}
-
-    except Exception as e:
-        logger.error("Error authenticating User -", e)
-        return HttpResponseRedirect(
-            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
-        )
+    max_attempts = 4
+    attempt = 0
+    while attempt < max_attempts:
+        try:
+            access_token_obj = oauth2_user_handler.fetch_token(authorization_response_url)
+            access_token = access_token_obj["access_token"]
+            client = Client(access_token)
+            userData = client.get_me(
+                user_auth=False,
+                user_fields=[
+                    "description",
+                    "profile_image_url",
+                    "public_metrics",
+                    "verified",
+                    "created_at",
+                    "location",
+                    "url",
+                ],
+            ).data
+            logger.info("Twitter User Authenticated", userData)
+            return {"userData": userData, "access_token": access_token}
+        except Exception as e:
+            attempt += 1
+            logger.error(f"Error authenticating User - Attempt {attempt}/{max_attempts}:", e)
+    # If authentication fails after max_attempts, redirect to an error page
+    return HttpResponseRedirect(
+        config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
+    )
 
 
 def createUser(userData, access_token, role):

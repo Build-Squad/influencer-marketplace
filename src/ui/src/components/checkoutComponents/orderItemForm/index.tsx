@@ -202,6 +202,27 @@ export default function OrderItemForm({
                         borderRadius: 3,
                       },
                     }}
+                    InputProps={{
+                      inputProps: {
+                        maxLength: formFields?.max,
+                      },
+                    }}
+                    helperText={
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        {formFields?.max
+                          ? `${
+                              formFields?.value?.length
+                                ? formFields?.value?.length
+                                : 0
+                            }/${formFields?.max}`
+                          : ""}
+                      </Box>
+                    }
                   />
                 )}
                 {formFields?.field_type === "long_text" && (
@@ -245,6 +266,27 @@ export default function OrderItemForm({
                         borderRadius: 3,
                       },
                     }}
+                    InputProps={{
+                      inputProps: {
+                        maxLength: formFields?.max,
+                      },
+                    }}
+                    helperText={
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        {formFields?.max
+                          ? `${
+                              formFields?.value?.length
+                                ? formFields?.value?.length
+                                : 0
+                            }/${formFields?.max}`
+                          : ""}
+                      </Box>
+                    }
                   />
                 )}
                 {formFields?.field_type === "date_time" && (
