@@ -53,6 +53,10 @@ export default function Explore({}: Props) {
   });
 
   useEffect(() => {
+    getInfluencers();
+  }, [pagination.current_page_number]);
+
+  useEffect(() => {
     let filterData: any = localStorage.getItem("filterData");
     filterData = filterData ? JSON.parse(filterData) : null;
 
@@ -66,12 +70,12 @@ export default function Explore({}: Props) {
     const { isSuccess, data, message } = await getService(
       "/account/twitter-account/",
       {
-        page_number: pagination.current_page_number,
-        page_size: pagination.current_page_size,
+        page_number: pagination?.current_page_number,
+        page_size: pagination?.current_page_size,
         ...filterData,
-        regions: filterData.regions.map((item: any) => item.regionName),
-        categories: filterData.categories.map((item: any) => item.name),
-        serviceTypes: filterData.serviceTypes.map((item: any) => item.name),
+        regions: filterData?.regions?.map((item: any) => item.regionName),
+        categories: filterData?.categories?.map((item: any) => item.name),
+        serviceTypes: filterData?.serviceTypes?.map((item: any) => item.name),
       }
     );
     if (isSuccess) {
