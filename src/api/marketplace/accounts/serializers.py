@@ -2,11 +2,12 @@ from unicodedata import category
 from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
 
-from core.serializers import LanguageMasterSerializer
+from core.serializers import LanguageMasterSerializer, RegionMasterSerializer
 from orders.models import Order, OrderItem
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
+    AccountRegion,
     TwitterAccount,
     CategoryMaster,
     AccountCategory,
@@ -128,6 +129,12 @@ class AccountLanguageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class AccountRegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccountRegion
+        fields = "__all__"
+
+
 class WalletProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = WalletProvider
@@ -165,6 +172,9 @@ class UserSerializer(serializers.ModelSerializer):
     )
     username = serializers.CharField(required=False)
     wallets = WalletSerializer(many=True, read_only=True, source="wallet_user_id")
+    region = AccountRegionSerializer(
+        read_only=True, source="region_user_account", many=True
+    )
 
     class Meta:
         model = User

@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import SET_NULL
 from django.dispatch import receiver
-from core.models import Currency, LanguageMaster
+from core.models import Currency, LanguageMaster, RegionMaster
 from django.db.models.signals import post_save
 from core.models import Country
 import uuid
@@ -132,6 +132,36 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class AccountRegion(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="Account Region ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    user_account = models.ForeignKey(
+        User,
+        related_name="region_user_account",
+        on_delete=SET_NULL,
+        null=True,
+        blank=True,
+        unique=True,
+    )
+    region = models.ForeignKey(
+        RegionMaster,
+        related_name="region_master_id",
+        on_delete=SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        db_table = "account_region"
+
+    def __str__(self):
+        return self.region.regionName
 
 
 class BusinessAccountMetaData(models.Model):

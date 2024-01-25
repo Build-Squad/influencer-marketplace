@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    AccountRegionList,
     OTPAuth,
     OTPVerification,
     TopInfluencers,
@@ -42,6 +43,9 @@ urlpatterns = [
 
     path("account-category/", AccountCategoryList.as_view(), name="account-category-list"),
     path("account-category/<uuid:pk>/", AccountCategoryDetail.as_view(), name="account-category-detail"),
+
+
+    path("account-region/", AccountRegionList.as_view(), name="account-region-list"),
 
 
     path("user/", UserList.as_view(), name="user-list"),

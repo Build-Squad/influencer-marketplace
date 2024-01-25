@@ -2,9 +2,14 @@ from marketplace.services import Pagination, handleServerException, handleNotFou
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Country, Currency, LanguageMaster
+from .models import Country, Currency, LanguageMaster, RegionMaster
 from django.db.models import Q
-from .serializers import CountrySerializer, CurrencySerializer, LanguageMasterSerializer
+from .serializers import (
+    CountrySerializer,
+    CurrencySerializer,
+    LanguageMasterSerializer,
+    RegionMasterSerializer,
+)
 
 
 class CountryListView(APIView):
@@ -145,5 +150,24 @@ class LanguageDetailView(APIView):
             )
         except LanguageMaster.DoesNotExist:
             return handleNotFound()
+        except Exception as e:
+            return handleServerException(e)
+
+
+class RegionListView(APIView):
+    def get(self, request):
+        try:
+            regions = RegionMaster.objects.all()
+            pagination = Pagination(regions, request)
+            serializer = RegionMasterSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Regions retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             return handleServerException(e)

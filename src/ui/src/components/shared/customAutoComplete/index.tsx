@@ -1,8 +1,10 @@
 "use client";
 
 import { getService } from "@/src/services/httpServices";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, Checkbox, TextField, Typography } from "@mui/material";
 import React from "react";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 
 type CustomAutoCompleteProps = {
   apiEndpoint: string;
@@ -23,6 +25,9 @@ type CustomAutoCompleteProps = {
   customFilter?: object;
   size?: "small" | "medium";
 };
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" color="secondary" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" color="secondary" />;
 
 const CustomAutoComplete = ({
   apiEndpoint,
@@ -144,8 +149,31 @@ const CustomAutoComplete = ({
     }
   }, [value]);
 
+  const getRenderString = (tagValue: any, getTagProps: any) => {
+    let text = "";
+    tagValue.map((option: any, index: any) => {
+      text +=
+        getOptionLabel &&
+        getOptionLabel(option) + (index == tagValue.length - 1 ? "" : ", ");
+    });
+
+    return (
+      <Typography
+        sx={{
+          ml: 1,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {text}
+      </Typography>
+    );
+  };
+
   return isMulti ? (
     <Autocomplete
+      key={value}
       multiple={true}
       value={value}
       options={options}
@@ -177,6 +205,18 @@ const CustomAutoComplete = ({
           />
         );
       }}
+      renderOption={(props, option, { selected }) => (
+        <li {...props}>
+          <Checkbox
+            icon={icon}
+            checkedIcon={checkedIcon}
+            style={{ marginRight: 8 }}
+            checked={selected}
+          />
+          {getOptionLabel && getOptionLabel(option)}
+        </li>
+      )}
+      renderTags={getRenderString}
       onChange={(event, value) => handleSelect(value)}
       onScroll={handleScroll}
     />
