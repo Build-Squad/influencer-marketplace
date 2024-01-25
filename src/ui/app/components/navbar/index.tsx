@@ -10,7 +10,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import LoginMenu from "../loginMenu";
 
-import XfluencerLogo from "@/public/svg/XFluencer_Logo_Beta.svg";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
 import MessagesIcon from "@/public/svg/Messages.svg";
