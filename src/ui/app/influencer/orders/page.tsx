@@ -92,6 +92,7 @@ export default function Orders() {
       field: "order_code",
       headerName: "Order ID",
       flex: 1,
+      renderHeader: () => <Typography variant="h6">Order ID</Typography>,
     },
     {
       field: "buyer__username",
