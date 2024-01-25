@@ -10,6 +10,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import LoginMenu from "../loginMenu";
 
+import XfluencerLogo from "@/public/svg/XFluencer_Logo_Beta.svg";
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
 import MessagesIcon from "@/public/svg/Messages.svg";
@@ -235,9 +236,9 @@ export default function Navbar({
       >
         <Box sx={{ width: "33%" }}>
           <Image
-            src={"/XFluencer_logo.png"}
-            width="150"
-            height="20"
+            src={XfluencerLogo}
+            width={175}
+            height={30}
             alt="bgimg"
             onClick={() => {
               router.push("/");
