@@ -122,7 +122,7 @@ const ProfileLayout = ({
     if (isSuccess) {
       setRegions(data?.data);
     } else {
-      notification(message ? message : "Error fetching Regions", "error");
+      // notification(message ? message : "Error fetching Regions", "error");
     }
   };
 
