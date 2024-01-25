@@ -13,9 +13,10 @@ import { useRouter } from "next/navigation";
 
 type Props = {
   influencer: TopInfluencersType;
+  sx?: any;
 };
 
-export default function InfluencersCards({ influencer }: Props) {
+export default function InfluencersCards({ influencer, sx = {} }: Props) {
   const router = useRouter();
   return (
     <Grid
@@ -25,7 +26,7 @@ export default function InfluencersCards({ influencer }: Props) {
       md={2.8}
       lg={2.8}
       key={influencer?.twitterUsername}
-      sx={{ minWidth: "320px" }}
+      sx={sx}
     >
       <Card
         sx={{
