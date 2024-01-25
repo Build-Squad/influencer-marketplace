@@ -81,9 +81,21 @@ export default function InfluencersCards({ influencer }: Props) {
             <Typography variant="subtitle1" fontWeight={"bold"}>
               Services:
             </Typography>
-            {influencer?.services.map((ser) => {
-              return <Chip key={ser} label={ser} size="small" />;
-            })}
+            {influencer?.services.length > 2 ? (
+              <>
+                <Box sx={{ display: "flex" }}>
+                  <Box sx={{ flex: 2 }}></Box>
+                  <Box></Box>
+                </Box>
+                <Chip key={0} label={influencer?.services[0]} size="small" />
+                <Chip key={2} label={influencer?.services[1]} size="small" />
+                <Typography>+{influencer?.services.length - 2} more</Typography>
+              </>
+            ) : (
+              influencer?.services.map((ser, index) => {
+                return <Chip key={ser} label={ser} size="small" />;
+              })
+            )}
           </Box>
 
           <Box

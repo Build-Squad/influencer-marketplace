@@ -58,34 +58,35 @@ export default function FiltersComponent({
           size="medium"
         />
       );
-      case "REGION":
-        return (
-          <CustomAutoComplete
-            isMulti={true}
-            sx={styles.inputBoxBorderStyles}
-            apiEndpoint="/core/regions-master/"
-            label="Region"
-            value={formik.values.regions}
-            helperText="Enter keywords for Region"
-            onChange={(value: any) => {
-              formik.setFieldValue("regions", value);
-            }}
-            onClear={() => {
-              formik.setFieldValue("regions", []);
-            }}
-            getOptionLabel={(option) => {
-              if (typeof option === "object" && option) {
-                if ("regionName" in option) {
-                  return option.regionName as string;
-                } else {
-                  return "";
-                }
+    case "REGION":
+      return (
+        <CustomAutoComplete
+          isMulti={true}
+          sx={styles.inputBoxBorderStyles}
+          apiEndpoint="/core/regions-master/"
+          label="Region"
+          value={formik.values.regions}
+          helperText="Enter keywords for Region"
+          onChange={(value: any) => {
+            formik.setFieldValue("regions", value);
+          }}
+          onClear={() => {
+            formik.setFieldValue("regions", []);
+          }}
+          getOptionLabel={(option) => {
+            if (typeof option === "object" && option) {
+              if ("regionName" in option) {
+                return option.regionName as string;
               } else {
                 return "";
               }
-            }}
-          />
-        );
+            } else {
+              return "";
+            }
+          }}
+          size="medium"
+        />
+      );
     case "SERVICES":
       return (
         <CustomAutoComplete
