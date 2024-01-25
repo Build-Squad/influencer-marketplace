@@ -289,10 +289,7 @@ export default function Orders() {
     <Grid container sx={{ backgroundColor: "#FAFAFA", minHeight: "100vh" }}>
       <Grid
         item
-        xs={9}
-        md={9}
-        sm={9}
-        lg={9}
+        xs={selectedOrder ? 9 : 12}
         sx={{ padding: "16px 20px 0 40px" }}
       >
         <Box
@@ -370,6 +367,7 @@ export default function Orders() {
           border: "1px solid #D3D3D3",
           backgroundColor: "white",
           borderTop: "none",
+          display: selectedOrder ? "block" : "none",
         }}
       >
         <Box
