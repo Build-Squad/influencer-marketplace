@@ -116,7 +116,7 @@ const CustomAutoComplete = ({
     search,
     pagination.current_page_size,
     pagination.current_page_number,
-    customFilter,
+    // customFilter,
   ]); // Add customFilter to the dependency array
 
   React.useEffect(() => {
@@ -133,7 +133,7 @@ const CustomAutoComplete = ({
       getOptions();
     }, 500);
     return () => clearTimeout(timeout);
-  }, [search, customFilter]); // Remove pagination from the dependency array
+  }, [search]); // Remove pagination from the dependency array
 
   //
 
