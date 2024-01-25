@@ -44,7 +44,7 @@ export default function WalletConnectModal({
   connect = false,
   onlyAddress = false,
 }: WalletConnectModalProps) {
-  const { publicKey, wallet } = useWallet();
+  const { publicKey, wallet, wallets } = useWallet();
   const dispatch = useAppDispatch();
   const [rawWalletAddress, setRawWalletAddress] = React.useState<string>("");
 
@@ -143,17 +143,24 @@ export default function WalletConnectModal({
               alignItems: "center",
             }}
           >
-            <WalletMultiButtonDynamic
-              color="secondary"
-              variant="outlined"
-              sx={{
-                borderRadius: 8,
-                "& .MuiButton-root": {
+            {wallets?.length > 0 ? (
+              <WalletMultiButtonDynamic
+                color="secondary"
+                variant="outlined"
+                sx={{
                   borderRadius: 8,
-                  color: "#ffffff",
-                },
-              }}
-            />
+                  "& .MuiButton-root": {
+                    borderRadius: 8,
+                    color: "#ffffff",
+                  },
+                }}
+              />
+            ) : (
+              <Typography variant="subtitle1" sx={{ textAlign: "center" }}>
+                {` No Solana Wallets Found, please install a wallet first (Eg:
+                Phantom, Solflare, etc.)`}
+              </Typography>
+            )}
           </Box>
         </Grid>
         <Grid
