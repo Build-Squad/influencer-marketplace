@@ -68,7 +68,7 @@ def twitterLoginCallback(request):
 
 # Helper functions
 def authenticateUser(authorization_response_url):
-    max_attempts = 3
+    max_attempts = 4
     attempt = 0
     while attempt < max_attempts:
         try:
