@@ -44,12 +44,13 @@ def send_tweet(order_item_id):
     except OrderItem.DoesNotExist:
         raise Exception('Order item does not exist')
 
+    # Ensure that the order item is in finalized status
+    if order_item.status != 'finalized':
+        raise Exception('Order item is not in finalized status')
+    
     try:
-        # Get the order
-        order = Order.objects.get(id=order_item.order_id)
-
         # Get the influencer
-        influencer = User.objects.get(id=order.package.influencer.id)
+        influencer = User.objects.get(id=order_item.package.influencer.id)
 
         # Get the twitter account
         twitter_account = TwitterAccount.objects.get(
