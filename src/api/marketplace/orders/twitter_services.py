@@ -104,7 +104,6 @@ def schedule_tweet(order_item_id):
         if delay_until_publish < 0:
             raise Exception('Publish date is in the past')
 
-        print("Here", delay_until_publish)
         # Schedule the task
         send_tweet.apply_async(
             args=[order_item_id], countdown=delay_until_publish)
