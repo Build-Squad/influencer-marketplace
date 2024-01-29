@@ -1,8 +1,10 @@
-import requests
-import json
-
 from accounts.models import TwitterAccount, User
 from orders.models import Order, OrderItem, OrderItemMetaData
+
+from tweepy import Client
+
+from decouple import config
+
 
 """
 Sends a tweet for a given order item.
@@ -16,26 +18,13 @@ Returns:
 Raises:
 - Exception: If the order item does not exist or there is an error publishing the tweet.
 
-Successful Twitter API Response structure:
-    {
-      "data": {
-        "id": "",
-        "text": ""
-      }
-    }
-    
-Unsuccessful Twitter API Response structure:
-    {
-      "title": "Unauthorized",
-      "type": "about:blank",
-      "status": 401,
-      "detail": "Unauthorized"
-  }
-
 """
 
 TWITTER_POST_TWITTER_URL = 'https://api.twitter.com/2/tweets'
-
+CONSUMER_KEY = config("CONSUMER_KEY")
+CONSUMER_SECRET = config("CONSUMER_SECRET")
+ACCESS_TOKEN = config("ACCESS_TOKEN")
+ACCESS_SECRET = config("ACCESS_SECRET")
 
 def send_tweet(order_item_id):
     try:
@@ -73,27 +62,19 @@ def send_tweet(order_item_id):
     if not text:
         raise Exception('No content for tweet')
 
-    payload = json.dumps({
-        "text": text,
-    })
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + ACCESS_CODE,
-    }
+    client = Client(bearer_token=ACCESS_CODE,
+                    consumer_key=CONSUMER_KEY,
+                    consumer_secret=CONSUMER_SECRET,
+                    access_token=ACCESS_TOKEN,
+                    access_token_secret=ACCESS_SECRET
+                    )
+    try:
+        res = client.create_tweet(text=text)
 
-    response = requests.request(
-        "POST", TWITTER_POST_TWITTER_URL, headers=headers, data=payload)
-
-    if response.status_code == 201:
-        # Get the tweet id
-        tweet_id = response.json()['data']['id']
-
-        # Update the order item
+        tweet_id = res.data['id']
         order_item.published_tweet_id = tweet_id
         order_item.status = 'published'
         order_item.save()
-
         return True
-    else:
-        error_message = response.json().get('detail', 'Unknown error')
-        raise Exception('Error publishing tweet: ' + error_message)
+    except Exception as e:
+        raise Exception(str(e))
