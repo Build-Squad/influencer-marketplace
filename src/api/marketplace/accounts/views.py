@@ -513,7 +513,6 @@ class AccountRegionList(APIView):
                     status=status.HTTP_201_CREATED,
                 )
             else:
-                print(f"Serializer errors: {serializer.errors}")
                 return handleBadRequest(serializer.errors)
 
         except Exception as e:

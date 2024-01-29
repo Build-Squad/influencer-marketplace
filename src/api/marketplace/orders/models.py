@@ -68,7 +68,9 @@ class OrderItem(models.Model):
         ('in_progress', 'in_progress'),
         ('completed', 'completed'),
         ('cancelled', 'cancelled'),
-        ('rejected', 'rejected')
+        ('rejected', 'rejected'),
+        ('finalized', 'finalized'),
+        ('published', 'published'),
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='OrderItem', default=uuid.uuid4, editable=False)
@@ -85,6 +87,9 @@ class OrderItem(models.Model):
     platform_fee = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    published_tweet_id = models.CharField(
+        max_length=100, blank=True, null=True)
+    publish_date = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = "order_item" 
@@ -141,6 +146,7 @@ class OrderItemMetaData(models.Model):
     max = models.CharField(max_length=100, blank=True, null=True)
     placeholder = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(blank=True, null=True)
+    field_name = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_item_meta_data"
