@@ -69,7 +69,7 @@ def send_tweet(order_item_id):
                     access_token_secret=ACCESS_SECRET
                     )
     try:
-        res = client.create_tweet(text=text)
+        res = client.create_tweet(text=text, user_auth=False)
 
         tweet_id = res.data['id']
         order_item.published_tweet_id = tweet_id
