@@ -1,6 +1,12 @@
 version: '3'
 
 services:
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
   api:
     build:
       context: ./src/api/marketplace
@@ -53,3 +59,25 @@ services:
       - "5432:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  celery-worker:
+    build:
+      context: ./src/api/marketplace
+    volumes:
+      - type: bind
+        source: ./src/api/marketplace
+        target: /api/marketplace
+        consistency: cached
+      - type: volume
+        target: /api/marketplace/venv
+        consistency: cached
+    depends_on:
+      - api
+      - redis
+    environment:
+      - POSTGRES_NAME=marketplace
+      - POSTGRES_USER=mp_dev
+      - POSTGRES_PASSWORD=xsdrt1768
+      - DJANGO_SETTINGS_MODULE=marketplace.settings
+      - PYTHONPATH=/api/marketplace
+    command: celery -A marketplace worker -l DEBUG
