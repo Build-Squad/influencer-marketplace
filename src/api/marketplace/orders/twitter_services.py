@@ -5,6 +5,10 @@ from tweepy import Client
 
 from decouple import config
 
+from celery import shared_task
+from datetime import datetime
+from django.utils import timezone
+
 
 """
 Sends a tweet for a given order item.
@@ -26,6 +30,8 @@ CONSUMER_SECRET = config("CONSUMER_SECRET")
 ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 
+
+@shared_task
 def send_tweet(order_item_id):
     try:
         # Get order item
@@ -33,10 +39,6 @@ def send_tweet(order_item_id):
     except OrderItem.DoesNotExist:
         raise Exception('Order item does not exist')
 
-    # Ensure that the order item is in finalized status
-    if order_item.status != 'finalized':
-        raise Exception('Order item is not in finalized status')
-    
     try:
         # Get the influencer
         influencer = User.objects.get(id=order_item.package.influencer.id)
@@ -70,11 +72,40 @@ def send_tweet(order_item_id):
                     )
     try:
         res = client.create_tweet(text=text, user_auth=False)
-
         tweet_id = res.data['id']
         order_item.published_tweet_id = tweet_id
         order_item.status = 'published'
         order_item.save()
-        return True
+    except Exception as e:
+        raise Exception(str(e))
+
+    return True
+
+
+def schedule_tweet(order_item_id):
+    try:
+        # Get order item
+        order_item = OrderItem.objects.get(id=order_item_id)
+    except OrderItem.DoesNotExist:
+        raise Exception('Order item does not exist')
+
+    try:
+
+        # Ensure that the order item is in finalized status
+        if order_item.status != 'finalized':
+            raise Exception('Order item is not in finalized status')
+
+        # Get the publish_date
+        publish_date = order_item.publish_date
+
+        # Convert publish_date to UTC if it's not already
+        if timezone.is_naive(publish_date):
+            publish_date = timezone.make_aware(publish_date)
+
+        # Calculate the delay until the publish_date
+        delay_until_publish = (publish_date - timezone.now()).total_seconds()
+
+        # Schedule the task
+        send_tweet.apply_async((order_item_id,), countdown=delay_until_publish)
     except Exception as e:
         raise Exception(str(e))
