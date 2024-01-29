@@ -139,7 +139,7 @@ class CreateOrderSerializer(serializers.Serializer):
                 value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
                 span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
                 min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
-                order=service_master_meta_data_item.order)
+                order=service_master_meta_data_item.order, field_name=service_master_meta_data_item.field_name)
         order_item_meta_data.value = meta_data['value']
         order_item_meta_data.save()
 
@@ -182,7 +182,7 @@ class CreateOrderSerializer(serializers.Serializer):
                             value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
                             span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
                             min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
-                            order=service_master_meta_data_item.order)
+                            order=service_master_meta_data_item.order, field_name=service_master_meta_data_item.field_name)
         return order
 
     def update(self, instance, validated_data):
