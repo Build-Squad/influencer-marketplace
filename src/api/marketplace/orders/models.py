@@ -47,7 +47,7 @@ class Order(models.Model):
         db_table = "order" 
 
     def __str__(self):
-        return (self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
+        return self.order_code + " - " + (self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
 
     # Delete only if draft
     def delete(self, *args, **kwargs):
