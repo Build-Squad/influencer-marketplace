@@ -331,3 +331,6 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = "__all__"
+
+class SendTweetSerializer(serializers.Serializer):
+    order_item_id = serializers.UUIDField(required=True)

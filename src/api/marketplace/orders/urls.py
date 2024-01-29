@@ -10,6 +10,7 @@ from .views import (
     OrderItemTrackingDetail,
     OrderListView,
     OrderMessageList,
+    SendTweetView,
     TransactionList,
     TransactionDetail,
     ReviewList,
@@ -48,4 +49,6 @@ urlpatterns = [
 
     path("review/", ReviewList.as_view(), name="review-list"),
     path('review/<uuid:pk>/', ReviewDetail.as_view(), name="reviewt-details"),
+
+    path('send-tweet', SendTweetView.as_view(), name="send-tweet"),
 ]
