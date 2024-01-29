@@ -1,5 +1,5 @@
 from accounts.models import Wallet
-from orders.twitter_services import send_tweet
+from orders.twitter_services import schedule_tweet
 from orders.services import create_notification_for_order
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
@@ -1102,25 +1102,18 @@ class SendTweetView(APIView):
             if serializer.is_valid():
                 # Get the order_item_id
                 order_item_id = serializer.validated_data['order_item_id']
-                res = send_tweet(order_item_id)
-                if res:
-                    return Response(
-                        {
-                            "isSuccess": True,
-                            "data": serializer.data,
-                            "message": "Tweet sent successfully",
-                        },
-                        status=status.HTTP_201_CREATED,
-                    )
-                else:
-                    return Response(
-                        {
-                            "isSuccess": False,
-                            "data": serializer.data,
-                            "message": "Tweet could not be sent",
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+
+                # Schedule the tweet
+                schedule_tweet(order_item_id)
+
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": serializer.data,
+                        "message": "Tweet is scheduled",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
             else:
                 return handleBadRequest(serializer.errors)
         except Exception as e:
