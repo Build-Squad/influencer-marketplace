@@ -90,7 +90,6 @@ def schedule_tweet(order_item_id):
         raise Exception('Order item does not exist')
 
     try:
-
         # Ensure that the order item is in finalized status
         if order_item.status != 'finalized':
             raise Exception('Order item is not in finalized status')
@@ -98,14 +97,16 @@ def schedule_tweet(order_item_id):
         # Get the publish_date
         publish_date = order_item.publish_date
 
-        # Convert publish_date to UTC if it's not already
-        if timezone.is_naive(publish_date):
-            publish_date = timezone.make_aware(publish_date)
-
         # Calculate the delay until the publish_date
         delay_until_publish = (publish_date - timezone.now()).total_seconds()
 
+        # Check if publish_date is in the future
+        if delay_until_publish < 0:
+            raise Exception('Publish date is in the past')
+
+        print("Here", delay_until_publish)
         # Schedule the task
-        send_tweet.apply_async((order_item_id,), countdown=delay_until_publish)
+        send_tweet.apply_async(
+            args=[order_item_id], countdown=delay_until_publish)
     except Exception as e:
         raise Exception(str(e))
