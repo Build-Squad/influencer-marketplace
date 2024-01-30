@@ -1,5 +1,5 @@
 from accounts.models import Wallet
-from orders.twitter_services import schedule_tweet
+from orders.tasks import cancel_tweet, schedule_tweet
 from orders.services import create_notification_for_order
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
@@ -1111,6 +1111,32 @@ class SendTweetView(APIView):
                         "isSuccess": True,
                         "data": serializer.data,
                         "message": "Tweet is scheduled",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class CancelTweetView(APIView):
+    @swagger_auto_schema(request_body=SendTweetSerializer)
+    def post(self, request):
+        try:
+            serializer = SendTweetSerializer(data=request.data)
+            if serializer.is_valid():
+                # Get the order_item_id
+                order_item_id = serializer.validated_data['order_item_id']
+
+                # Schedule the tweet
+                cancel_tweet(order_item_id)
+
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": serializer.data,
+                        "message": "Tweet is cancelled",
                     },
                     status=status.HTTP_201_CREATED,
                 )

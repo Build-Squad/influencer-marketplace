@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    CancelTweetView,
     OrderList,
     OrderDetail,
     OrderItemList,
@@ -51,4 +52,5 @@ urlpatterns = [
     path('review/<uuid:pk>/', ReviewDetail.as_view(), name="reviewt-details"),
 
     path('send-tweet', SendTweetView.as_view(), name="send-tweet"),
+    path('cancel-tweet', CancelTweetView.as_view(), name="cancel-tweet"),
 ]
