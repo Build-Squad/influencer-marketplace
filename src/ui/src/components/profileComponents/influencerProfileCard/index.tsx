@@ -38,6 +38,7 @@ type InfluencerProfileCardProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setOpenWalletConnectModal: React.Dispatch<React.SetStateAction<boolean>>;
   wallets: WalletType[];
+  getWallets: () => Promise<void>;
 };
 
 export default function InfluencerProfileCard({
@@ -50,6 +51,7 @@ export default function InfluencerProfileCard({
   setCategoryOpen,
   setOpenWalletConnectModal,
   wallets,
+  getWallets,
 }: InfluencerProfileCardProps) {
   const chips = [
     {
@@ -391,7 +393,7 @@ export default function InfluencerProfileCard({
                     setOpenWalletConnectModal(true);
                   }}
                 >
-                  Add Wallet
+                  Connect Wallet
                 </Button>
               </Grid>
               <Grid item xs={12}>
@@ -491,7 +493,7 @@ export default function InfluencerProfileCard({
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <WalletActionMenu wallet={wallet} />
+                              <WalletActionMenu userWallet={wallet} getWallets={getWallets} />
                             </TableCell>
                           </TableRow>
                         ))}

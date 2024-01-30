@@ -160,6 +160,7 @@ const ProfileLayout = ({
                 setCategoryOpen={setCategoryOpen}
                 setOpenWalletConnectModal={setOpenWalletConnectModal}
                 wallets={wallets}
+                getWallets={getWallets}
               />
               <Grid item xs={12} md={9} sm={12} lg={9}>
                 <Box
