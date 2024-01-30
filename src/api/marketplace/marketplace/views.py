@@ -127,7 +127,7 @@ def createUser(userData, access_token, role, refresh_token):
             existing_user.access_token = access_token
             # Update the user data
             existing_user.name = userData.name
-            existing_user.refresh_token = refresh_token,
+            existing_user.refresh_token = refresh_token
             existing_user.user_name = userData.username
             existing_user.profile_image_url = userData.profile_image_url
             existing_user.followers_count = userData.public_metrics["followers_count"]
