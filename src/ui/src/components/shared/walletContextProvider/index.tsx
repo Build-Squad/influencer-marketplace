@@ -39,7 +39,7 @@ export default function WalletContextProvider({
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} onError={onError} autoConnect={false}>
+      <WalletProvider wallets={wallets} onError={onError} autoConnect={true}>
         <WalletDialogProvider>{children}</WalletDialogProvider>
       </WalletProvider>
     </ConnectionProvider>
