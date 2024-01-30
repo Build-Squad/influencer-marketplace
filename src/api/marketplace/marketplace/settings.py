@@ -231,6 +231,8 @@ sentry_sdk.init(
     send_default_pii=True
 )
 
+# Celery
+CELERY_BROKER_URL = config('CELERY_BROKER_URL')
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
