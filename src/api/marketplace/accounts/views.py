@@ -1422,14 +1422,34 @@ class WalletConnect(APIView):
             if serializer.is_valid():
                 wallet = self.get_object(request.data["wallet_address_id"])
                 if wallet:
-                    return Response(
-                        {
-                            "isSuccess": False,
-                            "data": None,
-                            "message": "This wallet is already connected with another account on Xfluencer\n Please use another wallet or login with the account that is connected with this wallet",
-                        },
-                        status=status.HTTP_200_OK,
-                    )
+                    if wallet.user_id == request.user_account:
+                        wallet.is_primary = True
+                        wallet.save()
+
+                        # Mark all other wallets as non-primary
+                        added_wallets = Wallet.objects.filter(
+                            user_id=request.user_account)
+                        for added_wallet in added_wallets:
+                            if added_wallet.id != wallet.id:
+                                added_wallet.is_primary = False
+                                added_wallet.save()
+                        return Response(
+                            {
+                                "isSuccess": True,
+                                "data": None,
+                                "message": "Wallet connected successfully",
+                            },
+                            status=status.HTTP_200_OK,
+                        )
+                    else:
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "data": None,
+                                "message": "This wallet is already connected with another account on Xfluencer\n Please use another wallet or login with the account that is connected with this wallet",
+                            },
+                            status=status.HTTP_200_OK,
+                        )
                 else:
                     wallet = serializer.save()
                 # Mark the wallet as primary
