@@ -64,12 +64,11 @@ class Order(models.Model):
 class OrderItem(models.Model):
     
     STATUS_CHOICES = (
-        ('pending', 'pending'),
         ('in_progress', 'in_progress'),
-        ('completed', 'completed'),
         ('cancelled', 'cancelled'),
         ('rejected', 'rejected'),
         ('finalized', 'finalized'),
+        ('scheduled', 'scheduled'),
         ('published', 'published'),
     )
 
@@ -77,7 +76,7 @@ class OrderItem(models.Model):
     service_master = models.ForeignKey(ServiceMaster, related_name='order_item_service_master_id', on_delete=SET_NULL, null=True)
     quantity = models.IntegerField(blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES,
-                              max_length=50, default='pending')
+                              max_length=50, default='in_progress')
     order_id = models.ForeignKey(Order, related_name='order_item_order_id', on_delete=SET_NULL, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='order_item_currency_id', on_delete=SET_NULL, null=True)
@@ -90,6 +89,8 @@ class OrderItem(models.Model):
     published_tweet_id = models.CharField(
         max_length=100, blank=True, null=True)
     publish_date = models.DateTimeField(blank=True, null=True)
+    celery_task_id = models.CharField(
+        max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_item" 
