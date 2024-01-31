@@ -141,13 +141,12 @@ class AccountRegion(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    user_account = models.ForeignKey(
+    user_account = models.OneToOneField(
         User,
         related_name="region_user_account",
         on_delete=SET_NULL,
         null=True,
         blank=True,
-        unique=True,
     )
     region = models.ForeignKey(
         RegionMaster,

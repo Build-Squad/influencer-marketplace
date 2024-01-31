@@ -173,7 +173,7 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False)
     wallets = WalletSerializer(many=True, read_only=True, source="wallet_user_id")
     region = AccountRegionSerializer(
-        read_only=True, source="region_user_account", many=True
+        read_only=True, source="region_user_account"
     )
 
     class Meta:

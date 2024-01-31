@@ -137,7 +137,7 @@ type UserType = {
     id: string;
     region: string;
     user_account: string;
-  }[];
+  };
 };
 
 type ServiceCheckOutType = {
