@@ -40,7 +40,7 @@ def send_tweet(order_item_id):
         raise Exception('Order item does not exist')
 
     if order_item.status != 'scheduled':
-        raise Exception('Order item is not in finalized status')
+        raise Exception('Order item is not in scheduled status')
 
     try:
         # Get the influencer
@@ -100,9 +100,9 @@ def schedule_tweet(order_item_id):
         raise Exception('Order item does not exist')
 
     try:
-        # Ensure that the order item is in finalized status
-        if order_item.status != 'finalized':
-            raise Exception('Order item is not in finalized status')
+        # Ensure that the order item is in accepted status
+        if order_item.status != 'accepted':
+            raise Exception('Order item is not in accepted status')
 
         # Get the publish_date
         publish_date = order_item.publish_date
