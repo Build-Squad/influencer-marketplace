@@ -331,7 +331,11 @@ export default function BusinessProfilePreview({ params }: Props) {
             alignItems={"center"}
           >
             {collaborations.map((inf, index) => (
-              <InfluencersCards influencer={inf} key={index} />
+              <InfluencersCards
+                influencer={inf}
+                key={index}
+                sx={{ minWidth: "320px" }}
+              />
             ))}
           </Grid>
         </Box>

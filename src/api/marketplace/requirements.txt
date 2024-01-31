@@ -18,3 +18,5 @@ drf-yasg==1.21.7
 sentry-sdk==1.38.0
 django-ses==3.5.2
 django-storages==1.14.2
+celery===5.3.6
+redis==5.0.1

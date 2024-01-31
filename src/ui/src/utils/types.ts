@@ -25,6 +25,11 @@ type LanguageType = {
   langNativeName: string;
 };
 
+type RegionType = {
+  id: string;
+  regionName: string;
+};
+
 type ServiceMasterMetaDataType = {
   id: string;
   field_name: string;
@@ -128,6 +133,11 @@ type UserType = {
   role: RoleType;
   twitter_account: TwitterAccountType | null;
   wallets: WalletType[] | null;
+  region?: {
+    id: string;
+    region: string;
+    user_account: string;
+  };
 };
 
 type ServiceCheckOutType = {
@@ -206,6 +216,7 @@ type OrderItemType = {
   platform_price: string;
   order_id?: string;
   order_item_meta_data: OrderItemMetaDataType[];
+  publish_date?: string;
 };
 
 type OrderType = {

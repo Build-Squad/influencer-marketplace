@@ -109,6 +109,7 @@ class OrderItemSerializer(serializers.Serializer):
     service_id = serializers.UUIDField(required=False)
     meta_data = serializers.ListField(child=MetaDataSerializer())
     order_item_id = serializers.UUIDField(required=False)
+    publish_date = serializers.DateTimeField(required=False)
 
 
 class CreateOrderSerializer(serializers.Serializer):
@@ -134,12 +135,20 @@ class CreateOrderSerializer(serializers.Serializer):
             if service_master_meta_data_item is None:
                 raise serializers.ValidationError(
                     {"service_master_meta_data_id": "Service master meta data id not provided.".format(meta_data['service_master_meta_data_id'])})
+                # Create the meta data
             order_item_meta_data = OrderItemMetaData.objects.create(
-                order_item=order_item, label=service_master_meta_data_item.label,
-                value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
-                span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
-                min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
-                order=service_master_meta_data_item.order)
+                order_item=order_item,
+                label=service_master_meta_data_item.label,
+                value=meta_data['value'],
+                field_type=service_master_meta_data_item.field_type,
+                span=service_master_meta_data_item.span,
+                placeholder=service_master_meta_data_item.placeholder,
+                min=service_master_meta_data_item.min,
+                max=service_master_meta_data_item.max,
+                order=service_master_meta_data_item.order,
+                field_name=service_master_meta_data_item.field_name,
+            )
+        # Update the meta data
         order_item_meta_data.value = meta_data['value']
         order_item_meta_data.save()
 
@@ -166,6 +175,7 @@ class CreateOrderSerializer(serializers.Serializer):
                 price=service.price,
                 currency=service.currency,
                 platform_fee=service.platform_fees,
+                publish_date=order_item_data["publish_date"],
             )
 
             service_master_meta_data = (
@@ -182,7 +192,7 @@ class CreateOrderSerializer(serializers.Serializer):
                             value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
                             span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
                             min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
-                            order=service_master_meta_data_item.order)
+                            order=service_master_meta_data_item.order, field_name=service_master_meta_data_item.field_name)
         return order
 
     def update(self, instance, validated_data):
@@ -201,6 +211,10 @@ class CreateOrderSerializer(serializers.Serializer):
                     order_item = OrderItem.objects.get(
                         id=order_item_data["order_item_id"]
                     )
+                    # Update the publish date
+                    if "publish_date" in order_item_data:
+                        order_item.publish_date = order_item_data["publish_date"]
+                        order_item.save()
                 except ObjectDoesNotExist:
                     raise serializers.ValidationError(
                         {
@@ -227,6 +241,7 @@ class CreateOrderSerializer(serializers.Serializer):
                     price=service.price,
                     currency=service.currency,
                     platform_fee=service.platform_fees,
+                    publish_date=order_item_data["publish_date"],
                 )
 
             # Similar to the create method, the meta data will be updated if the order item meta data already exists
@@ -331,3 +346,6 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = "__all__"
+
+class SendTweetSerializer(serializers.Serializer):
+    order_item_id = serializers.UUIDField(required=True)

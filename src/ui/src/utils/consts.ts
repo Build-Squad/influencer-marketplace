@@ -8,6 +8,8 @@ export const ISO_DATE_TIME_FORMAT = "YYYY-MM-DDTHH:mm:ss.SSS";
 
 export const FORM_DATE_FORMAT = "YYYY-MM-DD";
 
+export const FORM_DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+
 export const PACKAGE_STATUS = {
   DRAFT: {
     value: "draft",

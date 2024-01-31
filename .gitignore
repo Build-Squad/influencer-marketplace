@@ -42,3 +42,12 @@ src/api/marketplace/.idea/misc.xml
 src/api/marketplace/.idea/vcs.xml
 src/api/marketplace/.idea/workspace.xml
 src/api/marketplace/marketplace/logs/
+
+# solana
+solana/node_modules/*
+solana/test-ledger/*
+solana/target/debug/*
+solana/.anchor*
+solana/target/release/*
+solana/target/sbf-solana*
+solana/target/deploy*

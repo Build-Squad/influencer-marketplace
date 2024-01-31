@@ -2,6 +2,9 @@ from distutils.util import strtobool
 from http.client import HTTPResponse
 import uuid
 from urllib import request
+
+from django.shortcuts import get_object_or_404
+from core.models import RegionMaster
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
 from marketplace.services import (
@@ -22,6 +25,7 @@ from rest_framework import status
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
+    AccountRegion,
     BusinessAccountMetaData,
     TwitterAccount,
     CategoryMaster,
@@ -34,6 +38,7 @@ from .models import (
     WalletProvider,
 )
 from .serializers import (
+    AccountRegionSerializer,
     BusinessAccountMetaDataSerializer,
     CreateAccountCategorySerializer,
     DeleteAccountCategorySerializer,
@@ -108,7 +113,10 @@ class RoleDetail(APIView):
 class TopInfluencers(APIView):
     def get(self, request):
         try:
-            twitterAccount = TwitterAccount.objects.all().order_by('-followers_count')[:8]
+            twitterAccount = TwitterAccount.objects.filter(
+                user_twitter_account_id__role__name="influencer"
+            ).order_by("-followers_count")[:8]
+
             # Paginate the results
             pagination = Pagination(twitterAccount, request)
             serializer = TwitterAccountSerializer(pagination.getData(), many=True)
@@ -463,6 +471,51 @@ class CategoryMasterDetail(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class AccountRegionList(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=AccountRegionSerializer)
+    def post(self, request):
+        try:
+            user_id = request.data.get("user_id")
+            region_id = request.data.get("region_id")
+
+            # Check if the user already has an AccountRegion
+            account_region = AccountRegion.objects.filter(user_account=user_id).first()
+            if account_region:
+                # If an AccountRegion exists, update the region
+                account_region.region_id = region_id
+                account_region.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": AccountRegionSerializer(account_region).data,
+                        "message": "Account Region updated successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+            # Create a new AccountRegion instance
+            account_region_data = {"user_account": user_id, "region": region_id}
+            serializer = AccountRegionSerializer(data=account_region_data)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": AccountRegionSerializer(serializer.instance).data,
+                        "message": "Account Region created successfully",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+
         except Exception as e:
             return handleServerException(e)
 
@@ -1299,8 +1352,7 @@ class WalletAuth(APIView):
                 wallet.save()
 
                 # Mark all other wallets as non-primary
-                added_wallets = Wallet.objects.filter(
-                    user_id=user)
+                added_wallets = Wallet.objects.filter(user_id=user)
                 for added_wallet in added_wallets:
                     if added_wallet.id != wallet.id:
                         added_wallet.is_primary = False
@@ -1386,8 +1438,7 @@ class WalletConnect(APIView):
                 wallet.save()
 
                 # Mark all other wallets as non-primary
-                added_wallets = Wallet.objects.filter(
-                    user_id=request.user_account)
+                added_wallets = Wallet.objects.filter(user_id=request.user_account)
                 for added_wallet in added_wallets:
                     if added_wallet.id != wallet.id:
                         added_wallet.is_primary = False

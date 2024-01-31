@@ -47,7 +47,7 @@ class Order(models.Model):
         db_table = "order" 
 
     def __str__(self):
-        return (self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
+        return self.order_code + " - " + (self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
 
     # Delete only if draft
     def delete(self, *args, **kwargs):
@@ -64,18 +64,19 @@ class Order(models.Model):
 class OrderItem(models.Model):
     
     STATUS_CHOICES = (
-        ('pending', 'pending'),
         ('in_progress', 'in_progress'),
-        ('completed', 'completed'),
         ('cancelled', 'cancelled'),
-        ('rejected', 'rejected')
+        ('rejected', 'rejected'),
+        ('accepted', 'accepted'),
+        ('scheduled', 'scheduled'),
+        ('published', 'published'),
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='OrderItem', default=uuid.uuid4, editable=False)
     service_master = models.ForeignKey(ServiceMaster, related_name='order_item_service_master_id', on_delete=SET_NULL, null=True)
     quantity = models.IntegerField(blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES,
-                              max_length=50, default='pending')
+                              max_length=50, default='in_progress')
     order_id = models.ForeignKey(Order, related_name='order_item_order_id', on_delete=SET_NULL, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='order_item_currency_id', on_delete=SET_NULL, null=True)
@@ -85,6 +86,11 @@ class OrderItem(models.Model):
     platform_fee = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    published_tweet_id = models.CharField(
+        max_length=100, blank=True, null=True)
+    publish_date = models.DateTimeField(blank=True, null=True)
+    celery_task_id = models.CharField(
+        max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_item" 
@@ -141,6 +147,7 @@ class OrderItemMetaData(models.Model):
     max = models.CharField(max_length=100, blank=True, null=True)
     placeholder = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(blank=True, null=True)
+    field_name = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_item_meta_data"

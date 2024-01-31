@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import SET_NULL
 from django.dispatch import receiver
-from core.models import Currency, LanguageMaster
+from core.models import Currency, LanguageMaster, RegionMaster
 from django.db.models.signals import post_save
 from core.models import Country
 import uuid
@@ -20,6 +20,7 @@ class TwitterAccount(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     user_name = models.CharField(max_length=100, blank=True, null=True)
     access_token = models.CharField(max_length=255, blank=True, null=True)
+    refresh_token = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=255, blank=True, null=True)
     profile_image_url = models.CharField(max_length=255, blank=True, null=True)
     followers_count = models.IntegerField(blank=True, null=True)
@@ -132,6 +133,35 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class AccountRegion(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="Account Region ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    user_account = models.OneToOneField(
+        User,
+        related_name="region_user_account",
+        on_delete=SET_NULL,
+        null=True,
+        blank=True,
+    )
+    region = models.ForeignKey(
+        RegionMaster,
+        related_name="region_master_id",
+        on_delete=SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        db_table = "account_region"
+
+    def __str__(self):
+        return self.region.regionName
 
 
 class BusinessAccountMetaData(models.Model):

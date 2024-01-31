@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Currency, Country, LanguageMaster
+from .models import Currency, Country, LanguageMaster, RegionMaster
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -28,4 +28,10 @@ class CurrencySerializer(serializers.ModelSerializer):
 class LanguageMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = LanguageMaster
+        fields = "__all__"
+
+
+class RegionMasterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegionMaster
         fields = "__all__"

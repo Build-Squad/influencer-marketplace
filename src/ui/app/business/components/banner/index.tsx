@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Grid,
+  InputLabel,
   Switch,
   TextField,
   Typography,
@@ -88,6 +89,7 @@ export default function Banner({}: Props) {
           mt: 5,
           px: 5,
           py: 3,
+          paddingBottom: "12px",
           width: "60%",
           background: "rgba(255, 255, 255, 0.51)",
           borderRadius: "16px",
@@ -100,10 +102,11 @@ export default function Banner({}: Props) {
             container
             spacing={1}
             justifyContent={"space-between"}
-            alignItems={"center"}
+            alignItems={"flex-start"}
           >
             <Grid item xs={6} sm={6} md={6} lg={5}>
               <TextField
+                label="Platform"
                 color="secondary"
                 name="platform"
                 value="Twitter"

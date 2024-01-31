@@ -86,6 +86,7 @@ export default function CheckoutPage() {
     const body = {
       order_items: cart?.orderItems?.map((orderItem) => {
         return {
+          publish_date: orderItem?.publish_date,
           service_id: orderItem?.service_id,
           meta_data: orderItem?.order_item?.order_item_meta_data?.map(
             (metaData) => {
@@ -127,6 +128,7 @@ export default function CheckoutPage() {
         return {
           service_id: orderItem?.service_id,
           order_item_id: orderItem?.order_item?.id,
+          publish_date: orderItem?.publish_date,
           meta_data: orderItem?.order_item?.order_item_meta_data?.map(
             (metaData) => {
               return {

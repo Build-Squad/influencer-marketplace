@@ -90,7 +90,22 @@ const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
             {eachOrderItem?.order_item_meta_data?.map((meta_data: any) => {
               return <ContentTypeComponent meta_data={meta_data} />;
             })}
-
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+            >
+              <Box>
+                <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
+                  Publish Date
+                </Typography>
+                <Typography variant="subtitle1" sx={{ color: "#676767" }}>
+                  {eachOrderItem?.publish_date
+                    ? dayjs(eachOrderItem?.publish_date).format(
+                        DISPLAY_DATE_TIME_FORMAT
+                      )
+                    : "N/A"}
+                </Typography>
+              </Box>
+            </Box>
             <Divider sx={{ my: 2 }} />
           </>
         );

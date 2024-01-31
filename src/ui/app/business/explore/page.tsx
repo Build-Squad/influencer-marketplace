@@ -47,55 +47,36 @@ export default function Explore({}: Props) {
   const formik = useFormik({
     initialValues: ExploreFilterInitialValues,
     onSubmit: (values) => {
-      getInfluencers();
+      getInfluencers(values);
     },
     validationSchema: ExploreFilterSchema,
   });
 
   useEffect(() => {
+    getInfluencers();
+  }, [pagination.current_page_number]);
+
+  useEffect(() => {
     let filterData: any = localStorage.getItem("filterData");
     filterData = filterData ? JSON.parse(filterData) : null;
-    // if (filterData) {
-    //   formik.setValues(filterData);
-    // }
-    // Causing a bug, even tho the value of formik data is changed, the function getInfluencers is still accessing the old values
-    //  Temporary fix is passing the values inside filterData if any.
 
     if (filterData) {
-      formik.setValues(filterData);
+      formik.setFieldValue("categories", filterData?.categories);
     }
-
     getInfluencers(filterData);
-
-    localStorage.removeItem("filterData");
   }, []);
 
   const getInfluencers = async (filterData?: any) => {
-    // Temporary fix
-    const filtersObject = filterData
-      ? {
-          page_number: pagination.current_page_number,
-          page_size: pagination.current_page_size,
-          ...filterData,
-          languages: filterData.languages.map(
-            (item: any) => item.langEnglishName
-          ),
-          categories: filterData.categories.map((item: any) => item.name),
-          serviceTypes: filterData.serviceTypes.map((item: any) => item.name),
-        }
-      : {
-          page_number: pagination.current_page_number,
-          page_size: pagination.current_page_size,
-          ...formik.values,
-          languages: formik.values.languages.map(
-            (item) => item.langEnglishName
-          ),
-          categories: formik.values.categories.map((item) => item.name),
-          serviceTypes: formik.values.serviceTypes.map((item) => item.name),
-        };
     const { isSuccess, data, message } = await getService(
       "/account/twitter-account/",
-      filtersObject
+      {
+        page_number: pagination?.current_page_number,
+        page_size: pagination?.current_page_size,
+        ...filterData,
+        regions: filterData?.regions?.map((item: any) => item.regionName),
+        categories: filterData?.categories?.map((item: any) => item.name),
+        serviceTypes: filterData?.serviceTypes?.map((item: any) => item.name),
+      }
     );
     if (isSuccess) {
       const filteredData = data?.data?.map((inf: any) => {

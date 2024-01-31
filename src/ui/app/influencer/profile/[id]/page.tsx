@@ -5,7 +5,7 @@ import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
-import { getService } from "@/src/services/httpServices";
+import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -20,6 +20,8 @@ import {
   Grid,
   IconButton,
   Link,
+  MenuItem,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -57,39 +59,8 @@ const ProfileLayout = ({
   const [openWalletConnectModal, setOpenWalletConnectModal] =
     React.useState<boolean>(false);
   const [wallets, setWallets] = React.useState<WalletType[]>([]);
-
-  const getUserDetails = async () => {
-    const { isSuccess, message, data } = await getService(
-      `/account/user/${params.id}/`
-    );
-    if (isSuccess) {
-      setCurrentUser(data?.data);
-    } else {
-      notification(message ? message : "Error fetching user details", "error");
-    }
-  };
-
-  const getWallets = async () => {
-    const { isSuccess, message, data } = await getService(`/account/wallets/`);
-    if (isSuccess) {
-      setWallets(data?.data);
-    }
-  };
-
-  const chips = [
-    {
-      label: "Followers",
-      attribute: currentUser?.twitter_account?.followers_count,
-    },
-    {
-      label: "Following",
-      attribute: currentUser?.twitter_account?.following_count,
-    },
-    {
-      label: "Tweets",
-      attribute: currentUser?.twitter_account?.tweet_count,
-    },
-  ];
+  const [regions, setRegions] = React.useState<RegionType[]>([]);
+  const [userRegion, setUserRegion] = React.useState<RegionType>();
 
   useEffect(() => {
     if (params.id) {
@@ -112,6 +83,86 @@ const ProfileLayout = ({
       getWallets();
     }
   }, [openWalletConnectModal, params.id, loggedInUser?.id]);
+
+  useEffect(() => {
+    getRegions();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser?.region) {
+      const regionOfUser = regions.find(
+        (item) => item.id === currentUser?.region?.region
+      );
+      setUserRegion(regionOfUser);
+    }
+  }, [currentUser]);
+
+  const getUserDetails = async () => {
+    const { isSuccess, message, data } = await getService(
+      `/account/user/${params.id}/`
+    );
+    if (isSuccess) {
+      setCurrentUser(data?.data);
+    } else {
+      notification(message ? message : "Error fetching user details", "error");
+    }
+  };
+
+  const getWallets = async () => {
+    const { isSuccess, message, data } = await getService(`/account/wallets/`);
+    if (isSuccess) {
+      setWallets(data?.data);
+    }
+  };
+
+  const getRegions = async () => {
+    const { isSuccess, message, data } = await getService(
+      `/core/regions-master/`
+    );
+    if (isSuccess) {
+      setRegions(data?.data);
+    } else {
+      // notification(message ? message : "Error fetching Regions", "error");
+    }
+  };
+
+  const chips = [
+    {
+      label: "Followers",
+      attribute: currentUser?.twitter_account?.followers_count,
+    },
+    {
+      label: "Following",
+      attribute: currentUser?.twitter_account?.following_count,
+    },
+    {
+      label: "Tweets",
+      attribute: currentUser?.twitter_account?.tweet_count,
+    },
+  ];
+
+  const handleRegionSelect = async (e: any) => {
+    const selectedRegion: RegionType | undefined = regions.find(
+      (region) => region.regionName === e.target.value
+    );
+
+    const { isSuccess, data, message } = await postService(
+      "/account/account-region/",
+      {
+        user_id: currentUser?.id,
+        region_id: selectedRegion?.id,
+      }
+    );
+    if (isSuccess) {
+      setUserRegion(selectedRegion);
+      notification(message);
+    } else {
+      notification(
+        message ? message : "Something went wrong, please try again later",
+        "error"
+      );
+    }
+  };
 
   return (
     <Box
@@ -232,92 +283,6 @@ const ProfileLayout = ({
                         @{currentUser?.twitter_account?.user_name}
                       </Link>
                     </Typography>
-                    {/* <Typography
-                      sx={{
-                        alignItems: "center",
-                        justifyContent: "center",
-                        display: "flex",
-                        textAlign: "center",
-                        fontSize: "16px",
-                        lineHeight: "19px",
-                        color: "#000",
-                        mt: 1,
-                      }}
-                    >
-                      <LocationOnIcon
-                        sx={{ fontSize: "16px", color: "#000", ml: 1 }}
-                      />{" "}
-                      {currentUser?.twitter_account?.location}
-                    </Typography> */}
-                    {/* {currentUser?.twitter_account?.url && (
-                      <Typography
-                        sx={{
-                          alignItems: "center",
-                          justifyContent: "center",
-                          display: "flex",
-                          textAlign: "center",
-                          fontSize: "16px",
-                          lineHeight: "19px",
-                          color: "#000",
-                          mt: 1,
-                        }}
-                      >
-                        <OpenInNewIcon
-                          sx={{ fontSize: "16px", color: "#000", ml: 1 }}
-                        />{" "}
-                        <Link
-                          href={currentUser?.twitter_account?.url}
-                          target="_blank"
-                          component={NextLink}
-                          sx={{
-                            color: "#000",
-                            ml: 1,
-                            textDecoration: "none",
-                            "&:hover": {
-                              textDecoration: "underline",
-                            },
-                          }}
-                        >
-                          Website
-                        </Link>
-                      </Typography>
-                    )} */}
-                    {/* {params?.id !== loggedInUser?.id && (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          mt: 2,
-                        }}
-                      >
-                        <Button
-                          variant="outlined"
-                          color="secondary"
-                          startIcon={<TelegramIcon />}
-                          sx={{
-                            borderRadius: "20px",
-                            mx: 2,
-                          }}
-                          fullWidth
-                        >
-                          Message
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="secondary"
-                          startIcon={<BookmarkIcon />}
-                          sx={{
-                            borderRadius: "20px",
-                            mx: 2,
-                          }}
-                          fullWidth
-                        >
-                          Save
-                        </Button>
-                      </Box>
-                    )} */}
                     <Box
                       sx={{
                         display: "flex",
@@ -405,9 +370,46 @@ const ProfileLayout = ({
                             : "No Bio Added"}
                         </Typography>
                       </Box>
-                      <Box>
+                      <Box sx={{ mt: 2 }}>
+                        <Typography
+                          sx={{
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Region
+                        </Typography>
+                        {params?.id === loggedInUser?.id ? (
+                          <>
+                            <Select
+                              key={userRegion?.id}
+                              size="small"
+                              fullWidth
+                              value={userRegion?.regionName}
+                              onChange={handleRegionSelect}
+                              sx={{
+                                ".MuiOutlinedInput-notchedOutline": {
+                                  border: "1px solid black",
+                                  borderRadius: "24px",
+                                },
+                              }}
+                            >
+                              {regions.map((item: RegionType) => {
+                                return (
+                                  <MenuItem value={item?.regionName}>
+                                    <em>{item?.regionName}</em>
+                                  </MenuItem>
+                                );
+                              })}
+                            </Select>
+                          </>
+                        ) : (
+                          <Typography>
+                            {userRegion?.regionName ?? "No region added"}
+                          </Typography>
+                        )}
                         <Box
                           sx={{
+                            mt: 1,
                             display: "flex",
                             flexDirection: "row",
                             alignItems: "center",

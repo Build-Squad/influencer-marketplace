@@ -1,7 +1,7 @@
 import { object, number, string, array } from "yup";
 
 interface BannerFilterType {
-  languages: Array<LanguageType>;
+  regions: Array<RegionType>;
   serviceTypes: Array<ServiceMasterType>;
   categories: Array<CategoryMasterType>;
   upperPriceLimit: number | null;
@@ -21,7 +21,7 @@ const BannerFilterSchema = object({
 });
 
 const BannerFilterInitialValues: BannerFilterType = {
-  languages: [],
+  regions: [],
   serviceTypes: [],
   categories: [],
   upperPriceLimit: null,
