@@ -1,13 +1,14 @@
 from marketplace import celery_app
+from marketplace.updatedLibrary import CustomOAuth2UserHandler
 from .models import TwitterAccount
-from tweepy import OAuth2UserHandler
+
 from decouple import config
 from marketplace.constants import TWITTER_SCOPES, TWITTER_CALLBACK_URL
 
 
 @celery_app.task()
 def updateAccessTokens():
-    oauth2_user_handler = OAuth2UserHandler(
+    oauth2_user_handler = CustomOAuth2UserHandler(
         client_id=config("CLIENT_ID"),
         redirect_uri=TWITTER_CALLBACK_URL,
         scope=TWITTER_SCOPES,
