@@ -7,6 +7,7 @@ type OrderItem = {
   order_item: OrderItemType;
   index: number;
   service_id?: string;
+  publish_date?: string;
 };
 
 type ServiceAdded = {
@@ -134,6 +135,7 @@ export const cartSlice = createSlice({
               }
             ),
         },
+        publish_date: undefined,
         service_id: action.payload.service.id,
         index: state.orderItems.length,
       });
@@ -293,6 +295,7 @@ export const cartSlice = createSlice({
               };
             }),
           },
+          publish_date: item.publish_date,
           service_id: undefined,
           index: state.orderItems.length,
         };
@@ -333,6 +336,14 @@ export const cartSlice = createSlice({
       }, 0);
       state.orderTotalCurrency = action.payload.orderItems[0].currency;
     },
+
+    updatePublishDate: (
+      state,
+      action: PayloadAction<{ index: number; value: string }>
+    ) => {
+      const orderItem = state.orderItems[action.payload.index];
+      orderItem.publish_date = action.payload.value;
+    }
   },
 });
 
@@ -343,5 +354,6 @@ export const {
   resetCart,
   updateFieldValues,
   initializeCart,
+  updatePublishDate,
 } = cartSlice.actions;
 

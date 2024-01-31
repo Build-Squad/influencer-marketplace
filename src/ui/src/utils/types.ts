@@ -216,6 +216,7 @@ type OrderItemType = {
   platform_price: string;
   order_id?: string;
   order_item_meta_data: OrderItemMetaDataType[];
+  publish_date?: string;
 };
 
 type OrderType = {

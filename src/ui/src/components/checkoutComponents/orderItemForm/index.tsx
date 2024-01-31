@@ -1,8 +1,16 @@
 "use client";
 
 import { useAppDispatch } from "@/src/hooks/useRedux";
-import { removeOrderItem, updateFieldValues } from "@/src/reducers/cartSlice";
+import {
+  removeOrderItem,
+  updateFieldValues,
+  updatePublishDate,
+} from "@/src/reducers/cartSlice";
 import { deleteService } from "@/src/services/httpServices";
+import {
+  FORM_DATE_TIME_FORMAT,
+  ISO_DATE_TIME_FORMAT,
+} from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
@@ -35,6 +43,10 @@ type OrderItemFormProps = {
     orderItemMetaDataId: string,
     value: string | null
   ) => Promise<void>;
+  updateOrderItemPublishDate?: (
+    orderItemId: string,
+    publishDate: string
+  ) => Promise<void>;
 };
 
 export default function OrderItemForm({
@@ -43,6 +55,7 @@ export default function OrderItemForm({
   disableDelete,
   sx,
   updateFunction,
+  updateOrderItemPublishDate,
 }: OrderItemFormProps) {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
@@ -167,6 +180,7 @@ export default function OrderItemForm({
                 </FormLabel>
                 {formFields?.field_type === "text" && (
                   <TextField
+                    color="secondary"
                     value={formFields?.value}
                     name={formFields?.id}
                     onChange={(e) => {
@@ -227,6 +241,7 @@ export default function OrderItemForm({
                 )}
                 {formFields?.field_type === "long_text" && (
                   <TextField
+                    color="secondary"
                     name={formFields?.id}
                     value={formFields?.value}
                     onChange={(e) => {
@@ -359,6 +374,61 @@ export default function OrderItemForm({
               </Grid>
             );
           })}
+        <Grid
+          md={6}
+          lg={6}
+          xs={12}
+          sm={12}
+          sx={{
+            my: 1,
+            display: "flex",
+            flexDirection: "column",
+            p: 1,
+          }}
+        >
+          <DateTimePicker
+            value={
+              orderItem?.order_item?.publish_date
+                ? dayjs(
+                    orderItem?.order_item?.publish_date,
+                    FORM_DATE_TIME_FORMAT
+                  )
+                : null
+            }
+            onChange={(e) => {
+              if (updateOrderItemPublishDate) {
+                updateOrderItemPublishDate(
+                  orderItem?.order_item?.id ? orderItem?.order_item?.id : "",
+                  dayjs(e).format(ISO_DATE_TIME_FORMAT)
+                );
+                return;
+              }
+              dispatch(
+                updatePublishDate({
+                  index: index,
+                  value: dayjs(e).format(ISO_DATE_TIME_FORMAT),
+                })
+              );
+            }}
+            format={FORM_DATE_TIME_FORMAT}
+            minDate={dayjs()}
+            slotProps={{
+              textField: {
+                size: "small",
+                color: "secondary",
+                variant: "outlined",
+                fullWidth: true,
+                placeholder: "Publish Date",
+                name: "publish_date",
+                sx: {
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 3,
+                  },
+                },
+              },
+            }}
+          />
+        </Grid>
       </Grid>
     </Box>
   );

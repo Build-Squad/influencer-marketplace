@@ -67,7 +67,7 @@ class OrderItem(models.Model):
         ('in_progress', 'in_progress'),
         ('cancelled', 'cancelled'),
         ('rejected', 'rejected'),
-        ('finalized', 'finalized'),
+        ('accepted', 'accepted'),
         ('scheduled', 'scheduled'),
         ('published', 'published'),
     )

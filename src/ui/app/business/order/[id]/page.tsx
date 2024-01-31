@@ -45,6 +45,7 @@ export default function OrderDetailPage({
       order_items: order?.order_item_order_id?.map((orderItem) => {
         return {
           order_item_id: orderItem?.id,
+          publish_date: orderItem?.publish_date,
           meta_data: orderItem?.order_item_meta_data?.map((metaData) => {
             return {
               order_item_meta_data_id: metaData?.id,
@@ -103,6 +104,32 @@ export default function OrderDetailPage({
 
     // Update the value
     orderItemMetaData.value = value;
+
+    // Update the order
+    setOrder(orderCopy);
+  };
+
+  const updatePublishDate = async (
+    orderItemId: string,
+    publishDate: string
+  ) => {
+    // The function will find the relevant order item and update the metadata in the order
+
+    // First, create a copy of the order
+    const orderCopy = { ...order };
+
+    // Then find the order item
+    const orderItem = orderCopy?.order_item_order_id?.find(
+      (orderItem) => orderItem.id === orderItemId
+    );
+
+    // If order item not found, return
+    if (!orderItem) {
+      return;
+    }
+
+    // Update the publish date
+    orderItem.publish_date = publishDate;
 
     // Update the order
     setOrder(orderCopy);
@@ -238,6 +265,7 @@ export default function OrderDetailPage({
                 sx={{
                   my: 2,
                 }}
+                updateOrderItemPublishDate={updatePublishDate}
               />
             );
           })}
