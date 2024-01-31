@@ -21,9 +21,14 @@ import OrderSummaryDetails from "../orderSummaryDetails";
 type OrderDetailsProps = {
   order: OrderType | null;
   onClose: () => void;
+  getOrders?: () => void;
 };
 
-export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
+export default function OrderDetails({
+  order,
+  onClose,
+  getOrders,
+}: OrderDetailsProps) {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -97,6 +102,7 @@ export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
       <OrderSummaryDetails
         orderItem={order?.order_item_order_id}
         orderStatus={order?.status}
+        getOrders={getOrders}
       />
     </Drawer>
   );

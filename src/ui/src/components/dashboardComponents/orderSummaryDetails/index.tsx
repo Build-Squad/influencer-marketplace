@@ -8,7 +8,7 @@ import { Attachment, Download } from "@mui/icons-material";
 import { Box, Chip, Divider, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import Image from "next/image";
-import { getService } from "@/src/services/httpServices";
+import { postService } from "@/src/services/httpServices";
 import { notification } from "../../shared/notification";
 
 const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
@@ -86,18 +86,31 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
 const OrderSummaryDetails = ({
   orderItem = [],
   orderStatus = "",
+  getOrders,
 }: {
   orderItem?: any;
   orderStatus?: string;
+  getOrders?: () => void;
 }) => {
-  const handleScheduleItem = async ({ orderId }: { orderId: string }) => {
-    // Schedule each item based on the type of item, eg, a retweet, post, like, reply
+  const handleClick = async ({
+    orderId,
+    type,
+  }: {
+    orderId: string;
+    type: string;
+  }) => {
+    let apiEndpoint = "";
+    if (type == "SCHEDULE") apiEndpoint = "orders/send-tweet";
+    if (type == "CANCEL") apiEndpoint = "orders/cancel-tweet";
+
     try {
-      const { isSuccess, data, message } = await getService(
-        `orders/retweet/${orderId}`
-      );
+      const { isSuccess, data, message } = await postService(apiEndpoint, {
+        order_item_id: orderId,
+      });
       if (isSuccess) {
         notification(message);
+        // Once any item is published or cancelled, update the orders data
+        if (getOrders) getOrders();
       } else {
         notification(
           message ? message : "Something went wrong, try again later",
@@ -127,18 +140,55 @@ const OrderSummaryDetails = ({
               {orderStatus == ORDER_STATUS.ACCEPTED ||
               orderStatus == ORDER_STATUS.COMPLETED ? (
                 eachOrderItem?.status == ORDER_ITEM_STATUS.ACCEPTED ? (
-                  <Chip
-                    label="Publish Now"
-                    color="secondary"
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => {
-                      handleScheduleItem({ orderId: eachOrderItem.id });
-                    }}
-                  />
+                  <Box sx={{ display: "flex", columnGap: "8px" }}>
+                    <Chip
+                      sx={{ fontWeight: "bold" }}
+                      label="Schedule"
+                      color="success"
+                      onClick={() => {
+                        handleClick({
+                          orderId: eachOrderItem.id,
+                          type: "SCHEDULE",
+                        });
+                      }}
+                      variant="outlined"
+                    />
+                  </Box>
                 ) : eachOrderItem?.status == ORDER_ITEM_STATUS.CANCELLED ? (
-                  <Chip label="Cancelled" color="error" disabled={true} />
+                  <Chip
+                    label="Cancelled"
+                    color="error"
+                    disabled={true}
+                    sx={{ fontWeight: "bold" }}
+                  />
                 ) : eachOrderItem?.status == ORDER_ITEM_STATUS.PUBLISHED ? (
-                  <Chip label="Published" color="success" disabled={true} />
+                  <Chip
+                    label="Published"
+                    color="success"
+                    disabled={true}
+                    sx={{ fontWeight: "bold" }}
+                  />
+                ) : eachOrderItem?.status == ORDER_ITEM_STATUS.SCHEDULED ? (
+                  <Box sx={{ display: "flex", columnGap: "8px" }}>
+                    <Chip
+                      label="Scheduled"
+                      color="warning"
+                      disabled={true}
+                      sx={{ fontWeight: "bold" }}
+                    />
+                    <Chip
+                      sx={{ fontWeight: "bold" }}
+                      label="Cancel"
+                      color="error"
+                      onDelete={() => {
+                        handleClick({
+                          orderId: eachOrderItem.id,
+                          type: "CANCEL",
+                        });
+                      }}
+                      variant="outlined"
+                    />
+                  </Box>
                 ) : null
               ) : null}
             </Box>
