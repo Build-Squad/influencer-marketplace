@@ -11,28 +11,17 @@ import datetime
 from .authentication import JWTAuthentication
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
+from .constants import TWITTER_SCOPES, TWITTER_CALLBACK_URL
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Defines scope for OAuth2 with PKCE
-SCOPES = [
-    "offline.access",
-    "tweet.read",
-    "tweet.write",
-    "users.read",
-    "follows.read",
-    "follows.write",
-    "mute.read",
-]
-callback_url = f"{config('SERVER')}twitter-login-callback"
-
 # This is OAuth2.0 PKCE authentication instance that'll be used to interact with Client for V2 version of API
 oauth2_user_handler = OAuth2UserHandler(
     client_id=config("CLIENT_ID"),
-    redirect_uri=callback_url,
-    scope=SCOPES,
+    redirect_uri=TWITTER_CALLBACK_URL,
+    scope=TWITTER_SCOPES,
     client_secret=config("CLIENT_SECRET"),
 )
 
@@ -57,8 +46,9 @@ def twitterLoginCallback(request):
         authentication_result = authenticateUser(authorization_response_url)
         userData = authentication_result["userData"]
         access_token = authentication_result["access_token"]
+        refresh_token = authentication_result["refresh_token"]
         # Create USER and JWT and send response
-        return createJWT(userData, access_token, role)
+        return createJWT(userData, access_token, role, refresh_token)
     except Exception as e:
         logger.error("Error in twitterLoginCallback -", e)
         return HttpResponseRedirect(
@@ -72,8 +62,12 @@ def authenticateUser(authorization_response_url):
     attempt = 0
     while attempt < max_attempts:
         try:
-            access_token_obj = oauth2_user_handler.fetch_token(authorization_response_url)
+            access_token_obj = oauth2_user_handler.fetch_token(
+                authorization_response_url
+            )
             access_token = access_token_obj["access_token"]
+            refresh_token = access_token_obj["refresh_token"]
+
             client = Client(access_token)
             userData = client.get_me(
                 user_auth=False,
@@ -88,17 +82,23 @@ def authenticateUser(authorization_response_url):
                 ],
             ).data
             logger.info("Twitter User Authenticated", userData)
-            return {"userData": userData, "access_token": access_token}
+            return {
+                "userData": userData,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            }
         except Exception as e:
             attempt += 1
-            logger.error(f"Error authenticating User - Attempt {attempt}/{max_attempts}:", e)
+            logger.error(
+                f"Error authenticating User - Attempt {attempt}/{max_attempts}:", e
+            )
     # If authentication fails after max_attempts, redirect to an error page
     return HttpResponseRedirect(
         config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
     )
 
 
-def createUser(userData, access_token, role):
+def createUser(userData, access_token, role, refresh_token):
     try:
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
@@ -109,6 +109,7 @@ def createUser(userData, access_token, role):
                 name=userData.name,
                 user_name=userData.username,
                 access_token=access_token,
+                refresh_token=refresh_token,
                 description=userData.description,
                 profile_image_url=userData.profile_image_url,
                 followers_count=userData.public_metrics["followers_count"],
@@ -126,6 +127,7 @@ def createUser(userData, access_token, role):
             existing_user.access_token = access_token
             # Update the user data
             existing_user.name = userData.name
+            existing_user.refresh_token = refresh_token
             existing_user.user_name = userData.username
             existing_user.profile_image_url = userData.profile_image_url
             existing_user.followers_count = userData.public_metrics["followers_count"]
@@ -168,17 +170,20 @@ def createUser(userData, access_token, role):
         )
 
 
-def createJWT(userData, access_token, role):
+def createJWT(userData, access_token, role, refresh_token):
     try:
         # Creating/Updating twitter and user table
-        current_user = createUser(userData, access_token, role)
+        current_user = createUser(userData, access_token, role, refresh_token)
 
         # Creating a response object with JWT cookie
         if role == "business_owner":
-            redirect_url = f"{config('FRONT_END_URL')}business/?authenticationStatus=success"
+            redirect_url = (
+                f"{config('FRONT_END_URL')}business/?authenticationStatus=success"
+            )
         elif role == "influencer":
-            redirect_url = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=success"
-
+            redirect_url = (
+                f"{config('FRONT_END_URL')}influencer/?authenticationStatus=success"
+            )
 
         response = redirect(redirect_url)
 

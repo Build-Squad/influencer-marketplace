@@ -77,3 +77,15 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=marketplace.settings
       - PYTHONPATH=/api/marketplace
+
+  # Celery Scheduler
+  celery-beat:
+    restart: always
+    build:
+      context: ./src/api/marketplace
+    volumes:
+      - ./src/api:/api
+    command: celery -A marketplace beat -l DEBUG
+    container_name: celery_beat
+    depends_on:
+      - celery-worker
