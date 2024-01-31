@@ -89,3 +89,6 @@ services:
     container_name: celery_beat
     depends_on:
       - celery-worker
+    environment:
+      - DJANGO_SETTINGS_MODULE=marketplace.settings
+      - PYTHONPATH=/api/marketplace
