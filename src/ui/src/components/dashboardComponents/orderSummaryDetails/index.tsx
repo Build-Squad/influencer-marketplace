@@ -1,9 +1,15 @@
 import Mask_group from "@/public/svg/Mask_group.svg";
-import { DISPLAY_DATE_TIME_FORMAT } from "@/src/utils/consts";
+import {
+  DISPLAY_DATE_TIME_FORMAT,
+  ORDER_STATUS,
+  ORDER_ITEM_STATUS,
+} from "@/src/utils/consts";
 import { Attachment, Download } from "@mui/icons-material";
-import { Box, Divider, Typography } from "@mui/material";
+import { Box, Chip, Divider, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import Image from "next/image";
+import { getService } from "@/src/services/httpServices";
+import { notification } from "../../shared/notification";
 
 const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
   switch (meta_data.field_type) {
@@ -77,15 +83,65 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
   }
 };
 
-const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
+const OrderSummaryDetails = ({
+  orderItem = [],
+  orderStatus = "",
+}: {
+  orderItem?: any;
+  orderStatus?: string;
+}) => {
+  const handleScheduleItem = async ({ orderId }: { orderId: string }) => {
+    // Schedule each item based on the type of item, eg, a retweet, post, like, reply
+    try {
+      const { isSuccess, data, message } = await getService(
+        `orders/retweet/${orderId}`
+      );
+      if (isSuccess) {
+        notification(message);
+      } else {
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
+      }
+    } finally {
+    }
+  };
+
   return (
     <Box sx={{ mt: 2 }}>
       {orderItem.map((eachOrderItem: any, index: number) => {
         return (
           <>
-            <Typography variant="h6" fontWeight={"bold"}>
-              {index + 1}. {eachOrderItem?.package.name}
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6" fontWeight={"bold"}>
+                {index + 1}. {eachOrderItem?.package.name}
+              </Typography>
+              {/* The status of the order should be accepted and then for each order item we'll see if it's scheduled, cancelled or already published */}
+              {orderStatus == ORDER_STATUS.ACCEPTED ||
+              orderStatus == ORDER_STATUS.COMPLETED ? (
+                eachOrderItem?.status == ORDER_ITEM_STATUS.ACCEPTED ? (
+                  <Chip
+                    label="Publish Now"
+                    color="secondary"
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => {
+                      handleScheduleItem({ orderId: eachOrderItem.id });
+                    }}
+                  />
+                ) : eachOrderItem?.status == ORDER_ITEM_STATUS.CANCELLED ? (
+                  <Chip label="Cancelled" color="error" disabled={true} />
+                ) : eachOrderItem?.status == ORDER_ITEM_STATUS.PUBLISHED ? (
+                  <Chip label="Published" color="success" disabled={true} />
+                ) : null
+              ) : null}
+            </Box>
 
             {eachOrderItem?.order_item_meta_data?.map((meta_data: any) => {
               return <ContentTypeComponent meta_data={meta_data} />;

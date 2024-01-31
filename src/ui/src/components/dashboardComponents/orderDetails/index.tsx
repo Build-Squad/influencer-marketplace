@@ -94,7 +94,10 @@ export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
         </Box>
       </Box>
       <Divider sx={{ mt: 2 }} />
-      <OrderSummaryDetails orderItem={order?.order_item_order_id} />
+      <OrderSummaryDetails
+        orderItem={order?.order_item_order_id}
+        orderStatus={order?.status}
+      />
     </Drawer>
   );
 }

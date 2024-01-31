@@ -34,6 +34,15 @@ export const ORDER_STATUS = {
   ACCEPTED: "accepted",
 };
 
+export const ORDER_ITEM_STATUS = {
+  IN_PROGRESS: "in_progress",
+  CANCELLED: "cancelled",
+  REJECTED: "rejected",
+  ACCEPTED: "accepted",
+  SCHEDULED: "scheduled",
+  PUBLISHED: "published",
+};
+
 export const SERVICE_STATUS = {
   DRAFT: "draft",
   PUBLISHED: "published",
@@ -42,7 +51,7 @@ export const SERVICE_STATUS = {
 export const ROLE_NAME = {
   INFLUENCER: "influencer",
   BUSINESS_OWNER: "business_owner",
-}
+};
 
 export const MESSAGE_STATUS = {
   READ: "read",
