@@ -51,3 +51,6 @@ solana/.anchor*
 solana/target/release/*
 solana/target/sbf-solana*
 solana/target/deploy*
+*~
+solana-client/node_mosules*
+solana-client/.next*
