@@ -74,6 +74,15 @@ export default function BusinessDashboardPage() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+
+        // To update the drawer component when updating status.
+        if (selectedOrder) {
+          setSelectedOrder(
+            data?.data?.find(
+              (item: OrderType) => item?.id === selectedOrder?.id
+            )
+          );
+        }
       } else {
         notification(message ? message : "Something went wrong", "error");
       }

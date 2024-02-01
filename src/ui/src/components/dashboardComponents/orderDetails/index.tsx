@@ -15,7 +15,6 @@ import {
   useTheme,
 } from "@mui/material";
 import NextLink from "next/link";
-import { useRouter } from "next/navigation";
 import OrderSummaryDetails from "../orderSummaryDetails";
 
 type OrderDetailsProps = {
@@ -29,7 +28,6 @@ export default function OrderDetails({
   onClose,
   getOrders,
 }: OrderDetailsProps) {
-  const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
