@@ -20,7 +20,6 @@ import {
   IconButton,
   Link,
   Pagination,
-  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -45,6 +44,7 @@ export default function BusinessDashboardPage() {
       ORDER_STATUS.PENDING,
       ORDER_STATUS.COMPLETED,
     ],
+    order_by: "-created_at",
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,

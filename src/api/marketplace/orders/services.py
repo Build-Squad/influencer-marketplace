@@ -63,3 +63,51 @@ def create_notification_for_order(order, old_status, new_status):
         title = 'Order Completed'
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
+
+def create_notification_for_order_item(order_item, old_status, new_status):
+    """
+    Create notification for order item
+    """
+    # Create notification
+    # For all types of order updates, generate a different message and send it to the relevant user
+
+    """    
+    Case 1: Order item goes from accepted to scheduled
+    # Should be sent to the influencer mentioning that the order item has been scheduled by the brand
+    
+    Case 2: Order item goes from scheduled to published
+    # Should be sent to the influencer mentioning that the order item has been published by the brand
+    
+    Case 3: Order item goes from scheduled to cancelled
+    # Should be sent to the influencer mentioning that the order item has been cancelled by the brand
+    
+    """
+    # Get the order
+    order = order_item.order_id
+    buyer = order.buyer
+    influencer = order_item.package.influencer
+
+    if old_status == 'accepted' and new_status == 'scheduled':
+        # Case 1
+        message = 'Your order item ' + order_item.package.name + \
+            ' has been scheduled by ' + influencer.username
+        title = 'Order Item Scheduled'
+        Notification.objects.create(
+            user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
+    elif old_status == 'scheduled' and new_status == 'published':
+        # Case 2
+        message = 'Your order item ' + order_item.package.name + \
+            ' has been published by ' + influencer.username
+        title = 'Order Item Published'
+        Notification.objects.create(
+            user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
+    elif old_status == 'scheduled' and new_status == 'cancelled':
+        # Case 3
+        message = 'Your order item ' + order_item.package.name + \
+            ' has been cancelled by ' + influencer.username
+        title = 'Order Item Cancelled'
+        Notification.objects.create(
+            user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)

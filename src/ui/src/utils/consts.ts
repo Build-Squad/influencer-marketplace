@@ -10,6 +10,9 @@ export const FORM_DATE_FORMAT = "YYYY-MM-DD";
 
 export const FORM_DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 
+// Date time format for date time picker with time zone aware
+export const FORM_DATE_TIME_TZ_FORMAT = "YYYY-MM-DDTHH:mm:ss.SSSZ";
+
 export const PACKAGE_STATUS = {
   DRAFT: {
     value: "draft",
