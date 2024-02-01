@@ -154,7 +154,7 @@ class TwitterAccountList(APIView):
             isVerified = bool(strtobool(isVerified_str))
             
             # Default fetch influencers for explore page
-            role = request.Get.get("role", "influencer")
+            role = request.GET.get("role", "influencer")
 
             # Filter based on parameters
             twitterAccount = TwitterAccount.objects.all()
