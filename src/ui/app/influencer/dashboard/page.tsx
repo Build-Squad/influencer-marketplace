@@ -75,6 +75,15 @@ export default function BusinessDashboardPage() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+
+        // To update the drawer component when updating status.
+        if (selectedOrder) {
+          setSelectedOrder(
+            data?.data?.find(
+              (item: OrderType) => item?.id === selectedOrder?.id
+            )
+          );
+        }
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
@@ -120,7 +129,11 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
+          status: [
+            ORDER_STATUS.ACCEPTED,
+            ORDER_STATUS.REJECTED,
+            ORDER_STATUS.COMPLETED,
+          ],
         }));
         setSelectedCard(0);
       },
@@ -464,6 +477,7 @@ export default function BusinessDashboardPage() {
         onClose={() => {
           setSelectedOrder(null);
         }}
+        getOrders={getOrders}
       />
     </Box>
   );
