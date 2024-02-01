@@ -408,14 +408,23 @@ class UpdateOrderStatus(APIView):
             if order is None:
                 return handleNotFound("Order")
 
-            # Extract only the 'status' field from the request data
+            # Extract only the 'status' field from the request data 
             status_data = {"status": request.data.get("status")}
 
             serializer = OrderSerializer(instance=order, data=status_data, partial=True)
+            
 
             if serializer.is_valid():
                 old_status = order.status
                 serializer.save()
+                
+                # Update status for all related OrderItems
+                order_items = OrderItem.objects.filter(order_id=order.id)
+                for order_item in order_items:
+                    # Here we are considering that while calling the update-order-status, we change the order status to 
+                    # accepted and rejected only, and corresponding to that we changing the same for each order item.
+                    order_item.status = status_data["status"]
+                    order_item.save()
                 create_notification_for_order(order, old_status, status_data["status"])
                 return Response(
                     {
