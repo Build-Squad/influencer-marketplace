@@ -99,7 +99,7 @@ const OrderSummaryDetails = ({ orderItem = [] }: { orderItem?: any }) => {
               <Box>
                 <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
                   <EventNoteIcon sx={{ fontSize: 14, mr: 1 }} />
-                  Publish Date
+                  Publish Date and Time
                 </Typography>
                 <Typography variant="subtitle1" sx={{ color: "#676767" }}>
                   {eachOrderItem?.publish_date
