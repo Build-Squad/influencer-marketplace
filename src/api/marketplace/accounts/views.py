@@ -152,9 +152,16 @@ class TwitterAccountList(APIView):
             searchString = request.GET.get("searchString", "")
             isVerified_str = request.GET.get("isVerified", "false")
             isVerified = bool(strtobool(isVerified_str))
+            
+            # Default fetch influencers for explore page
+            role = request.Get.get("role", "influencer")
 
             # Filter based on parameters
             twitterAccount = TwitterAccount.objects.all()
+
+            twitterAccount = TwitterAccount.objects.filter(
+                user_twitter_account_id__role__name=role
+            )
 
             # From the account model itself.
             if upperFollowerLimit:
