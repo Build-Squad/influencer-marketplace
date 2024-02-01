@@ -7,12 +7,23 @@ import {
 import { Attachment, Download } from "@mui/icons-material";
 import { postService } from "@/src/services/httpServices";
 import { notification } from "../../shared/notification";
-import { Box, Divider, Typography, Link, Chip } from "@mui/material";
+import {
+  Box,
+  Divider,
+  Typography,
+  Link,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  Button,
+} from "@mui/material";
 import dayjs from "dayjs";
 import Image from "next/image";
 import NextLink from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import { useState } from "react";
 
 const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
   switch (meta_data.field_type) {
@@ -95,20 +106,19 @@ const OrderSummaryDetails = ({
   orderStatus?: string;
   getOrders?: () => void;
 }) => {
-  const handleClick = async ({
-    orderId,
-    type,
-  }: {
-    orderId: string;
-    type: string;
-  }) => {
+  const [action, setAction] = useState({
+    orderId: "",
+    type: "",
+  });
+
+  const updateStatus = async () => {
     let apiEndpoint = "";
-    if (type == "SCHEDULE") apiEndpoint = "orders/send-tweet";
-    if (type == "CANCEL") apiEndpoint = "orders/cancel-tweet";
+    if (action.type == "SCHEDULE") apiEndpoint = "orders/send-tweet";
+    if (action.type == "CANCEL") apiEndpoint = "orders/cancel-tweet";
 
     try {
       const { isSuccess, data, message } = await postService(apiEndpoint, {
-        order_item_id: orderId,
+        order_item_id: action.orderId,
       });
       if (isSuccess) {
         notification(message);
@@ -121,7 +131,29 @@ const OrderSummaryDetails = ({
         );
       }
     } finally {
+      handleClose();
     }
+  };
+
+  const handleClick = async ({
+    orderId,
+    type,
+  }: {
+    orderId: string;
+    type: string;
+  }) => {
+    setAction({
+      orderId,
+      type,
+    });
+  };
+
+  const handleClose = () => {
+    setAction({ orderId: "", type: "" });
+  };
+
+  const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
 
   return (
@@ -239,6 +271,35 @@ const OrderSummaryDetails = ({
               </Box>
             )}
             <Divider sx={{ my: 2 }} />
+            {/* Model */}
+            <Dialog open={!!action.type} onClose={handleClose}>
+              <DialogTitle
+                sx={{
+                  backgroundColor: "#fff !important",
+                  color: "#000 !important",
+                }}
+              >
+                Are you sure you want to {capitalizeFirstLetter(action.type)}{" "}
+                this order?
+              </DialogTitle>
+              <DialogActions>
+                <Button
+                  color="secondary"
+                  variant="outlined"
+                  onClick={handleClose}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  color="secondary"
+                  variant="contained"
+                  onClick={updateStatus}
+                  autoFocus
+                >
+                  {capitalizeFirstLetter(action.type)}
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
         );
       })}
