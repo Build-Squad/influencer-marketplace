@@ -37,7 +37,12 @@ export default function BusinessDashboardPage() {
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
-    status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
+    status: [
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.REJECTED,
+      ORDER_STATUS.COMPLETED,
+    ],
+    order_by: "-created_at",
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
