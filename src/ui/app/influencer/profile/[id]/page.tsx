@@ -89,9 +89,9 @@ const ProfileLayout = ({
   }, []);
 
   useEffect(() => {
-    if (currentUser?.region?.length) {
+    if (currentUser?.region) {
       const regionOfUser = regions.find(
-        (item) => item.id === currentUser?.region?.[0].region
+        (item) => item.id === currentUser?.region?.region
       );
       setUserRegion(regionOfUser);
     }

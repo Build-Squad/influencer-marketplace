@@ -20,6 +20,7 @@ class TwitterAccount(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     user_name = models.CharField(max_length=100, blank=True, null=True)
     access_token = models.CharField(max_length=255, blank=True, null=True)
+    refresh_token = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=255, blank=True, null=True)
     profile_image_url = models.CharField(max_length=255, blank=True, null=True)
     followers_count = models.IntegerField(blank=True, null=True)
@@ -141,13 +142,12 @@ class AccountRegion(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    user_account = models.ForeignKey(
+    user_account = models.OneToOneField(
         User,
         related_name="region_user_account",
         on_delete=SET_NULL,
         null=True,
         blank=True,
-        unique=True,
     )
     region = models.ForeignKey(
         RegionMaster,

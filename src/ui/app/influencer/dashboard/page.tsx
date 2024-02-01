@@ -42,6 +42,7 @@ export default function BusinessDashboardPage() {
       ORDER_STATUS.REJECTED,
       ORDER_STATUS.COMPLETED,
     ],
+    order_by: "-created_at",
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,

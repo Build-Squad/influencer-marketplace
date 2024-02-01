@@ -113,9 +113,10 @@ class RoleDetail(APIView):
 class TopInfluencers(APIView):
     def get(self, request):
         try:
-            twitterAccount = TwitterAccount.objects.all().order_by("-followers_count")[
-                :8
-            ]
+            twitterAccount = TwitterAccount.objects.filter(
+                user_twitter_account_id__role__name="influencer"
+            ).order_by("-followers_count")[:8]
+
             # Paginate the results
             pagination = Pagination(twitterAccount, request)
             serializer = TwitterAccountSerializer(pagination.getData(), many=True)

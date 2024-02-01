@@ -5,11 +5,14 @@ import {
   ORDER_ITEM_STATUS,
 } from "@/src/utils/consts";
 import { Attachment, Download } from "@mui/icons-material";
-import { Box, Chip, Divider, Typography } from "@mui/material";
-import dayjs from "dayjs";
-import Image from "next/image";
 import { postService } from "@/src/services/httpServices";
 import { notification } from "../../shared/notification";
+import { Box, Divider, Typography, Link, Chip } from "@mui/material";
+import dayjs from "dayjs";
+import Image from "next/image";
+import NextLink from "next/link";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import EventNoteIcon from "@mui/icons-material/EventNote";
 
 const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
   switch (meta_data.field_type) {
@@ -201,7 +204,8 @@ const OrderSummaryDetails = ({
             >
               <Box>
                 <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
-                  Publish Date
+                  <EventNoteIcon sx={{ fontSize: 14, mr: 1 }} />
+                  Publish Date and Time
                 </Typography>
                 <Typography variant="subtitle1" sx={{ color: "#676767" }}>
                   {eachOrderItem?.publish_date
@@ -212,6 +216,28 @@ const OrderSummaryDetails = ({
                 </Typography>
               </Box>
             </Box>
+            {eachOrderItem?.published_tweet_id && (
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
+                    <OpenInNewIcon sx={{ fontSize: 14, mr: 1 }} />
+                    Tweet Link
+                  </Typography>
+                  <Link
+                    href={`https://x.com/${eachOrderItem?.package?.influencer?.twitter_account?.user_name}/status/${eachOrderItem?.published_tweet_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    sx={{ color: "#676767" }}
+                    component={NextLink}
+                  >
+                    {`https://x.com/${eachOrderItem?.package?.influencer?.twitter_account?.user_name}/status/${eachOrderItem?.published_tweet_id}`}
+                  </Link>
+                </Box>
+              </Box>
+            )}
             <Divider sx={{ my: 2 }} />
           </>
         );
