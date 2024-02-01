@@ -4,7 +4,9 @@ from .models import TwitterAccount
 
 from decouple import config
 from marketplace.constants import TWITTER_SCOPES, TWITTER_CALLBACK_URL
+import logging
 
+logger = logging.getLogger(__name__)
 
 @celery_app.task()
 def updateAccessTokens():
@@ -34,8 +36,8 @@ def updateAccessTokens():
                 twitter_account.refresh_token = new_token["refresh_token"]
                 twitter_account.save()
 
-                print(f"Updated tokens for TwitterAccount {twitter_account.id}")
+                logger.info(f"Updated tokens for TwitterAccount {twitter_account.id}")
             else:
-                print(f"Refresh token for {twitter_account.id} not present")
+                logger.error(f"Refresh token for {twitter_account.id} not present")
     except Exception as e:
         raise e
