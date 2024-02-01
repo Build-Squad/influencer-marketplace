@@ -19,6 +19,6 @@ app.conf.beat_schedule = {
     # Update access token every 2 hour
     "update-access-tokens": {
         "task": "accounts.tasks.updateAccessTokens",
-        "schedule": crontab(hour="*/2"),
+        "schedule": crontab(hour="0/2"),
     },
 }
