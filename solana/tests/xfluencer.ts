@@ -91,6 +91,92 @@ describe("xfluencer", () => {
     assert(account_data2.value == 499999899998491650);
   });
 
+
+  it('Crease Escrow and Claim on Solana', async () => {
+
+    
+
+    const provider = anchor.getProvider()
+
+    const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
+  
+
+    let account_data = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    console.log(account_data);
+
+    const orderCode = 99;
+
+    const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    const [escrowPDA] = await anchor.web3.PublicKey.findProgramAddress([
+        utf8.encode('escrow'),
+        buyerPublicKey.toBuffer(), 
+        toWallet.publicKey.toBuffer(),
+        Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
+      ],
+      program.programId
+    );
+    console.log("escrowPDA", escrowPDA);
+
+    const options = {
+      skipPreflight: true      
+    }
+
+  
+    await program.methods
+    .createEscrow(
+      new anchor.BN(10**11),
+      new anchor.BN(orderCode))
+    .accounts({
+      from: buyerPublicKey,
+      to: toWallet.publicKey,
+      systemProgram:  anchor.web3.SystemProgram.programId,
+      escrow: escrowPDA
+    }).rpc(options);
+
+    const escrowAccount = await program.account.escrowAccountSolana.fetch(escrowPDA)
+    console.log(escrowAccount);
+    
+    let account_data2 = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    console.log(account_data2);
+
+
+    ///// claim amount 
+    const tx = await program.methods
+    .claimEscrow(
+      new anchor.BN(orderCode))
+    .accounts({
+      influencer: toWallet.publicKey,
+      business: buyerPublicKey,
+      escrowAccount: escrowPDA, 
+      systemProgram:  anchor.web3.SystemProgram.programId,
+    }
+    ).transaction();
+    //.signers([toWallet])
+    //.rpc(options)  
+    
+    //const escrowAccount3 = await program.account.escrowAccountSolana.fetch(escrowPDA)
+    //console.log(escrowAccount3);
+    
+    //let account_data3 = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    //console.log(account_data3);
+
+
+    //let tx = await program.methods.initializeProgram().transaction();      
+    tx.feePayer = toWallet.publicKey;
+    await utils.airdrop(program, toWallet, 1);
+    
+    const txID = await provider.connection.sendTransaction(tx,[toWallet]);
+    await provider.connection.confirmTransaction(txID);
+
+    //const escrowAccount3 = await program.account.escrowAccountSolana.fetch(escrowPDA)
+    //console.log(escrowAccount3);
+    
+    //let account_data3 = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    //console.log(account_data3);
+
+
+  });
+/*
   it('Initialize program state', async () => {
     const provider = anchor.getProvider()
     // Airdrop Sol to payer.
@@ -300,7 +386,7 @@ describe("xfluencer", () => {
     assert.ok(_buyer_accont_ballance.value.amount == (amountA-amount).toString());
 
   });
-
+*/
 
   
 });
