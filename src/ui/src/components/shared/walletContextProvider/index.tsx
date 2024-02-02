@@ -18,7 +18,11 @@ export default function WalletContextProvider({
   children: ReactNode;
 }) {
   const network = WalletAdapterNetwork.Mainnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = useMemo(
+    () =>
+      `https://rpc.ironforge.network/devnet?apiKey=${process.env.NEXT_PUBLIC_RPC_KEY}`,
+    []
+  );
   const wallets = useMemo(
     () => [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
