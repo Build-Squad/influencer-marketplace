@@ -18,6 +18,7 @@ type ServiceAdded = {
 };
 
 type CartState = {
+  order_number?: number;
   orderId?: string | null;
   influencer: UserType | null;
   orderItems: OrderItem[];
@@ -250,6 +251,7 @@ export const cartSlice = createSlice({
     },
 
     resetCart: (state) => {
+      state.order_number = undefined;
       state.orderId = null;
       state.influencer = null;
       state.influencer_wallet = undefined;
@@ -269,6 +271,7 @@ export const cartSlice = createSlice({
     initializeCart: (
       state,
       action: PayloadAction<{
+        order_number: number;
         orderId: string;
         influencer: UserType | null;
         orderItems: OrderItemType[];
@@ -276,6 +279,7 @@ export const cartSlice = createSlice({
         buyer_wallet?: WalletType;
       }>
     ) => {
+      state.order_number = action.payload.order_number;
       state.orderId = action.payload.orderId;
       state.influencer = action.payload.influencer;
       state.influencer_wallet = action.payload.influencer_wallet;

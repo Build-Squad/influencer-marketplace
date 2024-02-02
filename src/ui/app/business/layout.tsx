@@ -30,6 +30,7 @@ export default function BusinessLayout({
         }
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
             influencer: order.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,

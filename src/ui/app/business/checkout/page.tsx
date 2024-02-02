@@ -12,6 +12,7 @@ import {
   postService,
   putService,
 } from "@/src/services/httpServices";
+import { ORDER_STATUS } from "@/src/utils/consts";
 import { Box, Button, Grid, Link, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -56,7 +57,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const updateStatus = async () => {
+  const updateStatus = async (address: string) => {
     if (user?.user?.wallets?.length === 0) {
       notification("You need to add a wallet first", "error", 3000);
       return;
@@ -65,7 +66,8 @@ export default function CheckoutPage() {
     const { isSuccess, data, message } = await putService(
       `orders/update-status/${cart?.orderId}/`,
       {
-        status: "pending",
+        status: ORDER_STATUS.PENDING,
+        address: address,
       }
     );
 
@@ -111,6 +113,7 @@ export default function CheckoutPage() {
         const order = data?.data;
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
             influencer: order?.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
@@ -155,6 +158,7 @@ export default function CheckoutPage() {
         const order = data?.data;
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
             influencer: order.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
