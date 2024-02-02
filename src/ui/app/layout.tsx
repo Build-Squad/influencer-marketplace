@@ -6,7 +6,6 @@ import SnackbarComp from "@/src/components/shared/snackBarComp";
 import WalletContextProvider from "@/src/components/shared/walletContextProvider";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { AppStore, makeStore } from "@/src/store";
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { useSearchParams } from "next/navigation";
 import { SnackbarProvider } from "notistack";
@@ -20,11 +19,6 @@ import "./globals.css";
 import { loginStatusType } from "./utils/types";
 
 const inter = Inter({ subsets: ["latin"] });
-
-const metadata: Metadata = {
-  title: "Influencer Marketplace",
-  description: "Influencer Marketplace",
-};
 
 export default function RootLayout({
   children,
@@ -50,6 +44,9 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <title>Xfluencer Beta</title>
+      </head>
       <body className={inter.className}>
         <SnackbarProvider
           maxSnack={5}
