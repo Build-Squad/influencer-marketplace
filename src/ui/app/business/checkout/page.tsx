@@ -4,6 +4,7 @@ import CheckoutTable from "@/src/components/checkoutComponents/checkoutTable";
 import OrderItemForm from "@/src/components/checkoutComponents/orderItemForm";
 import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
+import CreateEscrow from "@/src/components/web3Components/createEscrow";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
 import {
@@ -11,6 +12,7 @@ import {
   postService,
   putService,
 } from "@/src/services/httpServices";
+import { ORDER_STATUS } from "@/src/utils/consts";
 import { Box, Button, Grid, Link, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -55,7 +57,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const updateStatus = async () => {
+  const updateStatus = async (address: string) => {
     if (user?.user?.wallets?.length === 0) {
       notification("You need to add a wallet first", "error", 3000);
       return;
@@ -64,7 +66,8 @@ export default function CheckoutPage() {
     const { isSuccess, data, message } = await putService(
       `orders/update-status/${cart?.orderId}/`,
       {
-        status: "pending",
+        status: ORDER_STATUS.PENDING,
+        address: address,
       }
     );
 
@@ -110,9 +113,12 @@ export default function CheckoutPage() {
         const order = data?.data;
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
-            influencer: order.order_item_order_id[0].package.influencer,
+            influencer: order?.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
+            influencer_wallet: order?.influencer_wallet,
+            buyer_wallet: order?.buyer_wallet,
           })
         );
       } else {
@@ -152,9 +158,12 @@ export default function CheckoutPage() {
         const order = data?.data;
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
             influencer: order.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
+            influencer_wallet: order?.influencer_wallet,
+            buyer_wallet: order?.buyer_wallet,
           })
         );
       } else {
@@ -352,25 +361,7 @@ export default function CheckoutPage() {
                   </Button>
                 }
               />
-              <Button
-                disableElevation
-                fullWidth
-                variant="outlined"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
-                  border: "1px solid black",
-                  borderRadius: "20px",
-                  mt: 2,
-                }}
-                disabled={loading || !cart?.orderId}
-                onClick={() => {
-                  updateStatus();
-                }}
-              >
-                Make Offer
-              </Button>
+              <CreateEscrow loading={loading} updateStatus={updateStatus} />
             </Box>
           </Box>
         </Grid>

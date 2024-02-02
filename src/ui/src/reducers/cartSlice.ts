@@ -18,12 +18,15 @@ type ServiceAdded = {
 };
 
 type CartState = {
+  order_number?: number;
   orderId?: string | null;
   influencer: UserType | null;
   orderItems: OrderItem[];
   servicesAdded: ServiceAdded[];
   orderTotal: number;
   orderTotalCurrency: CurrencyType;
+  influencer_wallet?: WalletType;
+  buyer_wallet?: WalletType;
 };
 
 type AddOrderItemPayloadType = {
@@ -195,6 +198,8 @@ export const cartSlice = createSlice({
       // If there are no more order items, reset influencer, orderTotal, and orderTotalCurrency here
       if (state.orderItems.length === 0) {
         state.influencer = null;
+        state.influencer_wallet = undefined;
+        state.buyer_wallet = undefined;
         state.orderTotal = 0;
         state.orderTotalCurrency = {
           id: "",
@@ -246,8 +251,11 @@ export const cartSlice = createSlice({
     },
 
     resetCart: (state) => {
+      state.order_number = undefined;
       state.orderId = null;
       state.influencer = null;
+      state.influencer_wallet = undefined;
+      state.buyer_wallet = undefined;
       state.orderItems = [];
       state.servicesAdded = [];
       state.orderTotal = 0;
@@ -263,13 +271,19 @@ export const cartSlice = createSlice({
     initializeCart: (
       state,
       action: PayloadAction<{
+        order_number: number;
         orderId: string;
         influencer: UserType | null;
         orderItems: OrderItemType[];
+        influencer_wallet?: WalletType;
+        buyer_wallet?: WalletType;
       }>
     ) => {
+      state.order_number = action.payload.order_number;
       state.orderId = action.payload.orderId;
       state.influencer = action.payload.influencer;
+      state.influencer_wallet = action.payload.influencer_wallet;
+      state.buyer_wallet = action.payload.buyer_wallet;
       state.orderItems = action.payload.orderItems.map((item) => {
         return {
           order_item: {
@@ -343,7 +357,7 @@ export const cartSlice = createSlice({
     ) => {
       const orderItem = state.orderItems[action.payload.index];
       orderItem.publish_date = action.payload.value;
-    }
+    },
   },
 });
 

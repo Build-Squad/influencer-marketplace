@@ -1,3 +1,4 @@
+from email.policy import default
 from enum import unique
 from django.db import models
 import uuid
@@ -18,6 +19,12 @@ def generate_order_code():
         if not Order.objects.filter(order_code=code).exists():
             return code
 
+
+def generate_order_number():
+    while True:
+        number = random.randint(100000, 999999)
+        if not Order.objects.filter(order_number=number).exists():
+            return number
 
 class Order(models.Model):
 
@@ -42,6 +49,12 @@ class Order(models.Model):
     deleted_at = models.DateTimeField(blank=True, null=True)
     order_code = models.CharField(
         max_length=16, default=generate_order_code, unique=True)
+    order_number = models.IntegerField(
+        unique=True, default=generate_order_number)
+    influencer_transaction_address = models.CharField(
+        max_length=100, blank=True, null=True)
+    buyer_transaction_address = models.CharField(
+        max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order" 
