@@ -9,6 +9,7 @@ import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { Xfluencer } from "../target/types/xfluencer";
 
 import {TOKEN_PROGRAM_ID} from '@solana/spl-token';
+import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 describe("xfluencer", () => {
     
@@ -40,6 +41,55 @@ describe("xfluencer", () => {
   const mintAuthority = anchor.web3.Keypair.generate();
 
   const NUMBER_DECIMALS = 6;
+
+  it('Crease Escrow Simplified for Solana', async () => {
+    const provider = anchor.getProvider()
+
+    const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
+    console.log()
+
+    let account_data = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    console.log(account_data);
+
+    const orderCode = 99;
+
+    const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    const [escrowPDA] = await anchor.web3.PublicKey.findProgramAddress([
+        utf8.encode('escrow'),
+        buyerPublicKey.toBuffer(), 
+        toWallet.publicKey.toBuffer(),
+        Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
+      ],
+      program.programId
+    );
+    console.log("escrowPDA", escrowPDA);
+
+    const options = {
+      skipPreflight: true      
+    }
+
+    
+    
+    await program.methods
+    .createEscrow(
+      new anchor.BN(10**11),
+      new anchor.BN(orderCode))
+    .accounts({
+      from: buyerPublicKey,
+      to: toWallet.publicKey,
+      systemProgram:  anchor.web3.SystemProgram.programId,
+      escrow: escrowPDA
+    }).rpc(options);
+
+    const escrowAccount = await program.account.escrowAccountSolana.fetch(escrowPDA)
+    console.log(escrowAccount);
+    
+    let account_data2 = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    console.log(account_data2);
+
+    
+    assert(account_data2.value == 499999899998491650);
+  });
 
   it('Initialize program state', async () => {
     const provider = anchor.getProvider()
