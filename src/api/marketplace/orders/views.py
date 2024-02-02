@@ -36,6 +36,7 @@ from .serializers import (
     TransactionSerializer,
     ReviewSerializer,
     OrderMessageListFilterSerializer,
+    UserOrderMessagesSerializer,
     UpdateOrderInfluencerTransactionAddressSerializer,
     UserOrderMessagesSerializer
 )
@@ -180,8 +181,16 @@ class OrderListView(APIView):
                 orders = orders.filter(
                     Q(buyer__first_name__icontains=filters["search"])
                     | Q(buyer__last_name__icontains=filters["search"])
-                    | Q(order_item_order_id__package__influencer__first_name__icontains=filters["search"])
-                    | Q(order_item_order_id__package__influencer__last_name__icontains=filters["search"])
+                    | Q(
+                        order_item_order_id__package__influencer__first_name__icontains=filters[
+                            "search"
+                        ]
+                    )
+                    | Q(
+                        order_item_order_id__package__influencer__last_name__icontains=filters[
+                            "search"
+                        ]
+                    )
                     | Q(order_code__icontains=filters["search"])
                 )
 
@@ -210,16 +219,14 @@ class UserOrderMessagesView(APIView):
     def post(self, request):
         try:
             # Get the filters from the request
-            filter_serializer = OrderMessageListFilterSerializer(
-                data=request.data)
+            filter_serializer = OrderMessageListFilterSerializer(data=request.data)
             filter_serializer.is_valid(raise_exception=True)
             filters = filter_serializer.validated_data
 
             user = request.user_account
             role = request.user_account.role
             if role.name == "business_owner":
-                orders = Order.objects.filter(
-                    Q(buyer=user), deleted_at=None).distinct()
+                orders = Order.objects.filter(Q(buyer=user), deleted_at=None).distinct()
             elif role.name == "influencer":
                 # For all the order items, there will be a package in it and the package willl have influencer id
                 order_items = OrderItem.objects.filter(
@@ -240,8 +247,16 @@ class UserOrderMessagesView(APIView):
                 orders = orders.filter(
                     Q(buyer__first_name__icontains=filters["search"])
                     | Q(buyer__last_name__icontains=filters["search"])
-                    | Q(order_item_order_id__package__influencer__first_name__icontains=filters["search"])
-                    | Q(order_item_order_id__package__influencer__last_name__icontains=filters["search"])
+                    | Q(
+                        order_item_order_id__package__influencer__first_name__icontains=filters[
+                            "search"
+                        ]
+                    )
+                    | Q(
+                        order_item_order_id__package__influencer__last_name__icontains=filters[
+                            "search"
+                        ]
+                    )
                     | Q(order_code__icontains=filters["search"])
                 )
             total_unread_count = 0
@@ -250,32 +265,30 @@ class UserOrderMessagesView(APIView):
                 order_messages = OrderMessage.objects.filter(order_id=order)
                 if order_messages.exists():
                     last_message = order_messages.last()
-                    unread_count = order_messages.filter(status='sent',
-                                                         receiver_id=request.user_account
-                                                         ).count()
+                    unread_count = order_messages.filter(
+                        status="sent", receiver_id=request.user_account
+                    ).count()
                     total_unread_count += unread_count
                     message_data = {
-                        'message': last_message,
-                        'order_unread_messages_count': unread_count,
-                        'created_at': last_message.created_at  # Store the timestamp
+                        "message": last_message,
+                        "order_unread_messages_count": unread_count,
+                        "created_at": last_message.created_at,  # Store the timestamp
                     }
                 else:
                     message_data = {
-                        'message': {},
-                        'order_unread_messages_count': 0,
-                        'created_at': None  # No timestamp for orders without messages
+                        "message": {},
+                        "order_unread_messages_count": 0,
+                        "created_at": None,  # No timestamp for orders without messages
                     }
-                data.append({
-                    'order': order,
-                    'order_message': message_data
-                })
+                data.append({"order": order, "order_message": message_data})
             # The data should be sorted by the created_at field of the last message
-            data.sort(key=lambda x: x['order_message']['created_at']
-                      or x['order'].created_at, reverse=True)
-            serializer = UserOrderMessagesSerializer({
-                'orders': data,
-                'total_unread_messages_count': total_unread_count
-            })
+            data.sort(
+                key=lambda x: x["order_message"]["created_at"] or x["order"].created_at,
+                reverse=True,
+            )
+            serializer = UserOrderMessagesSerializer(
+                {"orders": data, "total_unread_messages_count": total_unread_count}
+            )
             return Response(
                 {
                     "isSuccess": True,
@@ -286,6 +299,7 @@ class UserOrderMessagesView(APIView):
             )
         except Exception as e:
             return handleServerException(e)
+
 
 # Retrieve-Update-Destroy API
 class OrderDetail(APIView):
@@ -342,13 +356,31 @@ class OrderDetail(APIView):
             if order is None:
                 return handleNotFound("Order")
 
-            if order.status != "draft" and order.status != "pending":
+            if (
+                request.user_account.role.name == "business_owner"
+                and order.status != "draft"
+                and order.status != "pending"
+            ):
                 return Response(
                     {
                         "isSuccess": False,
-                        "message": "Order defails cannot be updated as payment has been made",
+                        "message": "Business cannot update order as payment has been made",
                         "data": None,
-                        "errors": "Order defails cannot be updated as payment has been made",
+                        "errors": "Business cannot update order as payment has been made",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            if (
+                request.user_account.role.name == "influencer"
+                and order.status != "accepted"
+            ):
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Influencer cannot update order if it's not in accepted state",
+                        "data": None,
+                        "errors": "Influencer cannot update order if it's not in accepted state",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -409,11 +441,10 @@ class UpdateOrderStatus(APIView):
             if order is None:
                 return handleNotFound("Order")
 
-            # Extract only the 'status' field from the request data 
+            # Extract only the 'status' field from the request data
             status_data = {"status": request.data.get("status")}
 
             serializer = OrderSerializer(instance=order, data=status_data, partial=True)
-            
 
             if serializer.is_valid():
                 old_status = order.status
@@ -432,11 +463,11 @@ class UpdateOrderStatus(APIView):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                 serializer.save()
-                
+
                 # Update status for all related OrderItems
                 order_items = OrderItem.objects.filter(order_id=order.id)
                 for order_item in order_items:
-                    # Here we are considering that while calling the update-order-status, we change the order status to 
+                    # Here we are considering that while calling the update-order-status, we change the order status to
                     # accepted and rejected only, and corresponding to that we changing the same for each order item.
                     order_item.status = status_data["status"]
                     order_item.save()
@@ -812,6 +843,7 @@ class OrderItemTrackingDetail(APIView):
 
 # ORDER-Message API-Endpoint
 
+
 # Get Order Messages
 class OrderMessageList(APIView):
     authentication_classes = [JWTAuthentication]
@@ -844,8 +876,7 @@ class OrderMessageList(APIView):
                 )
             orderMessages = order.order_message_order_id.all().order_by("-created_at")
             pagination = Pagination(orderMessages, request)
-            serializer = OrderMessageSerializer(
-                pagination.getData(), many=True)
+            serializer = OrderMessageSerializer(pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -886,8 +917,9 @@ class OrderMessageList(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             orderMessages = order.order_message_order_id.filter(
-                receiver_id=request.user_account, status='sent')
-            orderMessages.update(status='read')
+                receiver_id=request.user_account, status="sent"
+            )
+            orderMessages.update(status="read")
             return Response(
                 {
                     "isSuccess": True,
@@ -899,6 +931,7 @@ class OrderMessageList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 # List-Create-API
 
 
@@ -909,7 +942,8 @@ class OrderMessageCreateView(APIView):
     def post(self, request):
         try:
             serializer = CreateOrderMessageSerializer(
-                data=request.data, context={"request": request})
+                data=request.data, context={"request": request}
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -1149,7 +1183,7 @@ class SendTweetView(APIView):
             serializer = SendTweetSerializer(data=request.data)
             if serializer.is_valid():
                 # Get the order_item_id
-                order_item_id = serializer.validated_data['order_item_id']
+                order_item_id = serializer.validated_data["order_item_id"]
 
                 # Schedule the tweet
                 schedule_tweet(order_item_id)
@@ -1175,7 +1209,7 @@ class CancelTweetView(APIView):
             serializer = SendTweetSerializer(data=request.data)
             if serializer.is_valid():
                 # Get the order_item_id
-                order_item_id = serializer.validated_data['order_item_id']
+                order_item_id = serializer.validated_data["order_item_id"]
 
                 # Schedule the tweet
                 cancel_tweet(order_item_id)

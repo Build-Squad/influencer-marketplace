@@ -148,6 +148,7 @@ def createUser(userData, access_token, role, refresh_token):
             twitter_account=current_twitter_user
         ).first()
 
+        # Operations for Main User account
         if existing_user_account is None:
             new_user_account = User.objects.create(
                 username=userData.username,
@@ -157,33 +158,44 @@ def createUser(userData, access_token, role, refresh_token):
             )
             new_user_account.save()
         else:
-            existing_user_account.last_login = datetime.datetime.now()
-            existing_user_account.save()
+            if existing_user_account.role.name != role:
+                return {
+                    "status": "error",
+                    "message": f"Twitter account already connect with {existing_user_account.role.name} account",
+                }
+            else:
+                existing_user_account.last_login = datetime.datetime.now()
+                existing_user_account.save()
 
         current_user = User.objects.filter(twitter_account=current_twitter_user).first()
         logger.info("User Successfully created/updated")
-        return current_user
+        return {"status": "success", "current_user": current_user}
     except Exception as e:
         logger.error("Error creating/updating user account -", e)
-        return HttpResponseRedirect(
-            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
-        )
+        return {
+            "status": "error",
+            "message": "Error creating/updating user account",
+        }
 
 
 def createJWT(userData, access_token, role, refresh_token):
     try:
-        # Creating/Updating twitter and user table
-        current_user = createUser(userData, access_token, role, refresh_token)
-
         # Creating a response object with JWT cookie
         if role == "business_owner":
-            redirect_url = (
-                f"{config('FRONT_END_URL')}business/?authenticationStatus=success"
-            )
+            redirect_url = f"{config('FRONT_END_URL')}business/"
         elif role == "influencer":
-            redirect_url = (
-                f"{config('FRONT_END_URL')}influencer/?authenticationStatus=success"
+            redirect_url = f"{config('FRONT_END_URL')}influencer/"
+
+        current_user_data = createUser(userData, access_token, role, refresh_token)
+        if current_user_data["status"] == "error":
+            return redirect(
+                redirect_url
+                + f"?authenticationStatus=error&message={current_user_data['message']}"
             )
+
+        current_user = current_user_data["current_user"]
+
+        redirect_url += "?authenticationStatus=success"
 
         response = redirect(redirect_url)
 
