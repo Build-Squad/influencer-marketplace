@@ -244,7 +244,11 @@ export default function Navbar({
             height={30}
             alt="bgimg"
             onClick={() => {
-              router.push("/");
+              const url =
+                user?.user?.role?.name == "influencer"
+                  ? "/influencer"
+                  : "/business";
+              router.push(url);
             }}
             style={{ cursor: "pointer" }}
           />
