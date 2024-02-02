@@ -4,6 +4,7 @@ import CheckoutTable from "@/src/components/checkoutComponents/checkoutTable";
 import OrderItemForm from "@/src/components/checkoutComponents/orderItemForm";
 import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
+import CreateEscrow from "@/src/components/web3Components/createEscrow";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
 import {
@@ -111,8 +112,10 @@ export default function CheckoutPage() {
         dispatch(
           initializeCart({
             orderId: order.id,
-            influencer: order.order_item_order_id[0].package.influencer,
+            influencer: order?.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
+            influencer_wallet: order?.influencer_wallet,
+            buyer_wallet: order?.buyer_wallet,
           })
         );
       } else {
@@ -155,6 +158,8 @@ export default function CheckoutPage() {
             orderId: order.id,
             influencer: order.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
+            influencer_wallet: order?.influencer_wallet,
+            buyer_wallet: order?.buyer_wallet,
           })
         );
       } else {
@@ -352,25 +357,7 @@ export default function CheckoutPage() {
                   </Button>
                 }
               />
-              <Button
-                disableElevation
-                fullWidth
-                variant="outlined"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
-                  border: "1px solid black",
-                  borderRadius: "20px",
-                  mt: 2,
-                }}
-                disabled={loading || !cart?.orderId}
-                onClick={() => {
-                  updateStatus();
-                }}
-              >
-                Make Offer
-              </Button>
+              <CreateEscrow loading={loading} updateStatus={updateStatus} />
             </Box>
           </Box>
         </Grid>

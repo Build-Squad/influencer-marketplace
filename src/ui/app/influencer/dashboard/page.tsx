@@ -9,6 +9,7 @@ import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import StatusChip from "@/src/components/shared/statusChip";
+import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -337,6 +338,9 @@ export default function BusinessDashboardPage() {
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
+            {params?.row?.status === ORDER_STATUS.COMPLETED && (
+              <ClaimEscrow order={params?.row} updateStatus={getOrders} />
+            )}
           </Box>
         );
       },
@@ -355,31 +359,6 @@ export default function BusinessDashboardPage() {
         );
       },
     },
-    // {
-    //   field: "review_order_id__rating",
-    //   headerName: "Rating",
-    //   flex: 1,
-    //   renderCell: (
-    //     params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
-    //   ): React.ReactNode => {
-    //     return (
-    //       <Box
-    //         sx={{
-    //           display: "flex",
-    //           justifyContent: "center",
-    //           alignItems: "center",
-    //         }}
-    //       >
-    //         <Rating
-    //           name="read-only"
-    //           value={params?.row?.rating}
-    //           size="small"
-    //           readOnly
-    //         />
-    //       </Box>
-    //     );
-    //   },
-    // },
   ];
 
   useEffect(() => {
