@@ -193,11 +193,14 @@ export default function Navbar({
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
+    const message = params.get("message");
     if (status) {
       setLoginStatus({
         status,
         message:
-          status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
+          status == "success"
+            ? LOGIN_STATUS_SUCCESS
+            : message ?? LOGIN_STATUS_FAILED,
       });
     }
   }, [isTwitterUserLoggedIn]);
