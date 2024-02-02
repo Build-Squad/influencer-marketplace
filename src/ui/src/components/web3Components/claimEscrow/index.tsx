@@ -1,5 +1,5 @@
-import { useAppSelector } from "@/src/hooks/useRedux";
-import { Button, IconButton, Tooltip } from "@mui/material";
+import MoveDownIcon from "@mui/icons-material/MoveDown";
+import { IconButton, Tooltip } from "@mui/material";
 import {
   Connection,
   PublicKey,
@@ -7,15 +7,16 @@ import {
   clusterApiUrl,
 } from "@solana/web3.js";
 import idl from "../../../utils/xfluencer.json";
-import MoveDownIcon from "@mui/icons-material/MoveDown";
 
 import * as anchor from "@coral-xyz/anchor";
 
 import { getAnchorProgram } from "@/src/utils/anchorUtils";
+import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { notification } from "../../shared/notification";
-import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+import { putService } from "@/src/services/httpServices";
+import DownloadingIcon from "@mui/icons-material/Downloading";
 
 type CreateEscrowProps = {
   order: OrderType;
@@ -40,6 +41,30 @@ export default function ClaimEscrow({
 
   const { publicKey, sendTransaction } = useWallet();
 
+  const updateInfluencerTransactionAddress = async (address: string) => {
+    try {
+      const { isSuccess, message } = await putService(
+        `orders/update-influencer-transaction/${order?.id}/`,
+        {
+          address: address,
+        }
+      );
+
+      if (isSuccess) {
+        notification("Payment successfully claimed!", "success");
+      } else {
+        notification(
+          message
+            ? message
+            : "Something went wrong, couldn't update order status",
+          "error"
+        );
+      }
+    } finally {
+      updateStatus();
+    }
+  };
+
   const claimEscrow = async () => {
     if (order?.buyer_wallet) {
       // Get influencer wallet address
@@ -59,14 +84,14 @@ export default function ClaimEscrow({
           utf8.encode("escrow"),
           buyer_pk.toBuffer(),
           publicKey.toBuffer(),
-          utf8.encode("87"),
+          utf8.encode(order?.order_number?.toString()),
         ],
         programId
       );
 
       // Create the escrow
       const ix = await program.methods
-        .claimEscrow(new anchor.BN(87))
+        .claimEscrow(new anchor.BN(order?.order_number))
         .accounts({
           influencer: publicKey,
           business: buyer_pk,
@@ -97,7 +122,7 @@ export default function ClaimEscrow({
             "error"
           );
         } else {
-          updateStatus();
+          updateInfluencerTransactionAddress(signature);
         }
       } catch (error) {
         console.error("Transaction error", error);
@@ -112,7 +137,7 @@ export default function ClaimEscrow({
           claimEscrow();
         }}
       >
-        <MoveDownIcon />
+        <DownloadingIcon />
       </IconButton>
     </Tooltip>
   );

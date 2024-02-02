@@ -18,7 +18,7 @@ import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 type CreateEscrowProps = {
   loading: boolean;
-  updateStatus: () => void;
+  updateStatus: (address: string) => Promise<void>;
 };
 
 const programId = new PublicKey(idl.metadata.address);
@@ -42,7 +42,7 @@ export default function CreateEscrow({
   const { publicKey, sendTransaction } = useWallet();
 
   const createEscrow = async () => {
-    if (cart?.orderId && cart?.influencer_wallet) {
+    if (cart?.order_number && cart?.influencer_wallet) {
       // Get influencer wallet address
       const influencer_pk = new PublicKey(
         cart?.influencer_wallet?.wallet_address_id
@@ -62,7 +62,7 @@ export default function CreateEscrow({
           utf8.encode("escrow"),
           publicKey.toBuffer(),
           influencer_pk.toBuffer(),
-          utf8.encode("87"),
+          utf8.encode(cart?.order_number?.toString()),
         ],
         programId
       );
@@ -71,7 +71,7 @@ export default function CreateEscrow({
       const ix = await program.methods
         .createEscrow(
           new anchor.BN(Number(cart?.orderTotal)),
-          new anchor.BN(87)
+          new anchor.BN(cart?.order_number)
         )
         .accounts({
           from: publicKey,
@@ -103,7 +103,7 @@ export default function CreateEscrow({
             "error"
           );
         } else {
-          updateStatus();
+          updateStatus(signature);
         }
       } catch (error) {
         console.error("Transaction error", error);
