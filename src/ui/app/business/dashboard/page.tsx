@@ -31,6 +31,7 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 
 export default function BusinessDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
@@ -377,6 +378,29 @@ export default function BusinessDashboardPage() {
                 </Tooltip>
               )}
             </>
+            {params?.row?.buyer_transaction_address && (
+              <Tooltip
+                title="View Transaction"
+                placement="top"
+                arrow
+                disableInteractive
+              >
+                <Link
+                  href={`https://solana.fm/tx/${params?.row?.buyer_transaction_address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_NETWORK}`}
+                  target="_blank"
+                  sx={{
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  <IconButton>
+                    <TravelExploreIcon color="secondary" />
+                  </IconButton>
+                </Link>
+              </Tooltip>
+            )}
           </Box>
         );
       },

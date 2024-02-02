@@ -193,11 +193,14 @@ export default function Navbar({
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
+    const message = params.get("message");
     if (status) {
       setLoginStatus({
         status,
         message:
-          status == "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
+          status == "success"
+            ? LOGIN_STATUS_SUCCESS
+            : message ?? LOGIN_STATUS_FAILED,
       });
     }
   }, [isTwitterUserLoggedIn]);
@@ -241,7 +244,11 @@ export default function Navbar({
             height={30}
             alt="bgimg"
             onClick={() => {
-              router.push("/");
+              const url =
+                user?.user?.role?.name == "influencer"
+                  ? "/influencer"
+                  : "/business";
+              router.push(url);
             }}
             style={{ cursor: "pointer" }}
           />

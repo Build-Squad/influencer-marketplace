@@ -9,9 +9,11 @@ import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import StatusChip from "@/src/components/shared/statusChip";
+import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
   Grid,
@@ -30,6 +32,7 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 
 export default function BusinessDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
@@ -337,6 +340,56 @@ export default function BusinessDashboardPage() {
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
+            {params?.row?.status === ORDER_STATUS.ACCEPTED && (
+              <Tooltip
+                title="Go To Order"
+                placement="top"
+                arrow
+                disableInteractive
+              >
+                <Link
+                  href={`/influencer/edit-order/${params?.row?.id}`}
+                  component={NextLink}
+                  sx={{
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  <IconButton>
+                    <OpenInNewIcon color="secondary" />
+                  </IconButton>
+                </Link>
+              </Tooltip>
+            )}
+            {params?.row?.status === ORDER_STATUS.COMPLETED &&
+              !params?.row?.influencer_transaction_address && (
+                <ClaimEscrow order={params?.row} updateStatus={getOrders} />
+              )}
+            {params?.row?.influencer_transaction_address && (
+              <Tooltip
+                title="View Transaction"
+                placement="top"
+                arrow
+                disableInteractive
+              >
+                <Link
+                  href={`https://solana.fm/tx/${params?.row?.influencer_transaction_address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_NETWORK}`}
+                  target="_blank"
+                  sx={{
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  <IconButton>
+                    <TravelExploreIcon color="secondary" />
+                  </IconButton>
+                </Link>
+              </Tooltip>
+            )}
           </Box>
         );
       },
@@ -355,31 +408,6 @@ export default function BusinessDashboardPage() {
         );
       },
     },
-    // {
-    //   field: "review_order_id__rating",
-    //   headerName: "Rating",
-    //   flex: 1,
-    //   renderCell: (
-    //     params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
-    //   ): React.ReactNode => {
-    //     return (
-    //       <Box
-    //         sx={{
-    //           display: "flex",
-    //           justifyContent: "center",
-    //           alignItems: "center",
-    //         }}
-    //       >
-    //         <Rating
-    //           name="read-only"
-    //           value={params?.row?.rating}
-    //           size="small"
-    //           readOnly
-    //         />
-    //       </Box>
-    //     );
-    //   },
-    // },
   ];
 
   useEffect(() => {

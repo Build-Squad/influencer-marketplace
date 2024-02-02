@@ -24,6 +24,7 @@ import NextLink from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import { useState } from "react";
+import { useAppSelector } from "@/src/hooks/useRedux";
 
 const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
   switch (meta_data.field_type) {
@@ -92,6 +93,91 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
         </Box>
       );
 
+    default:
+      return null;
+  }
+};
+
+const GetOrderItemBadge = ({
+  orderStatus,
+  eachOrderItem,
+  handleClick,
+}: {
+  orderStatus: any;
+  eachOrderItem: any;
+  handleClick: any;
+}) => {
+  const user = useAppSelector((state) => state.user?.user);
+
+  if (
+    user?.role?.name !== "influencer" ||
+    !(
+      orderStatus === ORDER_STATUS.ACCEPTED ||
+      orderStatus === ORDER_STATUS.COMPLETED
+    )
+  ) {
+    return null; // If user is not an influencer or order status is not accepted or completed, return null
+  }
+
+  switch (eachOrderItem?.status) {
+    case ORDER_ITEM_STATUS.ACCEPTED:
+      return (
+        <Box sx={{ display: "flex", columnGap: "8px" }}>
+          <Chip
+            sx={{ fontWeight: "bold" }}
+            label="Schedule"
+            color="success"
+            onClick={() => {
+              handleClick({
+                orderId: eachOrderItem.id,
+                type: "SCHEDULE",
+              });
+            }}
+            variant="outlined"
+          />
+        </Box>
+      );
+    case ORDER_ITEM_STATUS.CANCELLED:
+      return (
+        <Chip
+          label="Cancelled"
+          color="error"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
+    case ORDER_ITEM_STATUS.PUBLISHED:
+      return (
+        <Chip
+          label="Published"
+          color="success"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
+    case ORDER_ITEM_STATUS.SCHEDULED:
+      return (
+        <Box sx={{ display: "flex", columnGap: "8px" }}>
+          <Chip
+            label="Scheduled"
+            color="warning"
+            disabled={true}
+            sx={{ fontWeight: "bold" }}
+          />
+          <Chip
+            sx={{ fontWeight: "bold" }}
+            label="Cancel"
+            color="error"
+            onDelete={() => {
+              handleClick({
+                orderId: eachOrderItem.id,
+                type: "CANCEL",
+              });
+            }}
+            variant="outlined"
+          />
+        </Box>
+      );
     default:
       return null;
   }
@@ -171,61 +257,11 @@ const OrderSummaryDetails = ({
               <Typography variant="h6" fontWeight={"bold"}>
                 {index + 1}. {eachOrderItem?.package.name}
               </Typography>
-              {/* The status of the order should be accepted and then for each order item we'll see if it's scheduled, cancelled or already published */}
-              {orderStatus == ORDER_STATUS.ACCEPTED ||
-              orderStatus == ORDER_STATUS.COMPLETED ? (
-                eachOrderItem?.status == ORDER_ITEM_STATUS.ACCEPTED ? (
-                  <Box sx={{ display: "flex", columnGap: "8px" }}>
-                    <Chip
-                      sx={{ fontWeight: "bold" }}
-                      label="Schedule"
-                      color="success"
-                      onClick={() => {
-                        handleClick({
-                          orderId: eachOrderItem.id,
-                          type: "SCHEDULE",
-                        });
-                      }}
-                      variant="outlined"
-                    />
-                  </Box>
-                ) : eachOrderItem?.status == ORDER_ITEM_STATUS.CANCELLED ? (
-                  <Chip
-                    label="Cancelled"
-                    color="error"
-                    disabled={true}
-                    sx={{ fontWeight: "bold" }}
-                  />
-                ) : eachOrderItem?.status == ORDER_ITEM_STATUS.PUBLISHED ? (
-                  <Chip
-                    label="Published"
-                    color="success"
-                    disabled={true}
-                    sx={{ fontWeight: "bold" }}
-                  />
-                ) : eachOrderItem?.status == ORDER_ITEM_STATUS.SCHEDULED ? (
-                  <Box sx={{ display: "flex", columnGap: "8px" }}>
-                    <Chip
-                      label="Scheduled"
-                      color="warning"
-                      disabled={true}
-                      sx={{ fontWeight: "bold" }}
-                    />
-                    <Chip
-                      sx={{ fontWeight: "bold" }}
-                      label="Cancel"
-                      color="error"
-                      onDelete={() => {
-                        handleClick({
-                          orderId: eachOrderItem.id,
-                          type: "CANCEL",
-                        });
-                      }}
-                      variant="outlined"
-                    />
-                  </Box>
-                ) : null
-              ) : null}
+              <GetOrderItemBadge
+                orderStatus={orderStatus}
+                eachOrderItem={eachOrderItem}
+                handleClick={handleClick}
+              />
             </Box>
 
             {eachOrderItem?.order_item_meta_data?.map((meta_data: any) => {

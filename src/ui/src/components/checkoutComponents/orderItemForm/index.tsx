@@ -1,17 +1,21 @@
 "use client";
 
-import { useAppDispatch } from "@/src/hooks/useRedux";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import {
   removeOrderItem,
   updateFieldValues,
   updatePublishDate,
 } from "@/src/reducers/cartSlice";
 import { deleteService } from "@/src/services/httpServices";
-import { FORM_DATE_TIME_TZ_FORMAT } from "@/src/utils/consts";
+import {
+  FORM_DATE_TIME_TZ_FORMAT,
+  ORDER_ITEM_STATUS,
+} from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
   Button,
+  Chip,
   Divider,
   FormLabel,
   Grid,
@@ -24,14 +28,8 @@ import { useState } from "react";
 import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
 
-type OrderItem = {
-  order_item: OrderItemType;
-  index: number;
-  service_id?: string;
-};
-
 type OrderItemFormProps = {
-  orderItem: OrderItem;
+  orderItem: any;
   index: number;
   disableDelete: boolean;
   sx?: any;
@@ -46,6 +44,49 @@ type OrderItemFormProps = {
   ) => Promise<void>;
 };
 
+const GetOrderItemBadge = ({
+  orderStatus,
+  eachOrderItem,
+}: {
+  orderStatus: any;
+  eachOrderItem: any;
+}) => {
+  const user = useAppSelector((state) => state.user?.user);
+  switch (eachOrderItem?.status) {
+    case ORDER_ITEM_STATUS.CANCELLED:
+      return (
+        <Chip
+          label="Cancelled"
+          color="error"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
+    case ORDER_ITEM_STATUS.PUBLISHED:
+      return (
+        <Chip
+          label="Published"
+          color="success"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
+    case ORDER_ITEM_STATUS.SCHEDULED:
+      return (
+        <Box sx={{ display: "flex", columnGap: "8px" }}>
+          <Chip
+            label="Scheduled"
+            color="warning"
+            disabled={true}
+            sx={{ fontWeight: "bold" }}
+          />
+        </Box>
+      );
+    default:
+      return null;
+  }
+};
+
 export default function OrderItemForm({
   orderItem,
   index,
@@ -54,6 +95,12 @@ export default function OrderItemForm({
   updateFunction,
   updateOrderItemPublishDate,
 }: OrderItemFormProps) {
+  let disabled = false;
+  const user = useAppSelector((state) => state.user?.user);
+  if (user?.role?.name == "influencer") {
+    disabled = orderItem?.order_item?.status != ORDER_ITEM_STATUS.ACCEPTED;
+  }
+
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
 
@@ -115,6 +162,13 @@ export default function OrderItemForm({
         >
           {`${index + 1}. ${orderItem?.order_item?.package?.name}`}
         </Typography>
+        {disabled && (
+          <GetOrderItemBadge
+            orderStatus={orderItem?.order_item?.status}
+            eachOrderItem={orderItem?.order_item}
+          />
+        )}
+
         {!disableDelete && (
           <ConfirmDelete
             title="this order item"
@@ -151,10 +205,10 @@ export default function OrderItemForm({
         }}
       >
         {orderItem?.order_item?.order_item_meta_data
-          .toSorted((a, b) => {
+          .toSorted((a: any, b: any) => {
             return a?.order - b?.order;
           })
-          ?.map((formFields) => {
+          ?.map((formFields: any) => {
             return (
               <Grid
                 md={formFields?.span}
@@ -177,6 +231,7 @@ export default function OrderItemForm({
                 </FormLabel>
                 {formFields?.field_type === "text" && (
                   <TextField
+                    disabled={disabled}
                     color="secondary"
                     value={formFields?.value}
                     name={formFields?.id}
@@ -238,6 +293,7 @@ export default function OrderItemForm({
                 )}
                 {formFields?.field_type === "long_text" && (
                   <TextField
+                    disabled={disabled}
                     color="secondary"
                     name={formFields?.id}
                     value={formFields?.value}
@@ -303,6 +359,7 @@ export default function OrderItemForm({
                 )}
                 {formFields?.field_type === "date_time" && (
                   <DateTimePicker
+                    disabled={disabled}
                     value={
                       dayjs(formFields?.value).isValid()
                         ? dayjs(formFields?.value)
@@ -356,6 +413,7 @@ export default function OrderItemForm({
                     }}
                   >
                     <Button
+                      disabled={disabled}
                       variant="contained"
                       disableElevation
                       sx={{
@@ -384,6 +442,7 @@ export default function OrderItemForm({
           }}
         >
           <DateTimePicker
+            disabled={disabled}
             value={
               orderItem?.order_item?.publish_date
                 ? dayjs(orderItem?.order_item?.publish_date)
