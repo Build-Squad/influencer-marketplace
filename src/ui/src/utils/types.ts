@@ -232,6 +232,9 @@ type OrderType = {
   order_code?: string;
   buyer_wallet: WalletType;
   influencer_wallet: WalletType;
+  order_number: number;
+  influencer_transaction_address?: string;
+  buyer_transaction_address?: string;
 };
 
 type OrderFilterType = {
