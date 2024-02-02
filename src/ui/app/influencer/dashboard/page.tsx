@@ -12,6 +12,7 @@ import StatusChip from "@/src/components/shared/statusChip";
 import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
   Grid,
@@ -337,6 +338,29 @@ export default function BusinessDashboardPage() {
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
+            {params?.row?.status === ORDER_STATUS.ACCEPTED && (
+              <Tooltip
+                title="Go To Order"
+                placement="top"
+                arrow
+                disableInteractive
+              >
+                <Link
+                  href={`/influencer/edit-order/${params?.row?.id}`}
+                  component={NextLink}
+                  sx={{
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  <IconButton>
+                    <OpenInNewIcon color="secondary" />
+                  </IconButton>
+                </Link>
+              </Tooltip>
+            )}
           </Box>
         );
       },
