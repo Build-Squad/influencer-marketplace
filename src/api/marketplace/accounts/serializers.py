@@ -164,6 +164,13 @@ class WalletSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class WalletCompleteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Wallet
+        fields = "__all__"
+
+
 class UserSerializer(serializers.ModelSerializer):
     twitter_account = TwitterAccountSerializer(read_only=True)
     role = RoleSerializer(read_only=True)

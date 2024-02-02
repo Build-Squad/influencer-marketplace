@@ -37,6 +37,8 @@ from .serializers import (
     ReviewSerializer,
     OrderMessageListFilterSerializer,
     UserOrderMessagesSerializer,
+    UpdateOrderInfluencerTransactionAddressSerializer,
+    UserOrderMessagesSerializer
 )
 from rest_framework import status
 from django.db.models import Q
@@ -446,6 +448,20 @@ class UpdateOrderStatus(APIView):
 
             if serializer.is_valid():
                 old_status = order.status
+                if status_data["status"] == "pending":
+                    if request.data.get("address"):
+                        order.buyer_transaction_address = request.data.get(
+                            "address")
+                    else:
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Please complete the payment details",
+                                "data": None,
+                                "errors": "Please complete the payment details",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
                 serializer.save()
 
                 # Update status for all related OrderItems
@@ -469,6 +485,31 @@ class UpdateOrderStatus(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class UpdateUpdateOrderInfluencerTransactionAddressView(APIView):
+    @swagger_auto_schema(request_body=UpdateOrderInfluencerTransactionAddressSerializer)
+    def put(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk, deleted_at=None)
+            if order is None:
+                return handleNotFound("Order")
+            serializer = UpdateOrderInfluencerTransactionAddressSerializer(
+                instance=order, data=request.data, partial=True
+            )
+            if serializer.is_valid():
+                serializer.update(order, serializer.validated_data)
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": OrderSerializer(serializer.instance).data,
+                        "message": "Transaction address added successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
 
 # ORDER-Item API-Endpoint
 # List-Create-API
