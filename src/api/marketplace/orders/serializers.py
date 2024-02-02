@@ -78,6 +78,7 @@ class OrderSerializer(serializers.ModelSerializer):
     currency = serializers.SerializerMethodField()
     influencer_wallet = serializers.SerializerMethodField()
     buyer_wallet = serializers.SerializerMethodField()
+    address = serializers.CharField(required=False)
 
     class Meta:
         model = Order
@@ -368,3 +369,12 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 class SendTweetSerializer(serializers.Serializer):
     order_item_id = serializers.UUIDField(required=True)
+
+
+class UpdateOrderInfluencerTransactionAddressSerializer(serializers.Serializer):
+    address = serializers.CharField(required=True)
+
+    def update(self, instance, validated_data):
+        instance.influencer_transaction_address = validated_data['address']
+        instance.save()
+        return instance
