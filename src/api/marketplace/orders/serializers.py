@@ -1,6 +1,6 @@
 from email import message
-from accounts.serializers import UserSerializer
-from accounts.models import User
+from accounts.serializers import UserSerializer, WalletCompleteSerializer
+from accounts.models import User, Wallet
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service, ServiceMasterMetaData
@@ -76,6 +76,8 @@ class OrderSerializer(serializers.ModelSerializer):
     review = ReviewSerializer(read_only=True)
     amount = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
+    influencer_wallet = serializers.SerializerMethodField()
+    buyer_wallet = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -96,6 +98,23 @@ class OrderSerializer(serializers.ModelSerializer):
         if first_order_item:
             return CurrencySerializer(first_order_item.currency).data
         return None
+
+    def get_influencer_wallet(self, obj):
+        # Should return the wallet of the influencer
+        influencer_id = obj.order_item_order_id.first().package.influencer.id
+        influencer = User.objects.get(id=influencer_id)
+        wallet = Wallet.objects.filter(
+            user_id=influencer, is_primary=True).first()
+        if wallet:
+            return WalletCompleteSerializer(wallet).data
+
+    def get_buyer_wallet(self, obj):
+        # Should return the wallet of the buyer
+        buyer = User.objects.get(id=obj.buyer.id)
+        wallet = Wallet.objects.filter(
+            user_id=buyer, is_primary=True).first()
+        if wallet:
+            return WalletCompleteSerializer(wallet).data
 
 
 # The request schema for the creation and update of an order item meta data value
