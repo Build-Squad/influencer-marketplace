@@ -66,7 +66,7 @@ export default function ClaimEscrow({
   };
 
   const claimEscrow = async () => {
-    if (order?.buyer_wallet) {
+    if (order?.buyer_wallet && order?.order_number) {
       // Get influencer wallet address
       const buyer_pk = new PublicKey(order?.buyer_wallet?.wallet_address_id);
 
