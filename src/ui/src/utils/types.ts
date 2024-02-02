@@ -217,6 +217,7 @@ type OrderItemType = {
   order_id?: string;
   order_item_meta_data: OrderItemMetaDataType[];
   publish_date?: string;
+  published_tweet_id?: string;
 };
 
 type OrderType = {

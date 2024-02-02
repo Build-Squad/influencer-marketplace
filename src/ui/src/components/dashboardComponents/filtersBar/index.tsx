@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import React, { useEffect } from "react";
 import CustomAutoComplete from "../../shared/customAutoComplete";
 import FilterChip from "../../shared/filterChip";
+import SearchIcon from "@mui/icons-material/Search";
 
 type FilterBarProps = {
   filters: OrderFilterType;
@@ -66,7 +67,30 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
             </Badge>
           </Box>
         </Grid>
-        <Grid item xs={12} sm={12} md={3} lg={3}></Grid>
+        <Grid item xs={12} sm={12} md={3} lg={3}>
+          <TextField
+            size="small"
+            color="secondary"
+            fullWidth
+            label="Search Order"
+            variant="outlined"
+            value={filters.search}
+            onChange={(e) =>
+              setFilters({
+                ...filters,
+                search: e.target.value,
+              })
+            }
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 8,
+              },
+            }}
+            InputProps={{
+              endAdornment: <SearchIcon />,
+            }}
+          />
+        </Grid>
         <Grid item xs={12} sm={6} md={2} lg={2}>
           <CustomAutoComplete
             customFilter={{

@@ -1,4 +1,5 @@
 from accounts.models import TwitterAccount, User
+from orders.services import create_notification_for_order, create_notification_for_order_item
 from orders.models import Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
@@ -30,6 +31,30 @@ CONSUMER_SECRET = config("CONSUMER_SECRET")
 ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 
+
+def checkOrderStatus(order_id):
+    try:
+        # Get order
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        raise Exception('Order does not exist')
+
+    # Get all the order items
+    order_items = OrderItem.objects.filter(order_id=order)
+
+    is_completed = True
+
+    for order_item in order_items:
+        if order_item.status != 'published':
+            is_completed = False
+            break
+
+    if is_completed:
+        order.status = 'completed'
+        order.save()
+
+        # Send notification to business
+        create_notification_for_order(order, 'accepted', 'completed')
 
 @shared_task
 def send_tweet(order_item_id):
@@ -86,6 +111,13 @@ def send_tweet(order_item_id):
         order_item.published_tweet_id = tweet_id
         order_item.status = 'published'
         order_item.save()
+
+        # Create notification for order item
+        create_notification_for_order_item(
+            order_item, 'scheduled', 'published')
+
+        # Check if the order is completed
+        checkOrderStatus(order_item.order_id.id)
     except Exception as e:
         raise Exception(str(e))
 
@@ -121,6 +153,10 @@ def schedule_tweet(order_item_id):
             order_item.celery_task_id = celery_task.id
             order_item.status = 'scheduled'
             order_item.save()
+
+            # Send notification to business
+            create_notification_for_order_item(
+                order_item, 'accepted', 'scheduled')
     except Exception as e:
         raise Exception(str(e))
 
@@ -144,5 +180,9 @@ def cancel_tweet(order_item_id):
             order_item.celery_task_id = None
             order_item.status = 'cancelled'
             order_item.save()
+
+            # Send notification to business
+            create_notification_for_order_item(
+                order_item, 'scheduled', 'cancelled')
     except Exception as e:
         raise Exception(str(e))

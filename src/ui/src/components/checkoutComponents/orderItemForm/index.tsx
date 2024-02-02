@@ -7,10 +7,7 @@ import {
   updatePublishDate,
 } from "@/src/reducers/cartSlice";
 import { deleteService } from "@/src/services/httpServices";
-import {
-  FORM_DATE_TIME_FORMAT,
-  ISO_DATE_TIME_FORMAT,
-} from "@/src/utils/consts";
+import { FORM_DATE_TIME_TZ_FORMAT } from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
@@ -389,36 +386,32 @@ export default function OrderItemForm({
           <DateTimePicker
             value={
               orderItem?.order_item?.publish_date
-                ? dayjs(
-                    orderItem?.order_item?.publish_date,
-                    FORM_DATE_TIME_FORMAT
-                  )
+                ? dayjs(orderItem?.order_item?.publish_date)
                 : null
             }
             onChange={(e) => {
               if (updateOrderItemPublishDate) {
                 updateOrderItemPublishDate(
                   orderItem?.order_item?.id ? orderItem?.order_item?.id : "",
-                  dayjs(e).format(ISO_DATE_TIME_FORMAT)
+                  dayjs(e).format(FORM_DATE_TIME_TZ_FORMAT)
                 );
                 return;
               }
               dispatch(
                 updatePublishDate({
                   index: index,
-                  value: dayjs(e).format(ISO_DATE_TIME_FORMAT),
+                  value: dayjs(e).format(FORM_DATE_TIME_TZ_FORMAT),
                 })
               );
             }}
-            format={FORM_DATE_TIME_FORMAT}
-            minDate={dayjs()}
+            disablePast
             slotProps={{
               textField: {
                 size: "small",
                 color: "secondary",
                 variant: "outlined",
                 fullWidth: true,
-                placeholder: "Publish Date",
+                placeholder: "Publish Date and Time",
                 name: "publish_date",
                 sx: {
                   "& .MuiOutlinedInput-root": {

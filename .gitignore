@@ -51,3 +51,6 @@ solana/.anchor*
 solana/target/release/*
 solana/target/sbf-solana*
 solana/target/deploy*
+
+# celery-beat
+src/api/celerybeat-schedule
