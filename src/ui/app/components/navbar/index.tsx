@@ -121,7 +121,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
         }
 
         return (
-          <>
+          <Box key={item.label}>
             {item?.route.includes("/notifications") ? (
               <Box
                 sx={{
@@ -171,7 +171,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                 <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
               </Link>
             )}
-          </>
+          </Box>
         );
       })}
     </>
@@ -271,7 +271,13 @@ export default function Navbar({
               textDecoration: "none",
             }}
           >
-            <Image src={XfluencerLogo} width={175} height={30} alt="bgimg" />
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
           </Link>
         </Box>
         {isTwitterUserLoggedIn ? null : (
