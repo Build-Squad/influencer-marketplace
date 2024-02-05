@@ -227,6 +227,7 @@ export default function Navbar({
             ? LOGIN_STATUS_SUCCESS
             : message ?? LOGIN_STATUS_FAILED,
       });
+      router.push(pathname);
     }
   }, [isTwitterUserLoggedIn]);
 
