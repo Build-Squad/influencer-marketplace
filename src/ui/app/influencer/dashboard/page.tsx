@@ -14,13 +14,13 @@ import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   Box,
   Grid,
   IconButton,
   Link,
   Pagination,
-  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -32,7 +32,6 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 
 export default function BusinessDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
@@ -192,13 +191,13 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.REJECTED],
         }));
-        setSelectedCard(3);
+        setSelectedCard(4);
       },
       value: 4,
       icon: (
         <RejectedOrders
           style={{
-            fill: selectedCard === 3 ? "#fff" : "#19191929",
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
           }}
         />
       ),
