@@ -34,6 +34,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import React, { useEffect } from "react";
 import Services from "./_services";
+import RouteProtection from "@/src/components/shared/routeProtection";
 
 const tabs = [
   {
@@ -210,7 +211,7 @@ const ProfileLayout = ({
                       backgroundColor: "#FFF",
                       zIndex: "1",
                       display: "flex",
-                      maxWidth: "100%",
+                      minWidth: "100%",
                       flexDirection: "column",
                       mt: "-120px",
                     }}
@@ -488,7 +489,10 @@ const ProfileLayout = ({
                         <Grid
                           item
                           xs={12}
-                          sx={{ display: "flex", justifyContent: "flex-start" }}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-start",
+                          }}
                         >
                           <Image
                             src={Star_Coloured}

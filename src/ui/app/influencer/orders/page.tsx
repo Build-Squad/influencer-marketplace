@@ -28,6 +28,7 @@ import {
 } from "@mui/x-data-grid";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import RouteProtection from "@/src/components/shared/routeProtection";
 
 export default function Orders() {
   const [open, setOpen] = React.useState(false);
@@ -114,7 +115,7 @@ export default function Orders() {
             }}
           >
             <Link
-              href={`/business/profile/profile-preview/${params?.row?.buyer?.id}`}
+              href={`/business/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"
               component={NextLink}
               sx={{
@@ -287,172 +288,176 @@ export default function Orders() {
   };
 
   return (
-    <Grid container sx={{ backgroundColor: "#FAFAFA", minHeight: "100vh" }}>
-      <Grid
-        item
-        xs={selectedOrder ? 9 : 12}
-        sx={{ padding: "16px 20px 0 40px" }}
-      >
-        <Box
-          sx={{ display: "flex", columnGap: "8px", alignItems: "flex-start" }}
+    <RouteProtection logged_in={true} influencer={true}>
+      <Grid container sx={{ backgroundColor: "#FAFAFA", minHeight: "100vh" }}>
+        <Grid
+          item
+          xs={selectedOrder ? 9 : 12}
+          sx={{ padding: "16px 20px 0 40px" }}
         >
-          <Image src={Star} height={20} alt="Star" />
-          <Typography variant="h4" fontWeight={"bold"}>
-            Order Requests
+          <Box
+            sx={{ display: "flex", columnGap: "8px", alignItems: "flex-start" }}
+          >
+            <Image src={Star} height={20} alt="Star" />
+            <Typography variant="h4" fontWeight={"bold"}>
+              Order Requests
+            </Typography>
+          </Box>
+          <Typography variant="subtitle1" sx={{ mt: 1 }}>
+            See all your order request and click on accept/decline button to do
+            the action. Your declined order requests will be deleted on spot and
+            all other accepted requests will be seen in dashboard page.
           </Typography>
-        </Box>
-        <Typography variant="subtitle1" sx={{ mt: 1 }}>
-          See all your order request and click on accept/decline button to do
-          the action. Your declined order requests will be deleted on spot and
-          all other accepted requests will be seen in dashboard page.
-        </Typography>
-        <Grid container spacing={2} sx={{ mt: 3 }}>
-          <Grid item xs={12}>
-            <DataGrid
-              getRowId={(row) => (row.id ? row.id : 0)}
-              onRowSelectionModelChange={(newRowSelectionModel) => {
-                setRowSelectionModel(newRowSelectionModel);
-              }}
-              rowSelectionModel={rowSelectionModel}
-              autoHeight
-              loading={loading}
-              rows={orders}
-              columns={columns}
-              disableColumnFilter
-              hideFooter
-              getRowHeight={(params) => 80}
-              sx={{
-                backgroundColor: "#fff",
-                boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-                border: "none",
-                borderRadius: "16px",
-              }}
-              sortingMode="server"
-              localeText={{
-                noRowsLabel: "No Orders found",
-              }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                mt: 2,
-              }}
-            >
-              <Pagination
-                count={pagination.total_page_count}
-                page={pagination.current_page_number}
-                onChange={handlePaginationChange}
+          <Grid container spacing={2} sx={{ mt: 3 }}>
+            <Grid item xs={12}>
+              <DataGrid
+                getRowId={(row) => (row.id ? row.id : 0)}
+                onRowSelectionModelChange={(newRowSelectionModel) => {
+                  setRowSelectionModel(newRowSelectionModel);
+                }}
+                rowSelectionModel={rowSelectionModel}
+                autoHeight
+                loading={loading}
+                rows={orders}
+                columns={columns}
+                disableColumnFilter
+                hideFooter
+                getRowHeight={(params) => 80}
+                sx={{
+                  backgroundColor: "#fff",
+                  boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
+                  border: "none",
+                  borderRadius: "16px",
+                }}
+                sortingMode="server"
+                localeText={{
+                  noRowsLabel: "No Orders found",
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Box
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                }}
-                color="secondary"
-                shape="rounded"
-              />
-            </Box>
-          </Grid>
-        </Grid>
-      </Grid>
-
-      <Grid
-        item
-        xs={3}
-        md={3}
-        sm={3}
-        lg={3}
-        sx={{
-          border: "1px solid #D3D3D3",
-          backgroundColor: "white",
-          borderTop: "none",
-          display: selectedOrder ? "block" : "none",
-        }}
-      >
-        <Box
-          sx={{
-            padding: "20px 40px",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-          }}
-        >
-          <Box>
-            <Typography variant="h5" fontWeight={"bold"}>
-              Order Details
-            </Typography>
-            <Typography variant="h6">
-              Business:{" "}
-              <Link
-                href={`/business/profile/${selectedOrder?.buyer?.id}`}
-                target="_blank"
-                component={NextLink}
-                sx={{
-                  color: "#0099FF",
-                  textDecoration: "none",
-                  "&:hover": {
-                    textDecoration: "underline",
-                  },
+                  alignItems: "center",
+                  mt: 2,
                 }}
               >
-                {selectedOrder?.buyer?.username}
-              </Link>
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", columnGap: 1 }}>
-              <Typography variant="h6">Order ID: </Typography>
-              <Typography variant="subtitle1">
-                {selectedOrder?.order_code}
-              </Typography>
-            </Box>
-          </Box>
+                <Pagination
+                  count={pagination.total_page_count}
+                  page={pagination.current_page_number}
+                  onChange={handlePaginationChange}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                  color="secondary"
+                  shape="rounded"
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </Grid>
 
-          <OpenInFull fontSize="medium" sx={{ cursor: "pointer" }} />
-        </Box>
-        <Divider />
-        <Box sx={{ padding: "20px 40px" }}>
-          <Typography variant="h6" fontWeight={"bold"}>
-            Order Summary
-          </Typography>
-          <OrderSummaryTable
-            order={selectedOrder}
-            totalOrders={selectedOrder?.order_item_order_id?.length ?? 0}
-          />
-          <OrderSummaryDetails orderItem={selectedOrder?.order_item_order_id} />
-        </Box>
-      </Grid>
-
-      {/* Model */}
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle
-          id="alert-dialog-title"
+        <Grid
+          item
+          xs={3}
+          md={3}
+          sm={3}
+          lg={3}
           sx={{
-            backgroundColor: "#fff !important",
-            color: "#000 !important",
+            border: "1px solid #D3D3D3",
+            backgroundColor: "white",
+            borderTop: "none",
+            display: selectedOrder ? "block" : "none",
           }}
         >
-          Are you sure you want to {selectedAction.status} this order?
-        </DialogTitle>
-        <DialogActions>
-          <Button color="secondary" variant="outlined" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={handleAction}
-            autoFocus
+          <Box
+            sx={{
+              padding: "20px 40px",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+            }}
           >
-            {selectedAction.status}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Grid>
+            <Box>
+              <Typography variant="h5" fontWeight={"bold"}>
+                Order Details
+              </Typography>
+              <Typography variant="h6">
+                Business:{" "}
+                <Link
+                  href={`/business/profile-preview/${selectedOrder?.buyer?.id}`}
+                  target="_blank"
+                  component={NextLink}
+                  sx={{
+                    color: "#0099FF",
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  {selectedOrder?.buyer?.username}
+                </Link>
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", columnGap: 1 }}>
+                <Typography variant="h6">Order ID: </Typography>
+                <Typography variant="subtitle1">
+                  {selectedOrder?.order_code}
+                </Typography>
+              </Box>
+            </Box>
+
+            <OpenInFull fontSize="medium" sx={{ cursor: "pointer" }} />
+          </Box>
+          <Divider />
+          <Box sx={{ padding: "20px 40px" }}>
+            <Typography variant="h6" fontWeight={"bold"}>
+              Order Summary
+            </Typography>
+            <OrderSummaryTable
+              order={selectedOrder}
+              totalOrders={selectedOrder?.order_item_order_id?.length ?? 0}
+            />
+            <OrderSummaryDetails
+              orderItem={selectedOrder?.order_item_order_id}
+            />
+          </Box>
+        </Grid>
+
+        {/* Model */}
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle
+            id="alert-dialog-title"
+            sx={{
+              backgroundColor: "#fff !important",
+              color: "#000 !important",
+            }}
+          >
+            Are you sure you want to {selectedAction.status} this order?
+          </DialogTitle>
+          <DialogActions>
+            <Button color="secondary" variant="outlined" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              color="secondary"
+              variant="contained"
+              onClick={handleAction}
+              autoFocus
+            >
+              {selectedAction.status}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Grid>
+    </RouteProtection>
   );
 }
