@@ -183,15 +183,9 @@ export default function Orders() {
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
-        const totalAmount = params?.row?.order_item_order_id?.reduce(
-          (acc: number, item: any) => {
-            return acc + parseFloat(item.price);
-          },
-          0
-        );
         return (
           <Typography variant="subtitle1">
-            {totalAmount} {params?.row?.currency?.symbol}
+            {params?.row?.amount} {params?.row?.currency?.symbol}
           </Typography>
         );
       },
