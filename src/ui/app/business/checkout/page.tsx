@@ -197,7 +197,14 @@ export default function CheckoutPage() {
           alignItems: "center",
         }}
       >
-        <Typography variant="h6">No items added to the cart</Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            fontStyle: "italic",
+          }}
+        >
+          Cart is Empty
+        </Typography>
       </Box>
     );
   }
