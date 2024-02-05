@@ -4,27 +4,35 @@ import HomeDisabledIcon from "@/public/svg/Home_disabled.svg";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { LOGIN_STATUS_FAILED, LOGIN_STATUS_SUCCESS } from "@/src/utils/consts";
-import { AppBar, Badge, Box, Button, Toolbar, Typography } from "@mui/material";
+import {
+  AppBar,
+  Badge,
+  Box,
+  Button,
+  Link,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import LoginMenu from "../loginMenu";
 
-import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
-import MessagesIcon from "@/public/svg/Messages.svg";
-import MessagesDisabledIcon from "@/public/svg/Messages_disabled.svg";
 import DashboardIcon from "@/public/svg/Dashboard.svg";
 import DashboardDisabledIcon from "@/public/svg/Dashboard_disabled.svg";
 import ExploreIcon from "@/public/svg/Explore.svg";
 import ExploreDisabledIcon from "@/public/svg/Explore_disabled.svg";
+import MessagesIcon from "@/public/svg/Messages.svg";
+import MessagesDisabledIcon from "@/public/svg/Messages_disabled.svg";
 import NotificationIcon from "@/public/svg/Notification.svg";
 import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
-
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import NotificationPanel from "@/src/components/notificationPanel";
+import NextLink from "next/link";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
@@ -91,7 +99,6 @@ const MENU_ITEMS: {
 const MenuItemsComponent = ({ items }: { items: string[] }) => {
   const cart = useAppSelector((state) => state.cart);
   const user = useAppSelector((state) => state.user);
-  const router = useRouter();
   const pathname = usePathname();
   return items ? (
     <>
@@ -114,39 +121,57 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
         }
 
         return (
-          <Box
-            sx={{
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={() => {
-              if (route.includes("/notifications")) return;
-              router.push(route);
-            }}
-          >
-            {item?.route.includes("/checkout") ? (
-              <Badge badgeContent={cart?.orderItems.length} color="secondary">
-                <Image
-                  src={pathname == route ? item?.icon : item?.disabledIcon}
-                  alt={item?.label}
-                  height={16}
-                />
-              </Badge>
-            ) : item?.route.includes("/notifications") ? (
-              <NotificationPanel />
+          <>
+            {item?.route.includes("/notifications") ? (
+              <Box
+                sx={{
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <NotificationPanel />
+                <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
+              </Box>
             ) : (
-              <Image
-                src={pathname == route ? item?.icon : item?.disabledIcon}
-                alt={item?.label}
-                height={16}
-              />
-            )}
+              <Link
+                component={NextLink}
+                href={route}
+                sx={{
+                  color: "secondary.main",
+                  textDecoration: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                {item?.route.includes("/checkout") ? (
+                  <Badge
+                    badgeContent={cart?.orderItems.length}
+                    color="secondary"
+                  >
+                    <Image
+                      src={pathname == route ? item?.icon : item?.disabledIcon}
+                      alt={item?.label}
+                      height={16}
+                    />
+                  </Badge>
+                ) : item?.route.includes("/notifications") ? (
+                  <NotificationPanel />
+                ) : (
+                  <Image
+                    src={pathname == route ? item?.icon : item?.disabledIcon}
+                    alt={item?.label}
+                    height={16}
+                  />
+                )}
 
-            <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
-          </Box>
+                <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
+              </Link>
+            )}
+          </>
         );
       })}
     </>
@@ -238,20 +263,15 @@ export default function Navbar({
         sx={{ display: "flex", justifyContent: "space-between" }}
       >
         <Box sx={{ width: "33%" }}>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            onClick={() => {
-              const url =
-                user?.user?.role?.name == "influencer"
-                  ? "/influencer"
-                  : "/business";
-              router.push(url);
+          <Link
+            component={NextLink}
+            href="/"
+            sx={{
+              textDecoration: "none",
             }}
-            style={{ cursor: "pointer" }}
-          />
+          >
+            <Image src={XfluencerLogo} width={175} height={30} alt="bgimg" />
+          </Link>
         </Box>
         {isTwitterUserLoggedIn ? null : (
           <Box
