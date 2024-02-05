@@ -126,6 +126,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
               if (route.includes("/notifications")) return;
               router.push(route);
             }}
+            key={key}
           >
             {item?.route.includes("/checkout") ? (
               <Badge badgeContent={cart?.orderItems.length} color="secondary">
