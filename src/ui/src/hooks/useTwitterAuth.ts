@@ -81,7 +81,8 @@ export default function useTwitterAuth() {
     try {
       if (
         isTwitterUserLoggedIn &&
-        userDetails?.role?.name === ROLE_NAME.INFLUENCER
+        userDetails?.role?.name === ROLE_NAME.INFLUENCER &&
+        !categoriesAdded
       ) {
         const { isSuccess, data } = await getServicewithCredentials(
           "account/account-category/"
