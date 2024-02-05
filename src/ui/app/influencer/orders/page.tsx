@@ -60,6 +60,7 @@ export default function Orders() {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
           status: ["pending"],
+          order_by: "-created_at",
         }
       );
       if (isSuccess) {
