@@ -1,13 +1,19 @@
-use anchor_lang::prelude::*;
+use std::mem::size_of;
+
+use anchor_lang::{prelude::*, solana_program};
 use anchor_lang::solana_program::entrypoint::ProgramResult;
 
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
 use spl_token::instruction::AuthorityType;
 
+use solana_program::system_instruction;
+
 declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
 
 #[program]
 pub mod xfluencer {
+    use anchor_lang::solana_program::{info, system_instruction};
+
     use super::*;
 
     pub fn initialize(
@@ -75,7 +81,79 @@ pub mod xfluencer {
 
   
 
+    pub fn create_escrow(ctx: Context<CreateEscrowSolana>, amount: u64, order_code: u64) -> Result<()> {
+        // Get Escrow Account
+        let escrow = &mut ctx.accounts.escrow;
+
+        // Set from
+        escrow.from = ctx.accounts.from.key();
+        // Set to
+        escrow.to = ctx.accounts.to.key();
+        // set amount
+        escrow.amount = amount;
+
+        let escrow_pubkey = escrow.key();
+
+        msg!("Hello!! Encode x Solana Hackathon!!");
+        msg!("Creating Escrow on buyer {} and seller {}",escrow.from, escrow.to);
+        msg!("Order Code {}",order_code);
+        msg!("Amount of Lamports to Transfer to Escrow: {}",amount);     
+
+
+        //let sender_account_info = escrow.from.to_account_info();_
+        let escrow_account_info = escrow.to_account_info();
+
+        // Create the transfer instruction
+         
+        let transfer_instruction 
+            = system_instruction::transfer(&escrow.from , 
+                &escrow_pubkey, amount);
+
+      
+         anchor_lang::solana_program::program::invoke_signed(
+           &transfer_instruction,
+          &[
+            ctx.accounts.from.to_account_info(),
+            escrow_account_info,
+            ctx.accounts.system_program.to_account_info(),
+            ],
+            &[],
+            )?;
+
+
+
+        Ok(())
+    }
+
+    pub fn claim_escrow(ctx: Context<ClainEscrowSolana>, order_code: u64) -> Result<()> {
+
+        let business = ctx.accounts.business.key();
+        let influencer = ctx.accounts.influencer.key();
+        let escrow_pda = ctx.accounts.escrow_account.key();
+        let amount = ctx.accounts.escrow_account.get_lamports();
+
+
+        msg!("business {}",business);
+        msg!("influencer {}", influencer);
+        msg!("Order to claim {}",order_code);
+        msg!("escrow_pda {}",escrow_pda);
+        msg!("amout {}",amount);
+      
+
+        let from_account = ctx.accounts.escrow_account.to_account_info();
+        let to_account = ctx.accounts.influencer.to_account_info();
+        **from_account.try_borrow_mut_lamports()? -= amount;
+        **to_account.try_borrow_mut_lamports()? += amount;
+
+        let amount = ctx.accounts.escrow_account.get_lamports();
+        let amount_influencer = ctx.accounts.influencer.get_lamports();
+        msg!("Post transaction lamports escrow {} and influencer {}",amount,amount_influencer);
+
+        Ok(())
+    }
+
 }
+
 
 
 
@@ -97,6 +175,19 @@ pub struct EscrowAccount {
     pub status: u8, // (1)
     pub delivery_time: i64, // (8)
     pub trial_day: u16, // (2)
+}
+
+
+#[account]
+pub struct EscrowAccountSolana {
+    // From address
+    pub from: Pubkey,
+
+    // To address
+    pub to: Pubkey,
+
+    // Amount that is owed
+    pub amount: u64,
 }
 
 
@@ -180,11 +271,59 @@ pub struct Cancel<'info> {
         constraint = escrow_account.status == 0,
         close = buyer
     )]
-    pub escrow_account: Box<Account<'info, EscrowAccount>>,
+    pub escrow_account: Account<'info, EscrowAccount>,
     /// CHECK: safe
     pub token_program: AccountInfo<'info>,
 }
 
+
+
+/// CreateEscrow context
+#[derive(Accounts)]
+#[instruction(amount: u64, order_code: u64)]
+pub struct CreateEscrowSolana<'info> {
+    // Escrow Account PDA
+    #[account(
+        init,
+        // State account seed uses the string "state" and the users' key. 
+        // Note that we can only have 1 active transaction
+        seeds = [b"escrow".as_ref(), 
+                 from.key().as_ref(), 
+                 to.key().as_ref(),
+                 order_code.to_string().as_bytes().as_ref()],
+        bump,
+        payer = from,
+        space = size_of::<EscrowAccountSolana>() + 16
+    )]
+    pub escrow: Account<'info, EscrowAccountSolana>,
+
+    #[account(mut)]
+    pub from: Signer<'info>,
+    /// CHECK: safe
+    #[account(mut)]
+    pub to: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(order_code: u64)]
+pub struct ClainEscrowSolana<'info> {
+    /// CHECK: safe
+    #[account(mut)]
+    pub influencer: Signer<'info>,
+    /// CHECK:
+    #[account(mut)]
+    pub business: AccountInfo<'info>,
+    #[account(
+        mut,
+        //constraint = escrow_account.from == *business.key,
+        //constraint = escrow_account.to == *influencer.key,
+        //close = influencer
+    )]
+    pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
+    pub system_program: Program<'info, System>,
+}
 
 impl<'info> CreateEscrow<'info> {
     fn into_transfer_to_pda_context(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
