@@ -11,6 +11,7 @@ import NextLink from "next/link";
 import StatusChip from "@/src/components/shared/statusChip";
 import dayjs from "dayjs";
 import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import RouteProtection from "@/src/components/shared/routeProtection";
 
 export default function OrderDetailPage({
   params,
@@ -174,130 +175,132 @@ export default function OrderDetailPage({
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Grid
-        container
-        spacing={2}
-        sx={{
-          px: 2,
-        }}
-      >
-        <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
+    <RouteProtection logged_in={true} business_owner={true}>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Grid
-          item
-          xs={12}
-          md={9}
-          lg={9}
-          sm={12}
+          container
+          spacing={2}
           sx={{
-            p: 2,
+            px: 2,
           }}
         >
-          <Typography
-            variant="h6"
-            fontWeight={"bold"}
+          <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
+          <Grid
+            item
+            xs={12}
+            md={9}
+            lg={9}
+            sm={12}
             sx={{
-              my: 2,
+              p: 2,
             }}
           >
-            Edit Order Details: {order?.order_code}
-          </Typography>
-          {order && (
-            <Box
+            <Typography
+              variant="h6"
+              fontWeight={"bold"}
               sx={{
-                borderRadius: 4,
-                backgroundColor: "#ffffff",
-                boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
-                width: "100%",
-                p: 2,
                 my: 2,
               }}
             >
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={3} lg={3} sm={12}>
-                  <FormLabel>Influencer</FormLabel>
-                  <Typography variant="body1">
-                    <Link
-                      component={NextLink}
-                      href={`/influencer/profile/${influencer?.id}`}
-                      target="_blank"
-                      underline="hover"
-                      sx={{
-                        color: "#09F",
-                      }}
-                    >
-                      {influencer?.twitter_account?.user_name}
-                    </Link>
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={3} lg={3} sm={12}>
-                  <FormLabel>Total Amount</FormLabel>
-                  <Typography variant="body1">
-                    {order?.amount + " " + order?.currency?.symbol}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={3} lg={3} sm={12}>
-                  <FormLabel>Status</FormLabel>
-                  <Box>
-                    <StatusChip status={order?.status ? order?.status : ""} />
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={3} lg={3} sm={12}>
-                  <FormLabel>Order Date</FormLabel>
-                  <Typography variant="body1">
-                    {dayjs(order?.created_at).format(DISPLAY_DATE_FORMAT)}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-          {order?.order_item_order_id?.map((orderItem, index: number) => {
-            return (
-              <OrderItemForm
-                key={index}
-                orderItem={{
-                  order_item: orderItem,
-                  index: index,
-                }}
-                index={index}
-                disableDelete={true}
-                updateFunction={updateOrderItemMetaData}
+              Edit Order Details: {order?.order_code}
+            </Typography>
+            {order && (
+              <Box
                 sx={{
+                  borderRadius: 4,
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+                  width: "100%",
+                  p: 2,
                   my: 2,
                 }}
-                updateOrderItemPublishDate={updatePublishDate}
-              />
-            );
-          })}
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{
-                  p: 1,
-                  mt: 1,
-                  borderRadius: 8,
-                  minWidth: 100,
-                }}
-                onClick={() => {
-                  updateOrder();
-                }}
-                disabled={loading}
               >
-                {loading ? "Saving..." : "Save"}
-              </Button>
-            </Box>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={3} lg={3} sm={12}>
+                    <FormLabel>Influencer</FormLabel>
+                    <Typography variant="body1">
+                      <Link
+                        component={NextLink}
+                        href={`/influencer/profile/${influencer?.id}`}
+                        target="_blank"
+                        underline="hover"
+                        sx={{
+                          color: "#09F",
+                        }}
+                      >
+                        {influencer?.twitter_account?.user_name}
+                      </Link>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={3} lg={3} sm={12}>
+                    <FormLabel>Total Amount</FormLabel>
+                    <Typography variant="body1">
+                      {order?.amount + " " + order?.currency?.symbol}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={3} lg={3} sm={12}>
+                    <FormLabel>Status</FormLabel>
+                    <Box>
+                      <StatusChip status={order?.status ? order?.status : ""} />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={3} lg={3} sm={12}>
+                    <FormLabel>Order Date</FormLabel>
+                    <Typography variant="body1">
+                      {dayjs(order?.created_at).format(DISPLAY_DATE_FORMAT)}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+            {order?.order_item_order_id?.map((orderItem, index: number) => {
+              return (
+                <OrderItemForm
+                  key={index}
+                  orderItem={{
+                    order_item: orderItem,
+                    index: index,
+                  }}
+                  index={index}
+                  disableDelete={true}
+                  updateFunction={updateOrderItemMetaData}
+                  sx={{
+                    my: 2,
+                  }}
+                  updateOrderItemPublishDate={updatePublishDate}
+                />
+              );
+            })}
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  sx={{
+                    p: 1,
+                    mt: 1,
+                    borderRadius: 8,
+                    minWidth: 100,
+                  }}
+                  onClick={() => {
+                    updateOrder();
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Save"}
+                </Button>
+              </Box>
+            </Grid>
           </Grid>
+          <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
         </Grid>
-        <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
-      </Grid>
-    </LocalizationProvider>
+      </LocalizationProvider>
+    </RouteProtection>
   );
 }

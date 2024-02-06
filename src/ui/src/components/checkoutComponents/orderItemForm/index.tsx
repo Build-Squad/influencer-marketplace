@@ -211,6 +211,7 @@ export default function OrderItemForm({
           ?.map((formFields: any) => {
             return (
               <Grid
+                item
                 md={formFields?.span}
                 lg={formFields?.span}
                 xs={12}
@@ -233,7 +234,7 @@ export default function OrderItemForm({
                   <TextField
                     disabled={disabled}
                     color="secondary"
-                    value={formFields?.value}
+                    value={formFields?.value ? formFields?.value : ""}
                     name={formFields?.id}
                     onChange={(e) => {
                       console.log(e.target.value, formFields);
@@ -296,7 +297,7 @@ export default function OrderItemForm({
                     disabled={disabled}
                     color="secondary"
                     name={formFields?.id}
-                    value={formFields?.value}
+                    value={formFields?.value ? formFields?.value : ""}
                     onChange={(e) => {
                       if (updateFunction) {
                         updateFunction(
@@ -430,6 +431,7 @@ export default function OrderItemForm({
             );
           })}
         <Grid
+          item
           md={6}
           lg={6}
           xs={12}

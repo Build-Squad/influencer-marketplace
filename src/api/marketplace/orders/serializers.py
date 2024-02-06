@@ -120,7 +120,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
 # The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):
-    value = serializers.CharField(allow_null=True)
+    value = serializers.CharField(
+        allow_null=True, required=False, allow_blank=True)
     service_master_meta_data_id = serializers.UUIDField(required=False)
     order_item_meta_data_id = serializers.UUIDField(required=False)
 
@@ -129,7 +130,8 @@ class OrderItemSerializer(serializers.Serializer):
     service_id = serializers.UUIDField(required=False)
     meta_data = serializers.ListField(child=MetaDataSerializer())
     order_item_id = serializers.UUIDField(required=False)
-    publish_date = serializers.DateTimeField(required=False)
+    publish_date = serializers.DateTimeField(
+        required=False, allow_null=True, allow_blank=True)
 
 
 class CreateOrderSerializer(serializers.Serializer):

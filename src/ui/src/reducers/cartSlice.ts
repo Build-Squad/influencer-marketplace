@@ -172,26 +172,33 @@ export const cartSlice = createSlice({
       // Decrement the quantity of the service
       // If the quantity is 0, remove the service from the servicesAdded array
       // Also update the platform_price
-      state.orderItems.forEach((item) => {
-        const serviceAdded = servicesAdded.find(
-          (service) => service.item?.package.id === action.payload.packageId
-        );
-        if (serviceAdded) {
-          serviceAdded.quantity -= 1;
-          if (serviceAdded.quantity === 0) {
-            // Remove the service from the servicesAdded array
-            const index = servicesAdded.findIndex(
-              (service) => service.item?.package.id === action.payload.packageId
-            );
-            servicesAdded.splice(index, 1);
+      const serviceAdded = servicesAdded.find(
+        (service) => service.item?.package.id === action.payload.packageId
+      );
+      if (serviceAdded) {
+        serviceAdded.quantity -= 1;
+        if (serviceAdded.quantity === 0) {
+          // Remove the service from the servicesAdded array
+          const index = servicesAdded.findIndex(
+            (service) => service.item?.package.id === action.payload.packageId
+          );
+          servicesAdded.splice(index, 1);
+        } else {
+          // Check if the service is a service or an order item by checking the type of the item
+          let platform_fee = "";
+          if ("platform_fees" in serviceAdded.item) {
+            platform_fee = serviceAdded.item?.platform_fees;
           } else {
-            serviceAdded.platform_price = (
-              Number(serviceAdded.platform_price) -
-              Number(item.order_item.platform_price)
-            )?.toString();
+            platform_fee = serviceAdded.item?.platform_fee;
           }
+          serviceAdded.platform_price = (
+            parseFloat(serviceAdded.platform_price) -
+            parseFloat(serviceAdded.item?.price?.toString()) -
+            parseFloat(serviceAdded.item?.price?.toString()) *
+              (parseFloat(platform_fee?.toString()) / 100)
+          )?.toString();
         }
-      });
+      }
 
       state.servicesAdded = servicesAdded;
 

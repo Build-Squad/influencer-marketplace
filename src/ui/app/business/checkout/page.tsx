@@ -4,6 +4,7 @@ import CheckoutTable from "@/src/components/checkoutComponents/checkoutTable";
 import OrderItemForm from "@/src/components/checkoutComponents/orderItemForm";
 import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
 import CreateEscrow from "@/src/components/web3Components/createEscrow";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
@@ -186,186 +187,193 @@ export default function CheckoutPage() {
     }
   };
 
-  if (cart?.orderItems?.length === 0) {
-    return (
-      <Box
-        sx={{
-          width: "100%",
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h6">No items added to the cart</Typography>
-      </Box>
-    );
-  }
-
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Grid
-        container
-        spacing={2}
-        sx={{
-          px: 2,
-        }}
-      >
-        <Grid
-          item
-          xs={12}
-          md={8}
-          lg={8}
-          sm={12}
+    <RouteProtection logged_in={true} business_owner={true}>
+      {cart?.orderItems?.length === 0 ? (
+        <Box
           sx={{
-            p: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            width: "100%",
           }}
         >
-          {cart?.orderItems?.map((orderItem, index: number) => {
-            return (
-              <OrderItemForm
-                key={index}
-                orderItem={orderItem}
-                index={index}
-                disableDelete={cart?.orderItems?.length === 1}
-                sx={{
-                  m: 2,
-                }}
-              />
-            );
-          })}
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{
-                  p: 1,
-                  mt: 1,
-                  borderRadius: 8,
-                  minWidth: 100,
-                }}
-                onClick={() => {
-                  onSave();
-                }}
-                disabled={loading}
-              >
-                {loading ? "Saving..." : "Save"}
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-        <Grid item xs={12} md={4} lg={4} sm={12}>
-          <Box
+          <Typography
+            variant="h6"
             sx={{
-              p: 2,
-              borderRadius: 4,
-              border: "1px solid #D3D3D3",
-              m: 2,
-              backgroundColor: "#ffffff",
-              boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+              fontStyle: "italic",
             }}
           >
-            <Typography
-              variant="h6"
+            Cart is Empty
+          </Typography>
+        </Box>
+      ) : (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              px: 2,
+            }}
+          >
+            <Grid
+              item
+              xs={12}
+              md={8}
+              lg={8}
+              sm={12}
               sx={{
-                fontWeight: "bold",
+                p: 2,
               }}
             >
-              Order Details
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: "bold",
-                }}
-              >
-                Infleuncer : &nbsp;
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: "16px",
-                  lineHeight: "19px",
-                }}
-              >
-                <Link
-                  href={`/influencer/profile/${cart?.influencer?.id}`}
-                  target="_blank"
-                  component={NextLink}
+              {cart?.orderItems?.map((orderItem, index: number) => {
+                return (
+                  <OrderItemForm
+                    key={index}
+                    orderItem={orderItem}
+                    index={index}
+                    disableDelete={cart?.orderItems?.length === 1}
+                    sx={{
+                      m: 2,
+                    }}
+                  />
+                );
+              })}
+              <Grid item xs={12}>
+                <Box
                   sx={{
-                    color: "#09F",
-                    textDecoration: "none",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
                   }}
                 >
-                  {cart?.influencer?.twitter_account?.user_name}
-                </Link>
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                overflow: "auto",
-              }}
-            >
-              <CheckoutTable />
-            </Box>
-            <Box
-              sx={{
-                my: 2,
-              }}
-            >
-              <Typography variant="body1">
-                {`Your payment will be held for 72 hours. If ${cart?.influencer?.twitter_account?.name}
-                declines the order, the amount will be added back to your Wallet`}
-              </Typography>
-            </Box>
-            <Box>
-              <ConfirmCancel
-                title="this order"
-                onConfirm={() => {
-                  deleteOrder();
-                }}
-                loading={loading}
-                hide
-                deleteElement={
                   <Button
+                    variant="contained"
                     color="secondary"
-                    disableElevation
-                    fullWidth
-                    variant="outlined"
-                    disabled={loading}
                     sx={{
-                      borderRadius: "20px",
+                      p: 1,
+                      mt: 1,
+                      borderRadius: 8,
+                      minWidth: 100,
+                    }}
+                    onClick={() => {
+                      onSave();
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? "Saving..." : "Save"}
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
+            <Grid item xs={12} md={4} lg={4} sm={12}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 4,
+                  border: "1px solid #D3D3D3",
+                  m: 2,
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Order Details
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: "bold",
                     }}
                   >
-                    Cancel Order
-                  </Button>
-                }
-              />
-              <CreateEscrow loading={loading} updateStatus={updateStatus} />
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
-    </LocalizationProvider>
+                    Infleuncer : &nbsp;
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: "16px",
+                      lineHeight: "19px",
+                    }}
+                  >
+                    <Link
+                      href={`/influencer/profile/${cart?.influencer?.id}`}
+                      target="_blank"
+                      component={NextLink}
+                      sx={{
+                        color: "#09F",
+                        textDecoration: "none",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      {cart?.influencer?.twitter_account?.user_name}
+                    </Link>
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    overflow: "auto",
+                  }}
+                >
+                  <CheckoutTable />
+                </Box>
+                <Box
+                  sx={{
+                    my: 2,
+                  }}
+                >
+                  <Typography variant="body1">
+                    {`Your payment will be held for 72 hours. If ${cart?.influencer?.twitter_account?.name}
+                declines the order, the amount will be added back to your Wallet`}
+                  </Typography>
+                </Box>
+                <Box>
+                  <ConfirmCancel
+                    title="this order"
+                    onConfirm={() => {
+                      deleteOrder();
+                    }}
+                    loading={loading}
+                    hide
+                    deleteElement={
+                      <Button
+                        color="secondary"
+                        disableElevation
+                        fullWidth
+                        variant="outlined"
+                        disabled={loading}
+                        sx={{
+                          borderRadius: "20px",
+                        }}
+                      >
+                        Cancel Order
+                      </Button>
+                    }
+                  />
+                  <CreateEscrow loading={loading} updateStatus={updateStatus} />
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </LocalizationProvider>
+      )}
+    </RouteProtection>
   );
 }

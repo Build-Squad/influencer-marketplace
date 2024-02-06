@@ -32,6 +32,7 @@ import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
+import RouteProtection from "@/src/components/shared/routeProtection";
 
 export default function BusinessDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
@@ -462,90 +463,92 @@ export default function BusinessDashboardPage() {
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            {statusCards.map((card, index) => {
-              return (
-                <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
-                  <StatusCard
-                    card={card}
-                    selectedCard={selectedCard}
-                    orderCount={orderCount}
-                  />
-                </Grid>
-              );
-            })}
+    <RouteProtection logged_in={true} business_owner={true}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
+              {statusCards.map((card, index) => {
+                return (
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
+                    <StatusCard
+                      card={card}
+                      selectedCard={selectedCard}
+                      orderCount={orderCount}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <FilterBar filters={filters} setFilters={setFilters} />
-        </Grid>
-        <Grid item xs={12}>
-          <DataGrid
-            getRowId={(row) => (row?.id ? row?.id : 0)}
-            autoHeight
-            loading={loading}
-            rows={orders}
-            columns={columns}
-            disableRowSelectionOnClick
-            disableColumnFilter
-            hideFooter
-            getRowHeight={(params) => 100}
-            sx={{
-              backgroundColor: "#fff",
-            }}
-            // Sorting
-            sortingMode="server"
-            onSortModelChange={(model) => {
-              setFilters((prev) => ({
-                ...prev,
-                order_by: model?.[0]?.field
-                  ? model?.[0]?.sort === "asc"
-                    ? `-${model?.[0]?.field}`
-                    : `${model?.[0]?.field}`
-                  : undefined,
-              }));
-            }}
-            localeText={{
-              noRowsLabel: "No Orders found",
-            }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Pagination
-              count={pagination.total_page_count}
-              page={pagination.current_page_number}
-              onChange={handlePaginationChange}
+          <Grid item xs={12}>
+            <FilterBar filters={filters} setFilters={setFilters} />
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              getRowId={(row) => (row?.id ? row?.id : 0)}
+              autoHeight
+              loading={loading}
+              rows={orders}
+              columns={columns}
+              disableRowSelectionOnClick
+              disableColumnFilter
+              hideFooter
+              getRowHeight={(params) => 100}
+              sx={{
+                backgroundColor: "#fff",
+              }}
+              // Sorting
+              sortingMode="server"
+              onSortModelChange={(model) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  order_by: model?.[0]?.field
+                    ? model?.[0]?.sort === "asc"
+                      ? `-${model?.[0]?.field}`
+                      : `${model?.[0]?.field}`
+                    : undefined,
+                }));
+              }}
+              localeText={{
+                noRowsLabel: "No Orders found",
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
               sx={{
                 display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                mt: 2,
               }}
-              color="secondary"
-              shape="rounded"
-            />
-          </Box>
+            >
+              <Pagination
+                count={pagination.total_page_count}
+                page={pagination.current_page_number}
+                onChange={handlePaginationChange}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                color="secondary"
+                shape="rounded"
+              />
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-      <OrderDetails
-        order={selectedOrder}
-        onClose={() => {
-          setSelectedOrder(null);
-        }}
-      />
-    </Box>
+        <OrderDetails
+          order={selectedOrder}
+          onClose={() => {
+            setSelectedOrder(null);
+          }}
+        />
+      </Box>
+    </RouteProtection>
   );
 }

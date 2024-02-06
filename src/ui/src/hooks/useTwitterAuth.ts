@@ -7,6 +7,7 @@ import { notification } from "../components/shared/notification";
 import { useAppDispatch } from "./useRedux";
 import { loginReducer, logoutReducer } from "../reducers/userSlice";
 import { resetCart } from "../reducers/cartSlice";
+import { ROLE_NAME } from "../utils/consts";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -16,7 +17,7 @@ export default function useTwitterAuth() {
   // State to track whether the user is logged in via X
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
   const [isAccountSetupComplete, setIsAccountSetupComplete] = useState(true);
-  const [userDetails, setUserDetails] = useState(null);
+  const [userDetails, setUserDetails] = useState<UserType | null>(null);
   const [categoriesAdded, setCategoriesAdded] = useState(false);
 
   useEffect(() => {
@@ -78,16 +79,22 @@ export default function useTwitterAuth() {
 
   const checkAccountSetup = async () => {
     try {
-      const { isSuccess, data } = await getServicewithCredentials(
-        "account/account-category/"
-      );
-      if (isSuccess) {
-        if (data?.data?.length > 0) {
-          setIsAccountSetupComplete(true);
-          setCategoriesAdded(true);
-        } else if (data?.data?.length === 0) {
-          setIsAccountSetupComplete(false);
-          setCategoriesAdded(false);
+      if (
+        isTwitterUserLoggedIn &&
+        userDetails?.role?.name === ROLE_NAME.INFLUENCER &&
+        !categoriesAdded
+      ) {
+        const { isSuccess, data } = await getServicewithCredentials(
+          "account/account-category/"
+        );
+        if (isSuccess) {
+          if (data?.data?.length > 0) {
+            setIsAccountSetupComplete(true);
+            setCategoriesAdded(true);
+          } else if (data?.data?.length === 0) {
+            setIsAccountSetupComplete(false);
+            setCategoriesAdded(false);
+          }
         }
       }
     } catch (error) {

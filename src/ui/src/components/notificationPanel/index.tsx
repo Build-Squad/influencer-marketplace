@@ -40,24 +40,13 @@ export default function NotificationPanel() {
 
   const getNotifications = async () => {
     try {
-      const { isSuccess, message, data } = await getService(`/notifications/`, {
+      const { isSuccess, data } = await getService(`/notifications/`, {
         page_number: pagination.current_page_number,
         page_size: pagination.current_page_size,
         is_read: onlyUnread ? (onlyUnread ? "False" : "True") : undefined,
       });
       if (isSuccess) {
         setNotifications(data?.data?.notifications);
-        // if (data?.data?.unread_count > unreadCountRef.current) {
-        //   const new_notifications_count =
-        //     data?.data?.unread_count - unreadCountRef.current;
-        //   notification(
-        //     `${new_notifications_count} new notification${
-        //       new_notifications_count > 1 ? "s" : ""
-        //     }`,
-        //     "success",
-        //     3000
-        //   );
-        // }
         setUnreadCount(data?.data?.unread_count);
         unreadCountRef.current = data?.data?.unread_count; // update the ref value
         setPagination({
@@ -148,12 +137,15 @@ export default function NotificationPanel() {
 
   return (
     <>
-      <Badge badgeContent={unreadCount} color="secondary">
+      <Badge
+        badgeContent={unreadCount}
+        color="secondary"
+        onClick={handleClickNotifications}
+      >
         <Image
           src={openNotifications ? NotificationIcon : NotificationDisabledIcon}
           alt={"Notification"}
           height={16}
-          onClick={handleClickNotifications}
         />
       </Badge>
       <Menu

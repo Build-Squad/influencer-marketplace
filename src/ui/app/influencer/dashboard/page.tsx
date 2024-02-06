@@ -8,19 +8,20 @@ import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   Box,
   Grid,
   IconButton,
   Link,
   Pagination,
-  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -32,7 +33,6 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 
 export default function BusinessDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
@@ -192,13 +192,13 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.REJECTED],
         }));
-        setSelectedCard(3);
+        setSelectedCard(4);
       },
       value: 4,
       icon: (
         <RejectedOrders
           style={{
-            fill: selectedCard === 3 ? "#fff" : "#19191929",
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
           }}
         />
       ),
@@ -229,7 +229,7 @@ export default function BusinessDashboardPage() {
             }}
           >
             <Link
-              href={`/business/profile/${params?.row?.buyer?.id}`}
+              href={`/business/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"
               component={NextLink}
               sx={{
@@ -422,91 +422,93 @@ export default function BusinessDashboardPage() {
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            {statusCards.map((card, index) => {
-              return (
-                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                  <StatusCard
-                    card={card}
-                    selectedCard={selectedCard}
-                    orderCount={orderCount}
-                  />
-                </Grid>
-              );
-            })}
+    <RouteProtection logged_in={true} influencer={true}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
+              {statusCards.map((card, index) => {
+                return (
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                    <StatusCard
+                      card={card}
+                      selectedCard={selectedCard}
+                      orderCount={orderCount}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          {/* Filters bar */}
-          <FilterBar filters={filters} setFilters={setFilters} />
-        </Grid>
-        <Grid item xs={12}>
-          <DataGrid
-            getRowId={(row) => (row?.id ? row?.id : 0)}
-            autoHeight
-            loading={loading}
-            rows={orders}
-            columns={columns}
-            disableRowSelectionOnClick
-            disableColumnFilter
-            hideFooter
-            getRowHeight={(params) => 100}
-            sx={{
-              backgroundColor: "#fff",
-            }}
-            sortingMode="server"
-            onSortModelChange={(model) => {
-              setFilters((prev) => ({
-                ...prev,
-                order_by: model?.[0]?.field
-                  ? model?.[0]?.sort === "asc"
-                    ? `-${model?.[0]?.field}`
-                    : `${model?.[0]?.field}`
-                  : undefined,
-              }));
-            }}
-            localeText={{
-              noRowsLabel: "No Orders found",
-            }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Pagination
-              count={pagination.total_page_count}
-              page={pagination.current_page_number}
-              onChange={handlePaginationChange}
+          <Grid item xs={12}>
+            {/* Filters bar */}
+            <FilterBar filters={filters} setFilters={setFilters} />
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              getRowId={(row) => (row?.id ? row?.id : 0)}
+              autoHeight
+              loading={loading}
+              rows={orders}
+              columns={columns}
+              disableRowSelectionOnClick
+              disableColumnFilter
+              hideFooter
+              getRowHeight={(params) => 100}
+              sx={{
+                backgroundColor: "#fff",
+              }}
+              sortingMode="server"
+              onSortModelChange={(model) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  order_by: model?.[0]?.field
+                    ? model?.[0]?.sort === "asc"
+                      ? `-${model?.[0]?.field}`
+                      : `${model?.[0]?.field}`
+                    : undefined,
+                }));
+              }}
+              localeText={{
+                noRowsLabel: "No Orders found",
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
               sx={{
                 display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                mt: 2,
               }}
-              color="secondary"
-              shape="rounded"
-            />
-          </Box>
+            >
+              <Pagination
+                count={pagination.total_page_count}
+                page={pagination.current_page_number}
+                onChange={handlePaginationChange}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                color="secondary"
+                shape="rounded"
+              />
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-      <OrderDetails
-        order={selectedOrder}
-        onClose={() => {
-          setSelectedOrder(null);
-        }}
-        getOrders={getOrders}
-      />
-    </Box>
+        <OrderDetails
+          order={selectedOrder}
+          onClose={() => {
+            setSelectedOrder(null);
+          }}
+          getOrders={getOrders}
+        />
+      </Box>
+    </RouteProtection>
   );
 }

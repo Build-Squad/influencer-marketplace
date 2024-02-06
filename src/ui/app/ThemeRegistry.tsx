@@ -64,11 +64,5 @@ export function ThemeRegistry(props: any) {
 
 export default function RootLayout(props: any) {
   const { children } = props;
-  return (
-    <html lang="en">
-      <body>
-        <ThemeRegistry options={{ key: "mui" }}>{children}</ThemeRegistry>
-      </body>
-    </html>
-  );
+  return <ThemeRegistry options={{ key: "mui" }}>{children}</ThemeRegistry>;
 }
