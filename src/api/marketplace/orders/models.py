@@ -4,6 +4,7 @@ from django.db import models
 import uuid
 from django.db.models import SET_NULL
 from django.conf import settings
+from accounts.models import Wallet
 from core.models import Currency
 from packages.models import Package, ServiceMaster
 from django.utils import timezone
@@ -39,7 +40,8 @@ class Order(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Order', default=uuid.uuid4, editable=False)
     buyer = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='order_buyer_id', on_delete=SET_NULL, null=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
     currency = models.ForeignKey(
         Currency, related_name='order_currency_id', on_delete=SET_NULL, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
@@ -91,13 +93,14 @@ class OrderItem(models.Model):
     status = models.CharField(choices=STATUS_CHOICES,
                               max_length=50, default='in_progress')
     order_id = models.ForeignKey(Order, related_name='order_item_order_id', on_delete=SET_NULL, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    price = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='order_item_currency_id', on_delete=SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     package = models.ForeignKey(
         Package, related_name='order_item_package_id', on_delete=SET_NULL, null=True)
     platform_fee = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
+        max_digits=10, decimal_places=5, blank=True, null=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
     published_tweet_id = models.CharField(
         max_length=100, blank=True, null=True)
@@ -207,31 +210,28 @@ class OrderMessageAttachment(models.Model):
         db_table = "order_message_attachment"    
 
 class Transaction(models.Model):
-    
-    TYPE_CHOICES = (
-        ('debit', 'debit'),
-        ('credit', 'credit')
-    )
 
     STATUS_CHOICES = (
+        ('success', 'success'),
         ('pending', 'pending'),
-        ('completed', 'completed'),
         ('failed', 'failed'),
-        ('cancelled', 'cancelled'),
-        ('refunded', 'refunded'),
-        ('processing', 'processing')
     )
 
-    id = models.UUIDField(primary_key=True, verbose_name='Transactions', default=uuid.uuid4, editable=False)
-    order = models.ForeignKey(Order, related_name='tranaction_order_id', on_delete=SET_NULL, null=True)
-    transaction_reference_id = models.CharField(max_length=100, blank=True, null=True)
-    transaction_type = models.CharField(choices=TYPE_CHOICES, max_length=50, blank=True, null=True)
-    transaction_status = models.CharField(choices=STATUS_CHOICES, max_length=50, blank=True, null=True)
-    transaction_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    currency = models.ForeignKey(Currency, related_name='transaction_currency_id', on_delete=SET_NULL, null=True)
-    note = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True, blank=True)
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Transactions', default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(
+        Order, related_name='transaction_order_id', on_delete=SET_NULL, null=True)
+    transaction_address = models.CharField(
+        max_length=100, blank=True, null=True)
+    transaction_initiated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='transaction_initiated_by', on_delete=SET_NULL, null=True)
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    wallet = models.ForeignKey(
+        Wallet, related_name='transaction_wallet', on_delete=SET_NULL, null=True)
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='pending')
 
     class Meta:
         db_table = "transaction"    
