@@ -217,6 +217,14 @@ class Transaction(models.Model):
         ('failed', 'failed'),
     )
 
+    TRANSACTION_TYPE_CHOICES = (
+        # initiate_escrow, cancel_escrow, claim_escrow, validate_escrow
+        ('initiate_escrow', 'initiate_escrow'),
+        ('cancel_escrow', 'cancel_escrow'),
+        ('claim_escrow', 'claim_escrow'),
+        ('validate_escrow', 'validate_escrow'),
+    )
+
     id = models.UUIDField(
         primary_key=True, verbose_name='Transactions', default=uuid.uuid4, editable=False)
     order = models.ForeignKey(
@@ -232,6 +240,8 @@ class Transaction(models.Model):
         max_digits=10, decimal_places=5, blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES,
                               max_length=50, default='pending')
+    transaction_type = models.CharField(choices=TRANSACTION_TYPE_CHOICES,
+                                        max_length=50, default='initiate_escrow')
 
     class Meta:
         db_table = "transaction"    
