@@ -260,7 +260,13 @@ export default function Orders() {
           status: status,
         }
       );
-      if (!isSuccess) {
+      if (isSuccess) {
+        notification(
+          `Order request was ${
+            selectedAction.status == "Accept" ? "accepted" : "rejected"
+          }`
+        );
+      } else {
         notification(
           message
             ? message
