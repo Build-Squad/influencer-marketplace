@@ -130,8 +130,7 @@ class OrderItemSerializer(serializers.Serializer):
     service_id = serializers.UUIDField(required=False)
     meta_data = serializers.ListField(child=MetaDataSerializer())
     order_item_id = serializers.UUIDField(required=False)
-    publish_date = serializers.DateTimeField(
-        required=False, allow_null=True, allow_blank=True)
+    publish_date = serializers.DateTimeField(required=False)
 
 
 class CreateOrderSerializer(serializers.Serializer):
