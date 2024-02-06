@@ -53,10 +53,6 @@ class Order(models.Model):
         max_length=16, default=generate_order_code, unique=True)
     order_number = models.IntegerField(
         unique=True, default=generate_order_number)
-    influencer_transaction_address = models.CharField(
-        max_length=100, blank=True, null=True)
-    buyer_transaction_address = models.CharField(
-        max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order" 

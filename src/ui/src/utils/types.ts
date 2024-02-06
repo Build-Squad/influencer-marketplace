@@ -245,8 +245,6 @@ type OrderType = {
   buyer_wallet?: WalletType;
   influencer_wallet?: WalletType;
   order_number?: number;
-  influencer_transaction_address?: string;
-  buyer_transaction_address?: string;
   transactions: TransactionType[] | null;
 };
 
