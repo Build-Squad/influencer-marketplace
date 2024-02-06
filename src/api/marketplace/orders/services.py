@@ -5,6 +5,7 @@ from decouple import config
 FRONT_END_URL = config('FRONT_END_URL')
 ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
 BUSINESS_DASHBOARD_URL = FRONT_END_URL + 'business/dashboard'
+INFLUENCER_DASHBOARD_URL = FRONT_END_URL + 'influencer/dashboard'
 
 
 def create_notification_for_order(order, old_status, new_status):
@@ -64,6 +65,13 @@ def create_notification_for_order(order, old_status, new_status):
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
 
+        # Send a notification to the influencer to claim the funds for the order
+        message = 'Order ' + order.order_code + \
+            ' has been completed. You can now claim the funds'
+        title = 'Order Completed'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
+
 
 def create_notification_for_order_item(order_item, old_status, new_status):
     """
@@ -103,6 +111,13 @@ def create_notification_for_order_item(order_item, old_status, new_status):
         title = 'Order Item Published'
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+        
+        # Send a notification to the influencer to let them know that the order item has been published
+        message = 'Order item ' + order_item.package.name + \
+            ' has been published'
+        title = 'Order Item Published'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
 
     elif old_status == 'scheduled' and new_status == 'cancelled':
         # Case 3

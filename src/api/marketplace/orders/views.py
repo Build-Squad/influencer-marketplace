@@ -195,7 +195,8 @@ class OrderListView(APIView):
                 orders = orders.order_by(filters["order_by"])
 
             pagination = Pagination(orders, request)
-            serializer = OrderSerializer(pagination.getData(), many=True)
+            serializer = OrderSerializer(pagination.getData(), context={
+                                         "request": request}, many=True)
             return Response(
                 {
                     "isSuccess": True,

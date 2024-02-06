@@ -220,6 +220,18 @@ type OrderItemType = {
   published_tweet_id?: string;
 };
 
+type TransactionType = {
+  amount: number | null;
+  id: string;
+  order: string;
+  status: string;
+  transaction_type: string;
+  transaction_address: string;
+  transaction_date: string;
+  transaction_initiated_by: string;
+  wallet: string;
+};
+
 type OrderType = {
   id?: string;
   buyer?: UserType;
@@ -235,6 +247,7 @@ type OrderType = {
   order_number?: number;
   influencer_transaction_address?: string;
   buyer_transaction_address?: string;
+  transactions: TransactionType[] | null;
 };
 
 type OrderFilterType = {

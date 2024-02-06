@@ -14,6 +14,7 @@ from .models import (
     OrderMessage,
     OrderMessageAttachment,
     Review,
+    Transaction,
 )
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -78,6 +79,7 @@ class OrderSerializer(serializers.ModelSerializer):
     influencer_wallet = serializers.SerializerMethodField()
     buyer_wallet = serializers.SerializerMethodField()
     address = serializers.CharField(required=False)
+    transactions = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -116,6 +118,13 @@ class OrderSerializer(serializers.ModelSerializer):
         if wallet:
             return WalletCompleteSerializer(wallet).data
 
+    def get_transactions(self, obj):
+        if "request" in self.context:
+            transactions = Transaction.objects.filter(
+                order=obj, transaction_initiated_by=self.context["request"].user_account)
+            return OrderTransactionSerializer(transactions, many=True).data
+        else:
+            return []
 
 # The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):
@@ -373,3 +382,9 @@ class UpdateOrderInfluencerTransactionAddressSerializer(serializers.Serializer):
         instance.influencer_transaction_address = validated_data['address']
         instance.save()
         return instance
+
+
+class OrderTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = '__all__'
