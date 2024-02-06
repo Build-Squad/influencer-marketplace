@@ -19,13 +19,11 @@ from .models import (
     OrderAttachment,
     OrderItemTracking,
     OrderMessage,
-    Transaction,
     Review,
 )
 from .serializers import (
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
-    OrderDetailSerializer,
     OrderListFilterSerializer,
     OrderSerializer,
     OrderItemSerializer,
@@ -33,7 +31,6 @@ from .serializers import (
     OrderItemTrackingSerializer,
     OrderMessageSerializer,
     SendTweetSerializer,
-    TransactionSerializer,
     ReviewSerializer,
     OrderMessageListFilterSerializer,
     UserOrderMessagesSerializer,
@@ -958,115 +955,6 @@ class OrderMessageCreateView(APIView):
                 return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)
-
-
-# Transaction API-Endpoint
-# List-Create-API
-class TransactionList(APIView):
-    def get(self, request):
-        try:
-            transaction = Transaction.objects.all()
-            pagination = Pagination(transaction, request)
-            serializer = TransactionSerializer(pagination.getData(), many=True)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "All Transaction data retrieved successfully",
-                    "pagination": pagination.getPageInfo(),
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-    @swagger_auto_schema(request_body=TransactionSerializer)
-    def post(self, request):
-        try:
-            serializer = TransactionSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": TransactionSerializer(serializer.instance).data,
-                        "message": "Transaction data created successfully",
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
-            else:
-                return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-
-# Retrieve-Update-Destroy API
-class TransactionDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Transaction.objects.get(pk=pk)
-        except Transaction.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        try:
-            transaction = self.get_object(pk)
-            if transaction is None:
-                return handleNotFound("transaction")
-            serializer = TransactionSerializer(transaction)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "Transaction data retrieved successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-    @swagger_auto_schema(request_body=TransactionSerializer)
-    def put(self, request, pk):
-        try:
-            transaction = self.get_object(pk)
-            if transaction is None:
-                return handleNotFound("transaction")
-            serializer = TransactionSerializer(instance=transaction, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": TransactionSerializer(serializer.instance).data,
-                        "message": "Transaction data updated successfully",
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-    def delete(self, request, pk):
-        try:
-            transaction = self.get_object(pk)
-            if transaction is None:
-                return handleNotFound("transaction")
-            try:
-                transaction.delete()
-            except ValidationError as e:
-                return handleDeleteNotAllowed("transaction")
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": None,
-                    "message": "transaction deleted successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
 
 # Review API-Endpoint
 # List-Create-API

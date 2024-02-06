@@ -12,8 +12,6 @@ from .views import (
     OrderListView,
     OrderMessageList,
     SendTweetView,
-    TransactionList,
-    TransactionDetail,
     ReviewList,
     ReviewDetail,
     UpdateOrderStatus,
@@ -45,9 +43,6 @@ urlpatterns = [
          OrderMessageList.as_view(), name="order-message-list"),
     path("order-message/", OrderMessageCreateView.as_view(),
          name="order-message-create"),
-
-    path("transaction/", TransactionList.as_view(), name="transaction-list"),
-    path('transaction/<uuid:pk>/', TransactionDetail.as_view(), name="transactiont-details"),
 
     path("review/", ReviewList.as_view(), name="review-list"),
     path('review/<uuid:pk>/', ReviewDetail.as_view(), name="reviewt-details"),

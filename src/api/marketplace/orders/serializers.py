@@ -13,7 +13,6 @@ from .models import (
     OrderItemTracking,
     OrderMessage,
     OrderMessageAttachment,
-    Transaction,
     Review,
 )
 from django.core.exceptions import ObjectDoesNotExist
@@ -362,11 +361,6 @@ class OrderDetailSerializer(serializers.Serializer):
 class UserOrderMessagesSerializer(serializers.Serializer):
     orders = OrderDetailSerializer(many=True, read_only=True)
     total_unread_messages_count = serializers.IntegerField(read_only=True)
-
-class TransactionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Transaction
-        fields = "__all__"
 
 class SendTweetSerializer(serializers.Serializer):
     order_item_id = serializers.UUIDField(required=True)
