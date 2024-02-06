@@ -113,9 +113,22 @@ class RoleDetail(APIView):
 class TopInfluencers(APIView):
     def get(self, request):
         try:
-            twitterAccount = TwitterAccount.objects.filter(
+            twitterAccount = TwitterAccount.objects.all()
+
+            twitterAccount = twitterAccount.filter(
                 user_twitter_account_id__role__name="influencer"
-            ).order_by("-followers_count")[:8]
+            ).order_by("-followers_count")
+
+            # Get the IDs of Twitter accounts with at least one associated published package
+            account_ids_with_published_package = Package.objects.filter(
+                influencer__twitter_account__in=twitterAccount,
+                status="published"
+            ).values_list('influencer__twitter_account', flat=True).distinct()
+
+            # Filter the TwitterAccount queryset based on the extracted IDs
+            twitterAccount = twitterAccount.filter(id__in=account_ids_with_published_package)
+
+            twitterAccount = twitterAccount[:8]
 
             # Paginate the results
             pagination = Pagination(twitterAccount, request)
