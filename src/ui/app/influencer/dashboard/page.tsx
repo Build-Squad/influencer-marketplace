@@ -13,7 +13,11 @@ import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import {
+  DISPLAY_DATE_FORMAT,
+  ORDER_STATUS,
+  TRANSACTION_TYPE,
+} from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
@@ -364,7 +368,10 @@ export default function BusinessDashboardPage() {
               </Tooltip>
             )}
             {params?.row?.status === ORDER_STATUS.COMPLETED &&
-              !params?.row?.influencer_transaction_address && (
+              params?.row?.transactions.filter(
+                (transaction: TransactionType) =>
+                  transaction.transaction_type === TRANSACTION_TYPE.CLAIM_ESCROW
+              )?.length === 0 && (
                 <ClaimEscrow order={params?.row} updateStatus={getOrders} />
               )}
           </Box>

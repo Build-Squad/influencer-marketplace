@@ -374,17 +374,33 @@ class UserOrderMessagesSerializer(serializers.Serializer):
 class SendTweetSerializer(serializers.Serializer):
     order_item_id = serializers.UUIDField(required=True)
 
-
-class UpdateOrderInfluencerTransactionAddressSerializer(serializers.Serializer):
-    address = serializers.CharField(required=True)
-
-    def update(self, instance, validated_data):
-        instance.influencer_transaction_address = validated_data['address']
-        instance.save()
-        return instance
-
-
 class OrderTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = '__all__'
+
+
+class OrderTransactionCreateSerializer(serializers.Serializer):
+    order_id = serializers.UUIDField(required=True)
+    transaction_type = serializers.CharField(required=True)
+    transaction_address = serializers.CharField(required=True)
+    status = serializers.CharField(required=False)
+
+    def create(self, validated_data):
+        order = Order.objects.get(id=validated_data['order_id'])
+        user = self.context['request'].user_account
+        wallet = Wallet.objects.filter(user_id=user, is_primary=True).first()
+        if wallet is None:
+            raise serializers.ValidationError(
+                {"wallet": "User does not have a primary wallet"})
+            
+        transaction = Transaction.objects.create(
+            order=order, 
+            transaction_initiated_by=user, 
+            transaction_type=validated_data['transaction_type'], 
+            transaction_address=validated_data['transaction_address'],
+            wallet = wallet,
+            status = validated_data.get('status', 'pending')
+        )
+        
+        return transaction

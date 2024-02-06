@@ -14,10 +14,10 @@ from .views import (
     SendTweetView,
     ReviewList,
     ReviewDetail,
+    TransactionCreateView,
     UpdateOrderStatus,
     OrderMessageCreateView,
     UserOrderMessagesView,
-    UpdateUpdateOrderInfluencerTransactionAddressView
 )
 
 urlpatterns = [
@@ -50,6 +50,6 @@ urlpatterns = [
     path('send-tweet', SendTweetView.as_view(), name="send-tweet"),
     path('cancel-tweet', CancelTweetView.as_view(), name="cancel-tweet"),
 
-    path('update-influencer-transaction/<uuid:pk>/',
-         UpdateUpdateOrderInfluencerTransactionAddressView.as_view(), name="update-influencer-transaction"),
+    path('create-transaction/',
+         TransactionCreateView.as_view(), name="create-transaction"),
 ]

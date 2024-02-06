@@ -15,8 +15,9 @@ import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { notification } from "../../shared/notification";
-import { putService } from "@/src/services/httpServices";
+import { postService, putService } from "@/src/services/httpServices";
 import DownloadingIcon from "@mui/icons-material/Downloading";
+import { TRANSACTION_TYPE } from "@/src/utils/consts";
 
 type CreateEscrowProps = {
   order: OrderType;
@@ -46,10 +47,13 @@ export default function ClaimEscrow({
 
   const updateInfluencerTransactionAddress = async (address: string) => {
     try {
-      const { isSuccess, message } = await putService(
-        `orders/update-influencer-transaction/${order?.id}/`,
+      const { isSuccess, message } = await postService(
+        `orders/create-transaction/`,
         {
-          address: address,
+          order_id: order?.id,
+          transaction_address: address,
+          transaction_type: TRANSACTION_TYPE.CLAIM_ESCROW,
+          status: "success",
         }
       );
 
