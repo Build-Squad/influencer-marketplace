@@ -1,3 +1,4 @@
+import logging
 from orders.models import OrderItem
 from notifications.models import Notification
 from decouple import config
@@ -7,6 +8,8 @@ ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
 BUSINESS_DASHBOARD_URL = FRONT_END_URL + 'business/dashboard'
 INFLUENCER_DASHBOARD_URL = FRONT_END_URL + 'influencer/dashboard'
 
+
+logger = logging.getLogger(__name__)
 
 def create_notification_for_order(order, old_status, new_status):
     """
@@ -92,7 +95,9 @@ def create_notification_for_order_item(order_item, old_status, new_status):
     
     """
     # Get the order
+    logger.error("Order item: " + str(order_item.id))
     order = order_item.order_id
+    logger.error("Order: " + str(order.id))
     buyer = order.buyer
     influencer = order_item.package.influencer
 
@@ -105,6 +110,7 @@ def create_notification_for_order_item(order_item, old_status, new_status):
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
 
     elif old_status == 'scheduled' and new_status == 'published':
+
         # Case 2
         message = 'Your order item ' + order_item.package.name + \
             ' has been published by ' + influencer.username

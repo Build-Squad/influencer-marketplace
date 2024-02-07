@@ -58,16 +58,11 @@ export default function RouteProtection({
     If user exists and is a business_owner, then return children
   */
 
-  return (
-    <>
-      {logged_in && !user && Unauthorized("You are not logged in")}
-      {influencer &&
-        user?.role?.name !== ROLE_NAME.INFLUENCER &&
-        Unauthorized(message)}
-      {business_owner &&
-        user?.role?.name !== ROLE_NAME.BUSINESS_OWNER &&
-        Unauthorized(message)}
-      {children}
-    </>
-  );
+  if (logged_in && !user) return Unauthorized("You are not logged in");
+  if (influencer && user?.role?.name !== ROLE_NAME.INFLUENCER)
+    return Unauthorized(message);
+  if (business_owner && user?.role?.name !== ROLE_NAME.BUSINESS_OWNER)
+    return Unauthorized(message);
+  return <>{children}</>;
+
 }
