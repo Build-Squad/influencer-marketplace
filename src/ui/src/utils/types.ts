@@ -245,7 +245,7 @@ type OrderType = {
   buyer_wallet?: WalletType;
   influencer_wallet?: WalletType;
   order_number?: number;
-  transactions: TransactionType[] | null;
+  transactions?: TransactionType[] | null;
 };
 
 type OrderFilterType = {
