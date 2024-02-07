@@ -1,8 +1,6 @@
-import { useAppSelector } from "@/src/hooks/useRedux";
-import { Box, IconButton, Link, Tooltip } from "@mui/material";
-import React from "react";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import { TRANSACTION_TYPE } from "@/src/utils/consts";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
+import { IconButton, Link, Tooltip } from "@mui/material";
 
 type TransactionIconProps = {
   transaction: TransactionType;
