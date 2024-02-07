@@ -20,6 +20,7 @@ from .models import (
     OrderItemTracking,
     OrderMessage,
     Review,
+    Transaction,
 )
 from .serializers import (
     CreateOrderMessageSerializer,
@@ -30,11 +31,12 @@ from .serializers import (
     OrderAttachmentSerializer,
     OrderItemTrackingSerializer,
     OrderMessageSerializer,
+    OrderTransactionSerializer,
     SendTweetSerializer,
     ReviewSerializer,
     OrderMessageListFilterSerializer,
     UserOrderMessagesSerializer,
-    UpdateOrderInfluencerTransactionAddressSerializer,
+    OrderTransactionCreateSerializer,
     UserOrderMessagesSerializer
 )
 from rest_framework import status
@@ -195,7 +197,8 @@ class OrderListView(APIView):
                 orders = orders.order_by(filters["order_by"])
 
             pagination = Pagination(orders, request)
-            serializer = OrderSerializer(pagination.getData(), many=True)
+            serializer = OrderSerializer(pagination.getData(), context={
+                                         "request": request}, many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -447,8 +450,16 @@ class UpdateOrderStatus(APIView):
                 old_status = order.status
                 if status_data["status"] == "pending":
                     if request.data.get("address"):
-                        order.buyer_transaction_address = request.data.get(
-                            "address")
+                        # Create a transaction for the order
+                        Transaction.objects.create(
+                            order=order,
+                            transaction_address=request.data.get("address"),
+                            status="success",
+                            transaction_initiated_by=request.user_account,
+                            wallet=Wallet.objects.get(
+                                user_id=request.user_account, is_primary=True),
+                            transaction_type="initiate_escrow"
+                        )
                     else:
                         return Response(
                             {
@@ -483,23 +494,22 @@ class UpdateOrderStatus(APIView):
             return handleServerException(e)
 
 
-class UpdateUpdateOrderInfluencerTransactionAddressView(APIView):
-    @swagger_auto_schema(request_body=UpdateOrderInfluencerTransactionAddressSerializer)
-    def put(self, request, pk):
+class TransactionCreateView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=OrderTransactionCreateSerializer)
+    def post(self, request):
         try:
-            order = Order.objects.get(pk=pk, deleted_at=None)
-            if order is None:
-                return handleNotFound("Order")
-            serializer = UpdateOrderInfluencerTransactionAddressSerializer(
-                instance=order, data=request.data, partial=True
+            serializer = OrderTransactionCreateSerializer(
+                data=request.data, context={"request": request}
             )
             if serializer.is_valid():
-                serializer.update(order, serializer.validated_data)
+                serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
-                        "data": OrderSerializer(serializer.instance).data,
-                        "message": "Transaction address added successfully",
+                        "data": OrderTransactionSerializer(serializer.instance).data,
+                        "message": "Transaction added successfully",
                     },
                     status=status.HTTP_200_OK,
                 )

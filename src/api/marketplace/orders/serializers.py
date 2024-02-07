@@ -14,6 +14,7 @@ from .models import (
     OrderMessage,
     OrderMessageAttachment,
     Review,
+    Transaction,
 )
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -78,6 +79,7 @@ class OrderSerializer(serializers.ModelSerializer):
     influencer_wallet = serializers.SerializerMethodField()
     buyer_wallet = serializers.SerializerMethodField()
     address = serializers.CharField(required=False)
+    transactions = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -116,6 +118,13 @@ class OrderSerializer(serializers.ModelSerializer):
         if wallet:
             return WalletCompleteSerializer(wallet).data
 
+    def get_transactions(self, obj):
+        if "request" in self.context:
+            transactions = Transaction.objects.filter(
+                order=obj, transaction_initiated_by=self.context["request"].user_account)
+            return OrderTransactionSerializer(transactions, many=True).data
+        else:
+            return []
 
 # The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):
@@ -365,11 +374,33 @@ class UserOrderMessagesSerializer(serializers.Serializer):
 class SendTweetSerializer(serializers.Serializer):
     order_item_id = serializers.UUIDField(required=True)
 
+class OrderTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = '__all__'
 
-class UpdateOrderInfluencerTransactionAddressSerializer(serializers.Serializer):
-    address = serializers.CharField(required=True)
 
-    def update(self, instance, validated_data):
-        instance.influencer_transaction_address = validated_data['address']
-        instance.save()
-        return instance
+class OrderTransactionCreateSerializer(serializers.Serializer):
+    order_id = serializers.UUIDField(required=True)
+    transaction_type = serializers.CharField(required=True)
+    transaction_address = serializers.CharField(required=True)
+    status = serializers.CharField(required=False)
+
+    def create(self, validated_data):
+        order = Order.objects.get(id=validated_data['order_id'])
+        user = self.context['request'].user_account
+        wallet = Wallet.objects.filter(user_id=user, is_primary=True).first()
+        if wallet is None:
+            raise serializers.ValidationError(
+                {"wallet": "User does not have a primary wallet"})
+            
+        transaction = Transaction.objects.create(
+            order=order, 
+            transaction_initiated_by=user, 
+            transaction_type=validated_data['transaction_type'], 
+            transaction_address=validated_data['transaction_address'],
+            wallet = wallet,
+            status = validated_data.get('status', 'pending')
+        )
+        
+        return transaction

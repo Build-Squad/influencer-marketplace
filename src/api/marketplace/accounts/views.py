@@ -1458,14 +1458,25 @@ class WalletConnect(APIView):
             if serializer.is_valid():
                 wallet = self.get_object(request.data["wallet_address_id"])
                 if wallet:
-                    return Response(
-                        {
-                            "isSuccess": False,
-                            "data": None,
-                            "message": "This wallet is already connected with another account on Xfluencer\n Please use another wallet or login with the account that is connected with this wallet",
-                        },
-                        status=status.HTTP_200_OK,
-                    )
+                    user = User.objects.get(id=wallet.user_id.id)
+                    if user == request.user_account:
+                        return Response(
+                            {
+                                "isSuccess": True,
+                                "data": None,
+                                "message": "This wallet is already connected with your account",
+                            },
+                            status=status.HTTP_200_OK,
+                        )
+                    else:
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "data": None,
+                                "message": "This wallet is already connected with another account on Xfluencer\n Please use another wallet or login with the account that is connected with this wallet",
+                            },
+                            status=status.HTTP_200_OK,
+                        )
                 else:
                     wallet = serializer.save()
                 # Mark the wallet as primary

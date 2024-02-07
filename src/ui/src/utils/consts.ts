@@ -62,6 +62,13 @@ export const MESSAGE_STATUS = {
   DELIVERED: "delivered",
 };
 
+export const TRANSACTION_TYPE = {
+  INITIATE_ESCROW: "initiate_escrow",
+  CANCEL_ESCROW: "cancel_escrow",
+  CLAIM_ESCROW: "claim_escrow",
+  VALIDATE_ESCROW: "validate_escrow",
+};
+
 export const IDL: Xfluencer = {
   version: "0.1.0",
   name: "xfluencer",

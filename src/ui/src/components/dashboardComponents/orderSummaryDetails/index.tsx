@@ -324,7 +324,7 @@ const OrderSummaryDetails = ({
                   variant="outlined"
                   onClick={handleClose}
                 >
-                  Cancel
+                  No
                 </Button>
                 <Button
                   color="secondary"
@@ -332,7 +332,7 @@ const OrderSummaryDetails = ({
                   onClick={updateStatus}
                   autoFocus
                 >
-                  {capitalizeFirstLetter(action.type)}
+                  Yes
                 </Button>
               </DialogActions>
             </Dialog>
