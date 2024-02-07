@@ -1,10 +1,8 @@
 from distutils.util import strtobool
 from http.client import HTTPResponse
-import uuid
-from urllib import request
+import secrets
 
-from django.shortcuts import get_object_or_404
-from core.models import RegionMaster
+
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
 from marketplace.services import (
@@ -35,6 +33,7 @@ from .models import (
     Role,
     Wallet,
     WalletNetwork,
+    WalletNonce,
     WalletProvider,
 )
 from .serializers import (
@@ -55,6 +54,7 @@ from .serializers import (
     EmailVerificationSerializer,
     WalletAuthSerializer,
     WalletConnectSerializer,
+    WalletNonceSerializer,
     WalletSerializer,
 )
 from .services import OTPAuthenticationService, TwitterAuthenticationService
@@ -1475,6 +1475,49 @@ class WalletConnect(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class WalletNonceCreateView(APIView):
+
+    def get_object(self, wallet_address):
+        try:
+            wallet_nonce = WalletNonce.objects.get(
+                wallet_address=wallet_address)
+            wallet_nonce.nonce = secrets.token_hex(16)
+            wallet_nonce.save()
+            return wallet_nonce
+        except WalletNonce.DoesNotExist:
+            wallet_nonce = WalletNonce.objects.create(
+                wallet_address=wallet_address,
+                nonce=secrets.token_hex(16)
+            )
+            wallet_nonce.save()
+            return wallet_nonce
+
+    @swagger_auto_schema(request_body=WalletNonceSerializer)
+    def post(self, request):
+        try:
+            serializer = WalletNonceSerializer(data=request.data)
+            if serializer.is_valid():
+                wallet_nonce = self.get_object(request.data["wallet_address"])
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": WalletNonceSerializer(wallet_nonce).data,
+                        "message": "Wallet nonce created successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "data": None,
+                        "message": "Invalid request",
+                        "errors": serializer.errors,
+                    }
+                )
+        except Exception as e:
+            return handleServerException(e)
 
 class WalletList(APIView):
     authentication_classes = [JWTAuthentication]

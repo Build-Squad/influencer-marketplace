@@ -22,7 +22,8 @@ from .views import (
     WalletAuth,
     WalletConnect,
     WalletList,
-    BusinessAccountMetaDataDetail
+    BusinessAccountMetaDataDetail,
+    WalletNonceCreateView
 )
 
 urlpatterns = [
@@ -69,5 +70,8 @@ urlpatterns = [
     path("wallets/", WalletList.as_view(), name="wallets"),
 
 
-    path("top-influencers/", TopInfluencers.as_view(), name="TopInfluencers")
+    path("top-influencers/", TopInfluencers.as_view(), name="TopInfluencers"),
+
+    path("wallet-create/", WalletNonceCreateView.as_view(),
+         name="wallet-nonce-create"),
 ]

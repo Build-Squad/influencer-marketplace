@@ -16,6 +16,7 @@ from .models import (
     Role,
     Wallet,
     WalletNetwork,
+    WalletNonce,
     WalletProvider,
     BusinessAccountMetaData,
 )
@@ -295,3 +296,9 @@ class WalletConnectSerializer(serializers.Serializer):
         )
 
         return wallet
+
+class WalletNonceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WalletNonce
+        fields = '__all__'
