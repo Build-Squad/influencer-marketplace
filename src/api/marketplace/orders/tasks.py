@@ -112,12 +112,13 @@ def send_tweet(order_item_id):
         order_item.status = 'published'
         order_item.save()
 
+        # Check if the order is completed
+        checkOrderStatus(order_item.order_id.id)
+
         # Create notification for order item
         create_notification_for_order_item(
             order_item, 'scheduled', 'published')
 
-        # Check if the order is completed
-        checkOrderStatus(order_item.order_id.id)
     except Exception as e:
         raise Exception(str(e))
 
