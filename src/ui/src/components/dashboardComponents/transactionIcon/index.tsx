@@ -9,8 +9,6 @@ type TransactionIconProps = {
 };
 
 export default function TransactionIcon({ transaction }: TransactionIconProps) {
-  const user = useAppSelector((state) => state.user?.user);
-
   const colors = {
     [TRANSACTION_TYPE.INITIATE_ESCROW]: "success.main",
     [TRANSACTION_TYPE.CANCEL_ESCROW]: "success.main",
