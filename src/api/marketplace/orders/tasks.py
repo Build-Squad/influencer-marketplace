@@ -32,10 +32,10 @@ ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 
 
-def checkOrderStatus(order_id):
+def checkOrderStatus(pk):
     try:
         # Get order
-        order = Order.objects.get(id=order_id)
+        order = Order.objects.get(id=pk)
     except Order.DoesNotExist:
         raise Exception('Order does not exist')
 
