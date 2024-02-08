@@ -443,6 +443,13 @@ export default function OrderItemForm({
             p: 1,
           }}
         >
+          <FormLabel
+            sx={{
+              color: "secondary.main",
+            }}
+          >
+            {`Publish Date and Time`}
+          </FormLabel>
           <DateTimePicker
             disabled={disabled}
             value={
