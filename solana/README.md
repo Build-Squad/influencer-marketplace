@@ -115,10 +115,9 @@ Finally, you are ready to deply to DEVNET with the simple command:
 ```bash
 anchor deploy --provider.cluster devnet
 ```
-You should see the word "Deploy success".
+After completing 100%, you should see the output "Deploy success".
 
-Check the solana explorer to see your program deployed: https://explorer.solana.com/?cluster=devnet&utm_source=buildspace.so&utm_medium=buildspace_project
-
+Finally, check the solana explorer to see your program deployed: https://explorer.solana.com/?cluster=devnet&utm_source=buildspace.so&utm_medium=buildspace_project
 
 ## Deploy on Main
 [TBC]
