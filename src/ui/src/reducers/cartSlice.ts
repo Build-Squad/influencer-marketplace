@@ -134,6 +134,7 @@ export const cartSlice = createSlice({
                   max: item.max,
                   placeholder: item.placeholder,
                   order: item.order,
+                  regex: item.regex,
                 };
               }
             ),
@@ -313,6 +314,7 @@ export const cartSlice = createSlice({
                 max: item.max,
                 placeholder: item.placeholder,
                 order: item.order,
+                regex: item.regex,
               };
             }),
           },
