@@ -187,6 +187,27 @@ export type Xfluencer = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "canceEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -257,9 +278,29 @@ export type Xfluencer = {
           {
             "name": "amount",
             "type": "u64"
+          },
+          {
+            "name": "orderCode",
+            "type": "u64"
+          },
+          {
+            "name": "delivered",
+            "type": "bool"
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CannotClaim",
+      "msg": "Cannot claim"
+    },
+    {
+      "code": 6001,
+      "name": "AlreadyClaim",
+      "msg": "Already claim"
     }
   ]
 };
@@ -453,6 +494,27 @@ export const IDL: Xfluencer = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "canceEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -523,9 +585,29 @@ export const IDL: Xfluencer = {
           {
             "name": "amount",
             "type": "u64"
+          },
+          {
+            "name": "orderCode",
+            "type": "u64"
+          },
+          {
+            "name": "delivered",
+            "type": "bool"
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CannotClaim",
+      "msg": "Cannot claim"
+    },
+    {
+      "code": 6001,
+      "name": "AlreadyClaim",
+      "msg": "Already claim"
     }
   ]
 };

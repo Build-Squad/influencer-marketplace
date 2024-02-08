@@ -98,7 +98,7 @@ describe("Testing Escrow for SOL", () => {
     assert.ok(escrow_value == amount);
     
     await program.methods
-    .canceEscrowSol()
+    .cancelEscrowSol()
     .accounts({
       business: buyerPublicKey,
       escrowAccount: escrowPDA,

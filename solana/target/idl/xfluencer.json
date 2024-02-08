@@ -189,7 +189,7 @@
       ]
     },
     {
-      "name": "canceEscrowSol",
+      "name": "cancelEscrowSol",
       "accounts": [
         {
           "name": "business",

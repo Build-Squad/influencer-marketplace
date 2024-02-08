@@ -148,7 +148,7 @@ pub mod xfluencer {
         Ok(())
     }
 
-    pub fn cance_escrow_sol(ctx: Context<CancelEscrowSolana>) -> Result<()> {
+    pub fn cancel_escrow_sol(ctx: Context<CancelEscrowSolana>) -> Result<()> {
 
         let amount = ctx.accounts.escrow_account.get_lamports();
 

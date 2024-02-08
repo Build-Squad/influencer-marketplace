@@ -189,7 +189,7 @@ export type Xfluencer = {
       ]
     },
     {
-      "name": "canceEscrowSol",
+      "name": "cancelEscrowSol",
       "accounts": [
         {
           "name": "business",
@@ -496,7 +496,7 @@ export const IDL: Xfluencer = {
       ]
     },
     {
-      "name": "canceEscrowSol",
+      "name": "cancelEscrowSol",
       "accounts": [
         {
           "name": "business",
