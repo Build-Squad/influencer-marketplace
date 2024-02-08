@@ -16,6 +16,7 @@ from .models import (
     Role,
     Wallet,
     WalletNetwork,
+    WalletNonce,
     WalletProvider,
     BusinessAccountMetaData,
 )
@@ -246,6 +247,8 @@ class WalletAuthSerializer(serializers.Serializer):
     wallet_address_id = serializers.CharField(max_length=100)
     wallet_provider_id = serializers.CharField(max_length=100)
     wallet_network_id = serializers.CharField(max_length=100)
+    signature = serializers.CharField(max_length=100)
+    message = serializers.CharField(max_length=255)
 
 
 class WalletConnectSerializer(serializers.Serializer):
@@ -295,3 +298,9 @@ class WalletConnectSerializer(serializers.Serializer):
         )
 
         return wallet
+
+class WalletNonceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WalletNonce
+        fields = '__all__'
