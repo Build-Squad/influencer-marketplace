@@ -37,7 +37,7 @@ const Home: NextPage = (props) => {
       <WalletContextProvider>
         <AppBar />
 
-    
+
         <div className={styles.input}>
            <Input type="address_business" label="Business Address" placeholder="Enter a valid solana address" onChangeCapture={business} value={BUSINESS} />
            <Input type="address_influencer" label="Influencer Address" placeholder="Enter a valid solana address" value={INFLUENCER} />
@@ -51,8 +51,6 @@ const Home: NextPage = (props) => {
           <CancelEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
         </div>
        
-
-
       </WalletContextProvider >
 
     </div>
