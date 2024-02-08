@@ -72,7 +72,7 @@ class OrderListFilterSerializer(serializers.Serializer):
 # The response schema for the list of orders from the POST search request
 class OrderSerializer(serializers.ModelSerializer):
     buyer = UserSerializer(read_only=True)
-    order_item_order_id = OrderItemReadSerializer(many=True, read_only=True)
+    order_item_order_id = serializers.SerializerMethodField()
     review = ReviewSerializer(read_only=True)
     amount = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
@@ -125,6 +125,10 @@ class OrderSerializer(serializers.ModelSerializer):
             return OrderTransactionSerializer(transactions, many=True).data
         else:
             return []
+
+    def get_order_item_order_id(self, obj):
+        order_items = OrderItem.objects.filter(order_id=obj, deleted_at=None)
+        return OrderItemReadSerializer(order_items, many=True).data
 
 # The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):

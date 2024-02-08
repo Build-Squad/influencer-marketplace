@@ -111,7 +111,7 @@ def poll(text, poll_options, poll_duration_minutes, client):
 def retweet(tweet_id, client):
     try:
         res = client.retweet(tweet_id=tweet_id, user_auth=False)
-        return tweet_id
+        return res.data['id']
     except Exception as e:
         raise Exception(str(e))
 
