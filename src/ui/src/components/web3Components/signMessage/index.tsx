@@ -3,14 +3,33 @@ import { ed25519 } from "@noble/curves/ed25519";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCallback, useState } from "react";
 import { notification } from "../../shared/notification";
+import { postService } from "@/src/services/httpServices";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 type SignMessageProps = {
-  onSignMessageSuccess: () => Promise<void>;
+  onSignMessageSuccess: (signature?: string, text?: string) => Promise<void>;
 };
 
 export const SignMessage = ({ onSignMessageSuccess }: SignMessageProps) => {
   const { publicKey, signMessage } = useWallet();
   const [loading, setLoading] = useState<boolean>(false);
+
+  const getNonce = async () => {
+    const { isSuccess, data, message } = await postService(
+      "/account/wallet-create/",
+      {
+        wallet_address: publicKey?.toBase58(),
+      }
+    );
+    if (isSuccess) {
+      return data?.data?.nonce;
+    } else {
+      notification(`Something went wrong, please try again later`, "error");
+      return null;
+    }
+  };
+
+  const verifySignature = async (signature: string, nonce: string) => {};
 
   const onClick = useCallback(async () => {
     try {
@@ -19,14 +38,15 @@ export const SignMessage = ({ onSignMessageSuccess }: SignMessageProps) => {
       if (!signMessage)
         throw new Error("Wallet does not support message signing!");
 
-      const message = new TextEncoder().encode(
-        `Authorize this signature to login to Xfluencer.\nUser:\n${publicKey.toBase58()}\n`
-      );
-      const signature = await signMessage(message);
+      const nonce = await getNonce();
 
-      if (!ed25519.verify(signature, message, publicKey.toBytes()))
-        throw new Error("Message signature invalid!");
-      await onSignMessageSuccess();
+      if (nonce) {
+        const text = `Authorize this signature to login to Xfluencer.\nUser:\n${publicKey.toBase58()}\n Nonce: ${nonce}`;
+        const message = new TextEncoder().encode(text);
+        const signature = await signMessage(message);
+        const sign = bs58.encode(signature);
+        await onSignMessageSuccess(sign, text);
+      }
     } catch (error: any) {
       notification(`Sign Message failed: ${error?.message}`, "error");
     } finally {
