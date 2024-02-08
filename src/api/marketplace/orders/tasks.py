@@ -152,14 +152,17 @@ def twitter_task(order_item_id):
         if order_item_meta_data.field_name == 'text':
             text = order_item_meta_data.value
         elif order_item_meta_data.field_name == 'tweet_id':
-            tweet_id = order_item_meta_data.value
+            # Split the tweet_id and get the last part
+            tweet_id = order_item_meta_data.value.split('/')[-1]
         elif order_item_meta_data.field_name == 'in_reply_to_tweet_id':
-            in_reply_to_tweet_id = order_item_meta_data.value
+            # Split the tweet_id and get the last part
+            in_reply_to_tweet_id = order_item_meta_data.value.split('/')[-1]
         elif order_item_meta_data.field_name == 'poll_options':
             # This will be a comma separated string, convert to list
             options = order_item_meta_data.value.split(',')
             poll_options = [option.strip() for option in options]
         elif order_item_meta_data.field_name == 'poll_duration_minutes':
+            # Convert to integer
             poll_duration_minutes = int(order_item_meta_data.value)
 
     client = Client(bearer_token=ACCESS_CODE,
