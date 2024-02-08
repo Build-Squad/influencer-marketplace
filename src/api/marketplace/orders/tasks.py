@@ -32,10 +32,10 @@ ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 
 
-def checkOrderStatus(order_id):
+def checkOrderStatus(pk):
     try:
         # Get order
-        order = Order.objects.get(id=order_id)
+        order = Order.objects.get(id=pk)
     except Order.DoesNotExist:
         raise Exception('Order does not exist')
 
@@ -112,12 +112,13 @@ def send_tweet(order_item_id):
         order_item.status = 'published'
         order_item.save()
 
+        # Check if the order is completed
+        checkOrderStatus(order_item.order_id.id)
+
         # Create notification for order item
         create_notification_for_order_item(
             order_item, 'scheduled', 'published')
 
-        # Check if the order is completed
-        checkOrderStatus(order_item.order_id.id)
     except Exception as e:
         raise Exception(str(e))
 

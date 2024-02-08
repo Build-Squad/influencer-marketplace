@@ -28,6 +28,22 @@ const formatTwitterFollowers = (followersCount: any) => {
 export default function BusinessHome() {
   const [topInfluencers, setTopInfluencers] = useState([]);
 
+  const getPrice = (inf: any, type = "max") => {
+    const services = inf.service_types || [];
+    const comparator = type === "max" ? Math.max : Math.min;
+
+    if (services.length === 0) {
+      return "0";
+    }
+
+    const price = comparator(...services.map((service: any) => service.price));
+    const serviceWithPrice = services.find(
+      (service: any) => service.price === price
+    );
+
+    return `${price}${serviceWithPrice.currencySymbol}`;
+  };
+
   const getTopInfluencers = async () => {
     const { isSuccess, data, message } = await getService(
       "/account/top-influencers/"
@@ -44,18 +60,8 @@ export default function BusinessHome() {
             : [],
 
           followers: formatTwitterFollowers(inf.followers_count),
-          minPrice:
-            inf.service_types && inf.service_types.length > 0
-              ? Math.min(
-                  ...inf.service_types.map((service: any) => service.price)
-                )
-              : 0,
-          maxPrice:
-            inf.service_types && inf.service_types.length > 0
-              ? Math.max(
-                  ...inf.service_types.map((service: any) => service.price)
-                )
-              : 0,
+          minPrice: getPrice(inf, "min"),
+          maxPrice: getPrice(inf, "max"),
         };
       });
       setTopInfluencers(filteredData);

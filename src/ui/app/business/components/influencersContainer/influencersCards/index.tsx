@@ -125,7 +125,7 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
               </Typography>
             </Box>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {`${influencer?.minPrice}$ - ${influencer?.maxPrice}$`}
+              {`${influencer?.minPrice} - ${influencer?.maxPrice}`}
             </Typography>
           </Box>
         </CardContent>
