@@ -35,6 +35,8 @@ import NextLink from "next/link";
 import React, { useEffect } from "react";
 import Services from "./_services";
 import RouteProtection from "@/src/components/shared/routeProtection";
+import { KeyboardBackspace } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
 
 const tabs = [
   {
@@ -54,6 +56,7 @@ const ProfileLayout = ({
     id: string;
   };
 }) => {
+  const router = useRouter();
   const loggedInUser = useAppSelector((state) => state.user?.user);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [categoryOpen, setCategoryOpen] = React.useState<boolean>(false);
@@ -630,6 +633,12 @@ const ProfileLayout = ({
                 </Box>
               </Grid>
               <Grid item xs={12} md={9} sm={12} lg={9}>
+                <KeyboardBackspace
+                  onClick={() => {
+                    router.back();
+                  }}
+                  sx={{ cursor: "pointer", mt:2 }}
+                />
                 <Box
                   sx={{
                     m: 2,

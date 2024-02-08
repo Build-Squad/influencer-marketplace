@@ -14,6 +14,7 @@ import {
   putService,
 } from "@/src/services/httpServices";
 import { ORDER_STATUS } from "@/src/utils/consts";
+import { KeyboardBackspace } from "@mui/icons-material";
 import { Box, Button, Grid, Link, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -189,6 +190,12 @@ export default function CheckoutPage() {
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
+      <KeyboardBackspace
+        onClick={() => {
+          router.back();
+        }}
+        sx={{ cursor: "pointer", ml: 2, mt: 2 }}
+      />
       {cart?.orderItems?.length === 0 ? (
         <Box
           sx={{
