@@ -237,7 +237,6 @@ export default function OrderItemForm({
                     value={formFields?.value ? formFields?.value : ""}
                     name={formFields?.id}
                     onChange={(e) => {
-                      console.log(e.target.value, formFields);
                       if (updateFunction) {
                         updateFunction(
                           orderItem?.order_item?.id

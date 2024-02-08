@@ -86,6 +86,26 @@ export default function CheckoutPage() {
     }
   };
 
+  const validateMetaDataValues = () => {
+    let isValid = true;
+    cart?.orderItems?.forEach((orderItem) => {
+      orderItem?.order_item?.order_item_meta_data?.forEach((metaData) => {
+        if (metaData.regex && metaData?.value) {
+          const regex = new RegExp(metaData.regex);
+          if (!regex.test(metaData?.value)) {
+            notification(
+              `Please fill the correct value for ${metaData.label}`,
+              "error",
+              3000
+            );
+            isValid = false;
+          }
+        }
+      });
+    });
+    return isValid;
+  };
+
   const createOrder = async () => {
     const body = {
       order_items: cart?.orderItems?.map((orderItem) => {
@@ -177,6 +197,10 @@ export default function CheckoutPage() {
   const onSave = async () => {
     try {
       setLoading(true);
+      if (!validateMetaDataValues()) {
+        setLoading(false);
+        return;
+      }
       if (!cart?.orderId) {
         createOrder();
       } else {
