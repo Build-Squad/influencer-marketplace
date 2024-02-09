@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import Connect_wallet_unselected from "@/public/svg/Connect_wallet_unselected.svg";
@@ -136,12 +136,19 @@ const LeftComponent = ({ userDetails }: Props) => {
         borderTop: "none",
       }}
     >
-      <KeyboardBackspace
+      <Button
+        variant="outlined"
+        sx={{
+          color: "rgb(0, 137, 234)",
+          border: "1px solid rgb(0, 137, 234)",
+          mt: 2,
+        }}
         onClick={() => {
           router.back();
         }}
-        sx={{ cursor: "pointer"}}
-      />
+      >
+        Back
+      </Button>
       <Typography variant="h6" sx={{ ml: 1 }}>
         {userDetails.username}
       </Typography>

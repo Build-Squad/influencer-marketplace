@@ -19,6 +19,7 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
+  Button,
   Grid,
   IconButton,
   Link,
@@ -450,12 +451,19 @@ export default function BusinessDashboardPage() {
       >
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <KeyboardBackspace
+            <Button
+              variant="outlined"
+              sx={{
+                color: "rgb(0, 137, 234)",
+                border: "1px solid rgb(0, 137, 234)",
+                mt: 2,
+              }}
               onClick={() => {
                 router.back();
               }}
-              sx={{ cursor: "pointer"}}
-            />
+            >
+              Back
+            </Button>
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (
