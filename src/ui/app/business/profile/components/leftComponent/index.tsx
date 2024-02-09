@@ -10,6 +10,7 @@ import connect_x from "@/public/svg/connect_x.svg";
 import Details_unselected from "@/public/svg/Details_unselected.svg";
 import Details from "@/public/svg/Details.svg";
 import { UserDetailsType } from "../../type";
+import { KeyboardBackspace } from "@mui/icons-material";
 
 type Props = {
   userDetails: UserDetailsType;
@@ -125,6 +126,7 @@ const CardComponent = ({
 };
 
 const LeftComponent = ({ userDetails }: Props) => {
+  const router = useRouter();
   return (
     <Box
       sx={{
@@ -134,6 +136,12 @@ const LeftComponent = ({ userDetails }: Props) => {
         borderTop: "none",
       }}
     >
+      <KeyboardBackspace
+        onClick={() => {
+          router.back();
+        }}
+        sx={{ cursor: "pointer"}}
+      />
       <Typography variant="h6" sx={{ ml: 1 }}>
         {userDetails.username}
       </Typography>
