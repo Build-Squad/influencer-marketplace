@@ -255,6 +255,32 @@ export type Xfluencer = {
           "type": "i32"
         }
       ]
+    },
+    {
+      "name": "validateEscrowSol",
+      "accounts": [
+        {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -625,6 +651,32 @@ export const IDL: Xfluencer = {
           "type": "i32"
         }
       ]
+    },
+    {
+      "name": "validateEscrowSol",
+      "accounts": [
+        {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [

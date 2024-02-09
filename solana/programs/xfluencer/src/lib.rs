@@ -91,7 +91,7 @@ pub mod xfluencer {
         Ok(())
     }
 
-    pub fn claim_escrow(ctx: Context<ClainEscrowSolana>, order_code: u64) -> ProgramResult {
+    pub fn claim_escrow(ctx: Context<ClaimEscrowSolana>, order_code: u64) -> ProgramResult {
 
         let business = ctx.accounts.business.key();
         let influencer = ctx.accounts.influencer.key();
@@ -318,7 +318,7 @@ pub struct CreateEscrowSolana<'info> {
 
 #[derive(Accounts)]
 #[instruction(order_code: u64)]
-pub struct ClainEscrowSolana<'info> {
+pub struct ClaimEscrowSolana<'info> {
     /// CHECK: safe
     #[account(mut)]
     pub influencer: Signer<'info>,
@@ -328,7 +328,8 @@ pub struct ClainEscrowSolana<'info> {
     #[account(
         mut,
         constraint = escrow_account.from == *business.key,
-        //constraint = escrow_account.to == *influencer.key,
+        constraint = escrow_account.to == *influencer.key,
+        constraint = escrow_account.delivered == true
         //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
@@ -384,6 +385,21 @@ pub struct UpdateFees<'info> {
 
 #[derive(Accounts)]
 pub struct ValidateEscrowSolana<'info> {
+    #[account(mut)]
+    pub validation_authority: Signer<'info>,
+    /// CHECK:
+    #[account(mut)]
+    pub influencer: AccountInfo<'info>,
+    /// CHECK:
+    #[account(mut)]
+    pub business: AccountInfo<'info>,
+    #[account(
+        mut,
+        constraint = escrow_account.from == *business.key,
+        constraint = escrow_account.to == *influencer.key,
+        //close = influencer
+    )]
+    pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
     
 }
 
