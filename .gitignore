@@ -53,7 +53,7 @@ solana/target/sbf-solana*
 solana/target/deploy
 solana-client/node_modules/*
 solana-client/.next*
-
+solana/*~
 
 # celery-beat
 src/api/celerybeat-schedule
