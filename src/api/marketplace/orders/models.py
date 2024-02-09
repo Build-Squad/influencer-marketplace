@@ -173,9 +173,23 @@ class OrderItemTracking(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='OrderItemTracking', default=uuid.uuid4, editable=False)
     order_item = models.ForeignKey(OrderItem, related_name='order_item_id', on_delete=SET_NULL, null=True)
     status = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "order_item_tracking" 
+
+
+class OrderTracking(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True, verbose_name='OrderTracking', default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(
+        Order, related_name='order_id', on_delete=SET_NULL, null=True)
+    status = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "order_tracking"
 
 class OrderMessage(models.Model):
     
