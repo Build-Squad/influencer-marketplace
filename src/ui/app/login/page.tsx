@@ -2,17 +2,48 @@
 import Image from "next/image";
 import CustomModal from "@/src/components/shared/customModal";
 import { Box, Button, Grid, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import XfluencerLogo from "@/public/XfluencerLogo_Icon.png";
 import LoginOptions from "./components/loginOptions";
 import LoginAccordion from "./components/loginAccordion";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/src/hooks/useRedux";
+import EmailLoginModal from "@/src/components/emailLoginModal";
 
 const Login: React.FC = () => {
+  const router = useRouter();
   const [open, setOpen] = useState(true);
   const [loginAs, setLoginAs] = useState("Business");
+  const [walletOpen, setWalletOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const user = useAppSelector((state) => state.user);
 
-  const { startTwitterAuthentication } = useTwitterAuth();
+  const { startTwitterAuthentication, checkTwitterUserAuthentication } =
+    useTwitterAuth();
+
+  useEffect(() => {
+    if (user?.loggedIn) {
+      const redirectRoute =
+        user?.user?.role?.name == "business_owner"
+          ? "/business"
+          : "/influencer";
+      router.push(redirectRoute);
+    }
+  }, [user?.loggedIn]);
+
+  useEffect(() => {
+    if (!emailOpen) {
+      checkTwitterUserAuthentication();
+    }
+  }, [emailOpen]);
+
+  useEffect(() => {
+    if (!walletOpen) {
+      checkTwitterUserAuthentication();
+    }
+  }, [walletOpen]);
 
   const handleLoginAsToggle = () => {
     setLoginAs((prevLoginAs) =>
@@ -20,8 +51,12 @@ const Login: React.FC = () => {
     );
   };
 
-  const handleConnectWallet = () => {};
-  const handleConnectEmail = () => {};
+  const handleConnectWallet = () => {
+    setWalletOpen(true);
+  };
+  const handleConnectEmail = () => {
+    setEmailOpen(true);
+  };
   const handleConnectX = () => {
     startTwitterAuthentication({
       role: loginAs == "Business" ? "business_owner" : "influencer",
@@ -80,12 +115,14 @@ const Login: React.FC = () => {
             <Grid item>
               <LoginOptions label="Connect with X" onClick={handleConnectX} />
             </Grid>
-            <Grid item>
-              <LoginOptions
-                label="Connect with Email"
-                onClick={handleConnectEmail}
-              />
-            </Grid>
+            {loginAs === "Business" ? (
+              <Grid item>
+                <LoginOptions
+                  label="Connect with Email"
+                  onClick={handleConnectEmail}
+                />
+              </Grid>
+            ) : null}
           </Grid>
         </LoginAccordion>
       </Box>
@@ -152,6 +189,12 @@ const Login: React.FC = () => {
           </Grid>
         </Grid>
       </CustomModal>
+
+      {/* Wallet Model */}
+      <WalletConnectModal open={walletOpen} setOpen={setWalletOpen} />
+
+      {/* Email Modal */}
+      <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
     </Box>
   );
 };

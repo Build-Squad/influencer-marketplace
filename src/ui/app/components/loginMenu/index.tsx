@@ -11,21 +11,10 @@ import { ROLE_NAME } from "@/src/utils/consts";
 
 type LoginMenuProps = {
   logoutTwitterUser: () => {};
-  isTwitterUserLoggedIn: boolean;
-  twitterLogin: () => {};
-  setEmailOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setWalletOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function LoginMenu({
-  logoutTwitterUser,
-  isTwitterUserLoggedIn,
-  twitterLogin,
-  setEmailOpen,
-  setWalletOpen,
-}: LoginMenuProps) {
+export default function LoginMenu({ logoutTwitterUser }: LoginMenuProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const currentUser = useAppSelector((state) => state.user?.user);
   const open = Boolean(anchorEl);
@@ -38,117 +27,52 @@ export default function LoginMenu({
   };
 
   const getLoginOptions = () => {
-    let options = [];
-    if (isTwitterUserLoggedIn) {
-      options.push(
-        {
-          label: "My Profile",
-          function: () => {
-            if (
-              currentUser &&
-              currentUser?.role?.name === ROLE_NAME.INFLUENCER
-            ) {
-              window.location.href = `/influencer/profile/${currentUser?.id}`;
-            } else if (
-              currentUser &&
-              currentUser?.role?.name === ROLE_NAME.BUSINESS_OWNER
-            ) {
-              router.push("/business/profile?tab=wallet");
-            } else {
-              return;
-            }
-          },
-        },
-        {
-          label: "Logout",
-          function: () => {
-            logoutTwitterUser();
-            router.push("/");
-          },
-        }
-      );
-    }
-    if (!isTwitterUserLoggedIn) {
-      options.push({
-        label: "Connect with X",
-        function: twitterLogin,
-      });
-      if (pathname.includes("business")) {
-        options.push(
-          {
-            label: "Connect with Email",
-            function: () => {
-              setEmailOpen(true);
-            },
-          },
-          {
-            label: "Connect with Wallet",
-            function: () => setWalletOpen(true),
+    return [
+      {
+        label: "My Profile",
+        function: () => {
+          if (currentUser && currentUser?.role?.name === ROLE_NAME.INFLUENCER) {
+            window.location.href = `/influencer/profile/${currentUser?.id}`;
+          } else if (
+            currentUser &&
+            currentUser?.role?.name === ROLE_NAME.BUSINESS_OWNER
+          ) {
+            router.push("/business/profile?tab=wallet");
+          } else {
+            return;
           }
-        );
-      }
-    }
-
-    return options;
+        },
+      },
+      {
+        label: "Logout",
+        function: () => {
+          logoutTwitterUser();
+          router.push("/");
+        },
+      },
+    ];
   };
-
-  const handleClick2 =() => {
-    router.push("/login")
-  }
 
   return (
     <>
-      {isTwitterUserLoggedIn ? (
-        <>
-          {currentUser?.twitter_account?.profile_image_url ? (
-            <Avatar
-              sx={{
-                width: "34px",
-                height: "34px",
-                cursor: "pointer",
-              }}
-              onClick={handleClick}
-              src={currentUser?.twitter_account?.profile_image_url}
-            />
-          ) : (
-            <Image
-              src={ProfileIcon}
-              alt={"Profile Icon"}
-              height={34}
-              onClick={handleClick}
-              style={{ cursor: "pointer" }}
-            />
-          )}
-        </>
+      {currentUser?.twitter_account?.profile_image_url ? (
+        <Avatar
+          sx={{
+            width: "34px",
+            height: "34px",
+            cursor: "pointer",
+          }}
+          onClick={handleClick}
+          src={currentUser?.twitter_account?.profile_image_url}
+        />
       ) : (
-        <>
-          <Box
-            sx={{
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={handleClick}
-          >
-            <Lock style={{ fontSize: "16px" }} />
-            <Typography sx={{ fontSize: "10px" }}>Login</Typography>
-          </Box>
-          <Box
-            sx={{
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={handleClick2}
-          >
-            <Lock style={{ fontSize: "16px" }} />
-            <Typography sx={{ fontSize: "10px" }}>Login 2.0</Typography>
-          </Box>
-        </>
+        <Image
+          src={ProfileIcon}
+          alt={"Profile Icon"}
+          height={34}
+          onClick={handleClick}
+          style={{ cursor: "pointer" }}
+        />
       )}
 
       <Menu

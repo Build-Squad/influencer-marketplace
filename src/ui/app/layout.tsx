@@ -62,12 +62,8 @@ export default function RootLayout({
               <ThemeRegistry options={{ key: "mui-theme" }}>
                 <WalletContextProvider>
                   <Navbar
-                    setEmailOpen={setEmailOpen}
                     setCategoryOpen={setCategoryOpen}
-                    setWalletOpen={setWalletOpen}
                     setLoginStatus={setLoginStatus}
-                    emailOpen={emailOpen}
-                    walletOpen={walletOpen}
                     categoryOpen={categoryOpen}
                   />
                   {children}

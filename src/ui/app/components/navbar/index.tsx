@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Lock } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import LoginMenu from "../loginMenu";
 
@@ -36,11 +37,7 @@ import NextLink from "next/link";
 
 type NavbarProps = {
   setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
-  setEmailOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setWalletOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  emailOpen: boolean;
-  walletOpen: boolean;
   categoryOpen: boolean;
 };
 
@@ -180,20 +177,13 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
 
 export default function Navbar({
   setLoginStatus,
-  setEmailOpen,
-  setWalletOpen,
   setCategoryOpen,
-  emailOpen,
-  walletOpen,
   categoryOpen,
 }: NavbarProps) {
   const {
     isTwitterUserLoggedIn,
-    startTwitterAuthentication,
     logoutTwitterUser,
-    checkTwitterUserAuthentication,
     isAccountSetupComplete,
-    categoriesAdded,
     checkAccountSetup,
   } = useTwitterAuth();
 
@@ -203,18 +193,6 @@ export default function Navbar({
 
   const params = useSearchParams();
   const user = useAppSelector((state) => state.user);
-
-  useEffect(() => {
-    if (!emailOpen) {
-      checkTwitterUserAuthentication();
-    }
-  }, [emailOpen]);
-
-  useEffect(() => {
-    if (!walletOpen) {
-      checkTwitterUserAuthentication();
-    }
-  }, [walletOpen]);
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
@@ -280,7 +258,7 @@ export default function Navbar({
             />
           </Link>
         </Box>
-        {isTwitterUserLoggedIn ? null : (
+        {user?.loggedIn ? null : (
           <Box
             sx={{
               display: "flex",
@@ -325,7 +303,7 @@ export default function Navbar({
               columnGap: "16px",
             }}
           >
-            {isTwitterUserLoggedIn ? (
+            {user?.loggedIn ? (
               // Business menu items
               user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
@@ -359,19 +337,26 @@ export default function Navbar({
                 )}
               </>
             )}
-            <LoginMenu
-              isTwitterUserLoggedIn={isTwitterUserLoggedIn}
-              twitterLogin={() =>
-                startTwitterAuthentication({
-                  role: pathname.includes("business")
-                    ? "business_owner"
-                    : "influencer",
-                })
-              }
-              setEmailOpen={setEmailOpen}
-              setWalletOpen={setWalletOpen}
-              logoutTwitterUser={logoutTwitterUser}
-            />
+
+            {user?.loggedIn ? (
+              <LoginMenu logoutTwitterUser={logoutTwitterUser} />
+            ) : (
+              <Box
+                sx={{
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onClick={() => {
+                  router.push("/login");
+                }}
+              >
+                <Lock style={{ fontSize: "16px" }} />
+                <Typography sx={{ fontSize: "10px" }}>Login</Typography>
+              </Box>
+            )}
           </Box>
         </Box>
       </Toolbar>
