@@ -116,10 +116,18 @@ class ServiceMasterMetaData(models.Model):
         ('date_time', 'date_time'),
         ('media', 'media'),
     )
+    
+    FIELD_NAME_CHOICED = (
+        ('text', 'text'),
+        ('tweet_id', 'tweet_id'),
+        ('in_reply_to_tweet_id', 'in_reply_to_tweet_id'),
+        ('poll_options', 'poll_options'),
+        ('poll_duration_minutes', 'poll_duration_minutes')
+    )
 
     id = models.UUIDField(
         primary_key=True, verbose_name='ServiceMasterMetaData', default=uuid.uuid4, editable=False)
-    field_name = models.CharField(max_length=100, blank=True, null=True)
+    field_name = models.CharField(choices=FIELD_NAME_CHOICED, max_length=50, blank=True, null=True)
     label = models.CharField(max_length=100, blank=True, null=True)
     placeholder = models.CharField(max_length=100, blank=True, null=True)
     min = models.CharField(max_length=100, blank=True, null=True)
