@@ -118,6 +118,7 @@ class ServiceMasterMetaData(models.Model):
     )
     
     FIELD_NAME_CHOICED = (
+        ('instructions', 'instructions'),
         ('text', 'text'),
         ('tweet_id', 'tweet_id'),
         ('in_reply_to_tweet_id', 'in_reply_to_tweet_id'),

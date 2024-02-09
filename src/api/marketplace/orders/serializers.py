@@ -127,7 +127,8 @@ class OrderSerializer(serializers.ModelSerializer):
             return []
 
     def get_order_item_order_id(self, obj):
-        order_items = OrderItem.objects.filter(order_id=obj, deleted_at=None)
+        order_items = OrderItem.objects.filter(
+            order_id=obj, deleted_at=None).order_by('-created_at')
         return OrderItemReadSerializer(order_items, many=True).data
 
 # The request schema for the creation and update of an order item meta data value
