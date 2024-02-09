@@ -258,7 +258,7 @@ export default function Navbar({
             />
           </Link>
         </Box>
-        {user?.loggedIn ? null : (
+        {user?.loggedIn || pathname.includes("login") ? null : (
           <Box
             sx={{
               display: "flex",

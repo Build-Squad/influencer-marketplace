@@ -73,7 +73,7 @@ const Login: React.FC = () => {
       }}
     >
       <Box sx={{ maxWidth: "700px", flex: "1" }}>
-        <Box sx={{ textAlign: "center" }}>
+        <Box sx={{ textAlign: "center", mb: 3 }}>
           <Image
             src={XfluencerLogo}
             width={30}
