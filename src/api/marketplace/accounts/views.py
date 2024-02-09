@@ -1,10 +1,8 @@
 from distutils.util import strtobool
 from http.client import HTTPResponse
-import uuid
-from urllib import request
+import secrets
 
-from django.shortcuts import get_object_or_404
-from core.models import RegionMaster
+
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
 from marketplace.services import (
@@ -35,6 +33,7 @@ from .models import (
     Role,
     Wallet,
     WalletNetwork,
+    WalletNonce,
     WalletProvider,
 )
 from .serializers import (
@@ -55,13 +54,15 @@ from .serializers import (
     EmailVerificationSerializer,
     WalletAuthSerializer,
     WalletConnectSerializer,
+    WalletNonceSerializer,
     WalletSerializer,
 )
 from .services import OTPAuthenticationService, TwitterAuthenticationService
 from decouple import config
 import datetime
 
-
+from nacl.signing import VerifyKey
+import base58
 # Twitter account API-Endpoint
 # List-Create-API
 
@@ -1305,6 +1306,13 @@ class EmailVerification(APIView):
 
 
 class WalletAuth(APIView):
+
+    def get_wallet_nonce(self, wallet_address):
+        try:
+            return WalletNonce.objects.get(wallet_address=wallet_address)
+        except WalletNonce.DoesNotExist:
+            return None
+
     def get_wallet(self, wallet_address_id):
         try:
             return Wallet.objects.get(wallet_address_id=wallet_address_id)
@@ -1351,11 +1359,40 @@ class WalletAuth(APIView):
             wallet_network.save()
             return wallet_network
 
+    def verify_nonce_signature(self, wallet_address, signature, message):
+        wallet_nonce = self.get_wallet_nonce(wallet_address)
+        if wallet_nonce is None:
+            return False
+
+        pubkey = base58.b58decode(wallet_address)
+        msg = bytes(message, 'utf8')
+        signed = base58.b58decode(signature)
+
+        result = VerifyKey(pubkey).verify(smessage=msg, signature=signed)
+
+        return result
+
     @swagger_auto_schema(request_body=WalletAuthSerializer)
     def post(self, request):
         try:
             serializer = WalletAuthSerializer(data=request.data)
             if serializer.is_valid():
+
+                # Verify that the signature is valid
+                is_verified = self.verify_nonce_signature(
+                    request.data["wallet_address_id"], request.data["signature"], request.data["message"])
+
+                if not is_verified:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Invalid signature",
+                            "errors": "Invalid signature",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+
                 # Should create a wallet if no wallet is found for the requested user else return the wallet
                 wallet = self.get_wallet(request.data["wallet_address_id"])
                 if wallet is None:
@@ -1503,6 +1540,49 @@ class WalletConnect(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class WalletNonceCreateView(APIView):
+
+    def get_object(self, wallet_address):
+        try:
+            wallet_nonce = WalletNonce.objects.get(
+                wallet_address=wallet_address)
+            wallet_nonce.nonce = secrets.token_hex(16)
+            wallet_nonce.save()
+            return wallet_nonce
+        except WalletNonce.DoesNotExist:
+            wallet_nonce = WalletNonce.objects.create(
+                wallet_address=wallet_address,
+                nonce=secrets.token_hex(16)
+            )
+            wallet_nonce.save()
+            return wallet_nonce
+
+    @swagger_auto_schema(request_body=WalletNonceSerializer)
+    def post(self, request):
+        try:
+            serializer = WalletNonceSerializer(data=request.data)
+            if serializer.is_valid():
+                wallet_nonce = self.get_object(request.data["wallet_address"])
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": WalletNonceSerializer(wallet_nonce).data,
+                        "message": "Wallet nonce created successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "data": None,
+                        "message": "Invalid request",
+                        "errors": serializer.errors,
+                    }
+                )
+        except Exception as e:
+            return handleServerException(e)
 
 class WalletList(APIView):
     authentication_classes = [JWTAuthentication]

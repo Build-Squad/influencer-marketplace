@@ -24,7 +24,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { notification } from "../shared/notification";
 
 export default function NotificationPanel() {
-  const route = useRouter();
+  const router = useRouter();
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notificationsAnchor, setNotificationsAnchor] = React.useState(null);
   const openNotifications = Boolean(notificationsAnchor);
@@ -60,13 +60,18 @@ export default function NotificationPanel() {
     }
   };
 
-  const markAsRead = async (notificationId: string) => {
+  const markAsRead = async (
+    notificationId: string,
+    showNotification: boolean
+  ) => {
     try {
       const { isSuccess, message } = await patchService(
         `/notifications/${notificationId}/`
       );
       if (isSuccess) {
-        notification("Notification marked as read", "success");
+        if (showNotification) {
+          notification("Notification marked as read", "success");
+        }
         await getNotifications();
       } else {
         notification(message ? message : "Something went wrong", "error");
@@ -248,8 +253,20 @@ export default function NotificationPanel() {
                       cursor: item?.slug ? "pointer" : "default",
                     }}
                     onClick={() => {
+                      if (!item?.is_read) {
+                        markAsRead(item.id, false);
+                      }
                       if (item?.slug) {
-                        route.push(item.slug);
+                        console.log("item.slug", item.slug);
+                        console.log(
+                          "window.location.href",
+                          window.location.href
+                        );
+                        if (item?.slug === window.location.href) {
+                          window.location.reload();
+                        } else {
+                          router.push(item.slug);
+                        }
                         handleCloseNotifications();
                       }
                     }}
@@ -315,7 +332,7 @@ export default function NotificationPanel() {
                               sx={{ height: 20, width: 20, cursor: "pointer" }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                markAsRead(item.id);
+                                markAsRead(item.id, true);
                               }}
                             />
                           </Tooltip>

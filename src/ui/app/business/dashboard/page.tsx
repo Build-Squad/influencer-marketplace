@@ -14,6 +14,7 @@ import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import { KeyboardBackspace } from "@mui/icons-material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
@@ -32,9 +33,11 @@ import {
 } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function BusinessDashboardPage() {
+  const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -447,6 +450,12 @@ export default function BusinessDashboardPage() {
       >
         <Grid container spacing={2}>
           <Grid item xs={12}>
+            <KeyboardBackspace
+              onClick={() => {
+                router.back();
+              }}
+              sx={{ cursor: "pointer"}}
+            />
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (

@@ -56,8 +56,67 @@ def checkOrderStatus(pk):
         # Send notification to business
         create_notification_for_order(order, 'accepted', 'completed')
 
+
+def tweet(text, client):
+    try:
+        """
+            By default, tweepy uses the OAuth 1.0 Context that even though provided with the bearer token will 
+            instead call the API with the auth of the dev portal account and not the user's account.
+            To fix this, we need to explicitly set the auth to OAuth 2.0 by setting the user_auth to False, 
+            which in turn will use the bearer token of the user's account.
+            
+        """
+        res = client.create_tweet(text=text, user_auth=False)
+        tweet_id = res.data['id']
+        return tweet_id
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def like_tweet(tweet_id, client):
+    try:
+        res = client.like_tweet(tweet_id=tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def reply_to_tweet(text, in_reply_to_tweet_id, client):
+    try:
+        res = client.create_tweet(
+            text=text, in_reply_to_tweet_id=in_reply_to_tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def quote_tweet(text, tweet_id, client):
+    try:
+        res = client.create_tweet(
+            text=text, quote_tweet_id=tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def poll(text, poll_options, poll_duration_minutes, client):
+    try:
+        res = client.create_tweet(text=text,
+                                  poll_options=poll_options, poll_duration_minutes=poll_duration_minutes, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def retweet(tweet_id, client):
+    try:
+        res = client.retweet(tweet_id=tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
 @shared_task
-def send_tweet(order_item_id):
+def twitter_task(order_item_id):
     try:
         # Get order item
         order_item = OrderItem.objects.get(id=order_item_id)
@@ -85,12 +144,26 @@ def send_tweet(order_item_id):
 
     # Get the tweet text
     text = ''
+    tweet_id = ''
+    in_reply_to_tweet_id = ''
+    poll_options = []
+    poll_duration_minutes = 0
     for order_item_meta_data in order_item_meta_datas:
-        if order_item_meta_data.field_name == 'content':
+        if order_item_meta_data.field_name == 'text':
             text = order_item_meta_data.value
-
-    if not text:
-        raise Exception('No content for tweet')
+        elif order_item_meta_data.field_name == 'tweet_id':
+            # Split the tweet_id and get the last part
+            tweet_id = order_item_meta_data.value.split('/')[-1]
+        elif order_item_meta_data.field_name == 'in_reply_to_tweet_id':
+            # Split the tweet_id and get the last part
+            in_reply_to_tweet_id = order_item_meta_data.value.split('/')[-1]
+        elif order_item_meta_data.field_name == 'poll_options':
+            # This will be a comma separated string, convert to list
+            options = order_item_meta_data.value.split(',')
+            poll_options = [option.strip() for option in options]
+        elif order_item_meta_data.field_name == 'poll_duration_minutes':
+            # Convert to integer
+            poll_duration_minutes = int(order_item_meta_data.value)
 
     client = Client(bearer_token=ACCESS_CODE,
                     consumer_key=CONSUMER_KEY,
@@ -99,16 +172,23 @@ def send_tweet(order_item_id):
                     access_token_secret=ACCESS_SECRET
                     )
     try:
-        """
-            By default, tweepy uses the OAuth 1.0 Context that even though provided with the bearer token will 
-            instead call the API with the auth of the dev portal account and not the user's account.
-            To fix this, we need to explicitly set the auth to OAuth 2.0 by setting the user_auth to False, 
-            which in turn will use the bearer token of the user's account.
-            
-        """
-        res = client.create_tweet(text=text, user_auth=False)
-        tweet_id = res.data['id']
-        order_item.published_tweet_id = tweet_id
+        service_type = order_item.service_master.twitter_service_type
+        res = None
+        # Switch case for different service types
+        if service_type == 'tweet':
+            res = tweet(text, client)
+        elif service_type == 'like_tweet':
+            res = like_tweet(tweet_id, client)
+        elif service_type == 'reply_to_tweet':
+            res = reply_to_tweet(text, in_reply_to_tweet_id, client)
+        elif service_type == 'quote_tweet':
+            res = quote_tweet(text, tweet_id, client)
+        elif service_type == 'poll':
+            res = poll(text, poll_options, poll_duration_minutes, client)
+        elif service_type == 'retweet':
+            res = retweet(tweet_id, client)
+
+        order_item.published_tweet_id = res
         order_item.status = 'published'
         order_item.save()
 
@@ -148,7 +228,7 @@ def schedule_tweet(order_item_id):
             raise Exception('Publish date is in the past')
 
         # Schedule the task
-        celery_task = send_tweet.apply_async(
+        celery_task = twitter_task.apply_async(
             args=[order_item_id], countdown=delay_until_publish)
         if celery_task:
             order_item.celery_task_id = celery_task.id
@@ -176,7 +256,7 @@ def cancel_tweet(order_item_id):
 
         # Cancel the task
         if order_item.celery_task_id:
-            celery_task = send_tweet.AsyncResult(order_item.celery_task_id)
+            celery_task = twitter_task.AsyncResult(order_item.celery_task_id)
             celery_task.revoke(terminate=True)
             order_item.celery_task_id = None
             order_item.status = 'cancelled'

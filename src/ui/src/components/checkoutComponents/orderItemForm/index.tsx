@@ -237,7 +237,6 @@ export default function OrderItemForm({
                     value={formFields?.value ? formFields?.value : ""}
                     name={formFields?.id}
                     onChange={(e) => {
-                      console.log(e.target.value, formFields);
                       if (updateFunction) {
                         updateFunction(
                           orderItem?.order_item?.id
@@ -443,6 +442,13 @@ export default function OrderItemForm({
             p: 1,
           }}
         >
+          <FormLabel
+            sx={{
+              color: "secondary.main",
+            }}
+          >
+            {`Publish Date and Time`}
+          </FormLabel>
           <DateTimePicker
             disabled={disabled}
             value={

@@ -19,6 +19,7 @@ import {
   Clear,
   LinkedIn,
   Language,
+  KeyboardBackspace,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/src/hooks/useRedux";
@@ -85,13 +86,16 @@ const BADGES = [
 const getProfileCompletedStatus: (businessDetails: any) => string = (
   businessDetails
 ) => {
+  console.log(businessDetails);
   if (businessDetails) {
     let count = 0;
     if (businessDetails?.isTwitterAccountConnected) count += 5;
     if (businessDetails?.isWalletConnected) count += 5;
     count +=
-      Object.values(businessDetails).filter((value) => value !== "").length - 5;
-
+      Object.values(businessDetails).filter(
+        (value) => value !== "" && value !== null
+      ).length - 5;
+    console.log(count);
     return `${count} / ${10 + Object.keys(businessDetails).length - 5}`;
   }
   return "-";
@@ -217,6 +221,12 @@ export default function BusinessProfilePreview({ params }: Props) {
         justifyContent: "space-between",
       }}
     >
+      <KeyboardBackspace
+        onClick={() => {
+          router.back();
+        }}
+        sx={{ cursor: "pointer", mt: 2 }}
+      />
       <Box
         sx={{
           padding: "16px 30px",

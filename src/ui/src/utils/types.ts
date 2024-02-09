@@ -42,6 +42,7 @@ type ServiceMasterMetaDataType = {
   service_master_id: string;
   value: string | null;
   order: number;
+  regex: string | null;
 };
 
 type ServiceMasterType = {
@@ -203,6 +204,7 @@ type OrderItemMetaDataType = {
   max: string;
   placeholder: string;
   order: number;
+  regex: string | null;
 };
 
 type OrderItemType = {

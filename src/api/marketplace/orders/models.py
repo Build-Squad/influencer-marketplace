@@ -160,6 +160,7 @@ class OrderItemMetaData(models.Model):
     placeholder = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(blank=True, null=True)
     field_name = models.CharField(max_length=100, blank=True, null=True)
+    regex = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_item_meta_data"

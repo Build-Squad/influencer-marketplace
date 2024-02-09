@@ -48,11 +48,13 @@ export default function WalletConnectModal({
   const dispatch = useAppDispatch();
   const [rawWalletAddress, setRawWalletAddress] = React.useState<string>("");
 
-  const onSubmit = async () => {
+  const onSubmit = async (signature?: string, text?: string) => {
     const requestBody = {
       wallet_address_id: publicKey?.toBase58(),
       wallet_provider_id: wallet?.adapter?.name,
       wallet_network_id: "solana",
+      signature: signature ? signature : undefined,
+      message: text ? text : undefined,
     };
     const { isSuccess, data, message } = await postService(
       connect ? "/account/connect-wallet/" : "/account/wallet-auth/",

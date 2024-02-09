@@ -1,12 +1,29 @@
 from django.contrib import admin
 from .models import Order, OrderItem, OrderAttachment, OrderItemTracking, OrderMessage, OrderMessageAttachment, Transaction, Review, OrderItemMetaData
 
-admin.site.register(Order)
-admin.site.register(OrderItem)
+
+class OrderAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Order._meta.fields]
+
+
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in OrderItem._meta.fields]
+
+
+class OrderItemMetaDataAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in OrderItemMetaData._meta.fields]
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Transaction._meta.fields]
+
+
+admin.site.register(Order, OrderAdmin)
+admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(OrderAttachment)
 admin.site.register(OrderItemTracking)
 admin.site.register(OrderMessage)
 admin.site.register(OrderMessageAttachment)
-admin.site.register(Transaction)
+admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Review)
-admin.site.register(OrderItemMetaData)
+admin.site.register(OrderItemMetaData, OrderItemMetaDataAdmin)
