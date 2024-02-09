@@ -52,6 +52,15 @@ class ServiceMaster(models.Model):
         ('custom', 'custom')
     )
 
+    TWITTER_SERVICES_TYPES = (
+        ('tweet', 'tweet'),
+        ('like_tweet', 'like_tweet'),
+        ('reply_to_tweet', 'reply_to_tweet'),
+        ('quote_tweet', 'quote_tweet'),
+        ('poll', 'poll'),
+        ('retweet', 'retweet')
+    )
+
     id = models.UUIDField(primary_key=True, verbose_name='ServiceMaster', default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -60,6 +69,8 @@ class ServiceMaster(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
     is_duration_based = models.BooleanField(default=False)
+    twitter_service_type = models.CharField(
+        choices=TWITTER_SERVICES_TYPES, max_length=50, blank=True, null=True)
 
     class Meta:
         db_table = "service_master" 
@@ -105,10 +116,18 @@ class ServiceMasterMetaData(models.Model):
         ('date_time', 'date_time'),
         ('media', 'media'),
     )
+    
+    FIELD_NAME_CHOICED = (
+        ('text', 'text'),
+        ('tweet_id', 'tweet_id'),
+        ('in_reply_to_tweet_id', 'in_reply_to_tweet_id'),
+        ('poll_options', 'poll_options'),
+        ('poll_duration_minutes', 'poll_duration_minutes')
+    )
 
     id = models.UUIDField(
         primary_key=True, verbose_name='ServiceMasterMetaData', default=uuid.uuid4, editable=False)
-    field_name = models.CharField(max_length=100, blank=True, null=True)
+    field_name = models.CharField(choices=FIELD_NAME_CHOICED, max_length=50, blank=True, null=True)
     label = models.CharField(max_length=100, blank=True, null=True)
     placeholder = models.CharField(max_length=100, blank=True, null=True)
     min = models.CharField(max_length=100, blank=True, null=True)
@@ -119,7 +138,8 @@ class ServiceMasterMetaData(models.Model):
     order = models.IntegerField(blank=True, null=True)
     service_master_id = models.ForeignKey(
         ServiceMaster, related_name='service_master_meta_data_id', on_delete=models.SET_NULL, null=True)
-
+    regex = models.CharField(max_length=100, blank=True, null=True)
+    
     class Meta:
         db_table = "service_master_meta_data"
 

@@ -45,6 +45,26 @@ export default function OrderDetailPage({
     }
   };
 
+  const validateMetaDataValues = () => {
+    let isValid = true;
+    order?.order_item_order_id?.forEach((orderItem) => {
+      orderItem?.order_item_meta_data?.forEach((metaData) => {
+        if (metaData.regex && metaData?.value) {
+          const regex = new RegExp(metaData.regex);
+          if (!regex.test(metaData?.value)) {
+            notification(
+              `Please fill the correct value for ${metaData.label}`,
+              "error",
+              3000
+            );
+            isValid = false;
+          }
+        }
+      });
+    });
+    return isValid;
+  };
+
   const updateOrder = async () => {
     const body = {
       order_items: order?.order_item_order_id?.map((orderItem) => {
@@ -295,6 +315,9 @@ export default function OrderDetailPage({
                     minWidth: 100,
                   }}
                   onClick={() => {
+                    if (!validateMetaDataValues()) {
+                      return;
+                    }
                     updateOrder();
                   }}
                   disabled={loading}
