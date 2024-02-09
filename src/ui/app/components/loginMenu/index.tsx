@@ -92,6 +92,10 @@ export default function LoginMenu({
     return options;
   };
 
+  const handleClick2 =() => {
+    router.push("/login")
+  }
+
   return (
     <>
       {isTwitterUserLoggedIn ? (
@@ -117,19 +121,34 @@ export default function LoginMenu({
           )}
         </>
       ) : (
-        <Box
-          sx={{
-            cursor: "pointer",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={handleClick}
-        >
-          <Lock style={{ fontSize: "16px" }} />
-          <Typography sx={{ fontSize: "10px" }}>Login</Typography>
-        </Box>
+        <>
+          <Box
+            sx={{
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onClick={handleClick}
+          >
+            <Lock style={{ fontSize: "16px" }} />
+            <Typography sx={{ fontSize: "10px" }}>Login</Typography>
+          </Box>
+          <Box
+            sx={{
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onClick={handleClick2}
+          >
+            <Lock style={{ fontSize: "16px" }} />
+            <Typography sx={{ fontSize: "10px" }}>Login 2.0</Typography>
+          </Box>
+        </>
       )}
 
       <Menu
