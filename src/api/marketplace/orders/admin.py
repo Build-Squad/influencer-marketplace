@@ -21,10 +21,14 @@ class TransactionAdmin(admin.ModelAdmin):
 class OrderTrackingAdmin(admin.ModelAdmin):
     list_display = [field.name for field in OrderTracking._meta.fields]
 
+
+class OrderItemTrackingAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in OrderItemTracking._meta.fields]
+
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(OrderAttachment)
-admin.site.register(OrderItemTracking)
+admin.site.register(OrderItemTracking, OrderItemTrackingAdmin)
 admin.site.register(OrderMessage)
 admin.site.register(OrderMessageAttachment)
 admin.site.register(Transaction, TransactionAdmin)

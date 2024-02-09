@@ -1,6 +1,7 @@
 from email import message
 from accounts.serializers import UserSerializer, WalletCompleteSerializer
 from accounts.models import User, Wallet
+from orders.services import create_order_item_tracking
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service, ServiceMasterMetaData
@@ -212,6 +213,9 @@ class CreateOrderSerializer(serializers.Serializer):
                 publish_date=order_item_data["publish_date"],
             )
 
+            # Create an order item tracking object
+            create_order_item_tracking(order_item, order_item.status)
+
             service_master_meta_data = (
                 service.service_master.service_master_meta_data_id.all()
             )
@@ -278,6 +282,9 @@ class CreateOrderSerializer(serializers.Serializer):
                     platform_fee=service.platform_fees,
                     publish_date=order_item_data["publish_date"],
                 )
+                
+                # Create an order item tracking object
+                create_order_item_tracking(order_item, order_item.status)
 
             # Similar to the create method, the meta data will be updated if the order item meta data already exists
             # If it does not exist, it will be created
