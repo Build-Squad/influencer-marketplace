@@ -108,6 +108,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
             route = `/business${item?.route}`;
           } else if (pathname.includes("influencer")) {
             route = `/influencer${item?.route}`;
+          } else {
+            route = "/business";
           }
         } else {
           route = user?.user?.role?.name?.includes("business")
