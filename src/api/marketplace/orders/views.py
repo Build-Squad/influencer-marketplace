@@ -1,6 +1,6 @@
 from accounts.models import Wallet
 from orders.tasks import cancel_tweet, schedule_tweet
-from orders.services import create_notification_for_order, create_order_tracking
+from orders.services import create_notification_for_order, create_order_item_tracking, create_order_tracking
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -482,6 +482,9 @@ class UpdateOrderStatus(APIView):
                     # accepted and rejected only, and corresponding to that we changing the same for each order item.
                     order_item.status = status_data["status"]
                     order_item.save()
+
+                    create_order_item_tracking(order_item, order_item.status)
+
                 create_notification_for_order(order, old_status, status_data["status"])
                 create_order_tracking(order, status_data["status"])
                 return Response(
