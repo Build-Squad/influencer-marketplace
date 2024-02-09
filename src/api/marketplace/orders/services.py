@@ -1,5 +1,5 @@
 import logging
-from orders.models import OrderItem
+from orders.models import OrderItem, OrderItemTracking, OrderTracking
 from notifications.models import Notification
 from decouple import config
 
@@ -132,3 +132,25 @@ def create_notification_for_order_item(order_item, old_status, new_status):
         title = 'Order Item Cancelled'
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
+
+def create_order_tracking(order, status):
+    """
+    Create order tracking
+    """
+    try:
+        OrderTracking.objects.create(order=order, status=status)
+    except Exception as e:
+        logger.error("Error creating order tracking: ", str(e))
+        return False
+
+
+def create_order_item_tracking(order_item, status):
+    """
+    Create order item tracking
+    """
+    try:
+        OrderItemTracking.objects.create(order_item=order_item, status=status)
+    except Exception as e:
+        logger.error("Error creating order item tracking: ", str(e))
+        return False

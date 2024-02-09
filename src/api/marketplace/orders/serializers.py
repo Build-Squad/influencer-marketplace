@@ -10,7 +10,6 @@ from .models import (
     OrderItem,
     OrderAttachment,
     OrderItemMetaData,
-    OrderItemTracking,
     OrderMessage,
     OrderMessageAttachment,
     Review,
@@ -302,13 +301,6 @@ class OrderAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderAttachment
         fields = "__all__"
-
-
-class OrderItemTrackingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItemTracking
-        fields = "__all__"
-
 
 class OrderMessageSerializer(serializers.ModelSerializer):
     class Meta:

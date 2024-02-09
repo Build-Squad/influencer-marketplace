@@ -1,5 +1,5 @@
 from accounts.models import TwitterAccount, User
-from orders.services import create_notification_for_order, create_notification_for_order_item
+from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_tracking
 from orders.models import Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
@@ -52,7 +52,8 @@ def checkOrderStatus(pk):
     if is_completed:
         order.status = 'completed'
         order.save()
-
+        # Create a Order Tracking for the order
+        create_order_tracking(order, 'completed')
         # Send notification to business
         create_notification_for_order(order, 'accepted', 'completed')
 
