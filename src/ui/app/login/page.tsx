@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Image from "next/image";
 import CustomModal from "@/src/components/shared/customModal";
 import { Box, Button, Grid, Typography } from "@mui/material";
@@ -6,10 +6,13 @@ import React, { useState } from "react";
 import XfluencerLogo from "@/public/XfluencerLogo_Icon.png";
 import LoginOptions from "./components/loginOptions";
 import LoginAccordion from "./components/loginAccordion";
+import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 
 const Login: React.FC = () => {
   const [open, setOpen] = useState(true);
   const [loginAs, setLoginAs] = useState("Business");
+
+  const { startTwitterAuthentication } = useTwitterAuth();
 
   const handleLoginAsToggle = () => {
     setLoginAs((prevLoginAs) =>
@@ -19,7 +22,11 @@ const Login: React.FC = () => {
 
   const handleConnectWallet = () => {};
   const handleConnectEmail = () => {};
-  const handleConnectX = () => {};
+  const handleConnectX = () => {
+    startTwitterAuthentication({
+      role: loginAs == "Business" ? "business_owner" : "influencer",
+    });
+  };
 
   return (
     <Box
@@ -71,10 +78,7 @@ const Login: React.FC = () => {
         >
           <Grid container spacing={2}>
             <Grid item>
-              <LoginOptions
-                label="Connect with X"
-                onClick={handleConnectX}
-              />
+              <LoginOptions label="Connect with X" onClick={handleConnectX} />
             </Grid>
             <Grid item>
               <LoginOptions

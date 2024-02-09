@@ -1,4 +1,3 @@
-"use client"
 import {
   Accordion,
   AccordionDetails,
@@ -13,7 +12,7 @@ interface LoginAccordionProps {
   title: string;
   subtitle: string;
   defaultExpanded?: boolean;
-  children: React.ReactNode;
+  children: React.ReactNode; 
 }
 
 const LoginAccordion: React.FC<LoginAccordionProps> = ({
