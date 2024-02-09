@@ -208,6 +208,53 @@ export type Xfluencer = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "createFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "updateFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -286,6 +333,22 @@ export type Xfluencer = {
           {
             "name": "delivered",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "feesConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "percentageRate",
+            "type": "i32"
           }
         ]
       }
@@ -515,6 +578,53 @@ export const IDL: Xfluencer = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "createFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "updateFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -593,6 +703,22 @@ export const IDL: Xfluencer = {
           {
             "name": "delivered",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "feesConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "percentageRate",
+            "type": "i32"
           }
         ]
       }

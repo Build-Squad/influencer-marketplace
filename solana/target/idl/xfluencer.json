@@ -208,6 +208,53 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "createFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "updateFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -289,6 +336,22 @@
           }
         ]
       }
+    },
+    {
+      "name": "FeesConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "percentageRate",
+            "type": "i32"
+          }
+        ]
+      }
     }
   ],
   "errors": [
@@ -302,8 +365,5 @@
       "name": "AlreadyClaim",
       "msg": "Already claim"
     }
-  ],
-  "metadata": {
-    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
-  }
+  ]
 }
