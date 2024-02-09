@@ -7,8 +7,6 @@ from .views import (
     OrderItemDetail,
     OrderAttachmentList,
     OrderAttachmentDetail,
-    OrderItemTrackingList,
-    OrderItemTrackingDetail,
     OrderListView,
     OrderMessageList,
     SendTweetView,
@@ -32,9 +30,6 @@ urlpatterns = [
 
     path("order-attachment/", OrderAttachmentList.as_view(), name="order-attachment-list"),
     path('order-attachment/<uuid:pk>/', OrderAttachmentDetail.as_view(), name="order-attachment-details"),
-
-    path("order-item-tracking/", OrderItemTrackingList.as_view(), name="order-item-tracking-list"),
-    path('order-item-tracking/<uuid:pk>/', OrderItemTrackingDetail.as_view(), name="order-item-tracking-details"),
 
     path("user-order-messages/", UserOrderMessagesView.as_view(),
          name="user-order-messages"),

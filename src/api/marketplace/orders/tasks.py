@@ -1,5 +1,5 @@
 from accounts.models import TwitterAccount, User
-from orders.services import create_notification_for_order, create_notification_for_order_item
+from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_tracking, create_order_tracking
 from orders.models import Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
@@ -52,7 +52,8 @@ def checkOrderStatus(pk):
     if is_completed:
         order.status = 'completed'
         order.save()
-
+        # Create a Order Tracking for the order
+        create_order_tracking(order, order.status)
         # Send notification to business
         create_notification_for_order(order, 'accepted', 'completed')
 
@@ -192,6 +193,9 @@ def twitter_task(order_item_id):
         order_item.status = 'published'
         order_item.save()
 
+        # Create a order item tracking for the order item
+        create_order_item_tracking(order_item, order_item.status)
+
         # Check if the order is completed
         checkOrderStatus(order_item.order_id.id)
 
@@ -235,6 +239,8 @@ def schedule_tweet(order_item_id):
             order_item.status = 'scheduled'
             order_item.save()
 
+            create_order_item_tracking(order_item, order_item.status)
+
             # Send notification to business
             create_notification_for_order_item(
                 order_item, 'accepted', 'scheduled')
@@ -261,6 +267,8 @@ def cancel_tweet(order_item_id):
             order_item.celery_task_id = None
             order_item.status = 'cancelled'
             order_item.save()
+
+            create_order_item_tracking(order_item, order_item.status)
 
             # Send notification to business
             create_notification_for_order_item(
