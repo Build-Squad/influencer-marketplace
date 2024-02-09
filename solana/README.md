@@ -2,8 +2,7 @@
 
 ## Overview
 
-The program defines a smart contract for an escrow service, where a buyer, seller, and judge are involved in a transaction, and tokens are used as assets.
-
+The program defines a smart contract for an escrow service, where a buyer, a seller, and judge are involved in a transaction, and tokens are used as assets. The buyer is called business, the seller influencer and the judge will be the XFluencer authority validating influencer seller provides a service succesfully to the business buyer.
 
 To build, deploy, and test the Solana program using the Anchor framework, you'll need to follow these steps. Ensure that you have Rust, Anchor CLI, and Solana CLI installed on your machine.
 
@@ -117,7 +116,9 @@ anchor deploy --provider.cluster devnet
 ```
 After completing 100%, you should see the output "Deploy success".
 
-Finally, check the solana explorer to see your program deployed: https://explorer.solana.com/?cluster=devnet&utm_source=buildspace.so&utm_medium=buildspace_project
+Finally, check the solana explorer to see your program deployed: 
+
+https://explorer.solana.com/?cluster=devnet&utm_source=buildspace.so&utm_medium=buildspace_project
 
 ## Deploy on Main
 [TBC]
