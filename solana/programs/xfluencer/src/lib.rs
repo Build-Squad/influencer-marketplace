@@ -151,6 +151,14 @@ pub mod xfluencer {
         Ok(())
     }
 
+    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>) -> ProgramResult {
+
+
+        Ok(())
+    }
+
+
+
 
 
 }
@@ -373,6 +381,11 @@ pub struct UpdateFees<'info> {
     pub fees_config: Account<'info, FeesConfig>
 }
 
+
+#[derive(Accounts)]
+pub struct ValidateEscrowSolana<'info> {
+    
+}
 
 
 
