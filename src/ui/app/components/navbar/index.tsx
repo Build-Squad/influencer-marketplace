@@ -343,21 +343,15 @@ export default function Navbar({
             {user?.loggedIn ? (
               <LoginMenu logoutTwitterUser={logoutTwitterUser} />
             ) : (
-              <Box
-                sx={{
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <Button
+                variant="outlined"
+                color="secondary"
                 onClick={() => {
                   router.push("/login");
                 }}
               >
-                <Lock style={{ fontSize: "16px" }} />
-                <Typography sx={{ fontSize: "10px" }}>Login</Typography>
-              </Box>
+                Connect
+              </Button>
             )}
           </Box>
         </Box>
