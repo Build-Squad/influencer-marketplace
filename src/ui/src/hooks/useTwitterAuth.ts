@@ -56,7 +56,7 @@ export default function useTwitterAuth() {
     }
   };
 
-  // Function to check if the X user is authenticated
+  // Function to check if the user is authenticated
   const checkTwitterUserAuthentication = async () => {
     try {
       const { isSuccess, data } = await getServicewithCredentials("account/");

@@ -297,12 +297,19 @@ export default function Orders() {
           xs={selectedOrder ? 9 : 12}
           sx={{ padding: "16px 20px 0 40px" }}
         >
-          <KeyboardBackspace
+          <Button
+            variant="outlined"
+            sx={{
+              color: "rgb(0, 137, 234)",
+              border: "1px solid rgb(0, 137, 234)",
+              mt: 2,
+            }}
             onClick={() => {
               router.back();
             }}
-            sx={{ cursor: "pointer", mb: 1 }}
-          />
+          >
+            Back
+          </Button>
           <Box
             sx={{ display: "flex", columnGap: "8px", alignItems: "flex-start" }}
           >

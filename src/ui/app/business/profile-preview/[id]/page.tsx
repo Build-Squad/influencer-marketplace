@@ -221,12 +221,19 @@ export default function BusinessProfilePreview({ params }: Props) {
         justifyContent: "space-between",
       }}
     >
-      <KeyboardBackspace
+      <Button
+        variant="outlined"
+        sx={{
+          color: "rgb(0, 137, 234)",
+          border: "1px solid rgb(0, 137, 234)",
+          mt: 2,
+        }}
         onClick={() => {
           router.back();
         }}
-        sx={{ cursor: "pointer", mt: 2 }}
-      />
+      >
+        Back
+      </Button>
       <Box
         sx={{
           padding: "16px 30px",

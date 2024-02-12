@@ -214,12 +214,19 @@ export default function CheckoutPage() {
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
-      <KeyboardBackspace
+      <Button
+        variant="outlined"
+        sx={{
+          color: "rgb(0, 137, 234)",
+          border: "1px solid rgb(0, 137, 234)",
+          mt: 2,
+        }}
         onClick={() => {
           router.back();
         }}
-        sx={{ cursor: "pointer", ml: 2, mt: 2 }}
-      />
+      >
+        Back
+      </Button>
       {cart?.orderItems?.length === 0 ? (
         <Box
           sx={{
