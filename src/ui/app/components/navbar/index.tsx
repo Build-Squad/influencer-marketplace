@@ -34,9 +34,9 @@ import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import NotificationPanel from "@/src/components/notificationPanel";
 import NextLink from "next/link";
+import { notification } from "@/src/components/shared/notification";
 
 type NavbarProps = {
-  setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
   categoryOpen: boolean;
 };
@@ -178,7 +178,6 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
 };
 
 export default function Navbar({
-  setLoginStatus,
   setCategoryOpen,
   categoryOpen,
 }: NavbarProps) {
@@ -200,13 +199,11 @@ export default function Navbar({
     const status = params.get("authenticationStatus");
     const message = params.get("message");
     if (status) {
-      setLoginStatus({
-        status,
-        message:
-          status == "success"
-            ? LOGIN_STATUS_SUCCESS
-            : message ?? LOGIN_STATUS_FAILED,
-      });
+      notification(
+        status === "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
+        status === "success" ? "success" : "error",
+        3000
+      );
       router.push(pathname);
     }
   }, [isTwitterUserLoggedIn]);
