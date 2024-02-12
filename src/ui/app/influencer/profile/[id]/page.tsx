@@ -8,9 +8,7 @@ import { useAppSelector } from "@/src/hooks/useRedux";
 import { getService, postService } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import {
   Avatar,
@@ -32,11 +30,9 @@ import {
 import dayjs from "dayjs";
 import Image from "next/image";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import Services from "./_services";
-import RouteProtection from "@/src/components/shared/routeProtection";
-import { KeyboardBackspace } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
 
 const tabs = [
   {
@@ -397,13 +393,18 @@ const ProfileLayout = ({
                                 },
                               }}
                             >
-                              {regions.map((item: RegionType) => {
-                                return (
-                                  <MenuItem value={item?.regionName}>
-                                    <em>{item?.regionName}</em>
-                                  </MenuItem>
-                                );
-                              })}
+                              {regions.map(
+                                (item: RegionType, index: number) => {
+                                  return (
+                                    <MenuItem
+                                      value={item?.regionName}
+                                      key={index}
+                                    >
+                                      <em>{item?.regionName}</em>
+                                    </MenuItem>
+                                  );
+                                }
+                              )}
                             </Select>
                           </>
                         ) : (
@@ -639,7 +640,7 @@ const ProfileLayout = ({
                     color: "rgb(0, 137, 234)",
                     border: "1px solid rgb(0, 137, 234)",
                     mt: 2,
-                    ml: 2
+                    ml: 2,
                   }}
                   onClick={() => {
                     router.back();
