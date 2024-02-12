@@ -138,6 +138,8 @@ pub mod xfluencer {
 
     pub fn create_fees(ctx: Context<CreateFees>, percentage_rate: i32) -> ProgramResult {
 
+        // TODO: Add validation on percentage rate p,  0 < minp < p < maxp < 100
+
         let fees_config = &mut ctx.accounts.fees_config;
 
         fees_config.authority = ctx.accounts.fees_authority.key();
@@ -147,6 +149,8 @@ pub mod xfluencer {
     }
 
     pub fn update_fees(ctx: Context<UpdateFees>, percentage_rate: i32) -> ProgramResult {
+
+        // TODO: Add validation on percentage rate p,  0 < minp < p < maxp < 100
 
         let fees_config = &mut ctx.accounts.fees_config;
         
@@ -350,7 +354,6 @@ pub struct CreateEscrowSolana<'info> {
     /// CHECK: safe
     #[account(mut)]
     pub to: AccountInfo<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
@@ -365,9 +368,15 @@ pub struct ClaimEscrowSolana<'info> {
     pub business: AccountInfo<'info>,
     #[account(
         mut,
+<<<<<<< HEAD
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
         constraint = escrow_account.status == 2 @CustomError::BadEscrowState 
+=======
+        constraint = escrow_account.from == *business.key,
+        constraint = escrow_account.to == *influencer.key,
+        //constraint = escrow_account.delivered == true
+>>>>>>> c7cb4d1 (add todos and constraint on fees)
         //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
@@ -383,14 +392,19 @@ pub struct CancelEscrowSolana<'info> {
     pub business: Signer<'info>,
     #[account(
         mut,
+<<<<<<< HEAD
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.status == 1 @CustomError::BadEscrowState,
+=======
+        //constraint = escrow_account.from == *business.key,
+>>>>>>> c7cb4d1 (add todos and constraint on fees)
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
     pub system_program: Program<'info, System>,
 }
 
 
+/// apply this generic fee when no specific fee is passed
 #[derive(Accounts)]
 #[instruction(percentage_rate: i32)]
 pub struct CreateFees<'info> {
@@ -435,10 +449,15 @@ pub struct ValidateEscrowSolana<'info> {
     pub business: AccountInfo<'info>,
     #[account(
         mut,
+<<<<<<< HEAD
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
         constraint = escrow_account.validation_authority == *validation_authority.key @CustomError::MissmatchAuthority
         //close = influencer
+=======
+        constraint = escrow_account.from == *business.key,
+        constraint = escrow_account.to == *influencer.key,       
+>>>>>>> c7cb4d1 (add todos and constraint on fees)
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
     
