@@ -21,4 +21,8 @@ app.conf.beat_schedule = {
         "task": "accounts.tasks.updateAccessTokens",
         "schedule": crontab(minute="0", hour="*/2"),
     },
+    "schedule-reminder-notification": {
+        "task": "orders.tasks.schedule_reminder_notification",
+        "schedule": crontab(minute="*/10"),
+    }
 }
