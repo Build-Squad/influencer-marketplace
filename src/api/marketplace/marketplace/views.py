@@ -64,17 +64,18 @@ def twitterLoginCallback(request):
         access_token = authentication_result["access_token"]
         refresh_token = authentication_result["refresh_token"]
         # Create USER and JWT and send response
-        return createJWT(userData, access_token, role, refresh_token)
+        createJWT(userData, access_token, role, refresh_token)
     except Exception as e:
         logger.error("Error in twitterLoginCallback -", e)
-        return HttpResponseRedirect(
-            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
-        )
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
 
 
 # Helper functions
 def authenticateUser(code):
-    try:
         token = twitter.fetch_token(
             token_url=token_url,
             client_secret=client_secret,
@@ -103,10 +104,6 @@ def authenticateUser(code):
             "access_token": access_token,
             "refresh_token": refresh_token,
         }
-    except Exception as e:
-        return HttpResponseRedirect(
-        config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
-    )
 
 
 def createUser(userData, access_token, role, refresh_token):
@@ -189,6 +186,7 @@ def createUser(userData, access_token, role, refresh_token):
         }
 
 
+# The userData here is from twitter
 def createJWT(userData, access_token, role, refresh_token):
     try:
         # Creating a response object with JWT cookie
@@ -205,6 +203,10 @@ def createJWT(userData, access_token, role, refresh_token):
             )
 
         current_user = current_user_data["current_user"]
+
+        # Redirect influencers to their profile page.
+        if role == "influencer":
+            redirect_url += f"/profile/{current_user.id}"
 
         redirect_url += "?authenticationStatus=success"
 
@@ -231,7 +233,9 @@ def createJWT(userData, access_token, role, refresh_token):
         return response
     except Exception as e:
         logger.error("Error while creating jwt - ", e)
-        return redirect(
-            f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
-        )
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
 
