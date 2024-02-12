@@ -20,18 +20,21 @@ const Login: React.FC = () => {
   const [emailOpen, setEmailOpen] = useState(false);
   const user = useAppSelector((state) => state.user);
 
-  const { startTwitterAuthentication, checkTwitterUserAuthentication } =
-    useTwitterAuth();
+  const {
+    startTwitterAuthentication,
+    checkTwitterUserAuthentication,
+    isTwitterUserLoggedIn,
+  } = useTwitterAuth();
 
   useEffect(() => {
-    if (user?.loggedIn) {
+    if (isTwitterUserLoggedIn) {
       const redirectRoute =
         user?.user?.role?.name == "business_owner"
           ? "/business"
           : "/influencer";
       router.push(redirectRoute);
     }
-  }, [user?.loggedIn]);
+  }, [isTwitterUserLoggedIn]);
 
   useEffect(() => {
     if (!emailOpen) {
@@ -108,7 +111,9 @@ const Login: React.FC = () => {
 
         <LoginAccordion
           title="Connect with Socials"
-          subtitle="Sign in with your email or socials"
+          subtitle={
+            loginAs == "Influencer" ? "Sign in with your X" : "Sign in with your email or socials"
+          }
           defaultExpanded={loginAs === "Influencer"}
         >
           <Grid container spacing={2}>
