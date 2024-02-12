@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import CustomModal from "@/src/components/shared/customModal";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import XfluencerLogo from "@/public/XfluencerLogo_Icon.png";
@@ -8,14 +7,17 @@ import LoginOptions from "./components/loginOptions";
 import LoginAccordion from "./components/loginAccordion";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import EmailLoginModal from "@/src/components/emailLoginModal";
 
 const Login: React.FC = () => {
   const router = useRouter();
-  const [open, setOpen] = useState(true);
-  const [loginAs, setLoginAs] = useState("Business");
+  const searchParams = useSearchParams();
+
+  const role = searchParams.get("role");
+
+  const [loginAs, setLoginAs] = useState(role ?? "Business");
   const [walletOpen, setWalletOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const user = useAppSelector((state) => state.user);
@@ -126,69 +128,6 @@ const Login: React.FC = () => {
           </Grid>
         </LoginAccordion>
       </Box>
-      <CustomModal
-        open={open}
-        setOpen={setOpen}
-        sx={{
-          p: 0,
-          border: "1px solid black",
-        }}
-        customCloseButton={true}
-      >
-        <Grid container>
-          <Grid item xs={12} md={6} lg={6}>
-            <Box sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={"bold"}>
-                Are you a Business Owner?
-              </Typography>
-              <Button
-                variant="outlined"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
-                  border: "1px solid black",
-                  borderRadius: "20px",
-                  my: 4,
-                }}
-                fullWidth
-                onClick={() => {
-                  setLoginAs("Business");
-                  setOpen(false);
-                }}
-              >
-                Login as Business
-              </Button>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={6}>
-            <Box sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={"bold"}>
-                Are you an Influencer?
-              </Typography>
-              <Button
-                variant="outlined"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
-                  border: "1px solid black",
-                  borderRadius: "20px",
-                  my: 4,
-                }}
-                fullWidth
-                onClick={() => {
-                  setLoginAs("Influencer");
-                  setOpen(false);
-                }}
-              >
-                Login as Influencer
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-      </CustomModal>
 
       {/* Wallet Model */}
       <WalletConnectModal open={walletOpen} setOpen={setWalletOpen} />

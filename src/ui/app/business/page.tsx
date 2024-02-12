@@ -11,6 +11,8 @@ import FAQSection from "./components/faqSection";
 import { useEffect, useState } from "react";
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import { useRouter, useSearchParams } from "next/navigation";
+import LoginPrompt from "../components/loginPrompt";
 
 const formatTwitterFollowers = (followersCount: any) => {
   if (followersCount >= 1000000) {
@@ -26,7 +28,22 @@ const formatTwitterFollowers = (followersCount: any) => {
 };
 
 export default function BusinessHome() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [topInfluencers, setTopInfluencers] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loginAs, setLoginAs] = useState("");
+
+  useEffect(() => {
+    const queryLoginAs = searchParams.get("loginAs");
+    if (!queryLoginAs) {
+      setOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loginAs == "Influencer") router.push("/influencer?loginAs=Influencer");
+  }, [loginAs]);
 
   const getPrice = (inf: any, type = "max") => {
     const services = inf.service_types || [];
@@ -122,6 +139,8 @@ export default function BusinessHome() {
       </Box>
       {/* Footer */}
       <Footer />
+
+      <LoginPrompt open={open} setOpen={setOpen} setLoginAs={setLoginAs} />
     </Box>
   );
 }

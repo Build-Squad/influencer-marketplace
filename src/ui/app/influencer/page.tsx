@@ -1,4 +1,5 @@
-import React, { Fragment } from "react";
+"use client";
+import React, { Fragment, useEffect, useState } from "react";
 import Banner from "./components/banner";
 import AnalyticsContainer from "../components/analyticsContainer";
 import Footer from "@/src/components/shared/footer";
@@ -6,10 +7,27 @@ import { Box, Typography } from "@mui/material";
 import GuideContainer from "./components/guideContainer";
 import FAQSection from "./components/faqSection";
 import ElevateSection from "./components/elevateSection";
+import { useRouter, useSearchParams } from "next/navigation";
+import LoginPrompt from "../components/loginPrompt";
 
 type Props = {};
 
 export default function Influencer({}: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [open, setOpen] = useState(false);
+  const [loginAs, setLoginAs] = useState("");
+
+  useEffect(() => {
+    const queryLoginAs = searchParams.get("loginAs");
+    if (!queryLoginAs) {
+      setOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loginAs == "Business") router.push("/business?loginAs=Business");
+  }, [loginAs]);
   return (
     <Fragment>
       <Banner />
@@ -43,6 +61,7 @@ export default function Influencer({}: Props) {
       </Box>
 
       <Footer />
+      <LoginPrompt open={open} setOpen={setOpen} setLoginAs={setLoginAs} />
     </Fragment>
   );
 }
