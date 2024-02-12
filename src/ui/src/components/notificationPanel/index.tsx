@@ -95,9 +95,10 @@ export default function NotificationPanel() {
     }
   };
 
-  const handleClickNotifications = (event: any) => {
+  const handleClickNotifications = React.useCallback((event: any) => {
     setNotificationsAnchor(event.currentTarget);
-  };
+  }, []);
+  
   const handleCloseNotifications = () => {
     setNotificationsAnchor(null);
   };
