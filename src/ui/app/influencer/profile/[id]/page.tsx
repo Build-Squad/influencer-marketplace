@@ -633,12 +633,20 @@ const ProfileLayout = ({
                 </Box>
               </Grid>
               <Grid item xs={12} md={9} sm={12} lg={9}>
-                <KeyboardBackspace
+                <Button
+                  variant="outlined"
+                  sx={{
+                    color: "rgb(0, 137, 234)",
+                    border: "1px solid rgb(0, 137, 234)",
+                    mt: 2,
+                    ml: 2
+                  }}
                   onClick={() => {
                     router.back();
                   }}
-                  sx={{ cursor: "pointer", mt:2 }}
-                />
+                >
+                  Back
+                </Button>
                 <Box
                   sx={{
                     m: 2,
