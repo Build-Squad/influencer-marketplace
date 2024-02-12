@@ -270,6 +270,11 @@ export type Xfluencer = {
           "isSigner": true
         },
         {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "influencer",
           "isMut": true,
           "isSigner": false
@@ -281,6 +286,11 @@ export type Xfluencer = {
         },
         {
           "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fees",
           "isMut": true,
           "isSigner": false
         }
@@ -390,11 +400,37 @@ export type Xfluencer = {
             "type": "publicKey"
           },
           {
+            "name": "feesVaultAccount",
+            "type": "publicKey"
+          },
+          {
             "name": "percentageRate",
             "type": "i32"
           }
         ]
       }
+    }
+  ],
+  "events": [
+    {
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -718,6 +754,11 @@ export const IDL: Xfluencer = {
           "isSigner": true
         },
         {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "influencer",
           "isMut": true,
           "isSigner": false
@@ -729,6 +770,11 @@ export const IDL: Xfluencer = {
         },
         {
           "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fees",
           "isMut": true,
           "isSigner": false
         }
@@ -838,11 +884,37 @@ export const IDL: Xfluencer = {
             "type": "publicKey"
           },
           {
+            "name": "feesVaultAccount",
+            "type": "publicKey"
+          },
+          {
             "name": "percentageRate",
             "type": "i32"
           }
         ]
       }
+    }
+  ],
+  "events": [
+    {
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
