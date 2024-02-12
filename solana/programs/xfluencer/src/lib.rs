@@ -70,6 +70,24 @@ pub mod xfluencer {
         escrow.amount = amount;
         escrow.status = 0; 
 
+        //**escrow = EscrowAccountSolana {
+        //    from: ctx.accounts.from.key(),
+        //    to: ctx.accounts.to.key(),
+        /7    order_code,
+        //    amount,
+        //    delivered: false
+        //};
+
+        let order_code_str = order_code.to_string(); 
+
+        emit!(
+            EscrowAccountSolanaCreated {
+                business: ctx.accounts.from.key(),
+                influencer: ctx.accounts.to.key(),
+                order_code: order_code_str
+        });
+
+
         let escrow_pubkey = escrow.key();
 
         msg!("Creating Escrow for SOL on business pubkey {} and influencer pubkey {}",escrow.from, escrow.to);
@@ -144,6 +162,14 @@ pub mod xfluencer {
 
         fees_config.authority = ctx.accounts.fees_authority.key();
         fees_config.percentage_rate = percentage_rate;
+
+        //**fees_config = FeesConfig {
+        //    authority: ctx.accounts.fees_authority.key(),
+        //    fees_vault_account: ctx.accounts.fees_authority.key(), // TODO: Replace this by a vault
+        //    percentage_rate
+        //};
+
+        /// !emit()
         
         Ok(())
     }
@@ -186,7 +212,41 @@ pub mod xfluencer {
         }
 
         ctx.accounts.escrow_account.status = target_state;
+        
+          // TODO: 
+        
+          ctx.accounts.escrow_account.delivered = true;   
+          
+        // TODO: Send fees to vault account    
 
+        let amount = ctx.accounts.escrow_account.get_lamports();
+
+        let escrow_account_info = ctx.accounts.escrow_account.to_account_info();
+        let fees_account_collector_info  = ctx.accounts.validation_authority.to_account_info();
+        
+        //let fees_authority_key = ctx.accounts.validation_authority.key();
+        //let escrow_seed: String = format!("{}{}", "escrow".to_string(), fees_authority_key.to_string());
+        //let escrow_pda_seed: &[u8] = escrow_seed.as_bytes();
+
+        // Set the Vault Authority to the Escrow PDA
+        //let (vault_authority, _vault_authority_bump) 
+        //    = Pubkey::find_program_address(&[escrow_pda_seed], ctx.program_id);
+        /// find generic fees account
+        /// 
+        /// // Make Seed
+        /// 
+        /// seeds = [b"fees".as_ref(), 
+        //fees_authority.key().as_ref(), 
+        //],
+        /// 
+        /// 
+        /// 
+        /// 
+        //let fees_authority_key = ctx.accounts.validation_authority.key();
+        //let fees_seed: String = format!("{}{}", "fees".to_string(), fees_authority_key.to_string());
+        //let fees_pda_seed: &[u8] = fees_seed.as_bytes();
+        //let (_fees_authority, fees_authority_bump) 
+        //    = Pubkey::find_program_address(&[fees_pda_seed], ctx.program_id);
         Ok(())
     }
 
@@ -244,9 +304,11 @@ pub struct EscrowAccountSolana {
 #[account]
 pub struct FeesConfig {
     pub authority: Pubkey, // (32)
+pub fees_vault_account: Pubkey, // (32)
     pub percentage_rate: i32,   // (4) 
 }
 
+// TODO: Replace buyer by business and seller by influencer
 
 
 #[derive(Accounts)]
@@ -256,11 +318,11 @@ pub struct CreateEscrow<'info> {
     /// CHECK: safe
     pub initializer: Signer<'info>,
     /// CHECK: safe
-    pub buyer: AccountInfo<'info>,
+    pub buyer: AccountInfo<'info>,  // change name to business
     /// CHECK: safe
-    pub seller: AccountInfo<'info>,
+    pub seller: AccountInfo<'info>, // change name to influencer
     /// CHECK: safe 
-    pub judge: AccountInfo<'info>,
+    pub judge: AccountInfo<'info>,  // change name to xfluencer
     pub mint: Account<'info, Mint>,
     
     #[account(
@@ -363,20 +425,14 @@ pub struct ClaimEscrowSolana<'info> {
     /// CHECK: safe
     #[account(mut)]
     pub influencer: Signer<'info>,
-    /// CHECK:
+    /// CHECK: safe
     #[account(mut)]
     pub business: AccountInfo<'info>,
     #[account(
         mut,
-<<<<<<< HEAD
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
         constraint = escrow_account.status == 2 @CustomError::BadEscrowState 
-=======
-        constraint = escrow_account.from == *business.key,
-        constraint = escrow_account.to == *influencer.key,
-        //constraint = escrow_account.delivered == true
->>>>>>> c7cb4d1 (add todos and constraint on fees)
         //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
@@ -392,12 +448,8 @@ pub struct CancelEscrowSolana<'info> {
     pub business: Signer<'info>,
     #[account(
         mut,
-<<<<<<< HEAD
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.status == 1 @CustomError::BadEscrowState,
-=======
-        //constraint = escrow_account.from == *business.key,
->>>>>>> c7cb4d1 (add todos and constraint on fees)
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
     pub system_program: Program<'info, System>,
@@ -441,7 +493,10 @@ pub struct UpdateFees<'info> {
 pub struct ValidateEscrowSolana<'info> {
     #[account(mut)]
     pub validation_authority: Signer<'info>,
-    /// CHECK:
+    /// CHECK: safe
+    #[account(mut)]
+    pub fees_authority: AccountInfo<'info>,
+    /// CHECK: safe
     #[account(mut)]
     pub influencer: AccountInfo<'info>,
     /// CHECK:
@@ -449,19 +504,30 @@ pub struct ValidateEscrowSolana<'info> {
     pub business: AccountInfo<'info>,
     #[account(
         mut,
-<<<<<<< HEAD
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
         constraint = escrow_account.validation_authority == *validation_authority.key @CustomError::MissmatchAuthority
         //close = influencer
-=======
-        constraint = escrow_account.from == *business.key,
-        constraint = escrow_account.to == *influencer.key,       
->>>>>>> c7cb4d1 (add todos and constraint on fees)
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
+    #[account(mut,
+        constraint = fees.authority == *fees_authority.key
+    )]
+    pub fees: Account<'info, FeesConfig>,
     
 }
+
+//// messages
+/// 
+/// 
+#[event]
+pub struct EscrowAccountSolanaCreated {
+    pub business: Pubkey,
+    pub influencer: Pubkey,
+    pub order_code: String
+}
+
+///#[]
 
 
 
