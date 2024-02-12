@@ -256,6 +256,19 @@ describe("Testing Escrow for SOL", () => {
   });
 
 
+<<<<<<< HEAD
+=======
+
+  it('Crease General Fees Account (PDA)', async () => {
+
+  });
+  it('Update General Fees Account (PDA)', async () => {
+
+  });
+
+
+
+>>>>>>> db4f86b (add test on fees)
   
   it('Create Escrow for SOL, Validate to Bad State', async () => {
 
