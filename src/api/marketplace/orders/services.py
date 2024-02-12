@@ -3,6 +3,8 @@ from orders.models import OrderItem, OrderItemTracking, OrderTracking
 from notifications.models import Notification
 from decouple import config
 
+from django.utils import timezone
+
 FRONT_END_URL = config('FRONT_END_URL')
 ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
 BUSINESS_DASHBOARD_URL = FRONT_END_URL + 'business/dashboard'
@@ -153,4 +155,20 @@ def create_order_item_tracking(order_item, status):
         OrderItemTracking.objects.create(order_item=order_item, status=status)
     except Exception as e:
         logger.error("Error creating order item tracking: ", str(e))
+        return False
+
+
+def create_reminider_notification(order_item):
+    try:
+        influencer = order_item.package.influencer
+        current_time = timezone.now()
+        time_left = order_item.publish_date - current_time
+        minutes_left = int(time_left.total_seconds() / 60)
+        message = 'You have an order item ' + order_item.package.name + \
+            ' due for publishing in ' + str(minutes_left) + ' minutes'
+        title = 'Order Item Reminder'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL, module='order_item_reminder', module_id=order_item.id)
+    except Exception as e:
+        logger.error("Error creating reminder notification: ", str(e))
         return False

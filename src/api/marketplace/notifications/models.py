@@ -17,6 +17,8 @@ class Notification(models.Model):
         User, related_name='notification_user_id', on_delete=SET_NULL, null=True
     )
     slug = models.CharField(max_length=255, blank=True, null=True)
+    module = models.CharField(max_length=255, blank=True, null=True)
+    module_id = models.UUIDField(blank=True, null=True)
 
     class Meta:
         db_table = "notification"

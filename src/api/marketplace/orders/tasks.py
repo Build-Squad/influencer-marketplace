@@ -1,5 +1,6 @@
 from accounts.models import TwitterAccount, User
-from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_tracking, create_order_tracking
+from notifications.models import Notification
+from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_tracking, create_order_tracking, create_reminider_notification
 from orders.models import Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
@@ -9,6 +10,8 @@ from decouple import config
 from celery import shared_task
 from datetime import datetime
 from django.utils import timezone
+
+from marketplace import celery_app
 
 
 """
@@ -273,5 +276,31 @@ def cancel_tweet(order_item_id):
             # Send notification to business
             create_notification_for_order_item(
                 order_item, 'scheduled', 'cancelled')
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def check_notification_sent(order_item_id):
+    notification = Notification.objects.filter(
+        module_id=order_item_id, module='order_item_reminder'
+    )
+    if notification.exists():
+        return True
+    return False
+
+
+@celery_app.task()
+def schedule_reminder_notification():
+    try:
+        # Get all order items that are accepted and have a publish_date in the next 30 minutes
+        order_items = OrderItem.objects.filter(
+            status='accepted',
+            publish_date__lte=timezone.now() + timezone.timedelta(minutes=30),
+            publish_date__gte=timezone.now())
+
+        for order_item in order_items:
+            if not check_notification_sent(order_item.id):
+                # Send notification to business
+                create_reminider_notification(order_item)
     except Exception as e:
         raise Exception(str(e))
