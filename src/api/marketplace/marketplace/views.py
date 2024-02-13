@@ -17,6 +17,7 @@ import base64
 import logging
 import hashlib
 from requests_oauthlib import OAuth2Session
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +39,15 @@ code_challenge = code_challenge.replace("=", "")
 
 
 def logoutUser(request):
-    response = HttpResponse("Token Deleted")
+    response_data = {
+        'isSuccess': True,
+        'data': None,
+        'message': 'Logged out successfully'
+    }
+    response = HttpResponse(content_type='application/json')
+
     response = JWTOperations.deleteJwtToken(res=response, cookie_name="jwt")
+    response.content = json.dumps(response_data)
     return response
 
 
