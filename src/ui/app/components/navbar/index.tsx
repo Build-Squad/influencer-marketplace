@@ -1,4 +1,3 @@
-import { loginStatusType } from "@/app/utils/types";
 import HomeIcon from "@/public/svg/Home.svg";
 import HomeDisabledIcon from "@/public/svg/Home_disabled.svg";
 import { useAppSelector } from "@/src/hooks/useRedux";
@@ -15,7 +14,6 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Lock } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import LoginMenu from "../loginMenu";
 
@@ -33,8 +31,8 @@ import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import NotificationPanel from "@/src/components/notificationPanel";
-import NextLink from "next/link";
 import { notification } from "@/src/components/shared/notification";
+import NextLink from "next/link";
 
 type NavbarProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -177,10 +175,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   ) : null;
 };
 
-export default function Navbar({
-  setCategoryOpen,
-  categoryOpen,
-}: NavbarProps) {
+export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
   const {
     isTwitterUserLoggedIn,
     logoutTwitterUser,
@@ -197,7 +192,6 @@ export default function Navbar({
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
-    const message = params.get("message");
     if (status) {
       notification(
         status === "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
