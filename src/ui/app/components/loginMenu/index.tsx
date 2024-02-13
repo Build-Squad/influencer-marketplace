@@ -47,7 +47,7 @@ export default function LoginMenu({ logoutTwitterUser }: LoginMenuProps) {
         label: "Logout",
         function: () => {
           logoutTwitterUser();
-          router.push("/");
+          // router.push("/");
         },
       },
     ];
