@@ -228,6 +228,13 @@ export default function Navbar({
     }
   }, [categoryOpen]);
 
+  const handleConnect = () => {
+    const roleQueryParams = pathname.includes("business")
+      ? "Business"
+      : "Influencer";
+    router.push(`/login?role=${roleQueryParams}`);
+  };
+
   return (
     <AppBar
       position="static"
@@ -346,9 +353,7 @@ export default function Navbar({
               <Button
                 variant="outlined"
                 color="secondary"
-                onClick={() => {
-                  router.push("/login");
-                }}
+                onClick={handleConnect}
               >
                 Connect
               </Button>
