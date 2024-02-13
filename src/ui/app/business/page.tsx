@@ -11,9 +11,8 @@ import FAQSection from "./components/faqSection";
 import { useEffect, useState } from "react";
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import LoginPrompt from "../components/loginPrompt";
-import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 
 const formatTwitterFollowers = (followersCount: any) => {
   if (followersCount >= 1000000) {
@@ -30,17 +29,8 @@ const formatTwitterFollowers = (followersCount: any) => {
 
 export default function BusinessHome() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [topInfluencers, setTopInfluencers] = useState([]);
-  const [open, setOpen] = useState(false);
   const [loginAs, setLoginAs] = useState("");
-  const { isTwitterUserLoggedIn } = useTwitterAuth();
-
-  useEffect(() => {
-    const queryLoginAs = searchParams.get("loginAs");
-    if (!queryLoginAs && !isTwitterUserLoggedIn) setOpen(true);
-    else setOpen(false);
-  }, [isTwitterUserLoggedIn]);
 
   useEffect(() => {
     if (loginAs == "Influencer") router.push("/influencer?loginAs=Influencer");
@@ -141,7 +131,7 @@ export default function BusinessHome() {
       {/* Footer */}
       <Footer />
 
-      <LoginPrompt open={open} setOpen={setOpen} setLoginAs={setLoginAs} />
+      <LoginPrompt setLoginAs={setLoginAs} />
     </Box>
   );
 }
