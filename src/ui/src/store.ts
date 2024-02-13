@@ -12,13 +12,24 @@ import {
 } from "redux-persist";
 import storage from "./storage";
 
-const persistConfig = {
-  key: "root",
+const userPersistConfig = {
+  key: "user",
   storage: storage,
 };
 
-const persistedUserReducer = persistReducer(persistConfig, userSlice.reducer);
-const persistedCartReducer = persistReducer(persistConfig, cartSlice.reducer);
+const cartPersistConfig = {
+  key: "cart",
+  storage: storage,
+};
+
+const persistedUserReducer = persistReducer(
+  userPersistConfig,
+  userSlice.reducer
+);
+const persistedCartReducer = persistReducer(
+  cartPersistConfig,
+  cartSlice.reducer
+);
 
 export const makeStore = () => {
   return configureStore({
