@@ -6,11 +6,7 @@ import ServiceCard from "@/src/components/profileComponents/serviceCard";
 import { notification } from "@/src/components/shared/notification";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { addOrderItem, resetCart } from "@/src/reducers/cartSlice";
-import {
-  deleteService,
-  getService,
-  putService,
-} from "@/src/services/httpServices";
+import { getService } from "@/src/services/httpServices";
 import {
   Box,
   Button,
@@ -22,7 +18,6 @@ import {
   Typography,
 } from "@mui/material";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 type ServiceProps = {
@@ -38,7 +33,6 @@ const Services = ({
   wallets,
   setOpen,
 }: ServiceProps) => {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const loggedInUser = useAppSelector((state) => state.user?.user);
@@ -55,7 +49,6 @@ const Services = ({
   const [refreshPage, setRefreshPage] = React.useState<boolean>(false);
   const [selectedService, setSelectedService] =
     React.useState<ServiceType | null>(null);
-  const [deleteLoading, setDeleteLoading] = React.useState<boolean>(false);
   const [openCheckoutModal, setOpenCheckoutModal] =
     React.useState<boolean>(false);
 
@@ -84,55 +77,6 @@ const Services = ({
           "error"
         );
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteServiceItem = async (id: string) => {
-    try {
-      setDeleteLoading(true);
-      const { isSuccess, message } = await deleteService(
-        `/packages/service/${id}/`
-      );
-      if (isSuccess) {
-        notification(message, "success");
-        setRefreshPage(true);
-      } else {
-        notification(
-          message ? message : "Something went wrong, try again later",
-          "error"
-        );
-      }
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
-  const updateService = async (service: ServiceType, action: string) => {
-    try {
-      setLoading(true);
-      const requestBody = {
-        status: action,
-        package: {
-          status: action,
-        },
-      };
-      const { message, data, errors, isSuccess } = await putService(
-        `/packages/service/${service?.id}/`,
-        requestBody
-      );
-      if (isSuccess) {
-        notification(message);
-        getServices();
-      } else {
-        notification(
-          message ? message : "Something went wrong, try again later",
-          "error"
-        );
-      }
-    } catch (error) {
-      console.log(error);
     } finally {
       setLoading(false);
     }
