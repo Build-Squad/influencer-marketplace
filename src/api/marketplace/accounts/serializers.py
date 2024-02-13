@@ -173,7 +173,7 @@ class WalletCompleteSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    twitter_account = TwitterAccountSerializer()
+    twitter_account = TwitterAccountSerializer(required=False)
     role = RoleSerializer(read_only=True)
     account_languages = AccountLanguageSerializer(
         many=True, read_only=True, source="acc_user_account_id"

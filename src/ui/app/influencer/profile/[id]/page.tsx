@@ -2,6 +2,7 @@
 
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
+import EmailVerifyModal from "@/src/components/profileComponents/emailVerifyModal";
 import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
@@ -75,6 +76,7 @@ const ProfileLayout = ({
   const [regions, setRegions] = React.useState<RegionType[]>([]);
   const [userRegion, setUserRegion] = React.useState<RegionType>();
   const [editibleBio, setEditibleBio] = React.useState<string>("");
+  const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (params.id) {
@@ -87,6 +89,12 @@ const ProfileLayout = ({
       getUserDetails();
     }
   }, [categoryOpen]);
+
+  useEffect(() => {
+    if (!emailOpen) {
+      getUserDetails();
+    }
+  }, [emailOpen]);
 
   useEffect(() => {
     if (
@@ -183,7 +191,7 @@ const ProfileLayout = ({
 
   const handleChange = async (e: any) => {
     try {
-      const { isSuccess, message, data } = await putService(
+      const { isSuccess, message } = await putService(
         `/account/user/${loggedInUser?.id}/`,
         {
           twitter_account: {
@@ -449,6 +457,59 @@ const ProfileLayout = ({
                               ? currentUser?.twitter_account?.description
                               : "No Bio Added"}
                           </Typography>
+                        )}
+                      </Box>
+                      <Box>
+                        {currentUser?.id === loggedInUser?.id && (
+                          <>
+                            <Typography
+                              sx={{
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Email ID
+                            </Typography>
+                            {currentUser?.email &&
+                            currentUser?.email_verified_at ? (
+                              <Typography>{currentUser?.email}</Typography>
+                            ) : (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <Typography
+                                  sx={{
+                                    fontStyle: "italic",
+                                  }}
+                                >
+                                  Add email address to receive notifications and
+                                  updates
+                                </Typography>
+                                <Button
+                                  variant="outlined"
+                                  color="secondary"
+                                  sx={{
+                                    mt: 1,
+                                    background:
+                                      "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                                    color: "black",
+                                    border: "1px solid black",
+                                    borderRadius: "20px",
+                                  }}
+                                  onClick={() => {
+                                    setEmailOpen(true);
+                                  }}
+                                  fullWidth
+                                >
+                                  Add Email
+                                </Button>
+                              </Box>
+                            )}
+                          </>
                         )}
                       </Box>
                       <Box sx={{ mt: 2 }}>
@@ -769,6 +830,7 @@ const ProfileLayout = ({
           ) || []
         }
       />
+      <EmailVerifyModal open={emailOpen} setOpen={setEmailOpen} />
     </Box>
   );
 };
