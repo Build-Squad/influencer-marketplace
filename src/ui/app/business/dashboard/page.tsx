@@ -135,6 +135,10 @@ export default function BusinessDashboardPage() {
             ORDER_STATUS.COMPLETED,
           ],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(0);
       },
       value: 0,
@@ -152,6 +156,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.ACCEPTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(1);
       },
@@ -171,6 +179,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.COMPLETED],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(2);
       },
       value: 2,
@@ -189,6 +201,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.PENDING],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(3);
       },
       value: 3,
@@ -206,6 +222,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.REJECTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(4);
       },
