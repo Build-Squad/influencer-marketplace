@@ -135,6 +135,10 @@ export default function BusinessDashboardPage() {
             ORDER_STATUS.COMPLETED,
           ],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(0);
       },
       value: 0,
@@ -152,6 +156,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.ACCEPTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(1);
       },
@@ -171,6 +179,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.COMPLETED],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(2);
       },
       value: 2,
@@ -189,6 +201,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.PENDING],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(3);
       },
       value: 3,
@@ -206,6 +222,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.REJECTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(4);
       },
@@ -451,19 +471,19 @@ export default function BusinessDashboardPage() {
       >
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Button
-              variant="outlined"
-              sx={{
-                color: "rgb(0, 137, 234)",
-                border: "1px solid rgb(0, 137, 234)",
-                mt: 2,
-              }}
-              onClick={() => {
-                router.back();
-              }}
-            >
-              Back
-            </Button>
+            <Tooltip title="Go Back" placement="top" arrow>
+              <IconButton
+                onClick={() => {
+                  router.back();
+                }}
+                sx={{
+                  boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.15)",
+                  mb: 2,
+                }}
+              >
+                <KeyboardBackspace />
+              </IconButton>
+            </Tooltip>
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (

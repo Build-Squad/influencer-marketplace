@@ -123,7 +123,8 @@ class TopInfluencers(APIView):
             # Get the IDs of Twitter accounts with at least one associated published package
             account_ids_with_published_package = Package.objects.filter(
                 influencer__twitter_account__in=twitterAccount,
-                status="published"
+                status="published",
+                deleted_at=None,
             ).values_list('influencer__twitter_account', flat=True).distinct()
 
             # Filter the TwitterAccount queryset based on the extracted IDs

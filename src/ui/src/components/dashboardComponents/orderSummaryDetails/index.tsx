@@ -264,9 +264,11 @@ const OrderSummaryDetails = ({
               />
             </Box>
 
-            {eachOrderItem?.order_item_meta_data?.map((meta_data: any) => {
-              return <ContentTypeComponent meta_data={meta_data} />;
-            })}
+            {eachOrderItem?.order_item_meta_data
+              ?.sort((a: any, b: any) => a.order - b.order)
+              ?.map((meta_data: any) => {
+                return <ContentTypeComponent meta_data={meta_data} />;
+              })}
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
             >

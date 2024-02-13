@@ -1,30 +1,28 @@
 "use client";
 
-import { ROLE_NAME, SERVICE_STATUS } from "@/src/utils/consts";
-import {
-  Grid,
-  Card,
-  Box,
-  Typography,
-  Chip,
-  Tooltip,
-  IconButton,
-  FormLabel,
-  Button,
-} from "@mui/material";
-import router from "next/router";
-import React from "react";
-import { ConfirmDelete } from "../../shared/confirmDeleteModal";
-import PublishedWithChangesIcon from "@mui/icons-material/PublishedWithChanges";
-import UnpublishedIcon from "@mui/icons-material/Unpublished";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { deleteService, putService } from "@/src/services/httpServices";
-import { notification } from "../../shared/notification";
-import { useRouter } from "next/navigation";
-import DraftsIcon from "@mui/icons-material/Drafts";
+import { ROLE_NAME, SERVICE_STATUS } from "@/src/utils/consts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DraftsIcon from "@mui/icons-material/Drafts";
+import EditIcon from "@mui/icons-material/Edit";
+import PublishedWithChangesIcon from "@mui/icons-material/PublishedWithChanges";
+import UnpublishedIcon from "@mui/icons-material/Unpublished";
+import {
+  Box,
+  Button,
+  Card,
+  FormLabel,
+  Grid,
+  IconButton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { ConfirmDelete } from "../../shared/confirmDeleteModal";
+import { notification } from "../../shared/notification";
 
 type ServiceCardProps = {
   service: ServiceType;
