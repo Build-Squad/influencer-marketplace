@@ -1,23 +1,18 @@
-import MoveDownIcon from "@mui/icons-material/MoveDown";
 import { IconButton, Tooltip } from "@mui/material";
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  clusterApiUrl,
-} from "@solana/web3.js";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import idl from "../../../utils/xfluencer.json";
 
 import * as anchor from "@coral-xyz/anchor";
 
+import { postService } from "@/src/services/httpServices";
 import { getAnchorProgram } from "@/src/utils/anchorUtils";
+import { TRANSACTION_TYPE } from "@/src/utils/consts";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+import DownloadingIcon from "@mui/icons-material/Downloading";
 import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
+import { useState } from "react";
 import { notification } from "../../shared/notification";
-import { postService, putService } from "@/src/services/httpServices";
-import DownloadingIcon from "@mui/icons-material/Downloading";
-import { TRANSACTION_TYPE } from "@/src/utils/consts";
 
 type CreateEscrowProps = {
   order: OrderType;
@@ -30,6 +25,7 @@ export default function ClaimEscrow({
   updateStatus,
   order,
 }: CreateEscrowProps) {
+  const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(
     `https://rpc.ironforge.network/devnet?apiKey=${process.env.NEXT_PUBLIC_RPC_KEY}`,
     {
@@ -43,7 +39,7 @@ export default function ClaimEscrow({
   const provider = new AnchorProvider(connection, wallet!, {});
   setProvider(provider);
 
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, sendTransaction, connect } = useWallet();
 
   const updateInfluencerTransactionAddress = async (address: string) => {
     try {
@@ -73,67 +69,74 @@ export default function ClaimEscrow({
   };
 
   const claimEscrow = async () => {
-    if (order?.buyer_wallet && order?.order_number) {
-      // Get influencer wallet address
-      const buyer_pk = new PublicKey(order?.buyer_wallet?.wallet_address_id);
+    try {
+      setLocalLoading(true);
+      if (order?.buyer_wallet && order?.order_number) {
+        // Get influencer wallet address
+        const buyer_pk = new PublicKey(order?.buyer_wallet?.wallet_address_id);
 
-      // breakpoint
+        // breakpoint
 
-      // Check if wallet is connected
-      if (!connection || !publicKey) {
-        notification("Please connect your wallet first", "error");
-        return;
-      }
+        // Check if wallet is connected
+        if (!connection || !publicKey) {
+          await connect();
+          notification("Please connect your wallet first", "error");
+          return;
+        }
 
-      // Find the escrow PDA
-      const [escrowPDA] = PublicKey.findProgramAddressSync(
-        [
-          utf8.encode("escrow"),
-          buyer_pk.toBuffer(),
-          publicKey.toBuffer(),
-          utf8.encode(order?.order_number?.toString()),
-        ],
-        programId
-      );
-
-      // Create the escrow
-      const ix = await program.methods
-        .claimEscrow(new anchor.BN(order?.order_number))
-        .accounts({
-          influencer: publicKey,
-          business: buyer_pk,
-          escrowAccount: escrowPDA,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        })
-        .instruction();
-
-      const tx = new Transaction().add(ix);
-
-      const options = {
-        skipPreflight: true,
-      };
-
-      try {
-        const signature = await sendTransaction(tx, connection, options);
-
-        console.log("Transaction signature: ", signature);
-
-        const txSign = await connection.confirmTransaction(
-          signature,
-          "processed"
+        // Find the escrow PDA
+        const [escrowPDA] = PublicKey.findProgramAddressSync(
+          [
+            utf8.encode("escrow"),
+            buyer_pk.toBuffer(),
+            publicKey.toBuffer(),
+            utf8.encode(order?.order_number?.toString()),
+          ],
+          programId
         );
 
-        if (txSign.value.err != null) {
-          notification(
-            `Instruction error number found: ` + txSign?.value?.err?.toString(),
-            "error"
+        // Create the escrow
+        const ix = await program.methods
+          .claimEscrow(new anchor.BN(order?.order_number))
+          .accounts({
+            influencer: publicKey,
+            business: buyer_pk,
+            escrowAccount: escrowPDA,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .instruction();
+
+        const tx = new Transaction().add(ix);
+
+        const options = {
+          skipPreflight: true,
+        };
+
+        try {
+          const signature = await sendTransaction(tx, connection, options);
+
+          console.log("Transaction signature: ", signature);
+
+          const txSign = await connection.confirmTransaction(
+            signature,
+            "processed"
           );
-        } else {
-          updateInfluencerTransactionAddress(signature);
+
+          if (txSign.value.err != null) {
+            notification(
+              `Instruction error number found: ` +
+                txSign?.value?.err?.toString(),
+              "error"
+            );
+          } else {
+            updateInfluencerTransactionAddress(signature);
+          }
+        } catch (error) {
+          console.error("Transaction error", error);
         }
-      } catch (error) {
-        console.error("Transaction error", error);
       }
+    } finally {
+      setLocalLoading(false);
     }
   };
 
@@ -143,6 +146,7 @@ export default function ClaimEscrow({
         onClick={() => {
           claimEscrow();
         }}
+        disabled={localLoading}
       >
         <DownloadingIcon />
       </IconButton>
