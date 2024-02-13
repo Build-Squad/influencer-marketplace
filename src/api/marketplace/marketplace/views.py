@@ -1,6 +1,6 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from accounts.serializers import UserSerializer
-from tweepy import Client, OAuth2UserHandler
+from tweepy import Client
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
@@ -8,22 +8,33 @@ from django.http import (
 from decouple import config
 from accounts.models import Role, TwitterAccount, User
 import datetime
-from .authentication import JWTAuthentication
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
 from .constants import TWITTER_SCOPES, TWITTER_CALLBACK_URL
-
+import os
+import re
+import base64
 import logging
+import hashlib
+from requests_oauthlib import OAuth2Session
 
 logger = logging.getLogger(__name__)
 
-# This is OAuth2.0 PKCE authentication instance that'll be used to interact with Client for V2 version of API
-oauth2_user_handler = OAuth2UserHandler(
-    client_id=config("CLIENT_ID"),
-    redirect_uri=TWITTER_CALLBACK_URL,
-    scope=TWITTER_SCOPES,
-    client_secret=config("CLIENT_SECRET"),
-)
+client_id = config("CLIENT_ID")
+client_secret = config("CLIENT_SECRET")
+auth_url = "https://twitter.com/i/oauth2/authorize"
+token_url = "https://api.twitter.com/2/oauth2/token"
+redirect_uri = TWITTER_CALLBACK_URL
+
+
+# Creating a code verifier to authenticate code came from in the callback url
+code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
+code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
+
+# Sending the code challege to twitter authenication.
+code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
+code_challenge = code_challenge.replace("=", "")
 
 
 def logoutUser(request):
@@ -34,68 +45,65 @@ def logoutUser(request):
 
 def authTwitterUser(request, role):
     request.session["role"] = role
-    auth_url = oauth2_user_handler.get_authorization_url()
-    return HttpResponseRedirect(auth_url)
-
+    global twitter
+    twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
+    authorization_url, state = twitter.authorization_url(
+        auth_url, code_challenge=code_challenge, code_challenge_method="S256"
+    )
+    request.session["oauth_state"] = state
+    return redirect(authorization_url)
 
 def twitterLoginCallback(request):
+    # Exchange the authorization code for an access token
+    code = request.GET.get("code")
     role = request.session.get("role", "")
-    authorization_response_url = request.build_absolute_uri()
     try:
         # Authenticate User
-        authentication_result = authenticateUser(authorization_response_url)
+        authentication_result = authenticateUser(code)
         userData = authentication_result["userData"]
         access_token = authentication_result["access_token"]
         refresh_token = authentication_result["refresh_token"]
         # Create USER and JWT and send response
-        return createJWT(userData, access_token, role, refresh_token)
+        createJWT(userData, access_token, role, refresh_token)
     except Exception as e:
         logger.error("Error in twitterLoginCallback -", e)
-        return HttpResponseRedirect(
-            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
-        )
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
 
 
 # Helper functions
-def authenticateUser(authorization_response_url):
-    max_attempts = 4
-    attempt = 0
-    while attempt < max_attempts:
-        try:
-            access_token_obj = oauth2_user_handler.fetch_token(
-                authorization_response_url
-            )
-            access_token = access_token_obj["access_token"]
-            refresh_token = access_token_obj["refresh_token"]
+def authenticateUser(code):
+        token = twitter.fetch_token(
+            token_url=token_url,
+            client_secret=client_secret,
+            code_verifier=code_verifier,
+            code=code,
+        )
+        access_token = token["access_token"]
+        refresh_token = token["refresh_token"]
 
-            client = Client(access_token)
-            userData = client.get_me(
-                user_auth=False,
-                user_fields=[
-                    "description",
-                    "profile_image_url",
-                    "public_metrics",
-                    "verified",
-                    "created_at",
-                    "location",
-                    "url",
-                ],
-            ).data
-            logger.info("Twitter User Authenticated", userData)
-            return {
-                "userData": userData,
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-            }
-        except Exception as e:
-            attempt += 1
-            logger.error(
-                f"Error authenticating User - Attempt {attempt}/{max_attempts}:", e
-            )
-    # If authentication fails after max_attempts, redirect to an error page
-    return HttpResponseRedirect(
-        config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
-    )
+        client = Client(access_token)
+        userData = client.get_me(
+            user_auth=False,
+            user_fields=[
+                "description",
+                "profile_image_url",
+                "public_metrics",
+                "verified",
+                "created_at",
+                "location",
+                "url",
+            ],
+        ).data
+        logger.info("Twitter User Authenticated", userData)
+        return {
+            "userData": userData,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+        }
 
 
 def createUser(userData, access_token, role, refresh_token):
@@ -178,6 +186,7 @@ def createUser(userData, access_token, role, refresh_token):
         }
 
 
+# The userData here is from twitter
 def createJWT(userData, access_token, role, refresh_token):
     try:
         # Creating a response object with JWT cookie
@@ -194,6 +203,10 @@ def createJWT(userData, access_token, role, refresh_token):
             )
 
         current_user = current_user_data["current_user"]
+
+        # Redirect influencers to their profile page.
+        if role == "influencer":
+            redirect_url += f"/profile/{current_user.id}"
 
         redirect_url += "?authenticationStatus=success"
 
@@ -220,6 +233,9 @@ def createJWT(userData, access_token, role, refresh_token):
         return response
     except Exception as e:
         logger.error("Error while creating jwt - ", e)
-        return redirect(
-            f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
-        )
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
+
