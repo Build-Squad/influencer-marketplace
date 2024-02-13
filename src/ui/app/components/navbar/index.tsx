@@ -281,7 +281,7 @@ export default function Navbar({
                 borderRadius: "20px",
               }}
               onClick={() => {
-                router.push("/influencer");
+                router.push("/influencer?loginAs=Influencer");
               }}
             >
               For Influencer
@@ -293,7 +293,7 @@ export default function Navbar({
                 borderRadius: "20px",
               }}
               onClick={() => {
-                router.push("/business");
+                router.push("/business?loginAs=Business");
               }}
             >
               For Business
