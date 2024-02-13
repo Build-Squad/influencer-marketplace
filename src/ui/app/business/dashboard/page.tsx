@@ -471,19 +471,19 @@ export default function BusinessDashboardPage() {
       >
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Button
-              variant="outlined"
-              sx={{
-                color: "rgb(0, 137, 234)",
-                border: "1px solid rgb(0, 137, 234)",
-                mt: 2,
-              }}
-              onClick={() => {
-                router.back();
-              }}
-            >
-              Back
-            </Button>
+            <Tooltip title="Go Back" placement="top" arrow>
+              <IconButton
+                onClick={() => {
+                  router.back();
+                }}
+                sx={{
+                  boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.15)",
+                  mb: 2,
+                }}
+              >
+                <KeyboardBackspace />
+              </IconButton>
+            </Tooltip>
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (
