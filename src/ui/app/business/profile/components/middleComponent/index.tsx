@@ -146,7 +146,7 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
             }}
             onClick={() => {
               logoutTwitterUser();
-              window.location.href = `${pathname}?tab=${tabName}`;
+              // window.location.href = `${pathname}?tab=${tabName}`;
             }}
           >
             Disconnect
