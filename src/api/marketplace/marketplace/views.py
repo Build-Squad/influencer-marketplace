@@ -64,7 +64,7 @@ def twitterLoginCallback(request):
         access_token = authentication_result["access_token"]
         refresh_token = authentication_result["refresh_token"]
         # Create USER and JWT and send response
-        createJWT(userData, access_token, role, refresh_token)
+        return createJWT(userData, access_token, role, refresh_token)
     except Exception as e:
         logger.error("Error in twitterLoginCallback -", e)
         if role == "business_owner":
@@ -76,6 +76,7 @@ def twitterLoginCallback(request):
 
 # Helper functions
 def authenticateUser(code):
+    try:
         token = twitter.fetch_token(
             token_url=token_url,
             client_secret=client_secret,
@@ -104,6 +105,10 @@ def authenticateUser(code):
             "access_token": access_token,
             "refresh_token": refresh_token,
         }
+    except Exception as e:
+        return HttpResponseRedirect(
+        config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
+    )
 
 
 def createUser(userData, access_token, role, refresh_token):
