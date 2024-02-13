@@ -1,0 +1,1 @@
+solana program close 7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq

@@ -1,0 +1,1 @@
+solana program show --programs

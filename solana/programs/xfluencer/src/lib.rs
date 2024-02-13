@@ -70,10 +70,10 @@ pub mod xfluencer {
         escrow.amount = amount;
         escrow.status = 0; 
 
-        //**escrow = EscrowAccountSolana {
+        // **escrow = EscrowAccountSolana {
         //    from: ctx.accounts.from.key(),
         //    to: ctx.accounts.to.key(),
-        /7    order_code,
+        //    order_code,
         //    amount,
         //    delivered: false
         //};

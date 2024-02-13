@@ -189,7 +189,7 @@ export type Xfluencer = {
       ]
     },
     {
-      "name": "canceEscrowSol",
+      "name": "cancelEscrowSol",
       "accounts": [
         {
           "name": "business",
@@ -204,6 +204,89 @@ export type Xfluencer = {
         {
           "name": "systemProgram",
           "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "createFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "updateFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "validateEscrowSol",
+      "accounts": [
+        {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fees",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -289,6 +372,48 @@ export type Xfluencer = {
           }
         ]
       }
+    },
+    {
+      "name": "feesConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "feesVaultAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "percentageRate",
+            "type": "i32"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -496,7 +621,7 @@ export const IDL: Xfluencer = {
       ]
     },
     {
-      "name": "canceEscrowSol",
+      "name": "cancelEscrowSol",
       "accounts": [
         {
           "name": "business",
@@ -511,6 +636,89 @@ export const IDL: Xfluencer = {
         {
           "name": "systemProgram",
           "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "createFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "updateFees",
+      "accounts": [
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesConfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "percentageRate",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "validateEscrowSol",
+      "accounts": [
+        {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "feesAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fees",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -596,6 +804,48 @@ export const IDL: Xfluencer = {
           }
         ]
       }
+    },
+    {
+      "name": "feesConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "feesVaultAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "percentageRate",
+            "type": "i32"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
