@@ -173,7 +173,7 @@ class WalletCompleteSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    twitter_account = TwitterAccountSerializer(read_only=True)
+    twitter_account = TwitterAccountSerializer()
     role = RoleSerializer(read_only=True)
     account_languages = AccountLanguageSerializer(
         many=True, read_only=True, source="acc_user_account_id"
@@ -197,6 +197,26 @@ class UserSerializer(serializers.ModelSerializer):
             "user_permissions",
             "jwt",
         )
+
+    def update(self, instance, validated_data):
+        # Update User fields
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get(
+            'first_name', instance.first_name)
+        instance.last_name = validated_data.get(
+            'last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+
+        # Update TwitterAccount fields
+        twitter_account_data = validated_data.get('twitter_account')
+        if twitter_account_data:
+            twitter_account = instance.twitter_account
+            twitter_account.description = twitter_account_data.get(
+                'description', twitter_account.description)
+            twitter_account.save()
+
+        return instance
 
 
 class TwitterReadSerializer(serializers.ModelSerializer):
