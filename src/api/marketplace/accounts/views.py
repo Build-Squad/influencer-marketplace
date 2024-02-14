@@ -63,6 +63,8 @@ import datetime
 
 from nacl.signing import VerifyKey
 import base58
+
+from django.utils import timezone
 # Twitter account API-Endpoint
 # List-Create-API
 
@@ -1285,7 +1287,7 @@ class EmailVerification(APIView):
                             },
                             status=status.HTTP_200_OK,
                         )
-                    user.email_verified_at = datetime.datetime.now()
+                    user.email_verified_at = timezone.now()
                     user.save()
                     return Response(
                         {
