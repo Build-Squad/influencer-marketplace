@@ -192,7 +192,7 @@ const ProfileLayout = ({
   const handleChange = async (e: any) => {
     try {
       const { isSuccess, message } = await putService(
-        `/account/user/${loggedInUser?.id}/`,
+        `/account/user/${currentUser?.id}/`,
         {
           twitter_account: {
             description: e.target.value,
