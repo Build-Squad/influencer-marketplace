@@ -1,0 +1,8 @@
+{
+    "network": "testnet",
+    "influencer": "HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz",
+    "lamports": "10000000",
+    "order_code": 1234,
+    "program_id_devnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
+    "program_id_testnet": "EV31JFJxt28CoRUGm2UAsTHndmpYvpuMFH9Y8JZBJcYd"
+}

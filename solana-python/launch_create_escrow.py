@@ -1,29 +1,32 @@
 from solders.pubkey import Pubkey
-from src.program_id import PROGRAM_ID
 from solana.rpc.types import TxOpts
 
 from utils import get_local_keypair_pubkey, sign_and_send_transaction
 from utils import load_configuration
 
-if __name__ == "__main__":
+import random
+
+def main():
     configuration = load_configuration()
+
+    network = configuration["network"]
+    program_id = configuration["program_id_testnet"] if configuration["network"] == "testnet" else configuration["program_id_devnet"]
+    PROGRAM_ID = Pubkey.from_string(program_id)
+    print(f"Network: {network} Program ID: {program_id}")
 
     amount = configuration["lamports"]
     influencer = configuration["influencer"]
+    order_code = configuration["order_code"]
 
-    order_code = 2
-
-    args = {"amount":int(amount), "order_code":order_code }
-
+    args = {"amount":int(amount), "order_code":int(order_code) }
+    
     business, business_pk = get_local_keypair_pubkey()
     influencer_pk = Pubkey.from_string(influencer)
     
-    order_code = str(order_code)
-
     SEEDS = [b"escrow",
             bytes(business_pk),
             bytes(influencer_pk),
-            bytes(order_code,"UTF-8")
+            bytes(str(order_code),"UTF-8")
             ]
 
     escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
@@ -38,6 +41,8 @@ if __name__ == "__main__":
 
     signers = [business]
 
-    sign_and_send_transaction(args, accounts, signers, opts)
+    sign_and_send_transaction(args, accounts, signers, opts, network, PROGRAM_ID)
 
+if __name__ == "__main__":
+    main()
     
