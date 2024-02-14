@@ -1,12 +1,11 @@
 from distutils.util import strtobool
 from http.client import HTTPResponse
 import secrets
-
+from accounts.tasks import sendEmail
 
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
 from marketplace.services import (
-    EmailService,
     Pagination,
     handleServerException,
     handleBadRequest,
@@ -1098,11 +1097,11 @@ class OTPAuth(APIView):
                     user.otp_expiration = otp_expiration
                     user.save()
 
-                    email_service = EmailService()
-                    email_service.sendEmail(
+                    sendEmail.delay(
                         "OTP for login to Xfluencer",
-                        f"Your OTP is {otp}",
-                        config("EMAIL_HOST_USER"),
+                        "Your OTP is " + str(otp),
+                        "loginEmail.html",
+                        {"otp": otp, "target": config("FRONT_END_URL")},
                         [request.data["email"]],
                     )
 
@@ -1230,11 +1229,11 @@ class EmailVerification(APIView):
                 user.otp_expiration = otp_expiration
                 user.save()
 
-                email_service = EmailService()
-                email_service.sendEmail(
+                sendEmail.delay(
                     "OTP for email verification",
-                    f"Your OTP is {otp}",
-                    config("EMAIL_HOST_USER"),
+                    "Your OTP is " + str(otp),
+                    "verifyEmail.html",
+                    {"otp": otp, "target": config("FRONT_END_URL")},
                     [user.email],
                 )
 
