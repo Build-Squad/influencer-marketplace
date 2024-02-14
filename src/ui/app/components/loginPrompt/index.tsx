@@ -22,7 +22,7 @@ export default function LoginPrompt({ setLoginAs }: Props) {
     const queryLoginAs = searchParams.get("loginAs");
     if (!queryLoginAs && !user?.loggedIn) setOpen(true);
     else setOpen(false);
-  }, [user]);
+  }, [user?.loggedIn]);
   return (
     <CustomModal
       open={open}

@@ -211,22 +211,14 @@ export default function BusinessProfilePreview({ params }: Props) {
     getAccount();
   }, []);
   return (
-    <Box
-      sx={{
-        pt: 2,
-        px: 5,
-        display: "flex",
-        backgroundColor: "#FAFAFA",
-        height: "100%",
-        justifyContent: "space-between",
-      }}
-    >
+    <Box sx={{backgroundColor: "#FAFAFA",}}>
       <Button
         variant="outlined"
         sx={{
           color: "rgb(0, 137, 234)",
           border: "1px solid rgb(0, 137, 234)",
           mt: 2,
+          ml:5
         }}
         onClick={() => {
           router.back();
@@ -236,247 +228,259 @@ export default function BusinessProfilePreview({ params }: Props) {
       </Button>
       <Box
         sx={{
-          padding: "16px 30px",
-          backgroundColor: "#FFF",
-          borderRadius: "16px",
-          flex: 1,
+          pt: 2,
+          px: 5,
+          display: "flex",
+          height: "100%",
+          justifyContent: "space-between",
         }}
       >
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Avatar
-            alt={businessDetails?.business_name}
-            src={businessDetails?.business_name}
-            sx={{ width: 138, height: 138 }}
-          />
-          <Typography variant="h6" fontWeight={"bold"} sx={{ mt: 2 }}>
-            {businessDetails?.business_name}
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mt: 2, display: "flex" }}>
-            <LocationOn />
-            {businessDetails?.headquarters}
-          </Typography>
-        </Box>
-        <Box sx={{ ...styles.flexStyles, mt: 2 }}>
-          <Typography variant="subtitle1">Founded In </Typography>
-          <Typography variant="subtitle1" fontWeight={"bold"}>
-            {businessDetails?.founded}
-          </Typography>
-        </Box>
-        <Box sx={styles.flexStyles}>
-          <Typography variant="subtitle1">Headquarters </Typography>
-          <Typography variant="subtitle1" fontWeight={"bold"}>
-            {businessDetails?.headquarters}
-          </Typography>
-        </Box>
-        <Box sx={styles.flexStyles}>
-          <Typography variant="subtitle1">Industry </Typography>
-          <Typography variant="subtitle1" fontWeight={"bold"}>
-            {businessDetails?.industry}
-          </Typography>
-        </Box>
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="subtitle1" fontWeight={"bold"} sx={{ mb: 2 }}>
-            Contact Details
-          </Typography>
-
-          <Typography
-            variant="subtitle1"
-            sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
-          >
-            <Email />
-            {businessDetails?.user_email}
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
-          >
-            <LocalPhone />
-            {businessDetails?.phone}
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
-          >
-            <Language />
-            {businessDetails?.website}
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
-          >
-            <Clear />
-            {businessDetails?.twitter_account}
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
-          >
-            <LinkedIn />
-            {businessDetails?.linked_in}
-          </Typography>
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          padding: "16px 30px",
-          flex: 2.5,
-        }}
-      >
-        <Box
-          sx={{
-            padding: "16px",
+            padding: "16px 30px",
             backgroundColor: "#FFF",
             borderRadius: "16px",
-          }}
-        >
-          <Typography fontWeight="bold">About</Typography>
-          <Typography>{businessDetails?.bio}</Typography>
-        </Box>
-        <Box sx={{ padding: "16px" }}>
-          <Typography fontWeight="bold">Collaborators</Typography>
-          <Grid
-            container
-            spacing={3}
-            mt={0}
-            justifyContent={"flex-start"}
-            alignItems={"center"}
-          >
-            {collaborations.map((inf, index) => (
-              <InfluencersCards
-                influencer={inf}
-                key={index}
-                sx={{ minWidth: "320px" }}
-              />
-            ))}
-          </Grid>
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          flex: 1,
-          margin: "20px",
-        }}
-      >
-        {user?.role?.name === "business_owner" ? (
-          <Button
-            fullWidth
-            variant={"contained"}
-            color="secondary"
-            sx={{
-              borderRadius: "20px",
-            }}
-            onClick={() => {
-              router.push("/business/profile?tab=wallet");
-            }}
-          >
-            Edit Profile
-          </Button>
-        ) : null}
-
-        <Box
-          sx={{
-            mt: 2,
-            padding: "20px",
-            backgroundColor: "#FFF",
-            borderRadius: "16px",
+            flex: 1,
           }}
         >
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
+              flexDirection: "column",
               alignItems: "center",
             }}
           >
-            <Typography>Information Added</Typography>
-            <Typography
-              variant="h6"
-              fontWeight={"bold"}
-              sx={{ color: isProfileComplete ? "#4AA785" : "black" }}
-            >
-              {getProfileCompletedStatus(businessDetails)}
+            <Avatar
+              alt={businessDetails?.business_name}
+              src={businessDetails?.business_name}
+              sx={{ width: 138, height: 138 }}
+            />
+            <Typography variant="h6" fontWeight={"bold"} sx={{ mt: 2 }}>
+              {businessDetails?.business_name}
+            </Typography>
+            <Typography variant="subtitle1" sx={{ mt: 2, display: "flex" }}>
+              <LocationOn />
+              {businessDetails?.headquarters}
             </Typography>
           </Box>
+          <Box sx={{ ...styles.flexStyles, mt: 2 }}>
+            <Typography variant="subtitle1">Founded In </Typography>
+            <Typography variant="subtitle1" fontWeight={"bold"}>
+              {businessDetails?.founded}
+            </Typography>
+          </Box>
+          <Box sx={styles.flexStyles}>
+            <Typography variant="subtitle1">Headquarters </Typography>
+            <Typography variant="subtitle1" fontWeight={"bold"}>
+              {businessDetails?.headquarters}
+            </Typography>
+          </Box>
+          <Box sx={styles.flexStyles}>
+            <Typography variant="subtitle1">Industry </Typography>
+            <Typography variant="subtitle1" fontWeight={"bold"}>
+              {businessDetails?.industry}
+            </Typography>
+          </Box>
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="subtitle1" fontWeight={"bold"} sx={{ mb: 2 }}>
+              Contact Details
+            </Typography>
 
-          {isProfileComplete ? (
-            <LinearProgress
-              variant="determinate"
-              value={getProgressPercentage()}
-              sx={{
-                "& .MuiLinearProgress-bar": { backgroundColor: "#4AA785" },
-              }}
-            />
-          ) : (
-            <LinearProgress
-              variant="determinate"
-              value={getProgressPercentage()}
-              color="secondary"
-            />
-          )}
+            <Typography
+              variant="subtitle1"
+              sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
+            >
+              <Email />
+              {businessDetails?.user_email}
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
+            >
+              <LocalPhone />
+              {businessDetails?.phone}
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
+            >
+              <Language />
+              {businessDetails?.website}
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
+            >
+              <Clear />
+              {businessDetails?.twitter_account}
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
+            >
+              <LinkedIn />
+              {businessDetails?.linked_in}
+            </Typography>
+          </Box>
         </Box>
         <Box
           sx={{
-            mt: 2,
-            padding: "20px",
-            backgroundColor: "#FFF",
-            borderRadius: "16px",
+            padding: "16px 30px",
+            flex: 2.5,
           }}
         >
-          <Typography fontWeight={"bold"}>Badges</Typography>
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              columnGap: "16px",
-              alignItems: "center",
-              mt: 2,
+              padding: "16px",
+              backgroundColor: "#FFF",
+              borderRadius: "16px",
             }}
           >
-            {BADGES.map((badge, index) => {
-              return (
-                <Box>
-                  <Image
-                    src={
-                      getCurrentBadgeIndex() === index
-                        ? badge.icon
-                        : badge.blurredIcon
-                    }
-                    alt={badge.name}
-                    style={{
-                      width: getCurrentBadgeIndex() === index ? "54px" : "40px",
-                      height:
-                        getCurrentBadgeIndex() === index ? "54px" : "40px",
-                    }}
-                  />
-                </Box>
-              );
-            })}
+            <Typography fontWeight="bold">About</Typography>
+            <Typography>{businessDetails?.bio}</Typography>
           </Box>
-          <Typography fontWeight={"bold"} sx={{ mt: 2 }}>
-            {BADGES[getCurrentBadgeIndex()].name}
-          </Typography>
+          <Box sx={{ padding: "16px" }}>
+            <Typography fontWeight="bold">Collaborators</Typography>
+            <Grid
+              container
+              spacing={3}
+              mt={0}
+              justifyContent={"flex-start"}
+              alignItems={"center"}
+            >
+              {collaborations.map((inf, index) => (
+                <InfluencersCards
+                  influencer={inf}
+                  key={index}
+                  sx={{ minWidth: "320px" }}
+                />
+              ))}
+            </Grid>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            flex: 1,
+            margin: "20px",
+          }}
+        >
           {user?.role?.name === "business_owner" ? (
-            isProfileComplete ? (
-              <Typography variant="subtitle1" sx={{ color: "#626262" }}>
-                Profile complete! Enjoy your upgraded badge & enhanced platform
-                experience.
+            <Button
+              fullWidth
+              variant={"contained"}
+              color="secondary"
+              sx={{
+                borderRadius: "20px",
+              }}
+              onClick={() => {
+                router.push("/business/profile?tab=wallet");
+              }}
+            >
+              Edit Profile
+            </Button>
+          ) : null}
+
+          <Box
+            sx={{
+              mt: 2,
+              padding: "20px",
+              backgroundColor: "#FFF",
+              borderRadius: "16px",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography>Information Added</Typography>
+              <Typography
+                variant="h6"
+                fontWeight={"bold"}
+                sx={{ color: isProfileComplete ? "#4AA785" : "black" }}
+              >
+                {getProfileCompletedStatus(businessDetails)}
               </Typography>
+            </Box>
+
+            {isProfileComplete ? (
+              <LinearProgress
+                variant="determinate"
+                value={getProgressPercentage()}
+                sx={{
+                  "& .MuiLinearProgress-bar": { backgroundColor: "#4AA785" },
+                }}
+              />
+            ) : (
+              <LinearProgress
+                variant="determinate"
+                value={getProgressPercentage()}
+                color="secondary"
+              />
+            )}
+          </Box>
+          <Box
+            sx={{
+              mt: 2,
+              padding: "20px",
+              backgroundColor: "#FFF",
+              borderRadius: "16px",
+            }}
+          >
+            <Typography fontWeight={"bold"}>Badges</Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-start",
+                columnGap: "16px",
+                alignItems: "center",
+                mt: 2,
+              }}
+            >
+              {BADGES.map((badge, index) => {
+                return (
+                  <Box>
+                    <Image
+                      src={
+                        getCurrentBadgeIndex() === index
+                          ? badge.icon
+                          : badge.blurredIcon
+                      }
+                      alt={badge.name}
+                      style={{
+                        width:
+                          getCurrentBadgeIndex() === index ? "54px" : "40px",
+                        height:
+                          getCurrentBadgeIndex() === index ? "54px" : "40px",
+                      }}
+                    />
+                  </Box>
+                );
+              })}
+            </Box>
+            <Typography fontWeight={"bold"} sx={{ mt: 2 }}>
+              {BADGES[getCurrentBadgeIndex()].name}
+            </Typography>
+            {user?.role?.name === "business_owner" ? (
+              isProfileComplete ? (
+                <Typography variant="subtitle1" sx={{ color: "#626262" }}>
+                  Profile complete! Enjoy your upgraded badge & enhanced
+                  platform experience.
+                </Typography>
+              ) : (
+                <Typography variant="subtitle1" sx={{ color: "#626262" }}>
+                  Complete missing details on your profile to upgrade your
+                  Badge.
+                </Typography>
+              )
             ) : (
               <Typography variant="subtitle1" sx={{ color: "#626262" }}>
-                Complete missing details on your profile to upgrade your Badge.
+                {BADGES[getCurrentBadgeIndex()].description}
               </Typography>
-            )
-          ) : (
-            <Typography variant="subtitle1" sx={{ color: "#626262" }}>
-              {BADGES[getCurrentBadgeIndex()].description}
-            </Typography>
-          )}
+            )}
+          </Box>
         </Box>
       </Box>
     </Box>
