@@ -6,7 +6,7 @@ from django.http import (
     HttpResponseRedirect,
 )
 from decouple import config
-from accounts.models import Role, TwitterAccount, User
+from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User
 import datetime
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
@@ -105,9 +105,9 @@ def authenticateUser(code):
                 "created_at",
                 "location",
                 "url",
+                "entities",
             ],
         ).data
-        logger.info("Twitter User Authenticated", userData)
         return {
             "userData": userData,
             "access_token": access_token,
@@ -118,6 +118,28 @@ def authenticateUser(code):
         config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
     )
 
+
+def manage_categories(hashtags, twitter_account):
+    tags = [tag["tag"] for tag in hashtags]
+    for tag in tags:
+        # Check if tag exists in category master
+        category = CategoryMaster.objects.filter(name=tag).first()
+        if category is None:
+            new_category = CategoryMaster.objects.create(
+                name=tag, description=tag)
+            new_category.save()
+        else:
+            new_category = category
+        # Check if tag exists in user category
+        account_category = AccountCategory.objects.filter(
+            category=new_category, twitter_account=twitter_account
+        ).first()
+
+        if account_category is None:
+            new_account_category = AccountCategory.objects.create(
+                category=new_category, twitter_account=twitter_account
+            )
+            new_account_category.save()
 
 def createUser(userData, access_token, role, refresh_token):
     try:
@@ -144,6 +166,10 @@ def createUser(userData, access_token, role, refresh_token):
             )
 
             newUser.save()
+            if userData.entities is not None:
+                if userData.entities["description"] is not None:
+                    hashtags = userData.entities["description"]["hashtags"]
+                    manage_categories(hashtags, newUser)
         else:
             existing_user.access_token = access_token
             # Update the user data
@@ -159,6 +185,8 @@ def createUser(userData, access_token, role, refresh_token):
             existing_user.joined_at = userData.created_at
             existing_user.location = userData.location
             existing_user.url = userData.url
+            if existing_user.description == "":
+                existing_user.description = userData.description
             existing_user.save()
 
         # Operations for Main User account
