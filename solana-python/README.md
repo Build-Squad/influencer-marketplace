@@ -49,6 +49,9 @@ After package generation the whl package file shoudl be found at `dist/dist/xflu
 
 Install the python package on your environment
 
-`pip install dist/xfluencer_python_client-1.0.0-py3-none-any.whl`
+`pip install dist/pyxfluencer-1.0.0-py3-none-any.whl`
 
 
+## Usage
+
+TBC
