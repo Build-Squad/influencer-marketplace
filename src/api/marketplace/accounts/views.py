@@ -765,6 +765,12 @@ class UserList(APIView):
 
 # Retrieve-Update-Destroy API
 class UserDetail(APIView):
+
+    def get_authenticators(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [JWTAuthentication()]
+        return super().get_authenticators()
+
     def get_object(self, pk):
         try:
             return User.objects.get(pk=pk)
@@ -791,9 +797,7 @@ class UserDetail(APIView):
     @swagger_auto_schema(request_body=UserSerializer)
     def put(self, request, pk):
         try:
-            user = self.get_object(pk)
-            if user is None:
-                return handleNotFound("User")
+            user = request.user_account
             serializer = UserSerializer(instance=user, data=request.data)
             if serializer.is_valid():
                 serializer.save()

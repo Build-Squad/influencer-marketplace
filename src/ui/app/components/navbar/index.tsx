@@ -127,6 +127,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
+                  color: "secondary.main",
                 }}
               >
                 <NotificationPanel />
