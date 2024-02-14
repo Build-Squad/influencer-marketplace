@@ -19,6 +19,8 @@ describe("xfluencer", () => {
   const program = anchor.workspace.Xfluencer as Program<Xfluencer>;
   const nodeWallet: NodeWallet = (program.provider as anchor.AnchorProvider).wallet as NodeWallet;
 
+  console.log(program.programId)
+
   // Token & PDA
   let mintA: PublicKey = null; 
   let buyerTokenAccountA = null;
@@ -46,7 +48,6 @@ describe("xfluencer", () => {
     const provider = anchor.getProvider()
 
     const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
-    console.log()
 
     let account_data = await provider.connection.getBalanceAndContext(buyerPublicKey);
     console.log(account_data);

@@ -6,13 +6,12 @@ use anchor_lang::solana_program::entrypoint::ProgramResult;
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
 use spl_token::instruction::AuthorityType;
 
-use solana_program::system_instruction;
 
-declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
+declare_id!("EV31JFJxt28CoRUGm2UAsTHndmpYvpuMFH9Y8JZBJcYd");
 
 #[program]
 pub mod xfluencer {
-    use anchor_lang::solana_program::{info, system_instruction};
+    use anchor_lang::solana_program::system_instruction;
 
     use super::*;
 

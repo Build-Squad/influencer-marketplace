@@ -5,8 +5,9 @@ import styles from '../styles/PingButton.module.css'
 import { SendTransactionOptions } from '@solana/wallet-adapter-base';
 import { Transaction } from '@solana/web3.js';
 
-const PROGRAM_ID = `7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq`
-const DATA_ACCOUNT_PUBKEY = `7RrLxz6wHesPMNpL1z2X6bSLfUvVQ2YcyPN7NWakfq1V`
+const PROGRAM_ID = `EV31JFJxt28CoRUGm2UAsTHndmpYvpuMFH9Y8JZBJcYd`
+
+const DATA_ACCOUNT_PUBKEY = `9nywvGtF94hcCszh4uYiX5cB3prSuHLJwzws2Nh2Ccad`
 
 export const PingButton: FC = () => {
 	const { connection } = useConnection();
@@ -40,6 +41,7 @@ export const PingButton: FC = () => {
 		const recentBlockhash = (
 			await connection.getLatestBlockhash('confirmed')).blockhash;
 			  console.log('blockhash', recentBlockhash);
+
 		const tx = new Transaction({
 			feePayer: publicKey,
 			recentBlockhash,

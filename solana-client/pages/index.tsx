@@ -18,6 +18,12 @@ const Home: NextPage = (props) => {
   let lamports: number = null;
   let order_code:number = null;
 
+  const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`
+  const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`
+  const amount = 10 ** 7 // 0.1 SOL (10^9 lamports == 1 SOL)
+  const LAMPORTS = amount;
+  const ORDER_CODE = 125 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+
   return (
     <div className={styles.App}>
       <Head>
@@ -43,7 +49,9 @@ const Home: NextPage = (props) => {
           <ClaimEscrowSolana business={business} influencer={influencer} lamports={lamports} order_code={order_code} />
         </div>
        
-
+        <div className={styles.AppBody}>     
+          <PingButton>Ping Program!</PingButton>  
+        </div>
 
       </WalletContextProvider >
 

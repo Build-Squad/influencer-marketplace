@@ -2,39 +2,35 @@ import {
     Connection,
     PublicKey,
     Transaction,
-    SystemProgram,
-    SYSVAR_RENT_PUBKEY,
-    clusterApiUrl,
-    TransactionInstruction,
-    sendAndConfirmTransaction,
-    Commitment,
-    Keypair
+    //SystemProgram,
+    //SYSVAR_RENT_PUBKEY,
+    //clusterApiUrl,
+    //TransactionInstruction,
+    //sendAndConfirmTransaction,
+    //Commitment,
+    //Keypair
 } from "@solana/web3.js"
-
 
 import {
     AnchorProvider,
-    BN,
-    Provider,
+    //BN,
+    //Provider,
     setProvider,
-    Idl
+    //Idl
 } from "@project-serum/anchor"
 
 import styles from '../styles/PingButton.module.css'
 
-
-
 import idl from "../xfluencer.json"
-import { Xfluencer } from "../types/xfluencer";
-
+//import { Xfluencer } from "../types/xfluencer";
 
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
+//import { Program } from "@coral-xyz/anchor";
 
 import { FC } from "react";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
-import { getAnchorProvider, sleep } from "./utils";
+//import { getAnchorProvider, sleep } from "./utils";
 
 import * as utils from "./utils";
 
@@ -43,16 +39,16 @@ const programId = new PublicKey(idl.metadata.address);
 export const CreateEscrowSolana: FC = (props) => {
 
     // ARGUMENTS FOR INSTRUCTION SET BY XFLUENCER
-    const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`
-    const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`
-    const amount = 10 ** 8
-    const orderCode = 125 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+    //const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`
 
+    const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`
+    const amount = 10 ** 7
+    const orderCode = 126 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
 
     const influencer_pk = new PublicKey(INFLUENCER);
     const wallet = useAnchorWallet()
 
-    const connection = new Connection(clusterApiUrl('devnet'),
+    const connection = new Connection("https://api.testnet.solana.com",
         {
             commitment: "confirmed",
             confirmTransactionInitialTimeout: 30000
@@ -79,7 +75,12 @@ export const CreateEscrowSolana: FC = (props) => {
           programId
         );
         
-        console.debug("escrowPDA", escrowPDA);
+        console.log("amount", amount)
+        console.log("orderCode", orderCode)
+        console.log("escrowPDA", escrowPDA.toString());
+        console.log("from", publicKey.toString())
+        console.log("to", influencer_pk.toString())
+
        
         const ix = await program.methods.createEscrow(
             new anchor.BN(amount),
@@ -91,10 +92,13 @@ export const CreateEscrowSolana: FC = (props) => {
                 escrow: escrowPDA
               }).instruction();
         
+        console.log
+
         const tx = new Transaction().add(ix);
         const options = {
 			skipPreflight: true      
 		  }
+          
         try {
             const signature = await sendTransaction(tx, connection, options);
             const txSign = await connection.confirmTransaction(signature, "processed");
