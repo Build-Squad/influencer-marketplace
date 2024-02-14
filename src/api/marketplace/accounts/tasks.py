@@ -5,6 +5,10 @@ from .models import TwitterAccount
 from decouple import config
 from marketplace.constants import TWITTER_SCOPES, TWITTER_CALLBACK_URL
 import logging
+from django.template.loader import get_template
+from django.core.mail import send_mail
+
+from celery import shared_task
 
 logger = logging.getLogger(__name__)
 
@@ -41,3 +45,14 @@ def updateAccessTokens():
                 logger.error(f"Refresh token for {twitter_account.id} not present")
     except Exception as e:
         raise e
+
+
+@shared_task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 3, 'countdown': 10})
+def sendEmail(subject, message, template_name, context, recipient_list):
+    try:
+        from_email = config("EMAIL_HOST_USER")
+        html_message = get_template(template_name).render(context)
+        send_mail(subject=subject, message=message, html_message=html_message,
+                  from_email=from_email, recipient_list=recipient_list)
+    except Exception:
+        raise Exception()
