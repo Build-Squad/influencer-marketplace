@@ -7,7 +7,7 @@ import json
 
 from solana.transaction import Transaction
 from solana.rpc.core import RPCException
-from src.instructions import create_escrow
+from pyxfluencer.instructions import create_escrow
 
 
 def get_local_keypair_pubkey(path = None):

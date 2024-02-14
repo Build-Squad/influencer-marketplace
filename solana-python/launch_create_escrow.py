@@ -5,6 +5,8 @@ from utils import get_local_keypair_pubkey, sign_and_send_transaction
 from utils import load_configuration
 
 def main():
+    ## TODO: assert solana config get matches with the one at config.json 
+    
     configuration = load_configuration()
 
     network = configuration["network"]
