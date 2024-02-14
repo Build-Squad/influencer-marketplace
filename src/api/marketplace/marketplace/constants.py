@@ -8,5 +8,7 @@ TWITTER_SCOPES = [
     "follows.read",
     "follows.write",
     "mute.read",
+    "like.read",
+    "like.write",
 ]
 TWITTER_CALLBACK_URL = f"{config('SERVER')}twitter-login-callback"
