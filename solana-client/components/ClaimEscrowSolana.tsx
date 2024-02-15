@@ -51,7 +51,7 @@ export const ClaimEscrowSolana: FC<EscrowProps> = (props) => {
     const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`    
     const orderCode = 125 // THIS MUST BE UNIQUE OTHERWISE ERROR
 
-    const buisness_pk = new PublicKey(BUSINESS);
+    const business_pk = new PublicKey(BUSINESS);
     const influencer_pk = new PublicKey(INFLUENCER);
     const wallet = useAnchorWallet()
 
@@ -75,7 +75,7 @@ export const ClaimEscrowSolana: FC<EscrowProps> = (props) => {
 
         const [escrowPDA] = await PublicKey.findProgramAddress([
             utf8.encode('escrow'),
-            buisness_pk.toBuffer(), 
+            business_pk.toBuffer(), 
             influencer_pk.toBuffer(),
             utf8.encode(orderCode.toString())
           ],
@@ -89,7 +89,7 @@ export const ClaimEscrowSolana: FC<EscrowProps> = (props) => {
             new anchor.BN(orderCode)
         ).accounts({
             influencer: influencer_pk,
-            business: buisness_pk,
+            business: business_pk,
             escrowAccount: escrowPDA, 
             systemProgram:  anchor.web3.SystemProgram.programId,
         })
