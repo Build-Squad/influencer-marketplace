@@ -293,7 +293,7 @@ const OrderSummaryDetails = ({
                 <Box>
                   <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
                     <OpenInNewIcon sx={{ fontSize: 14, mr: 1 }} />
-                    Tweet Link
+                    Post Link
                   </Typography>
                   <Link
                     href={`https://x.com/${eachOrderItem?.package?.influencer?.twitter_account?.user_name}/status/${eachOrderItem?.published_tweet_id}`}

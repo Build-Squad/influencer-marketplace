@@ -17,7 +17,7 @@ from .models import (
     Transaction,
 )
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.utils import timezone
 
 class OrderItemMetaDataSerializer(serializers.ModelSerializer):
     class Meta:
@@ -302,6 +302,21 @@ class CreateOrderSerializer(serializers.Serializer):
                     order_item, meta_data, service_master_meta_data_item)
 
         return order
+
+    def validate(self, data):
+        order_items = data["order_items"]
+        if len(order_items) == 0:
+            raise serializers.ValidationError(
+                {"order_items": "Order items cannot be empty."})
+        for order_item in order_items:
+            if "publish_date" not in order_item:
+                raise serializers.ValidationError(
+                    {"publish_date": "Publish date is required."})
+            if "publish_date" in order_item:
+                if order_item["publish_date"] < timezone.now():
+                    raise serializers.ValidationError(
+                        {"publish_date": "Publish date should be in the future."})
+        return data
 
 
 class OrderAttachmentSerializer(serializers.ModelSerializer):
