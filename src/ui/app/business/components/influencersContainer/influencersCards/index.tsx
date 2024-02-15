@@ -12,6 +12,7 @@ import React from "react";
 import { TopInfluencersType } from "../types";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
+import { stringToColor } from "@/src/utils/helper";
 
 type Props = {
   influencer: TopInfluencersType;
@@ -55,15 +56,34 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
               overflow: "hidden",
             }}
           >
-            <Avatar
-              alt="Influencer profile image"
-              src={influencer?.profileUrl}
-              variant="circular"
-              sx={{
-                height: "60px",
-                width: "60px",
-              }}
-            />
+            {influencer?.profileUrl &&
+            !influencer?.profileUrl?.includes("default") ? (
+              <Avatar
+                alt="Influencer profile image"
+                src={influencer?.profileUrl}
+                variant="circular"
+                sx={{
+                  height: "60px",
+                  width: "60px",
+                }}
+              />
+            ) : (
+              <Avatar
+                alt="Influencer profile image"
+                variant="circular"
+                sx={{
+                  bgcolor: stringToColor(
+                    influencer?.twitterUsername
+                      ? influencer?.twitterUsername
+                      : ""
+                  ),
+                  height: "60px",
+                  width: "60px",
+                }}
+              >
+                {influencer?.twitterUsername?.charAt(0)?.toUpperCase()}
+              </Avatar>
+            )}
             <Typography gutterBottom variant="subtitle1" fontWeight={"bold"}>
               {influencer?.name}
             </Typography>

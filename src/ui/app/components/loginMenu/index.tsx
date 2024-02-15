@@ -1,13 +1,11 @@
 "use client";
 
-import { Avatar, Box, List, ListItem, Menu, Typography } from "@mui/material";
-import * as React from "react";
-import ProfileIcon from "@/public/svg/Profile.svg";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { Lock } from "@mui/icons-material";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { ROLE_NAME } from "@/src/utils/consts";
+import { stringToColor } from "@/src/utils/helper";
+import { Avatar, List, ListItem, Menu } from "@mui/material";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 type LoginMenuProps = {
   logoutTwitterUser: () => {};
@@ -55,24 +53,33 @@ export default function LoginMenu({ logoutTwitterUser }: LoginMenuProps) {
 
   return (
     <>
-      {currentUser?.twitter_account?.profile_image_url ? (
+      {currentUser?.twitter_account?.profile_image_url &&
+      !currentUser?.twitter_account?.profile_image_url.includes("default") ? (
+        <>
+          <Avatar
+            sx={{
+              width: "34px",
+              height: "34px",
+              cursor: "pointer",
+            }}
+            onClick={handleClick}
+            src={currentUser?.twitter_account?.profile_image_url}
+          />
+        </>
+      ) : (
         <Avatar
           sx={{
+            bgcolor: stringToColor(
+              currentUser?.username ? currentUser?.username : ""
+            ),
             width: "34px",
             height: "34px",
             cursor: "pointer",
           }}
           onClick={handleClick}
-          src={currentUser?.twitter_account?.profile_image_url}
-        />
-      ) : (
-        <Image
-          src={ProfileIcon}
-          alt={"Profile Icon"}
-          height={34}
-          onClick={handleClick}
-          style={{ cursor: "pointer" }}
-        />
+        >
+          {currentUser?.username?.charAt(0)?.toUpperCase()}
+        </Avatar>
       )}
 
       <Menu

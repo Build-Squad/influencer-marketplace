@@ -72,21 +72,14 @@ export default function CreateEscrow({
           programId
         );
 
-        console.log("amount of SOL to pass into the escrow",cart?.orderTotal)
-        console.log("order number",cart?.order_number)
 
-        const amount = new anchor.BN(Number(cart?.orderTotal * 10**8))  // convert to lamport 1SOL=10**8 lamports        
-        const order_number = new anchor.BN(Number(cart?.order_number))
+        const amount = Number(cart?.orderTotal) * 10 ** 9;
 
-        console.log("amount of lamports",amount.toNumber())
-        console.log("order_number",order_number.toNumber())
-
-
-        // Create the escrow instruction
+        // Create the escrow
         const ix = await program.methods
           .createEscrow(
-            new anchor.BN(Number(cart?.orderTotal)),
-            new anchor.BN(Number(cart?.order_number))
+            new anchor.BN(amount),
+            new anchor.BN(cart?.order_number)
           )
           .accounts({
             from: businessPk,

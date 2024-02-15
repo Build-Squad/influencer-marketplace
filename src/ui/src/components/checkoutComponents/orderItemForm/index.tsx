@@ -475,7 +475,7 @@ export default function OrderItemForm({
                 })
               );
             }}
-            minTime={dayjs().add(30, "minute")}
+            minDateTime={dayjs().add(30, "minute")}
             slotProps={{
               textField: {
                 size: "small",

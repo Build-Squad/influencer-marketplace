@@ -31,6 +31,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -39,6 +40,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
+import { stringToColor } from "@/src/utils/helper";
 
 const tabs = [
   {
@@ -161,7 +163,7 @@ const ProfileLayout = ({
       attribute: currentUser?.twitter_account?.following_count,
     },
     {
-      label: "Tweets",
+      label: "Posts",
       attribute: currentUser?.twitter_account?.tweet_count,
     },
   ];
@@ -270,14 +272,49 @@ const ProfileLayout = ({
                       mt: "-120px",
                     }}
                   >
-                    <Avatar
+                    {currentUser?.twitter_account?.profile_image_url &&
+                    !currentUser?.twitter_account?.profile_image_url.includes(
+                      "default"
+                    ) ? (
+                      <>
+                        <Avatar
+                          sx={{
+                            width: "100px",
+                            height: "100px",
+                            cursor: "pointer",
+                            margin: "20px auto",
+                          }}
+                          src={currentUser?.twitter_account?.profile_image_url}
+                        />
+                      </>
+                    ) : (
+                      <Avatar
+                        sx={{
+                          bgcolor: stringToColor(
+                            currentUser?.username ? currentUser?.username : ""
+                          ),
+                          width: "100px",
+                          height: "100px",
+                          cursor: "pointer",
+                          margin: "20px auto",
+                          fontSize: "50px",
+                        }}
+                      >
+                        {currentUser?.username?.charAt(0)?.toUpperCase()}
+                      </Avatar>
+                    )}
+
+                    <Typography
                       sx={{
-                        width: "100px",
-                        height: "100px",
-                        margin: "20px auto",
+                        textAlign: "center",
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        lineHeight: "29px",
                       }}
-                      src={currentUser?.twitter_account?.profile_image_url}
-                    />
+                    >
+                      {currentUser?.first_name} {currentUser?.last_name}
+                    </Typography>
+
                     <Box
                       sx={{
                         display: "flex",
@@ -289,55 +326,53 @@ const ProfileLayout = ({
                       <Typography
                         sx={{
                           textAlign: "center",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                          lineHeight: "29px",
-                        }}
-                      >
-                        {currentUser?.first_name} {currentUser?.last_name}
-                      </Typography>
-                      {currentUser?.twitter_account?.verified ? (
-                        <VerifiedIcon
-                          sx={{
-                            color: "#1DA1F2",
-                            fontSize: "20px",
-                            marginLeft: "5px",
-                          }}
-                        />
-                      ) : (
-                        <NewReleasesIcon
-                          sx={{
-                            color: "#f50057",
-                            fontSize: "20px",
-                            marginLeft: "5px",
-                          }}
-                        />
-                      )}
-                    </Box>
-                    <Typography
-                      sx={{
-                        textAlign: "center",
-                        fontSize: "16px",
-                        lineHeight: "19px",
-                        color: "#000",
-                        mt: 1,
-                      }}
-                    >
-                      <Link
-                        href={`https://x.com/${currentUser?.twitter_account?.user_name}`}
-                        target="_blank"
-                        component={NextLink}
-                        sx={{
+                          fontSize: "16px",
+                          lineHeight: "19px",
                           color: "#000",
-                          textDecoration: "none",
-                          "&:hover": {
-                            textDecoration: "underline",
-                          },
+                          mt: 1,
                         }}
                       >
-                        @{currentUser?.twitter_account?.user_name}
-                      </Link>
-                    </Typography>
+                        <Link
+                          href={`https://x.com/${currentUser?.twitter_account?.user_name}`}
+                          target="_blank"
+                          component={NextLink}
+                          sx={{
+                            color: "#000",
+                            textDecoration: "none",
+                            "&:hover": {
+                              textDecoration: "underline",
+                            },
+                          }}
+                        >
+                          @{currentUser?.twitter_account?.user_name}
+                        </Link>
+                      </Typography>
+                      <Tooltip
+                        title={
+                          currentUser?.twitter_account?.verified
+                            ? "Verified On X"
+                            : "Unverified On X"
+                        }
+                      >
+                        {currentUser?.twitter_account?.verified ? (
+                          <VerifiedIcon
+                            sx={{
+                              color: "#1DA1F2",
+                              fontSize: "20px",
+                              marginLeft: "5px",
+                            }}
+                          />
+                        ) : (
+                          <NewReleasesIcon
+                            sx={{
+                              color: "#f50057",
+                              fontSize: "20px",
+                              marginLeft: "5px",
+                            }}
+                          />
+                        )}
+                      </Tooltip>
+                    </Box>
                     <Box
                       sx={{
                         display: "flex",

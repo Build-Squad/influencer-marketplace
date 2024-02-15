@@ -37,6 +37,10 @@ code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
 code_challenge = code_challenge.replace("=", "")
 
+twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
+authorization_url, state = twitter.authorization_url(
+    auth_url, code_challenge=code_challenge, code_challenge_method="S256"
+)
 
 def logoutUser(request):
     response_data = {
@@ -53,11 +57,6 @@ def logoutUser(request):
 
 def authTwitterUser(request, role):
     request.session["role"] = role
-    global twitter
-    twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
-    authorization_url, state = twitter.authorization_url(
-        auth_url, code_challenge=code_challenge, code_challenge_method="S256"
-    )
     request.session["oauth_state"] = state
     return redirect(authorization_url)
 
@@ -93,6 +92,7 @@ def authenticateUser(code):
         )
         access_token = token["access_token"]
         refresh_token = token["refresh_token"]
+        print("token ==== ", token)
 
         client = Client(access_token)
         userData = client.get_me(
@@ -114,6 +114,7 @@ def authenticateUser(code):
             "refresh_token": refresh_token,
         }
     except Exception as e:
+        logger.error("Error in authenticateUser -", e)
         return HttpResponseRedirect(
         config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
     )
