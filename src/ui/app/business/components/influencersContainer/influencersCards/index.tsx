@@ -78,33 +78,33 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
               sx={{
                 display: "flex",
                 alignItems: "center",
-                columnGap: "4px",
                 mt: 2,
-                overflow: "hidden",
                 justifyContent: "center",
                 width: "100%",
               }}
             >
-              <Typography variant="subtitle1" fontWeight={"bold"}>
+              <Typography variant="subtitle1" fontWeight={"bold"} mr={1}>
                 Services:
               </Typography>
-              {influencer?.services.length > 2 ? (
-                <>
-                  <Box sx={{ display: "flex" }}>
-                    <Box sx={{ flex: 2 }}></Box>
-                    <Box></Box>
-                  </Box>
-                  <Chip key={0} label={influencer?.services[0]} size="small" />
-                  <Chip key={2} label={influencer?.services[1]} size="small" />
-                  <Typography>
-                    +{influencer?.services.length - 2} more
-                  </Typography>
-                </>
-              ) : (
-                influencer?.services.map((ser, index) => {
-                  return <Chip key={ser} label={ser} size="small" />;
-                })
-              )}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "nowrap",
+                  gap: "4px",
+                  overflowX: "auto",
+                  maxWidth: "100%",
+                  // "&::-webkit-scrollbar": {
+                  //   height: "5px",
+                  // },
+                  // "&::-webkit-scrollbar-thumb": {
+                  //   background: "grey",
+                  // },
+                }}
+              >
+                {influencer?.services.map((ser, index) => (
+                  <Chip key={ser} label={ser} size="small" />
+                ))}
+              </Box>
             </Box>
 
             <Box
