@@ -76,7 +76,7 @@ export default function CreateEscrow({
         console.log("order number",cart?.order_number)
 
         const amount = new anchor.BN(Number(cart?.orderTotal * 10**8))  // convert to lamport 1SOL=10**8 lamports        
-        const order_number = new anchor.BN(Number(cart?.orderTotal))
+        const order_number = new anchor.BN(Number(cart?.order_number))
 
         console.log("amount of lamports",amount.toNumber())
         console.log("order_number",order_number.toNumber())
