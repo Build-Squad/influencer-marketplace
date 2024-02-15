@@ -978,7 +978,7 @@ class SendTweetView(APIView):
                     {
                         "isSuccess": True,
                         "data": serializer.data,
-                        "message": "Tweet is scheduled",
+                        "message": "Post is scheduled",
                     },
                     status=status.HTTP_201_CREATED,
                 )
@@ -1004,7 +1004,7 @@ class CancelTweetView(APIView):
                     {
                         "isSuccess": True,
                         "data": serializer.data,
-                        "message": "Tweet is cancelled",
+                        "message": "Post is cancelled",
                     },
                     status=status.HTTP_201_CREATED,
                 )

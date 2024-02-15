@@ -186,9 +186,9 @@ export default function WalletConnectModal({
                 textAlign: "center",
               }}
             >
-              {connect
-                ? "Connect your Wallet to Xfluencer"
-                : "By signing the message, you agree to our Terms & Conditions and Privacy Policy"}
+              {
+                "By signing the message, you agree to our Terms & Conditions and Privacy Policy"
+              }
             </Typography>
           </Box>
         </Grid>

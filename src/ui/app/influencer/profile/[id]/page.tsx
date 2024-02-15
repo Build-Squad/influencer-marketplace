@@ -163,7 +163,7 @@ const ProfileLayout = ({
       attribute: currentUser?.twitter_account?.following_count,
     },
     {
-      label: "Tweets",
+      label: "Posts",
       attribute: currentUser?.twitter_account?.tweet_count,
     },
   ];

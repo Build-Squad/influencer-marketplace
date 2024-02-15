@@ -168,7 +168,7 @@ const Services = ({
                   setType("published");
                 }}
               >
-                Published
+                Listed
               </Button>
               <Button
                 variant={type === "draft" ? "contained" : "outlined"}

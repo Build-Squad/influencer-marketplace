@@ -1,7 +1,11 @@
 "use client";
 
 import { postService, putService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, PACKAGE_STATUS } from "@/src/utils/consts";
+import {
+  DISPLAY_DATE_FORMAT,
+  PACKAGE_STATUS,
+  SERVICE_STATUS,
+} from "@/src/utils/consts";
 import {
   Box,
   Button,
@@ -193,9 +197,7 @@ const CreateUpdateService = ({
                   </Typography>
                 </Box>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
-                  <FormLabel component="legend">
-                    Select Service Master
-                  </FormLabel>
+                  <FormLabel component="legend">Select Service</FormLabel>
                   <CustomAutoComplete
                     apiEndpoint="/packages/servicemaster"
                     placeholder="Search Service Master"
@@ -548,10 +550,10 @@ const CreateUpdateService = ({
                   >
                     {/* During update, if the serviceItem.status is published, then show an option to save the service otherwise show an option to publish. During creation only show publish button */}
                     {serviceItem
-                      ? serviceItem.status === "published"
+                      ? serviceItem.status === SERVICE_STATUS.PUBLISHED
                         ? "Save"
-                        : "Publish"
-                      : "Publish"}
+                        : "List Service"
+                      : "List Service"}
                   </Button>
                 </Grid>
               </Grid>
