@@ -39,6 +39,7 @@ from .serializers import (
 )
 from rest_framework import status
 from django.db.models import Q
+from django.utils import timezone
 
 
 # ORDER API-Endpoint
@@ -53,19 +54,12 @@ class OrderList(APIView):
                 data=request.data, context={"request": request}
             )
             if serializer.is_valid():
-                draft_order = Order.objects.filter(
+                draft_orders = Order.objects.filter(
                     buyer=self.request.user_account, status="draft", deleted_at=None
                 )
-                if draft_order.exists():
-                    return Response(
-                        {
-                            "isSuccess": False,
-                            "message": "You already have an active draft order. Please complete that order first.",
-                            "data": None,
-                            "errors": "You already have an active draft order. Please complete that order first.",
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                if draft_orders.exists():
+                    # Mark the draft orders as deleted
+                    draft_orders.update(deleted_at=timezone.now())
                 serializer.save()
                 order = serializer.instance
                 # Create a Order Transaction for the order
@@ -984,7 +978,7 @@ class SendTweetView(APIView):
                     {
                         "isSuccess": True,
                         "data": serializer.data,
-                        "message": "Tweet is scheduled",
+                        "message": "Post is scheduled",
                     },
                     status=status.HTTP_201_CREATED,
                 )
@@ -1010,7 +1004,7 @@ class CancelTweetView(APIView):
                     {
                         "isSuccess": True,
                         "data": serializer.data,
-                        "message": "Tweet is cancelled",
+                        "message": "Post is cancelled",
                     },
                     status=status.HTTP_201_CREATED,
                 )

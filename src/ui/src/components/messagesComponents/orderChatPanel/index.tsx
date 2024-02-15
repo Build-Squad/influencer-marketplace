@@ -20,30 +20,11 @@ import { notification } from "../../shared/notification";
 import MessageChip from "../messageChip";
 import { ORDER_STATUS } from "@/src/utils/consts";
 import StatusChip from "../../shared/statusChip";
+import { stringToColor } from "@/src/utils/helper";
 
 type OrderChatPanelType = {
   selectedOrderChat: OrderChatType;
 };
-
-function stringToColor(string: string) {
-  let hash = 0;
-  let i;
-
-  /* eslint-disable no-bitwise */
-  for (i = 0; i < string.length; i += 1) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  let color = "#";
-
-  for (i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-  /* eslint-enable no-bitwise */
-
-  return color;
-}
 
 export default function OrderChatPanel({
   selectedOrderChat,
@@ -137,15 +118,47 @@ export default function OrderChatPanel({
             {selectedOrderChat?.order?.order_item_order_id && (
               <>
                 {user?.id === selectedOrderChat?.order?.buyer?.id ? (
-                  <Avatar
-                    src={
-                      selectedOrderChat?.order?.order_item_order_id[0]?.package
-                        ?.influencer?.twitter_account?.profile_image_url
-                    }
-                    sx={{
-                      mr: 1,
-                    }}
-                  />
+                  <>
+                    {selectedOrderChat?.order?.order_item_order_id[0]?.package
+                      ?.influencer?.twitter_account?.profile_image_url &&
+                    !selectedOrderChat?.order?.order_item_order_id[0]?.package?.influencer?.twitter_account?.profile_image_url.includes(
+                      "default"
+                    ) ? (
+                      <>
+                        <Avatar
+                          sx={{
+                            mr: 1,
+                            cursor: "pointer",
+                          }}
+                          src={
+                            selectedOrderChat?.order?.order_item_order_id[0]
+                              ?.package?.influencer?.twitter_account
+                              ?.profile_image_url
+                          }
+                        />
+                      </>
+                    ) : (
+                      <Avatar
+                        sx={{
+                          bgcolor: stringToColor(
+                            selectedOrderChat?.order?.order_item_order_id[0]
+                              ?.package?.influencer?.twitter_account?.user_name
+                              ? selectedOrderChat?.order?.order_item_order_id[0]
+                                  ?.package?.influencer?.twitter_account
+                                  ?.user_name
+                              : ""
+                          ),
+                          mr: 1,
+                          height: "34px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {selectedOrderChat?.order?.order_item_order_id[0]?.package?.influencer?.twitter_account?.user_name
+                          ?.charAt(0)
+                          ?.toUpperCase()}
+                      </Avatar>
+                    )}
+                  </>
                 ) : (
                   <Avatar
                     sx={{
