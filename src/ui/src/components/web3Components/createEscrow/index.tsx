@@ -38,7 +38,7 @@ export default function CreateEscrow({
   const provider = new AnchorProvider(connection, wallet!, {});
   setProvider(provider);
 
-  const { publicKey, sendTransaction, connect } = useWallet();
+  const { publicKey: businessPk, sendTransaction, connect } = useWallet();
 
   const createEscrow = async () => {
     try {
@@ -50,22 +50,28 @@ export default function CreateEscrow({
         );
 
         // Check if wallet is connected
-        if (!connection || !publicKey) {
+        if (!connection || !businessPk) {
           await connect();
           notification("Please connect your wallet first", "error");
           return;
         }
 
+        console.log("Business PK",businessPk.toString())
+        console.log("Influencer PK",influencer_pk.toString())
+        console.log("Order Number",cart?.order_number)
+
+
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
           [
             utf8.encode("escrow"),
-            publicKey.toBuffer(),
+            businessPk.toBuffer(),
             influencer_pk.toBuffer(),
             utf8.encode(cart?.order_number?.toString()),
           ],
           programId
         );
+
 
         const amount = Number(cart?.orderTotal) * 10 ** 9;
 
@@ -76,7 +82,7 @@ export default function CreateEscrow({
             new anchor.BN(cart?.order_number)
           )
           .accounts({
-            from: publicKey,
+            from: businessPk,
             to: influencer_pk,
             systemProgram: anchor.web3.SystemProgram.programId,
             escrow: escrowPDA,
@@ -86,7 +92,7 @@ export default function CreateEscrow({
         const tx = new Transaction().add(ix);
 
         const options = {
-          skipPreflight: true,
+          skipPreflight: true, // WARNING: This is dangerous on Mainnet
         };
 
         try {
@@ -105,6 +111,9 @@ export default function CreateEscrow({
                 txSign?.value?.err?.toString(),
               "error"
             );
+            console.error(`Instruction error number found: ` +
+                           txSign?.value?.err?.toString(),
+                           "error")
           } else {
             updateStatus(signature);
           }
