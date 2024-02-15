@@ -1,6 +1,7 @@
 "use client";
 
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
+import BackIcon from "@/public/svg/Back.svg";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import EmailVerifyModal from "@/src/components/profileComponents/emailVerifyModal";
 import { notification } from "@/src/components/shared/notification";
@@ -776,20 +777,22 @@ const ProfileLayout = ({
                 </Box>
               </Grid>
               <Grid item xs={12} md={9} sm={12} lg={9}>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    color: "rgb(0, 137, 234)",
-                    border: "1px solid rgb(0, 137, 234)",
-                    mt: 2,
-                    ml: 2,
-                  }}
-                  onClick={() => {
-                    router.back();
-                  }}
-                >
-                  Back
-                </Button>
+                {!(loggedInUser?.role.name == "influencer") ? (
+                  <Image
+                    src={BackIcon}
+                    alt={"BackIcon"}
+                    height={30}
+                    style={{
+                      marginTop: "16px",
+                      marginLeft: "16px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      router.back();
+                    }}
+                  />
+                ) : null}
+
                 <Box
                   sx={{
                     m: 2,

@@ -11,6 +11,7 @@ import Details_unselected from "@/public/svg/Details_unselected.svg";
 import Details from "@/public/svg/Details.svg";
 import { UserDetailsType } from "../../type";
 import { KeyboardBackspace } from "@mui/icons-material";
+import BackIcon from "@/public/svg/Back.svg";
 
 type Props = {
   userDetails: UserDetailsType;
@@ -136,19 +137,15 @@ const LeftComponent = ({ userDetails }: Props) => {
         borderTop: "none",
       }}
     >
-      <Button
-        variant="outlined"
-        sx={{
-          color: "rgb(0, 137, 234)",
-          border: "1px solid rgb(0, 137, 234)",
-          mt: 2,
-        }}
+      <Image
+        src={BackIcon}
+        alt={"BackIcon"}
+        height={30}
+        style={{ cursor: "pointer" }}
         onClick={() => {
           router.back();
         }}
-      >
-        Back
-      </Button>
+      />
       <Typography variant="h6" sx={{ ml: 1 }}>
         {userDetails.username}
       </Typography>
