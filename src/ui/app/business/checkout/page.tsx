@@ -90,6 +90,10 @@ export default function CheckoutPage() {
   const validateMetaDataValues = () => {
     let isValid = true;
     cart?.orderItems?.forEach((orderItem) => {
+      if (!orderItem?.publish_date) {
+        notification("Please select a publish date", "error", 3000);
+        isValid = false;
+      }
       orderItem?.order_item?.order_item_meta_data?.forEach((metaData) => {
         if (metaData.regex && metaData?.value) {
           const regex = new RegExp(metaData.regex);
