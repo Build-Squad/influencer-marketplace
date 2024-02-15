@@ -93,6 +93,7 @@ def authenticateUser(code):
         )
         access_token = token["access_token"]
         refresh_token = token["refresh_token"]
+        print("token ==== ", token)
 
         client = Client(access_token)
         userData = client.get_me(
@@ -114,6 +115,7 @@ def authenticateUser(code):
             "refresh_token": refresh_token,
         }
     except Exception as e:
+        logger.error("Error in authenticateUser -", e)
         return HttpResponseRedirect(
         config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
     )
