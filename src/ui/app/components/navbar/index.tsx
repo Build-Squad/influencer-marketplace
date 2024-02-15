@@ -333,9 +333,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
               <>
                 {pathname.includes("business") ? (
                   <MenuItemsComponent items={["Home", "Explore"]} />
-                ) : (
-                  <MenuItemsComponent items={["Home"]} />
-                )}
+                ) : null}
               </>
             )}
 

@@ -109,7 +109,7 @@ export default function Banner({}: Props) {
                 label="Platform"
                 color="secondary"
                 name="platform"
-                value="Twitter"
+                value="X (formerly Twitter)"
                 disabled
                 sx={{
                   cursor: "not-allowed",
