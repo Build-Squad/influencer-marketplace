@@ -7,19 +7,19 @@ import json
 
 from solana.transaction import Transaction
 from solana.rpc.core import RPCException
-from pyxfluencer.instructions import create_escrow
 
+import os
 
-def get_local_keypair_pubkey(path = None):
-    import os
+def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
     home = os.getenv("HOME")
     assert home != None
 
     ## take default_path from .env
-    default_path = f"{home}/.config/solana/id.json"
+    default_path = f"{home}/.config/solana/{keypair_file}"
 
     path = default_path if path is None else path
+    #print(path)
     with open(path,'r') as f:        
         secret_data = json.load(f)
     
@@ -61,18 +61,15 @@ def load_configuration(config_file="config.json"):
     return config_data
 
 
-def sign_and_send_transaction(args, accounts, signers, opts, network, PROGRAM_ID):
+def sign_and_send_transaction(ix,  signers, opts, network):
+       
    
-    ix = create_escrow(args, accounts, program_id=PROGRAM_ID)
-    tx = Transaction().add(ix)
-
-    for signer in signers:     
-        tx.sign(signer)
-
     try:        
         client = select_client(network=network, async_client=False)
+        tx = Transaction().add(ix)
         tx_res = client.send_transaction(tx, *signers, opts=opts)
         print("Client Response tx signature",tx_res)
+        print("Waiting for transaction confirmation")
         signature = client.confirm_transaction(tx_res.value)
         print("Confirm Transaction status",signature)
     except RPCException as e:

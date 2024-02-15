@@ -9,7 +9,7 @@ from utils import load_configuration
 
 
 def main():
-    # implement caller to validate escrow instruction
+    # implement caller to cancel escrow instruction
     pass
 
 
