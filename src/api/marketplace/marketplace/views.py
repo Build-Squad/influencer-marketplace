@@ -55,6 +55,7 @@ def logoutUser(request):
 
 def authTwitterUser(request, role):
     request.session["role"] = role
+    global twitter
     twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
     authorization_url, state = twitter.authorization_url(
         auth_url, code_challenge=code_challenge, code_challenge_method="S256"
