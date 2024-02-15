@@ -336,7 +336,7 @@ export default function CheckoutPage() {
                       fontWeight: "bold",
                     }}
                   >
-                    Infleuncer : &nbsp;
+                    Influencer : &nbsp;
                   </Typography>
                   <Typography
                     sx={{
