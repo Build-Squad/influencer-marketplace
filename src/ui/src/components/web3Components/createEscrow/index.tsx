@@ -67,10 +67,12 @@ export default function CreateEscrow({
           programId
         );
 
+        const amount = Number(cart?.orderTotal) * 10 ** 9;
+
         // Create the escrow
         const ix = await program.methods
           .createEscrow(
-            new anchor.BN(Number(cart?.orderTotal)),
+            new anchor.BN(amount),
             new anchor.BN(cart?.order_number)
           )
           .accounts({
