@@ -1,6 +1,11 @@
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { Button, CircularProgress } from "@mui/material";
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
 import idl from "../../../utils/xfluencer.json";
 
 import * as anchor from "@coral-xyz/anchor";
@@ -73,12 +78,12 @@ export default function CreateEscrow({
         );
 
 
-        const amount = Number(cart?.orderTotal) * 10 ** 9;
+        const amountInLamports = Number(cart?.orderTotal) * LAMPORTS_PER_SOL;
 
         // Create the escrow
         const ix = await program.methods
           .createEscrow(
-            new anchor.BN(amount),
+            new anchor.BN(amountInLamports),
             new anchor.BN(cart?.order_number)
           )
           .accounts({
