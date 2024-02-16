@@ -13,6 +13,8 @@ import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
+import Image from "next/image";
+import BackIcon from "@/public/svg/Back.svg";
 import {
   DISPLAY_DATE_FORMAT,
   ORDER_STATUS,
@@ -37,8 +39,10 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function BusinessDashboardPage() {
+  const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -456,6 +460,15 @@ export default function BusinessDashboardPage() {
           p: 2,
         }}
       >
+        <Image
+          src={BackIcon}
+          alt={"BackIcon"}
+          height={30}
+          style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
+          onClick={() => {
+            router.back();
+          }}
+        />
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Grid container spacing={2}>

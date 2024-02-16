@@ -8,6 +8,8 @@ import RouteProtection from "@/src/components/shared/routeProtection";
 import CreateEscrow from "@/src/components/web3Components/createEscrow";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
+import BackIcon from "@/public/svg/Back.svg";
+import Image from "next/image";
 import {
   deleteService,
   postService,
@@ -218,19 +220,15 @@ export default function CheckoutPage() {
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
-      <Button
-        variant="outlined"
-        sx={{
-          color: "rgb(0, 137, 234)",
-          border: "1px solid rgb(0, 137, 234)",
-          mt: 2,
-        }}
+      <Image
+        src={BackIcon}
+        alt={"BackIcon"}
+        height={30}
+        style={{ marginTop: "16px", marginLeft: "32px", cursor: "pointer" }}
         onClick={() => {
           router.back();
         }}
-      >
-        Back
-      </Button>
+      />
       {cart?.orderItems?.length === 0 ? (
         <Box
           sx={{

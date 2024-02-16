@@ -29,6 +29,8 @@ import NotificationIcon from "@/public/svg/Notification.svg";
 import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
+import UserIcon from "@/public/svg/User.svg";
+import UserDisabledIcon from "@/public/svg/UserUnselected.svg";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import NotificationPanel from "@/src/components/notificationPanel";
 import { notification } from "@/src/components/shared/notification";
@@ -47,6 +49,12 @@ const MENU_ITEMS: {
     disabledIcon: string;
   };
 } = {
+  Profile: {
+    label: "Profile",
+    route: "/profile",
+    icon: UserIcon,
+    disabledIcon: UserDisabledIcon,
+  },
   Home: {
     label: "Home",
     route: "",
@@ -101,6 +109,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
         const item = MENU_ITEMS[key];
 
         let route = "";
+
+        // Setting routes when user is NOT logged in
         if (!user?.user?.role) {
           if (pathname.includes("business")) {
             route = `/business${item?.route}`;
@@ -109,12 +119,17 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
           } else {
             route = "/business";
           }
-        } else {
+        }
+        // User is logged in
+        else {
           route = user?.user?.role?.name?.includes("business")
             ? `/business${item?.route}`
             : pathname.includes("influencer")
             ? `/influencer${item?.route}`
             : "";
+          if (item?.label == "Profile") {
+            route = `${route}/${user?.user?.id}` ?? "";
+          }
         }
 
         return (
@@ -321,7 +336,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
                 // Influencer menu items
                 <MenuItemsComponent
                   items={[
-                    "Home",
+                    "Profile",
                     "Orders",
                     "Dashboard",
                     "Messages",
@@ -333,9 +348,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
               <>
                 {pathname.includes("business") ? (
                   <MenuItemsComponent items={["Home", "Explore"]} />
-                ) : (
-                  <MenuItemsComponent items={["Home"]} />
-                )}
+                ) : null}
               </>
             )}
 
