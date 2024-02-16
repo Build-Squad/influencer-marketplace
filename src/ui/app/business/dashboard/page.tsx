@@ -12,8 +12,13 @@ import TransactionIcon from "@/src/components/dashboardComponents/transactionIco
 import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
+import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import {
+  DISPLAY_DATE_FORMAT,
+  ORDER_STATUS,
+  TRANSACTION_TYPE,
+} from "@/src/utils/consts";
 import { KeyboardBackspace } from "@mui/icons-material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -403,6 +408,14 @@ export default function BusinessDashboardPage() {
                 </Tooltip>
               )}
             </>
+            {params?.row?.status === ORDER_STATUS.REJECTED &&
+              params?.row?.transactions.filter(
+                (transaction: TransactionType) =>
+                  transaction.transaction_type ===
+                  TRANSACTION_TYPE.CANCEL_ESCROW
+              )?.length === 0 && (
+                <CancelEscrow order={params?.row} updateStatus={getOrders} />
+              )}
           </Box>
         );
       },
