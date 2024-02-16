@@ -53,14 +53,14 @@ const CustomAutoComplete = ({
   const [search, setSearch] = React.useState<string>("");
   const [pagination, setPagination] = React.useState<PaginationType>({
     current_page_number: 1,
-    current_page_size: 10,
+    current_page_size: 50,
     total_data_count: 0,
     total_page_count: 0,
   });
 
   const getOptions = async () => {
     try {
-      const { isSuccess, data, message } = await getService(apiEndpoint, {
+      const { isSuccess, data } = await getService(apiEndpoint, {
         search,
         page_size: pagination.current_page_size,
         page_number: pagination.current_page_number,
@@ -129,7 +129,7 @@ const CustomAutoComplete = ({
     setOptions([]);
     setPagination({
       current_page_number: 1,
-      current_page_size: 10,
+      current_page_size: 50,
       total_data_count: 0,
       total_page_count: 0,
     });

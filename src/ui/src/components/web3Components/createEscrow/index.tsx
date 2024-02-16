@@ -1,20 +1,16 @@
 import { useAppSelector } from "@/src/hooks/useRedux";
-import { Button } from "@mui/material";
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  clusterApiUrl,
-} from "@solana/web3.js";
+import { Button, CircularProgress } from "@mui/material";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import idl from "../../../utils/xfluencer.json";
 
 import * as anchor from "@coral-xyz/anchor";
 
 import { getAnchorProgram } from "@/src/utils/anchorUtils";
+import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
+import { useState } from "react";
 import { notification } from "../../shared/notification";
-import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 type CreateEscrowProps = {
   loading: boolean;
@@ -28,7 +24,7 @@ export default function CreateEscrow({
   updateStatus,
 }: CreateEscrowProps) {
   const cart = useAppSelector((state) => state.cart);
-
+  const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(
     `https://rpc.ironforge.network/devnet?apiKey=${process.env.NEXT_PUBLIC_RPC_KEY}`,
     {
@@ -42,75 +38,91 @@ export default function CreateEscrow({
   const provider = new AnchorProvider(connection, wallet!, {});
   setProvider(provider);
 
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey: businessPk, sendTransaction, connect } = useWallet();
 
   const createEscrow = async () => {
-    if (cart?.order_number && cart?.influencer_wallet) {
-      // Get influencer wallet address
-      const influencer_pk = new PublicKey(
-        cart?.influencer_wallet?.wallet_address_id
-      );
-
-      // breakpoint
-
-      // Check if wallet is connected
-      if (!connection || !publicKey) {
-        notification("Please connect your wallet first", "error");
-        return;
-      }
-
-      // Find the escrow PDA
-      const [escrowPDA] = PublicKey.findProgramAddressSync(
-        [
-          utf8.encode("escrow"),
-          publicKey.toBuffer(),
-          influencer_pk.toBuffer(),
-          utf8.encode(cart?.order_number?.toString()),
-        ],
-        programId
-      );
-
-      // Create the escrow
-      const ix = await program.methods
-        .createEscrow(
-          new anchor.BN(Number(cart?.orderTotal)),
-          new anchor.BN(cart?.order_number)
-        )
-        .accounts({
-          from: publicKey,
-          to: influencer_pk,
-          systemProgram: anchor.web3.SystemProgram.programId,
-          escrow: escrowPDA,
-        })
-        .instruction();
-
-      const tx = new Transaction().add(ix);
-
-      const options = {
-        skipPreflight: true,
-      };
-
-      try {
-        const signature = await sendTransaction(tx, connection, options);
-
-        console.log("Transaction signature: ", signature);
-
-        const txSign = await connection.confirmTransaction(
-          signature,
-          "processed"
+    try {
+      setLocalLoading(true);
+      if (cart?.order_number && cart?.influencer_wallet) {
+        // Get influencer wallet address
+        const influencer_pk = new PublicKey(
+          cart?.influencer_wallet?.wallet_address_id
         );
 
-        if (txSign.value.err != null) {
-          notification(
-            `Instruction error number found: ` + txSign?.value?.err?.toString(),
-            "error"
-          );
-        } else {
-          updateStatus(signature);
+        // Check if wallet is connected
+        if (!connection || !businessPk) {
+          await connect();
+          notification("Please connect your wallet first", "error");
+          return;
         }
-      } catch (error) {
-        console.error("Transaction error", error);
+
+        console.log("Business PK", businessPk.toString());
+        console.log("Influencer PK", influencer_pk.toString());
+        console.log("Order Number", cart?.order_number);
+
+        // Find the escrow PDA
+        const [escrowPDA] = PublicKey.findProgramAddressSync(
+          [
+            utf8.encode("escrow"),
+            businessPk.toBuffer(),
+            influencer_pk.toBuffer(),
+            utf8.encode(cart?.order_number?.toString()),
+          ],
+          programId
+        );
+
+        const amount = Number(cart?.orderTotal) * 10 ** 9;
+
+        // Create the escrow
+        const ix = await program.methods
+          .createEscrow(
+            new anchor.BN(amount),
+            new anchor.BN(cart?.order_number)
+          )
+          .accounts({
+            from: businessPk,
+            to: influencer_pk,
+            systemProgram: anchor.web3.SystemProgram.programId,
+            escrow: escrowPDA,
+          })
+          .instruction();
+
+        const tx = new Transaction().add(ix);
+
+        const options = {
+          skipPreflight: true, // WARNING: This is dangerous on Mainnet
+        };
+
+        try {
+          const signature = await sendTransaction(tx, connection, options);
+
+          console.log("Transaction signature: ", signature);
+
+          const txSign = await connection.confirmTransaction(
+            signature,
+            "processed"
+          );
+
+          if (txSign.value.err != null) {
+            notification(
+              `Instruction error number found: ` +
+                txSign?.value?.err?.toString(),
+              "error"
+            );
+            console.error(
+              `Instruction error number found: ` +
+                txSign?.value?.err?.toString(),
+              "error"
+            );
+          } else {
+            updateStatus(signature);
+          }
+        } catch (error) {
+          console.error("Transaction error", error);
+        }
       }
+    } finally {
+      setLocalLoading(false);
     }
   };
 
@@ -126,12 +138,16 @@ export default function CreateEscrow({
         borderRadius: "20px",
         mt: 2,
       }}
-      disabled={loading || !cart?.orderId}
+      disabled={loading || !cart?.orderId || localLoading}
       onClick={() => {
         createEscrow();
       }}
     >
-      Make Offer
+      {localLoading ? (
+        <CircularProgress size={24} color="secondary" />
+      ) : (
+        "Make Offer"
+      )}
     </Button>
   );
 }

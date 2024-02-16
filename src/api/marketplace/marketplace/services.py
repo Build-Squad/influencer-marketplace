@@ -159,15 +159,6 @@ def handleDeleteNotAllowed(resource_name):
     }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class EmailService:
-    # Send via django.core.mail.send_mail
-    def sendEmail(self, subject, message, from_email, recipient_list):
-        try:
-            send_mail(subject, message, from_email, recipient_list)
-        except Exception as e:
-            pass
-
-
 def truncateWalletAddress(address):
     if address:
         return address[:4] + "..." + address[-4:]

@@ -27,6 +27,7 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
+import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
 
 type OrderItemFormProps = {
   orderItem: any;
@@ -208,7 +209,7 @@ export default function OrderItemForm({
           .toSorted((a: any, b: any) => {
             return a?.order - b?.order;
           })
-          ?.map((formFields: any) => {
+          ?.map((formFields: any, ind: number) => {
             return (
               <Grid
                 item
@@ -222,6 +223,7 @@ export default function OrderItemForm({
                   flexDirection: "column",
                   p: 1,
                 }}
+                key={ind}
               >
                 <FormLabel
                   sx={{
@@ -237,7 +239,6 @@ export default function OrderItemForm({
                     value={formFields?.value ? formFields?.value : ""}
                     name={formFields?.id}
                     onChange={(e) => {
-                      console.log(e.target.value, formFields);
                       if (updateFunction) {
                         updateFunction(
                           orderItem?.order_item?.id
@@ -276,6 +277,7 @@ export default function OrderItemForm({
                     }}
                     helperText={
                       <Box
+                        component="span"
                         sx={{
                           display: "flex",
                           justifyContent: "flex-end",
@@ -342,6 +344,7 @@ export default function OrderItemForm({
                     }}
                     helperText={
                       <Box
+                        component="span"
                         sx={{
                           display: "flex",
                           justifyContent: "flex-end",
@@ -443,6 +446,13 @@ export default function OrderItemForm({
             p: 1,
           }}
         >
+          <FormLabel
+            sx={{
+              color: "secondary.main",
+            }}
+          >
+            {`Publish Date and Time`}
+          </FormLabel>
           <DateTimePicker
             disabled={disabled}
             value={
@@ -465,7 +475,7 @@ export default function OrderItemForm({
                 })
               );
             }}
-            disablePast
+            minDateTime={dayjs().add(30, "minute")}
             slotProps={{
               textField: {
                 size: "small",
@@ -481,6 +491,13 @@ export default function OrderItemForm({
                 },
               },
             }}
+            viewRenderers={{
+              hours: renderTimeViewClock,
+              minutes: renderTimeViewClock,
+              seconds: renderTimeViewClock,
+            }}
+            closeOnSelect={false}
+            formatDensity="spacious"
           />
         </Grid>
       </Grid>

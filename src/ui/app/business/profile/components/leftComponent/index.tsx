@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import Connect_wallet_unselected from "@/public/svg/Connect_wallet_unselected.svg";
@@ -10,6 +10,8 @@ import connect_x from "@/public/svg/connect_x.svg";
 import Details_unselected from "@/public/svg/Details_unselected.svg";
 import Details from "@/public/svg/Details.svg";
 import { UserDetailsType } from "../../type";
+import { KeyboardBackspace } from "@mui/icons-material";
+import BackIcon from "@/public/svg/Back.svg";
 
 type Props = {
   userDetails: UserDetailsType;
@@ -125,6 +127,7 @@ const CardComponent = ({
 };
 
 const LeftComponent = ({ userDetails }: Props) => {
+  const router = useRouter();
   return (
     <Box
       sx={{
@@ -134,6 +137,15 @@ const LeftComponent = ({ userDetails }: Props) => {
         borderTop: "none",
       }}
     >
+      <Image
+        src={BackIcon}
+        alt={"BackIcon"}
+        height={30}
+        style={{ cursor: "pointer" }}
+        onClick={() => {
+          router.back();
+        }}
+      />
       <Typography variant="h6" sx={{ ml: 1 }}>
         {userDetails.username}
       </Typography>

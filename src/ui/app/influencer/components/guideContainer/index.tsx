@@ -9,7 +9,7 @@ const WORKING_STEPS = [
   {
     id: "STEP_1",
     imageUrl: require("@/public/svg/Step1_Influencer.svg"),
-    description: "Connect with X",
+    description: "Enrich your experience by connecting with X",
   },
   {
     id: "STEP_2",
@@ -60,6 +60,7 @@ export default function GuideContainer({}: Props) {
           padding: "64px 72px",
           paddingBottom: "0px",
           flexWrap: "wrap",
+          columnGap:"20px"
         }}
       >
         {WORKING_STEPS.map((step) => (
@@ -70,7 +71,7 @@ export default function GuideContainer({}: Props) {
               width={94}
               alt={step.description}
             />
-            <Typography variant="h6">{step.description}</Typography>
+            <Typography variant="subtitle1">{step.description}</Typography>
           </Box>
         ))}
       </Box>

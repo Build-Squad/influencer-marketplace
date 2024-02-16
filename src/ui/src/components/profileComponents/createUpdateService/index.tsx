@@ -1,7 +1,15 @@
 "use client";
 
-import { postService, putService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, PACKAGE_STATUS } from "@/src/utils/consts";
+import {
+  getService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
+import {
+  DISPLAY_DATE_FORMAT,
+  PACKAGE_STATUS,
+  SERVICE_STATUS,
+} from "@/src/utils/consts";
 import {
   Box,
   Button,
@@ -44,6 +52,21 @@ const CreateUpdateService = ({
     ? Number(process.env.NEXT_PUBLIC_PLATFORM_FEE)
     : 5;
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [defaultCurrency, setDefaultCurrency] =
+    React.useState<CurrencyType | null>(null);
+
+  const getDefaultCurrency = async () => {
+    try {
+      const { data, isSuccess } = await getService("/core/currency", {
+        is_default: true,
+      });
+      if (isSuccess) {
+        setDefaultCurrency(data?.data[0]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const updateService = async (values: FormikValues) => {
     try {
@@ -100,7 +123,7 @@ const CreateUpdateService = ({
         platform_fees: PLATFORM_FEE,
         platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(2),
       };
-      const { message, data, errors, isSuccess } = await postService(
+      const { message, isSuccess } = await postService(
         "/packages/service/",
         requestBody
       );
@@ -135,7 +158,13 @@ const CreateUpdateService = ({
   });
 
   React.useEffect(() => {
-    if (serviceItem && open) {
+    if (open) {
+      getDefaultCurrency();
+    }
+  }, [open]);
+
+  React.useEffect(() => {
+    if (serviceItem && open && defaultCurrency) {
       formik.setFieldValue("service_master", serviceItem?.service_master?.id);
       formik.setFieldValue("service_masterObject", serviceItem?.service_master);
       formik.setFieldValue("price", serviceItem?.price);
@@ -150,8 +179,10 @@ const CreateUpdateService = ({
       formik.setFieldValue("name", serviceItem?.package?.name);
     } else {
       formik.resetForm();
+      formik.setFieldValue("currency", defaultCurrency?.id);
+      formik.setFieldValue("currencyObject", defaultCurrency);
     }
-  }, [serviceItem, open]);
+  }, [serviceItem, open, defaultCurrency]);
 
   return (
     <CustomModal
@@ -193,9 +224,7 @@ const CreateUpdateService = ({
                   </Typography>
                 </Box>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
-                  <FormLabel component="legend">
-                    Select Service Master
-                  </FormLabel>
+                  <FormLabel component="legend">Select Service</FormLabel>
                   <CustomAutoComplete
                     apiEndpoint="/packages/servicemaster"
                     placeholder="Search Service Master"
@@ -515,7 +544,7 @@ const CreateUpdateService = ({
                     color="secondary"
                     variant="outlined"
                     onClick={() => {
-                      formik.setFieldValue("status", "draft");
+                      formik.setFieldValue("status", SERVICE_STATUS.DRAFT);
                       formik.handleSubmit();
                     }}
                     disabled={loading}
@@ -526,16 +555,16 @@ const CreateUpdateService = ({
                   >
                     {/* During update, if the serviceItem.status is draft, then show an option to unpublish otherwise show an option to update the draft. During creation only show a Save as Draft button */}
                     {serviceItem
-                      ? serviceItem.status === "draft"
+                      ? serviceItem.status === SERVICE_STATUS.DRAFT
                         ? "Save Draft"
-                        : "Unpublish"
+                        : "Unlist Service"
                       : "Save as Draft"}
                   </Button>
                   <Button
                     color="secondary"
                     variant="contained"
                     onClick={() => {
-                      formik.setFieldValue("status", "published");
+                      formik.setFieldValue("status", SERVICE_STATUS.PUBLISHED);
                       formik.setFieldValue("publish_date", new Date());
                       formik.handleSubmit();
                     }}
@@ -548,10 +577,10 @@ const CreateUpdateService = ({
                   >
                     {/* During update, if the serviceItem.status is published, then show an option to save the service otherwise show an option to publish. During creation only show publish button */}
                     {serviceItem
-                      ? serviceItem.status === "published"
+                      ? serviceItem.status === SERVICE_STATUS.PUBLISHED
                         ? "Save"
-                        : "Publish"
-                      : "Publish"}
+                        : "List Service"
+                      : "List Service"}
                   </Button>
                 </Grid>
               </Grid>

@@ -264,9 +264,11 @@ const OrderSummaryDetails = ({
               />
             </Box>
 
-            {eachOrderItem?.order_item_meta_data?.map((meta_data: any) => {
-              return <ContentTypeComponent meta_data={meta_data} />;
-            })}
+            {eachOrderItem?.order_item_meta_data
+              ?.sort((a: any, b: any) => a.order - b.order)
+              ?.map((meta_data: any) => {
+                return <ContentTypeComponent meta_data={meta_data} />;
+              })}
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
             >
@@ -291,7 +293,7 @@ const OrderSummaryDetails = ({
                 <Box>
                   <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
                     <OpenInNewIcon sx={{ fontSize: 14, mr: 1 }} />
-                    Tweet Link
+                    Post Link
                   </Typography>
                   <Link
                     href={`https://x.com/${eachOrderItem?.package?.influencer?.twitter_account?.user_name}/status/${eachOrderItem?.published_tweet_id}`}
@@ -324,7 +326,7 @@ const OrderSummaryDetails = ({
                   variant="outlined"
                   onClick={handleClose}
                 >
-                  Cancel
+                  No
                 </Button>
                 <Button
                   color="secondary"
@@ -332,7 +334,7 @@ const OrderSummaryDetails = ({
                   onClick={updateStatus}
                   autoFocus
                 >
-                  {capitalizeFirstLetter(action.type)}
+                  Yes
                 </Button>
               </DialogActions>
             </Dialog>

@@ -109,7 +109,7 @@ export default function Banner({}: Props) {
                 label="Platform"
                 color="secondary"
                 name="platform"
-                value="Twitter"
+                value="X (formerly Twitter)"
                 disabled
                 sx={{
                   cursor: "not-allowed",
@@ -167,7 +167,7 @@ export default function Banner({}: Props) {
             "Thread",
             "Like",
             "Reply",
-            "Pinned Tweet",
+            "Pinned Post",
             "Quote a Post",
           ].map((it: string, ind: number) => {
             return (

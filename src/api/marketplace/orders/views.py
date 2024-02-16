@@ -1,6 +1,6 @@
 from accounts.models import Wallet
 from orders.tasks import cancel_tweet, schedule_tweet
-from orders.services import create_notification_for_order
+from orders.services import create_notification_for_order, create_order_item_tracking, create_order_tracking
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -17,9 +17,9 @@ from .models import (
     Order,
     OrderItem,
     OrderAttachment,
-    OrderItemTracking,
     OrderMessage,
     Review,
+    Transaction,
 )
 from .serializers import (
     CreateOrderMessageSerializer,
@@ -28,17 +28,18 @@ from .serializers import (
     OrderSerializer,
     OrderItemSerializer,
     OrderAttachmentSerializer,
-    OrderItemTrackingSerializer,
     OrderMessageSerializer,
+    OrderTransactionSerializer,
     SendTweetSerializer,
     ReviewSerializer,
     OrderMessageListFilterSerializer,
     UserOrderMessagesSerializer,
-    UpdateOrderInfluencerTransactionAddressSerializer,
+    OrderTransactionCreateSerializer,
     UserOrderMessagesSerializer
 )
 from rest_framework import status
 from django.db.models import Q
+from django.utils import timezone
 
 
 # ORDER API-Endpoint
@@ -53,20 +54,16 @@ class OrderList(APIView):
                 data=request.data, context={"request": request}
             )
             if serializer.is_valid():
-                draft_order = Order.objects.filter(
+                draft_orders = Order.objects.filter(
                     buyer=self.request.user_account, status="draft", deleted_at=None
                 )
-                if draft_order.exists():
-                    return Response(
-                        {
-                            "isSuccess": False,
-                            "message": "You already have an active draft order. Please complete that order first.",
-                            "data": None,
-                            "errors": "You already have an active draft order. Please complete that order first.",
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                if draft_orders.exists():
+                    # Mark the draft orders as deleted
+                    draft_orders.update(deleted_at=timezone.now())
                 serializer.save()
+                order = serializer.instance
+                # Create a Order Transaction for the order
+                create_order_tracking(order, "draft")
                 return Response(
                     {
                         "isSuccess": True,
@@ -195,7 +192,8 @@ class OrderListView(APIView):
                 orders = orders.order_by(filters["order_by"])
 
             pagination = Pagination(orders, request)
-            serializer = OrderSerializer(pagination.getData(), many=True)
+            serializer = OrderSerializer(pagination.getData(), context={
+                                         "request": request}, many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -408,6 +406,8 @@ class OrderDetail(APIView):
                 return handleNotFound("Order")
             try:
                 order.delete()
+                # Create a order transaction for the order
+                create_order_tracking(order, "deleted")
             except ValidationError as e:
                 return handleDeleteNotAllowed("Order")
             return Response(
@@ -447,8 +447,16 @@ class UpdateOrderStatus(APIView):
                 old_status = order.status
                 if status_data["status"] == "pending":
                     if request.data.get("address"):
-                        order.buyer_transaction_address = request.data.get(
-                            "address")
+                        # Create a transaction for the order
+                        Transaction.objects.create(
+                            order=order,
+                            transaction_address=request.data.get("address"),
+                            status="success",
+                            transaction_initiated_by=request.user_account,
+                            wallet=Wallet.objects.get(
+                                user_id=request.user_account, is_primary=True),
+                            transaction_type="initiate_escrow"
+                        )
                     else:
                         return Response(
                             {
@@ -468,7 +476,11 @@ class UpdateOrderStatus(APIView):
                     # accepted and rejected only, and corresponding to that we changing the same for each order item.
                     order_item.status = status_data["status"]
                     order_item.save()
+
+                    create_order_item_tracking(order_item, order_item.status)
+
                 create_notification_for_order(order, old_status, status_data["status"])
+                create_order_tracking(order, status_data["status"])
                 return Response(
                     {
                         "isSuccess": True,
@@ -483,23 +495,22 @@ class UpdateOrderStatus(APIView):
             return handleServerException(e)
 
 
-class UpdateUpdateOrderInfluencerTransactionAddressView(APIView):
-    @swagger_auto_schema(request_body=UpdateOrderInfluencerTransactionAddressSerializer)
-    def put(self, request, pk):
+class TransactionCreateView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=OrderTransactionCreateSerializer)
+    def post(self, request):
         try:
-            order = Order.objects.get(pk=pk, deleted_at=None)
-            if order is None:
-                return handleNotFound("Order")
-            serializer = UpdateOrderInfluencerTransactionAddressSerializer(
-                instance=order, data=request.data, partial=True
+            serializer = OrderTransactionCreateSerializer(
+                data=request.data, context={"request": request}
             )
             if serializer.is_valid():
-                serializer.update(order, serializer.validated_data)
+                serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
-                        "data": OrderSerializer(serializer.instance).data,
-                        "message": "Transaction address added successfully",
+                        "data": OrderTransactionSerializer(serializer.instance).data,
+                        "message": "Transaction added successfully",
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -726,119 +737,6 @@ class OrderAttachmentDetail(APIView):
             )
         except Exception as e:
             return handleServerException(e)
-
-
-# ORDER-Item-Tracking API-Endpoint
-# List-Create-API
-class OrderItemTrackingList(APIView):
-    def get(self, request):
-        try:
-            orderItemTracking = OrderItemTracking.objects.all()
-            pagination = Pagination(orderItemTracking, request)
-            serializer = OrderItemTrackingSerializer(pagination.getData(), many=True)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "All Order Item Tracking data retrieved successfully",
-                    "pagination": pagination.getPageInfo(),
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-    @swagger_auto_schema(request_body=OrderItemTrackingSerializer)
-    def post(self, request):
-        try:
-            serializer = OrderItemTrackingSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": OrderItemTrackingSerializer(serializer.instance).data,
-                        "message": "Order Item Tracking data created successfully",
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
-            else:
-                return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-
-# Retrieve-Update-Destroy API
-class OrderItemTrackingDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return OrderItemTracking.objects.get(pk=pk)
-        except OrderItemTracking.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        try:
-            orderItemTracking = self.get_object(pk)
-            if orderItemTracking is None:
-                return handleNotFound("Order Item Tracking")
-            serializer = OrderItemTrackingSerializer(orderItemTracking)
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": serializer.data,
-                    "message": "Order Item Tracking data retrieved successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-    @swagger_auto_schema(request_body=OrderItemTrackingSerializer)
-    def put(self, request, pk):
-        try:
-            orderItemTracking = self.get_object(pk)
-            if orderItemTracking is None:
-                return handleNotFound("Order Item Tracking")
-            serializer = OrderItemTrackingSerializer(
-                instance=orderItemTracking, data=request.data
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": OrderItemTrackingSerializer(serializer.instance).data,
-                        "message": "Order Item Tracking data updated successfully",
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return handleBadRequest(serializer.errors)
-        except Exception as e:
-            return handleServerException(e)
-
-    def delete(self, request, pk):
-        try:
-            orderItemTracking = self.get_object(pk)
-            if orderItemTracking is None:
-                return handleNotFound("Order Item Tracking")
-            try:
-                orderItemTracking.delete()
-            except ValidationError as e:
-                return handleDeleteNotAllowed("Order Item Tracking")
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": None,
-                    "message": "Order Item Tracking deleted successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return handleServerException(e)
-
-
-# ORDER-Message API-Endpoint
 
 
 # Get Order Messages
@@ -1080,7 +978,7 @@ class SendTweetView(APIView):
                     {
                         "isSuccess": True,
                         "data": serializer.data,
-                        "message": "Tweet is scheduled",
+                        "message": "Post is scheduled",
                     },
                     status=status.HTTP_201_CREATED,
                 )
@@ -1106,7 +1004,7 @@ class CancelTweetView(APIView):
                     {
                         "isSuccess": True,
                         "data": serializer.data,
-                        "message": "Tweet is cancelled",
+                        "message": "Post is cancelled",
                     },
                     status=status.HTTP_201_CREATED,
                 )

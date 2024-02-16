@@ -11,6 +11,10 @@ import FAQSection from "./components/faqSection";
 import { useEffect, useState } from "react";
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import { useRouter } from "next/navigation";
+import LoginPrompt from "../components/loginPrompt";
+import ScrollTop from "@/public/svg/ScrollTop.svg";
+import Image from "next/image";
 
 const formatTwitterFollowers = (followersCount: any) => {
   if (followersCount >= 1000000) {
@@ -26,7 +30,37 @@ const formatTwitterFollowers = (followersCount: any) => {
 };
 
 export default function BusinessHome() {
+  const router = useRouter();
   const [topInfluencers, setTopInfluencers] = useState([]);
+  const [loginAs, setLoginAs] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 200) {
+        // Adjust this value as needed
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener("scroll", toggleVisibility);
+
+    // Clean up the event listener on component unmount
+    return () => window.removeEventListener("scroll", toggleVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (loginAs == "Influencer") router.push("/influencer?loginAs=Influencer");
+  }, [loginAs]);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   const getPrice = (inf: any, type = "max") => {
     const services = inf.service_types || [];
@@ -122,6 +156,22 @@ export default function BusinessHome() {
       </Box>
       {/* Footer */}
       <Footer />
+      {isVisible && (
+        <div
+          onClick={scrollToTop}
+          style={{
+            position: "fixed",
+            bottom: "6px",
+            right: "16px",
+            cursor: "pointer",
+            zIndex: "10",
+          }}
+        >
+          <Image src={ScrollTop} alt="ScrollTop" height={50} />
+        </div>
+      )}
+
+      <LoginPrompt setLoginAs={setLoginAs} />
     </Box>
   );
 }

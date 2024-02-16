@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { getServicewithCredentials } from "../services/httpServices";
+import { getService } from "../services/httpServices";
 import { notification } from "../components/shared/notification";
 import { useAppDispatch } from "./useRedux";
 import { loginReducer, logoutReducer } from "../reducers/userSlice";
@@ -46,20 +46,29 @@ export default function useTwitterAuth() {
   // Function to logout the X user
   const logoutTwitterUser = async () => {
     try {
-      await axios.get(`${BACKEND_URL}logout/`, { withCredentials: true });
-      notification("Logged out successfully");
-      setTwitterUserLoggedIn(false);
-      dispatch(logoutReducer());
-      dispatch(resetCart());
+      const { isSuccess, message } = await getService("logout/");
+      if (isSuccess) {
+        notification("Logged out successfully");
+        setTwitterUserLoggedIn(false);
+        dispatch(logoutReducer());
+        dispatch(resetCart());
+        localStorage.clear();
+        sessionStorage.clear();
+      } else {
+        notification(
+          message ? message : "Something went wrong, please try again later",
+          "error"
+        );
+      }
     } catch (error) {
       console.error("Error during logout:", error);
     }
   };
 
-  // Function to check if the X user is authenticated
+  // Function to check if the user is authenticated
   const checkTwitterUserAuthentication = async () => {
     try {
-      const { isSuccess, data } = await getServicewithCredentials("account/");
+      const { isSuccess, data } = await getService("account/");
       if (isSuccess) {
         setUserDetails(data?.data);
         setTwitterUserLoggedIn(true);
@@ -70,6 +79,7 @@ export default function useTwitterAuth() {
         dispatch(logoutReducer());
         dispatch(resetCart());
         localStorage.clear();
+        sessionStorage.clear();
       }
     } catch (error) {
       console.error("Error during authentication check:", error);
@@ -84,7 +94,7 @@ export default function useTwitterAuth() {
         userDetails?.role?.name === ROLE_NAME.INFLUENCER &&
         !categoriesAdded
       ) {
-        const { isSuccess, data } = await getServicewithCredentials(
+        const { isSuccess, data } = await getService(
           "account/account-category/"
         );
         if (isSuccess) {

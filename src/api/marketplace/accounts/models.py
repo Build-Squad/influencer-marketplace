@@ -1,4 +1,3 @@
-from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import SET_NULL
@@ -299,3 +298,17 @@ class Wallet(models.Model):
 
     def __str__(self):
         return self.wallet_address_id
+
+
+class WalletNonce(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name="Wallet Nonce ID", default=uuid.uuid4, editable=False
+    )
+    wallet_address = models.CharField(max_length=255, blank=True, null=True)
+    nonce = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.wallet_address
+
+    class Meta:
+        db_table = "wallet_nonce"

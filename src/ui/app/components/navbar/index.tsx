@@ -1,4 +1,3 @@
-import { loginStatusType } from "@/app/utils/types";
 import HomeIcon from "@/public/svg/Home.svg";
 import HomeDisabledIcon from "@/public/svg/Home_disabled.svg";
 import { useAppSelector } from "@/src/hooks/useRedux";
@@ -30,17 +29,15 @@ import NotificationIcon from "@/public/svg/Notification.svg";
 import NotificationDisabledIcon from "@/public/svg/Notification_disabled.svg";
 import OrdersIcon from "@/public/svg/Orders.svg";
 import OrdersDisabledIcon from "@/public/svg/Orders_Disabled.svg";
+import UserIcon from "@/public/svg/User.svg";
+import UserDisabledIcon from "@/public/svg/UserUnselected.svg";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import NotificationPanel from "@/src/components/notificationPanel";
+import { notification } from "@/src/components/shared/notification";
 import NextLink from "next/link";
 
 type NavbarProps = {
-  setLoginStatus: React.Dispatch<React.SetStateAction<loginStatusType>>;
-  setEmailOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setWalletOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  emailOpen: boolean;
-  walletOpen: boolean;
   categoryOpen: boolean;
 };
 
@@ -52,6 +49,12 @@ const MENU_ITEMS: {
     disabledIcon: string;
   };
 } = {
+  Profile: {
+    label: "Profile",
+    route: "/profile",
+    icon: UserIcon,
+    disabledIcon: UserDisabledIcon,
+  },
   Home: {
     label: "Home",
     route: "",
@@ -106,18 +109,27 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
         const item = MENU_ITEMS[key];
 
         let route = "";
+
+        // Setting routes when user is NOT logged in
         if (!user?.user?.role) {
           if (pathname.includes("business")) {
             route = `/business${item?.route}`;
           } else if (pathname.includes("influencer")) {
             route = `/influencer${item?.route}`;
+          } else {
+            route = "/business";
           }
-        } else {
+        }
+        // User is logged in
+        else {
           route = user?.user?.role?.name?.includes("business")
             ? `/business${item?.route}`
             : pathname.includes("influencer")
             ? `/influencer${item?.route}`
             : "";
+          if (item?.label == "Profile") {
+            route = `${route}/${user?.user?.id}` ?? "";
+          }
         }
 
         return (
@@ -130,6 +142,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
+                  color: "secondary.main",
                 }}
               >
                 <NotificationPanel />
@@ -178,22 +191,11 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   ) : null;
 };
 
-export default function Navbar({
-  setLoginStatus,
-  setEmailOpen,
-  setWalletOpen,
-  setCategoryOpen,
-  emailOpen,
-  walletOpen,
-  categoryOpen,
-}: NavbarProps) {
+export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
   const {
     isTwitterUserLoggedIn,
-    startTwitterAuthentication,
     logoutTwitterUser,
-    checkTwitterUserAuthentication,
     isAccountSetupComplete,
-    categoriesAdded,
     checkAccountSetup,
   } = useTwitterAuth();
 
@@ -205,28 +207,18 @@ export default function Navbar({
   const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    if (!emailOpen) {
-      checkTwitterUserAuthentication();
-    }
-  }, [emailOpen]);
-
-  useEffect(() => {
-    if (!walletOpen) {
-      checkTwitterUserAuthentication();
-    }
-  }, [walletOpen]);
-
-  useEffect(() => {
     const status = params.get("authenticationStatus");
-    const message = params.get("message");
+    const paramMessage = params.get("message");
     if (status) {
-      setLoginStatus({
-        status,
-        message:
-          status == "success"
-            ? LOGIN_STATUS_SUCCESS
-            : message ?? LOGIN_STATUS_FAILED,
-      });
+      let snackBarMessage =
+        status === "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED;
+
+      if (paramMessage) snackBarMessage = paramMessage;
+      notification(
+        snackBarMessage,
+        status === "success" ? "success" : "error",
+        3000
+      );
       router.push(pathname);
     }
   }, [isTwitterUserLoggedIn]);
@@ -247,6 +239,13 @@ export default function Navbar({
       checkAccountSetup();
     }
   }, [categoryOpen]);
+
+  const handleConnect = () => {
+    const roleQueryParams = pathname.includes("business")
+      ? "Business"
+      : "Influencer";
+    router.push(`/login?role=${roleQueryParams}`);
+  };
 
   return (
     <AppBar
@@ -280,7 +279,7 @@ export default function Navbar({
             />
           </Link>
         </Box>
-        {isTwitterUserLoggedIn ? null : (
+        {user?.loggedIn || pathname.includes("login") ? null : (
           <Box
             sx={{
               display: "flex",
@@ -297,7 +296,7 @@ export default function Navbar({
                 borderRadius: "20px",
               }}
               onClick={() => {
-                router.push("/influencer");
+                router.push("/influencer?loginAs=Influencer");
               }}
             >
               For Influencer
@@ -309,7 +308,7 @@ export default function Navbar({
                 borderRadius: "20px",
               }}
               onClick={() => {
-                router.push("/business");
+                router.push("/business?loginAs=Business");
               }}
             >
               For Business
@@ -325,7 +324,7 @@ export default function Navbar({
               columnGap: "16px",
             }}
           >
-            {isTwitterUserLoggedIn ? (
+            {user?.loggedIn ? (
               // Business menu items
               user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
@@ -342,7 +341,7 @@ export default function Navbar({
                 // Influencer menu items
                 <MenuItemsComponent
                   items={[
-                    "Home",
+                    "Profile",
                     "Orders",
                     "Dashboard",
                     "Messages",
@@ -354,24 +353,21 @@ export default function Navbar({
               <>
                 {pathname.includes("business") ? (
                   <MenuItemsComponent items={["Home", "Explore"]} />
-                ) : (
-                  <MenuItemsComponent items={["Home"]} />
-                )}
+                ) : null}
               </>
             )}
-            <LoginMenu
-              isTwitterUserLoggedIn={isTwitterUserLoggedIn}
-              twitterLogin={() =>
-                startTwitterAuthentication({
-                  role: pathname.includes("business")
-                    ? "business_owner"
-                    : "influencer",
-                })
-              }
-              setEmailOpen={setEmailOpen}
-              setWalletOpen={setWalletOpen}
-              logoutTwitterUser={logoutTwitterUser}
-            />
+
+            {user?.loggedIn ? (
+              <LoginMenu logoutTwitterUser={logoutTwitterUser} />
+            ) : (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleConnect}
+              >
+                Connect
+              </Button>
+            )}
           </Box>
         </Box>
       </Toolbar>

@@ -68,7 +68,7 @@ export default function FAQSection({}: Props) {
             rowGap: "20px",
           }}
         >
-          {FAQs.map(({ question, answer }) => {
+          {FAQs.map(({ question, answer }, index: number) => {
             return (
               <Accordion
                 disableGutters
@@ -85,6 +85,7 @@ export default function FAQSection({}: Props) {
                     },
                   },
                 }}
+                key={index}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMore />}

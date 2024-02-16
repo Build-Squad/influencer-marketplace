@@ -8,12 +8,14 @@ import RouteProtection from "@/src/components/shared/routeProtection";
 import CreateEscrow from "@/src/components/web3Components/createEscrow";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
+import BackIcon from "@/public/svg/Back.svg";
+import Image from "next/image";
 import {
   deleteService,
   postService,
   putService,
 } from "@/src/services/httpServices";
-import { ORDER_STATUS } from "@/src/utils/consts";
+import { CHECKOUT_TEXT, ORDER_STATUS } from "@/src/utils/consts";
 import { Box, Button, Grid, Link, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -84,6 +86,30 @@ export default function CheckoutPage() {
         "error"
       );
     }
+  };
+
+  const validateMetaDataValues = () => {
+    let isValid = true;
+    cart?.orderItems?.forEach((orderItem) => {
+      if (!orderItem?.publish_date) {
+        notification("Please select a publish date", "error", 3000);
+        isValid = false;
+      }
+      orderItem?.order_item?.order_item_meta_data?.forEach((metaData) => {
+        if (metaData.regex && metaData?.value) {
+          const regex = new RegExp(metaData.regex);
+          if (!regex.test(metaData?.value)) {
+            notification(
+              `Please fill the correct value for ${metaData.label}`,
+              "error",
+              3000
+            );
+            isValid = false;
+          }
+        }
+      });
+    });
+    return isValid;
   };
 
   const createOrder = async () => {
@@ -177,6 +203,10 @@ export default function CheckoutPage() {
   const onSave = async () => {
     try {
       setLoading(true);
+      if (!validateMetaDataValues()) {
+        setLoading(false);
+        return;
+      }
       if (!cart?.orderId) {
         createOrder();
       } else {
@@ -189,6 +219,15 @@ export default function CheckoutPage() {
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
+      <Image
+        src={BackIcon}
+        alt={"BackIcon"}
+        height={30}
+        style={{ marginTop: "16px", marginLeft: "32px", cursor: "pointer" }}
+        onClick={() => {
+          router.back();
+        }}
+      />
       {cart?.orderItems?.length === 0 ? (
         <Box
           sx={{
@@ -298,7 +337,7 @@ export default function CheckoutPage() {
                       fontWeight: "bold",
                     }}
                   >
-                    Infleuncer : &nbsp;
+                    Influencer : &nbsp;
                   </Typography>
                   <Typography
                     sx={{
@@ -339,10 +378,7 @@ export default function CheckoutPage() {
                     my: 2,
                   }}
                 >
-                  <Typography variant="body1">
-                    {`Your payment will be held for 72 hours. If ${cart?.influencer?.twitter_account?.name}
-                declines the order, the amount will be added back to your Wallet`}
-                  </Typography>
+                  <Typography variant="body1">{CHECKOUT_TEXT}</Typography>
                 </Box>
                 <Box>
                   <ConfirmCancel

@@ -1,11 +1,17 @@
-from orders.models import OrderItem
+import logging
+from orders.models import OrderItem, OrderItemTracking, OrderTracking
 from notifications.models import Notification
 from decouple import config
+
+from django.utils import timezone
 
 FRONT_END_URL = config('FRONT_END_URL')
 ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
 BUSINESS_DASHBOARD_URL = FRONT_END_URL + 'business/dashboard'
+INFLUENCER_DASHBOARD_URL = FRONT_END_URL + 'influencer/dashboard'
 
+
+logger = logging.getLogger(__name__)
 
 def create_notification_for_order(order, old_status, new_status):
     """
@@ -64,6 +70,13 @@ def create_notification_for_order(order, old_status, new_status):
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
 
+        # Send a notification to the influencer to claim the funds for the order
+        message = 'Order ' + order.order_code + \
+            ' has been completed. You can now claim the funds'
+        title = 'Order Completed'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
+
 
 def create_notification_for_order_item(order_item, old_status, new_status):
     """
@@ -84,7 +97,9 @@ def create_notification_for_order_item(order_item, old_status, new_status):
     
     """
     # Get the order
+    logger.error("Order item: " + str(order_item.id))
     order = order_item.order_id
+    logger.error("Order: " + str(order.id))
     buyer = order.buyer
     influencer = order_item.package.influencer
 
@@ -97,12 +112,20 @@ def create_notification_for_order_item(order_item, old_status, new_status):
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
 
     elif old_status == 'scheduled' and new_status == 'published':
+
         # Case 2
         message = 'Your order item ' + order_item.package.name + \
             ' has been published by ' + influencer.username
         title = 'Order Item Published'
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+        
+        # Send a notification to the influencer to let them know that the order item has been published
+        message = 'Order item ' + order_item.package.name + \
+            ' has been published'
+        title = 'Order Item Published'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
 
     elif old_status == 'scheduled' and new_status == 'cancelled':
         # Case 3
@@ -111,3 +134,41 @@ def create_notification_for_order_item(order_item, old_status, new_status):
         title = 'Order Item Cancelled'
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
+
+def create_order_tracking(order, status):
+    """
+    Create order tracking
+    """
+    try:
+        OrderTracking.objects.create(order=order, status=status)
+    except Exception as e:
+        logger.error("Error creating order tracking: ", str(e))
+        return False
+
+
+def create_order_item_tracking(order_item, status):
+    """
+    Create order item tracking
+    """
+    try:
+        OrderItemTracking.objects.create(order_item=order_item, status=status)
+    except Exception as e:
+        logger.error("Error creating order item tracking: ", str(e))
+        return False
+
+
+def create_reminider_notification(order_item):
+    try:
+        influencer = order_item.package.influencer
+        current_time = timezone.now()
+        time_left = order_item.publish_date - current_time
+        minutes_left = int(time_left.total_seconds() / 60)
+        message = 'You have an order item ' + order_item.package.name + \
+            ' due for publishing in ' + str(minutes_left) + ' minutes'
+        title = 'Order Item Reminder'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL, module='order_item_reminder', module_id=order_item.id)
+    except Exception as e:
+        logger.error("Error creating reminder notification: ", str(e))
+        return False

@@ -1,14 +1,11 @@
 from distutils.util import strtobool
 from http.client import HTTPResponse
-import uuid
-from urllib import request
+import secrets
+from accounts.tasks import sendEmail
 
-from django.shortcuts import get_object_or_404
-from core.models import RegionMaster
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
 from marketplace.services import (
-    EmailService,
     Pagination,
     handleServerException,
     handleBadRequest,
@@ -35,6 +32,7 @@ from .models import (
     Role,
     Wallet,
     WalletNetwork,
+    WalletNonce,
     WalletProvider,
 )
 from .serializers import (
@@ -55,13 +53,17 @@ from .serializers import (
     EmailVerificationSerializer,
     WalletAuthSerializer,
     WalletConnectSerializer,
+    WalletNonceSerializer,
     WalletSerializer,
 )
 from .services import OTPAuthenticationService, TwitterAuthenticationService
 from decouple import config
 import datetime
 
+from nacl.signing import VerifyKey
+import base58
 
+from django.utils import timezone
 # Twitter account API-Endpoint
 # List-Create-API
 
@@ -122,7 +124,8 @@ class TopInfluencers(APIView):
             # Get the IDs of Twitter accounts with at least one associated published package
             account_ids_with_published_package = Package.objects.filter(
                 influencer__twitter_account__in=twitterAccount,
-                status="published"
+                status="published",
+                deleted_at=None,
             ).values_list('influencer__twitter_account', flat=True).distinct()
 
             # Filter the TwitterAccount queryset based on the extracted IDs
@@ -763,6 +766,12 @@ class UserList(APIView):
 
 # Retrieve-Update-Destroy API
 class UserDetail(APIView):
+
+    def get_authenticators(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [JWTAuthentication()]
+        return super().get_authenticators()
+
     def get_object(self, pk):
         try:
             return User.objects.get(pk=pk)
@@ -789,9 +798,7 @@ class UserDetail(APIView):
     @swagger_auto_schema(request_body=UserSerializer)
     def put(self, request, pk):
         try:
-            user = self.get_object(pk)
-            if user is None:
-                return handleNotFound("User")
+            user = request.user_account
             serializer = UserSerializer(instance=user, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -1090,11 +1097,11 @@ class OTPAuth(APIView):
                     user.otp_expiration = otp_expiration
                     user.save()
 
-                    email_service = EmailService()
-                    email_service.sendEmail(
+                    sendEmail.delay(
                         "OTP for login to Xfluencer",
-                        f"Your OTP is {otp}",
-                        config("EMAIL_HOST_USER"),
+                        "Your OTP is " + str(otp),
+                        "loginEmail.html",
+                        {"otp": otp, "target": config("FRONT_END_URL")},
                         [request.data["email"]],
                     )
 
@@ -1222,11 +1229,11 @@ class EmailVerification(APIView):
                 user.otp_expiration = otp_expiration
                 user.save()
 
-                email_service = EmailService()
-                email_service.sendEmail(
+                sendEmail.delay(
                     "OTP for email verification",
-                    f"Your OTP is {otp}",
-                    config("EMAIL_HOST_USER"),
+                    "Your OTP is " + str(otp),
+                    "verifyEmail.html",
+                    {"otp": otp, "target": config("FRONT_END_URL")},
                     [user.email],
                 )
 
@@ -1279,7 +1286,7 @@ class EmailVerification(APIView):
                             },
                             status=status.HTTP_200_OK,
                         )
-                    user.email_verified_at = datetime.datetime.now()
+                    user.email_verified_at = timezone.now()
                     user.save()
                     return Response(
                         {
@@ -1305,6 +1312,13 @@ class EmailVerification(APIView):
 
 
 class WalletAuth(APIView):
+
+    def get_wallet_nonce(self, wallet_address):
+        try:
+            return WalletNonce.objects.get(wallet_address=wallet_address)
+        except WalletNonce.DoesNotExist:
+            return None
+
     def get_wallet(self, wallet_address_id):
         try:
             return Wallet.objects.get(wallet_address_id=wallet_address_id)
@@ -1351,11 +1365,40 @@ class WalletAuth(APIView):
             wallet_network.save()
             return wallet_network
 
+    def verify_nonce_signature(self, wallet_address, signature, message):
+        wallet_nonce = self.get_wallet_nonce(wallet_address)
+        if wallet_nonce is None:
+            return False
+
+        pubkey = base58.b58decode(wallet_address)
+        msg = bytes(message, 'utf8')
+        signed = base58.b58decode(signature)
+
+        result = VerifyKey(pubkey).verify(smessage=msg, signature=signed)
+
+        return result
+
     @swagger_auto_schema(request_body=WalletAuthSerializer)
     def post(self, request):
         try:
             serializer = WalletAuthSerializer(data=request.data)
             if serializer.is_valid():
+
+                # Verify that the signature is valid
+                is_verified = self.verify_nonce_signature(
+                    request.data["wallet_address_id"], request.data["signature"], request.data["message"])
+
+                if not is_verified:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Invalid signature",
+                            "errors": "Invalid signature",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+
                 # Should create a wallet if no wallet is found for the requested user else return the wallet
                 wallet = self.get_wallet(request.data["wallet_address_id"])
                 if wallet is None:
@@ -1458,14 +1501,25 @@ class WalletConnect(APIView):
             if serializer.is_valid():
                 wallet = self.get_object(request.data["wallet_address_id"])
                 if wallet:
-                    return Response(
-                        {
-                            "isSuccess": False,
-                            "data": None,
-                            "message": "This wallet is already connected with another account on Xfluencer\n Please use another wallet or login with the account that is connected with this wallet",
-                        },
-                        status=status.HTTP_200_OK,
-                    )
+                    user = User.objects.get(id=wallet.user_id.id)
+                    if user == request.user_account:
+                        return Response(
+                            {
+                                "isSuccess": True,
+                                "data": None,
+                                "message": "This wallet is already connected with your account",
+                            },
+                            status=status.HTTP_200_OK,
+                        )
+                    else:
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "data": None,
+                                "message": "This wallet is already connected with another account on Xfluencer\n Please use another wallet or login with the account that is connected with this wallet",
+                            },
+                            status=status.HTTP_200_OK,
+                        )
                 else:
                     wallet = serializer.save()
                 # Mark the wallet as primary
@@ -1492,6 +1546,49 @@ class WalletConnect(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class WalletNonceCreateView(APIView):
+
+    def get_object(self, wallet_address):
+        try:
+            wallet_nonce = WalletNonce.objects.get(
+                wallet_address=wallet_address)
+            wallet_nonce.nonce = secrets.token_hex(16)
+            wallet_nonce.save()
+            return wallet_nonce
+        except WalletNonce.DoesNotExist:
+            wallet_nonce = WalletNonce.objects.create(
+                wallet_address=wallet_address,
+                nonce=secrets.token_hex(16)
+            )
+            wallet_nonce.save()
+            return wallet_nonce
+
+    @swagger_auto_schema(request_body=WalletNonceSerializer)
+    def post(self, request):
+        try:
+            serializer = WalletNonceSerializer(data=request.data)
+            if serializer.is_valid():
+                wallet_nonce = self.get_object(request.data["wallet_address"])
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": WalletNonceSerializer(wallet_nonce).data,
+                        "message": "Wallet nonce created successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "data": None,
+                        "message": "Invalid request",
+                        "errors": serializer.errors,
+                    }
+                )
+        except Exception as e:
+            return handleServerException(e)
 
 class WalletList(APIView):
     authentication_classes = [JWTAuthentication]

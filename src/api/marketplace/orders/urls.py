@@ -7,17 +7,15 @@ from .views import (
     OrderItemDetail,
     OrderAttachmentList,
     OrderAttachmentDetail,
-    OrderItemTrackingList,
-    OrderItemTrackingDetail,
     OrderListView,
     OrderMessageList,
     SendTweetView,
     ReviewList,
     ReviewDetail,
+    TransactionCreateView,
     UpdateOrderStatus,
     OrderMessageCreateView,
     UserOrderMessagesView,
-    UpdateUpdateOrderInfluencerTransactionAddressView
 )
 
 urlpatterns = [
@@ -33,9 +31,6 @@ urlpatterns = [
     path("order-attachment/", OrderAttachmentList.as_view(), name="order-attachment-list"),
     path('order-attachment/<uuid:pk>/', OrderAttachmentDetail.as_view(), name="order-attachment-details"),
 
-    path("order-item-tracking/", OrderItemTrackingList.as_view(), name="order-item-tracking-list"),
-    path('order-item-tracking/<uuid:pk>/', OrderItemTrackingDetail.as_view(), name="order-item-tracking-details"),
-
     path("user-order-messages/", UserOrderMessagesView.as_view(),
          name="user-order-messages"),
 
@@ -50,6 +45,6 @@ urlpatterns = [
     path('send-tweet', SendTweetView.as_view(), name="send-tweet"),
     path('cancel-tweet', CancelTweetView.as_view(), name="cancel-tweet"),
 
-    path('update-influencer-transaction/<uuid:pk>/',
-         UpdateUpdateOrderInfluencerTransactionAddressView.as_view(), name="update-influencer-transaction"),
+    path('create-transaction/',
+         TransactionCreateView.as_view(), name="create-transaction"),
 ]

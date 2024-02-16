@@ -2,7 +2,8 @@
 import Star from "@/public/svg/Star.svg";
 import { notification } from "@/src/components/shared/notification";
 import { postService, putService } from "@/src/services/httpServices";
-import { OpenInFull } from "@mui/icons-material";
+import { KeyboardBackspace, OpenInFull } from "@mui/icons-material";
+import BackIcon from "@/public/svg/Back.svg";
 import Image from "next/image";
 
 import OrderSummaryDetails from "@/src/components/dashboardComponents/orderSummaryDetails";
@@ -29,8 +30,10 @@ import {
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import RouteProtection from "@/src/components/shared/routeProtection";
+import { useRouter } from "next/navigation";
 
 export default function Orders() {
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [selectedAction, setSelectedAction] = useState({
     status: "",
@@ -295,6 +298,15 @@ export default function Orders() {
           xs={selectedOrder ? 9 : 12}
           sx={{ padding: "16px 20px 0 40px" }}
         >
+          <Image
+            src={BackIcon}
+            alt={"BackIcon"}
+            height={30}
+            style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
+            onClick={() => {
+              router.back();
+            }}
+          />
           <Box
             sx={{ display: "flex", columnGap: "8px", alignItems: "flex-start" }}
           >

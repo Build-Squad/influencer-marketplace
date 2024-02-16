@@ -62,6 +62,19 @@ export const MESSAGE_STATUS = {
   DELIVERED: "delivered",
 };
 
+export const TRANSACTION_TYPE = {
+  INITIATE_ESCROW: "initiate_escrow",
+  CANCEL_ESCROW: "cancel_escrow",
+  CLAIM_ESCROW: "claim_escrow",
+  VALIDATE_ESCROW: "validate_escrow",
+};
+
+export const CHECKOUT_TEXT =
+  "Your payment will be held in an escrow smart contract for the duration of the order. The funds will be transferred to the influencer once the order is completed and validated by Xfluencer. If the influencer declines the order request, you can claim the funds back.";
+
+export const EMAIL_PRIVACY_TEXT =
+  "* Your email will not be shared or visible to anyone. It will only be used for communication purposes.";
+
 export const IDL: Xfluencer = {
   version: "0.1.0",
   name: "xfluencer",

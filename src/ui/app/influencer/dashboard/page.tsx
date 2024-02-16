@@ -7,15 +7,21 @@ import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
+import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
 import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import Image from "next/image";
+import BackIcon from "@/public/svg/Back.svg";
+import {
+  DISPLAY_DATE_FORMAT,
+  ORDER_STATUS,
+  TRANSACTION_TYPE,
+} from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   Box,
   Grid,
@@ -33,8 +39,10 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function BusinessDashboardPage() {
+  const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -138,6 +146,10 @@ export default function BusinessDashboardPage() {
             ORDER_STATUS.COMPLETED,
           ],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(0);
       },
       value: 0,
@@ -155,6 +167,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.ACCEPTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(1);
       },
@@ -174,6 +190,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.COMPLETED],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(2);
       },
       value: 2,
@@ -191,6 +211,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.REJECTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(4);
       },
@@ -364,32 +388,40 @@ export default function BusinessDashboardPage() {
               </Tooltip>
             )}
             {params?.row?.status === ORDER_STATUS.COMPLETED &&
-              !params?.row?.influencer_transaction_address && (
+              params?.row?.transactions.filter(
+                (transaction: TransactionType) =>
+                  transaction.transaction_type === TRANSACTION_TYPE.CLAIM_ESCROW
+              )?.length === 0 && (
                 <ClaimEscrow order={params?.row} updateStatus={getOrders} />
               )}
-            {params?.row?.influencer_transaction_address && (
-              <Tooltip
-                title="View Transaction"
-                placement="top"
-                arrow
-                disableInteractive
-              >
-                <Link
-                  href={`https://solana.fm/tx/${params?.row?.influencer_transaction_address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_NETWORK}`}
-                  target="_blank"
-                  sx={{
-                    textDecoration: "none",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  <IconButton>
-                    <TravelExploreIcon color="secondary" />
-                  </IconButton>
-                </Link>
-              </Tooltip>
-            )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "transactions",
+      headerName: "Transactions",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {params?.row?.transactions?.map((transaction: TransactionType) => {
+              return (
+                <TransactionIcon
+                  key={transaction?.transaction_address}
+                  transaction={transaction}
+                />
+              );
+            })}
           </Box>
         );
       },
@@ -428,6 +460,15 @@ export default function BusinessDashboardPage() {
           p: 2,
         }}
       >
+        <Image
+          src={BackIcon}
+          alt={"BackIcon"}
+          height={30}
+          style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
+          onClick={() => {
+            router.back();
+          }}
+        />
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Grid container spacing={2}>

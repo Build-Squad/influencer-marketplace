@@ -53,10 +53,6 @@ class Order(models.Model):
         max_length=16, default=generate_order_code, unique=True)
     order_number = models.IntegerField(
         unique=True, default=generate_order_number)
-    influencer_transaction_address = models.CharField(
-        max_length=100, blank=True, null=True)
-    buyer_transaction_address = models.CharField(
-        max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order" 
@@ -79,7 +75,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     
     STATUS_CHOICES = (
-        ('in_progress', 'in_progress'),
+        ('draft', 'draft'),
         ('cancelled', 'cancelled'),
         ('rejected', 'rejected'),
         ('accepted', 'accepted'),
@@ -91,7 +87,7 @@ class OrderItem(models.Model):
     service_master = models.ForeignKey(ServiceMaster, related_name='order_item_service_master_id', on_delete=SET_NULL, null=True)
     quantity = models.IntegerField(blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES,
-                              max_length=50, default='in_progress')
+                              max_length=50, default='draft')
     order_id = models.ForeignKey(Order, related_name='order_item_order_id', on_delete=SET_NULL, null=True)
     price = models.DecimalField(
         max_digits=10, decimal_places=5, blank=True, null=True)
@@ -164,6 +160,7 @@ class OrderItemMetaData(models.Model):
     placeholder = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(blank=True, null=True)
     field_name = models.CharField(max_length=100, blank=True, null=True)
+    regex = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_item_meta_data"
@@ -176,9 +173,23 @@ class OrderItemTracking(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='OrderItemTracking', default=uuid.uuid4, editable=False)
     order_item = models.ForeignKey(OrderItem, related_name='order_item_id', on_delete=SET_NULL, null=True)
     status = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "order_item_tracking" 
+
+
+class OrderTracking(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True, verbose_name='OrderTracking', default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(
+        Order, related_name='order_id', on_delete=SET_NULL, null=True)
+    status = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "order_tracking"
 
 class OrderMessage(models.Model):
     
