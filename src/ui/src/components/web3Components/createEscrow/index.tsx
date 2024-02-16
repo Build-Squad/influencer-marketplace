@@ -71,12 +71,12 @@ export default function CreateEscrow({
           programId
         );
 
-        const amountInLamports = Number(cart?.orderTotal) * 10 ** 9;
+        const amount = Number(cart?.orderTotal) * 10 ** 9;
 
         // Create the escrow
         const ix = await program.methods
           .createEscrow(
-            new anchor.BN(amountInLamports),
+            new anchor.BN(amount),
             new anchor.BN(cart?.order_number)
           )
           .accounts({
