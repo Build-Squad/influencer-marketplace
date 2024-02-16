@@ -12,7 +12,7 @@ import {
   postService,
   putService,
 } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import { DISPLAY_DATE_FORMAT, EMAIL_PRIVACY_TEXT } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import VerifiedIcon from "@mui/icons-material/Verified";
@@ -545,6 +545,14 @@ const ProfileLayout = ({
                                 </Button>
                               </Box>
                             )}
+                            <Typography
+                              sx={{
+                                fontStyle: "italic",
+                                fontSize: "12px",
+                              }}
+                            >
+                              {EMAIL_PRIVACY_TEXT}
+                            </Typography>
                           </>
                         )}
                       </Box>

@@ -56,10 +56,9 @@ export default function CreateEscrow({
           return;
         }
 
-        console.log("Business PK",businessPk.toString())
-        console.log("Influencer PK",influencer_pk.toString())
-        console.log("Order Number",cart?.order_number)
-
+        console.log("Business PK", businessPk.toString());
+        console.log("Influencer PK", influencer_pk.toString());
+        console.log("Order Number", cart?.order_number);
 
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
@@ -71,7 +70,6 @@ export default function CreateEscrow({
           ],
           programId
         );
-
 
         const amount = Number(cart?.orderTotal) * 10 ** 9;
 
@@ -111,9 +109,11 @@ export default function CreateEscrow({
                 txSign?.value?.err?.toString(),
               "error"
             );
-            console.error(`Instruction error number found: ` +
-                           txSign?.value?.err?.toString(),
-                           "error")
+            console.error(
+              `Instruction error number found: ` +
+                txSign?.value?.err?.toString(),
+              "error"
+            );
           } else {
             updateStatus(signature);
           }

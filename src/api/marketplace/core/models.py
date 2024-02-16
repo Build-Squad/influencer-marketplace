@@ -31,6 +31,7 @@ class Currency(models.Model):
         null=True,
         blank=True,
     )
+    is_default = models.BooleanField(default=False)
 
     class Meta:
         db_table = "currency"
