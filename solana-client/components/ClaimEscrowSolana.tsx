@@ -47,9 +47,9 @@ export const ClaimEscrowSolana: FC<ClaimEscrowSolanaProps> = ({business, influen
 
 
     // ARGUMENTS FOR INSTRUCTION SET BY XFLUENCER
-    const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`
-    const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`    
-    const orderCode = 125 // THIS MUST BE UNIQUE OTHERWISE ERROR
+    const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`;
+    const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`;    
+    //const orderCode = 125 // THIS MUST BE UNIQUE OTHERWISE ERROR
 
     const business_pk = new PublicKey(BUSINESS);
     const influencer_pk = new PublicKey(INFLUENCER);

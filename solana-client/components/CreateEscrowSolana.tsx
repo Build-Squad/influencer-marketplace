@@ -52,6 +52,7 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
      }
 
     const onClick = async () => {
+        console.log("CreateEscrowSolana")
 
         if (!connection || !publicKey) { 			
 			console.warn("Wallet was not connected")
@@ -70,9 +71,12 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
         );
         
         console.debug("escrowPDA", escrowPDA);
-       
+          
+        const amount = lamports * 0.01;
+        console.log("amount",amount.toString())
+
         const ix = await program.methods.createEscrow(
-            new anchor.BN(lamports),
+            new anchor.BN(amount),
             new anchor.BN(orderCode)
             ).accounts({
                 from: publicKey,
