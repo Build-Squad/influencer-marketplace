@@ -13,8 +13,7 @@ import {
   postService,
   putService,
 } from "@/src/services/httpServices";
-import { ORDER_STATUS } from "@/src/utils/consts";
-import { KeyboardBackspace } from "@mui/icons-material";
+import { CHECKOUT_TEXT, ORDER_STATUS } from "@/src/utils/consts";
 import { Box, Button, Grid, Link, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -381,10 +380,7 @@ export default function CheckoutPage() {
                     my: 2,
                   }}
                 >
-                  <Typography variant="body1">
-                    {`Your payment will be held for 72 hours. If ${cart?.influencer?.twitter_account?.name}
-                declines the order, the amount will be added back to your Wallet`}
-                  </Typography>
+                  <Typography variant="body1">{CHECKOUT_TEXT}</Typography>
                 </Box>
                 <Box>
                   <ConfirmCancel
