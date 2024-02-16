@@ -11,6 +11,7 @@ import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import { notification } from "../../shared/notification";
+import { LAMPORTS_PER_SOL } from "@/src/utils/consts";
 
 type CreateEscrowProps = {
   loading: boolean;
@@ -71,7 +72,9 @@ export default function CreateEscrow({
           programId
         );
 
-        const amount = Number(cart?.orderTotal) * 10 ** 9;
+       
+        const amount = Number(cart?.orderTotal) * LAMPORTS_PER_SOL;
+
 
         // Create the escrow
         const ix = await program.methods

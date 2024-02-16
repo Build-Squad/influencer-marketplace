@@ -69,6 +69,9 @@ export const TRANSACTION_TYPE = {
   VALIDATE_ESCROW: "validate_escrow",
 };
 
+// SOLANA PROGRAM CONSTANTS
+export const LAMPORTS_PER_SOL = 10 ** 9;
+
 export const CHECKOUT_TEXT =
   "Your payment will be held in an escrow smart contract for the duration of the order. The funds will be transferred to the influencer once the order is completed and validated by Xfluencer. If the influencer declines the order request, you can claim the funds back.";
 
