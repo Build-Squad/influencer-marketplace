@@ -42,6 +42,8 @@ authorization_url, state = twitter.authorization_url(
     auth_url, code_challenge=code_challenge, code_challenge_method="S256"
 )
 
+print("Default Creds === " ,code_verifier, code_verifier, twitter, state)
+
 def createNewCredentials():
     print("Createing new creds")
     try:
@@ -59,15 +61,14 @@ def createNewCredentials():
         new_authorization_url, new_state = new_twitter.authorization_url(
             auth_url, code_challenge=new_code_challenge, code_challenge_method="S256"
         )
-        print("code_verifier old === ", code_verifier)
         if new_twitter is not None:
             code_verifier= new_code_verifier
             twitter =new_twitter
             code_challenge=new_code_challenge
             authorization_url= new_authorization_url
             state=new_state
+            print("After Updating credscreateNewCredentials === ",code_verifier, code_verifier, twitter, state)
         
-        print("new === ", code_verifier)
 
     except Exception as e:
         print(e)
@@ -117,6 +118,7 @@ def twitterLoginCallback(request):
 
 # Helper functions
 def authenticateUser(code):
+    print("fetchToken creds === ", code_verifier, code, token)
     try:
         token = twitter.fetch_token(
             token_url=token_url,
