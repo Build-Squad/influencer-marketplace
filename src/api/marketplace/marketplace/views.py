@@ -118,7 +118,7 @@ def twitterLoginCallback(request):
 
 # Helper functions
 def authenticateUser(code):
-    print("fetchToken creds === ", code_verifier, code, token)
+    print("fetchToken creds === ", code_verifier, code, twitter)
     try:
         token = twitter.fetch_token(
             token_url=token_url,

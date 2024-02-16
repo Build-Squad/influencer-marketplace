@@ -208,9 +208,14 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
+    const paramMessage = params.get("message");
     if (status) {
+      let snackBarMessage =
+        status === "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED;
+
+      if (paramMessage) snackBarMessage = paramMessage;
       notification(
-        status === "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED,
+        snackBarMessage,
         status === "success" ? "success" : "error",
         3000
       );
