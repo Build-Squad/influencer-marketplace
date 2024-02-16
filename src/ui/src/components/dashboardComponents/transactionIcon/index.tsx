@@ -9,7 +9,7 @@ type TransactionIconProps = {
 export default function TransactionIcon({ transaction }: TransactionIconProps) {
   const colors = {
     [TRANSACTION_TYPE.INITIATE_ESCROW]: "success.main",
-    [TRANSACTION_TYPE.CANCEL_ESCROW]: "success.main",
+    [TRANSACTION_TYPE.CANCEL_ESCROW]: "warning.main",
     [TRANSACTION_TYPE.CLAIM_ESCROW]: "success.main",
   };
 
