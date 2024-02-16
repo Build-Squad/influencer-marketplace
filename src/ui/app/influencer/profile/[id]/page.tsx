@@ -322,6 +322,7 @@ const ProfileLayout = ({
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
+                        mt: 1,
                       }}
                     >
                       <Typography
@@ -330,7 +331,6 @@ const ProfileLayout = ({
                           fontSize: "16px",
                           lineHeight: "19px",
                           color: "#000",
-                          mt: 1,
                         }}
                       >
                         <Link
@@ -348,14 +348,8 @@ const ProfileLayout = ({
                           @{currentUser?.twitter_account?.user_name}
                         </Link>
                       </Typography>
-                      <Tooltip
-                        title={
-                          currentUser?.twitter_account?.verified
-                            ? "Verified On X"
-                            : "Unverified On X"
-                        }
-                      >
-                        {currentUser?.twitter_account?.verified ? (
+                      {currentUser?.twitter_account?.verified && (
+                        <Tooltip title={"Verified On X"}>
                           <VerifiedIcon
                             sx={{
                               color: "#1DA1F2",
@@ -363,16 +357,8 @@ const ProfileLayout = ({
                               marginLeft: "5px",
                             }}
                           />
-                        ) : (
-                          <NewReleasesIcon
-                            sx={{
-                              color: "#f50057",
-                              fontSize: "20px",
-                              marginLeft: "5px",
-                            }}
-                          />
-                        )}
-                      </Tooltip>
+                        </Tooltip>
+                      )}
                     </Box>
                     <Box
                       sx={{
@@ -517,19 +503,11 @@ const ProfileLayout = ({
                                   justifyContent: "center",
                                 }}
                               >
-                                <Typography
-                                  sx={{
-                                    fontStyle: "italic",
-                                  }}
-                                >
-                                  Add email address to receive notifications and
-                                  updates
-                                </Typography>
                                 <Button
                                   variant="outlined"
                                   color="secondary"
                                   sx={{
-                                    mt: 1,
+                                    my: 1,
                                     background:
                                       "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
                                     color: "black",
