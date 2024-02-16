@@ -1,11 +1,6 @@
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { Button, CircularProgress } from "@mui/material";
-import {
-  Connection,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  Transaction,
-} from "@solana/web3.js";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import idl from "../../../utils/xfluencer.json";
 
 import * as anchor from "@coral-xyz/anchor";
@@ -61,10 +56,9 @@ export default function CreateEscrow({
           return;
         }
 
-        console.log("Business PK",businessPk.toString())
-        console.log("Influencer PK",influencer_pk.toString())
-        console.log("Order Number",cart?.order_number)
-
+        console.log("Business PK", businessPk.toString());
+        console.log("Influencer PK", influencer_pk.toString());
+        console.log("Order Number", cart?.order_number);
 
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
@@ -77,8 +71,7 @@ export default function CreateEscrow({
           programId
         );
 
-
-        const amountInLamports = Number(cart?.orderTotal) * LAMPORTS_PER_SOL;
+        const amountInLamports = Number(cart?.orderTotal) * 10 ** 9;
 
         // Create the escrow
         const ix = await program.methods
@@ -116,9 +109,11 @@ export default function CreateEscrow({
                 txSign?.value?.err?.toString(),
               "error"
             );
-            console.error(`Instruction error number found: ` +
-                           txSign?.value?.err?.toString(),
-                           "error")
+            console.error(
+              `Instruction error number found: ` +
+                txSign?.value?.err?.toString(),
+              "error"
+            );
           } else {
             updateStatus(signature);
           }
