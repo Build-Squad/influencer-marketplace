@@ -69,6 +69,10 @@ export const TRANSACTION_TYPE = {
   VALIDATE_ESCROW: "validate_escrow",
 };
 
+// SOLANA PROGRAM CONSTANTS
+export const LAMPORTS_PER_SOL = 10 ** 9;
+
+
 export const IDL: Xfluencer = {
   version: "0.1.0",
   name: "xfluencer",
