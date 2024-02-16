@@ -7,6 +7,7 @@ import Head from 'next/head'
 import {Input} from "@nextui-org/react";
 import { CreateEscrowSolana } from '../components/CreateEscrowSolana'
 import { ClaimEscrowSolana } from '../components/ClaimEscrowSolana'
+import { CancelEscrowSolana } from '../components/CancelEscrowSolana'
 
 const Home: NextPage = (props) => {
 
@@ -17,6 +18,12 @@ const Home: NextPage = (props) => {
   let influencer: string = null;
   let lamports: number = null;
   let order_code:number = null;
+
+  const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`
+  const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`
+  const amount = 10 ** 9 // 0.1 SOL (10^9 lamports == 1 SOL)
+  const LAMPORTS = amount;
+  const ORDER_CODE = 12345 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
 
   return (
     <div className={styles.App}>
@@ -30,21 +37,20 @@ const Home: NextPage = (props) => {
       <WalletContextProvider>
         <AppBar />
 
-    
+
         <div className={styles.input}>
-           <Input type="address_business" label="Business Address" placeholder="Enter a valid solana address" onChangeCapture={business} />
-           <Input type="address_influencer" label="Influencer Address" placeholder="Enter a valid solana address" />
-           <Input type="amount_sol" label="Amount Lamports" placeholder="Enter amount of lamports" />
-           <Input type="order_number" label="Order Number" placeholder="Enter integer positive number" />
+           <Input type="address_business" label="Business Address" placeholder="Enter a valid solana address" onChangeCapture={business} value={BUSINESS} />
+           <Input type="address_influencer" label="Influencer Address" placeholder="Enter a valid solana address" value={INFLUENCER} />
+           <Input type="amount_sol" label="Amount Lamports" placeholder="Enter amount of lamports" value={LAMPORTS}/>
+           <Input type="order_number" label="Order Number" placeholder="Enter integer positive number" value= {ORDER_CODE}/>
         </div>
 
         <div className={styles.AppBody}>       
-          <CreateEscrowSolana business={business} influencer={influencer} lamports={lamports} order_code={order_code}/>
-          <ClaimEscrowSolana business={business} influencer={influencer} lamports={lamports} order_code={order_code} />
+          <CreateEscrowSolana business={BUSINESS} influencer={INFLUENCER} lamports={LAMPORTS} orderCode={ORDER_CODE}/>
+          <ClaimEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
+          <CancelEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
         </div>
        
-
-
       </WalletContextProvider >
 
     </div>
