@@ -27,20 +27,7 @@ auth_url = "https://twitter.com/i/oauth2/authorize"
 token_url = "https://api.twitter.com/2/oauth2/token"
 redirect_uri = TWITTER_CALLBACK_URL
 
-
-# Creating a code verifier to authenticate code came from in the callback url
-code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
-code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
-
-# Sending the code challege to twitter authenication.
-code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
-code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
-code_challenge = code_challenge.replace("=", "")
-
-twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
-authorization_url, state = twitter.authorization_url(
-    auth_url, code_challenge=code_challenge, code_challenge_method="S256"
-)
+twitter = None
 
 def logoutUser(request):
     response_data = {
@@ -54,11 +41,47 @@ def logoutUser(request):
     response.content = json.dumps(response_data)
     return response
 
+def storingCredsPerSession(request):
+    try:
+        global twitter
+        # Creating a new code verifier to update the previous variables.
+        code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
+        code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
+
+        # Sending the code challenge to Twitter authentication.
+        code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+        code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
+        code_challenge = code_challenge.replace("=", "")
+
+        twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
+        authorization_url, state = twitter.authorization_url(
+            auth_url, code_challenge=code_challenge, code_challenge_method="S256"
+        )
+        request.session["code_verifier"] = code_verifier
+        request.session["code_challenge"] = code_challenge
+        request.session["oauth_state"] = state
+
+        print("While Making the URL, code_verifier, code_challenge", code_verifier, code_challenge)
+        return authorization_url
+
+    except Exception as e:
+        print(e)
+        logger.error(f"createNewCredentials - {e}")
+        return None
 
 def authTwitterUser(request, role):
-    request.session["role"] = role
-    request.session["oauth_state"] = state
-    return redirect(authorization_url)
+    try:
+        request.session["role"] = role
+        auth_url = storingCredsPerSession(request)
+        return redirect(auth_url)
+    except Exception as e:
+        logger.error("authTwitterUser -", e)
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
+
 
 def twitterLoginCallback(request):
     # Exchange the authorization code for an access token
@@ -66,7 +89,7 @@ def twitterLoginCallback(request):
     role = request.session.get("role", "")
     try:
         # Authenticate User
-        authentication_result = authenticateUser(code)
+        authentication_result = authenticateUser(request, code)
         userData = authentication_result["userData"]
         access_token = authentication_result["access_token"]
         refresh_token = authentication_result["refresh_token"]
@@ -82,14 +105,26 @@ def twitterLoginCallback(request):
 
 
 # Helper functions
-def authenticateUser(code):
+def authenticateUser(request, code):
+    global twitter
+    code_verifier = request.session.get("code_verifier", "")
+    print("Call back", code_verifier, twitter)
     try:
-        token = twitter.fetch_token(
-            token_url=token_url,
-            client_secret=client_secret,
-            code_verifier=code_verifier,
-            code=code,
-        )
+        if twitter:
+            token = twitter.fetch_token(
+                token_url=token_url,
+                client_secret=client_secret,
+                code_verifier=code_verifier,
+                code=code,
+            )
+        else:
+            twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
+            token = twitter.fetch_token(
+                token_url=token_url,
+                client_secret=client_secret,
+                code_verifier=code_verifier,
+                code=code,
+            )
         access_token = token["access_token"]
         refresh_token = token["refresh_token"]
         print("token ==== ", token)

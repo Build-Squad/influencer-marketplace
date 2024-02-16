@@ -64,10 +64,14 @@ class CurrencyListView(APIView):
         try:
             search = request.GET.get("search", None)
             order_by = request.GET.get("order_by", None)
+            is_default = request.GET.get("is_default", None)
             if search:
                 currencies = Currency.objects.filter(
                     Q(name__icontains=search) | Q(symbol__icontains=search)
                 )
+            if is_default:
+                currencies = Currency.objects.filter(
+                    is_default=is_default == "true")
             else:
                 currencies = Currency.objects.all()
             if order_by:

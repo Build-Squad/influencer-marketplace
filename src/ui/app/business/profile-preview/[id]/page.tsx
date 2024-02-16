@@ -3,6 +3,7 @@ import { notification } from "@/src/components/shared/notification";
 import { getService } from "@/src/services/httpServices";
 import React, { useEffect, useState } from "react";
 import InfluencersCards from "../../components/influencersContainer/influencersCards";
+import BackIcon from "@/public/svg/Back.svg";
 import {
   Avatar,
   Box,
@@ -211,24 +212,19 @@ export default function BusinessProfilePreview({ params }: Props) {
     getAccount();
   }, []);
   return (
-    <Box sx={{backgroundColor: "#FAFAFA",}}>
-      <Button
-        variant="outlined"
-        sx={{
-          color: "rgb(0, 137, 234)",
-          border: "1px solid rgb(0, 137, 234)",
-          mt: 2,
-          ml:5
-        }}
+    <Box sx={{ backgroundColor: "#FAFAFA" }}>
+      <Image
+        src={BackIcon}
+        alt={"BackIcon"}
+        height={30}
+        style={{ marginTop: "16px", marginLeft: "40px", cursor:"pointer" }}
         onClick={() => {
           router.back();
         }}
-      >
-        Back
-      </Button>
+      />
       <Box
         sx={{
-          pt: 2,
+          pt: 1,
           px: 5,
           display: "flex",
           height: "100%",

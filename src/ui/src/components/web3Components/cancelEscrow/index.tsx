@@ -1,30 +1,30 @@
-import { useAppSelector } from "@/src/hooks/useRedux";
-import { Button, CircularProgress } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import idl from "../../../utils/xfluencer.json";
 
 import * as anchor from "@coral-xyz/anchor";
 
+import { postService } from "@/src/services/httpServices";
 import { getAnchorProgram } from "@/src/utils/anchorUtils";
+import { TRANSACTION_TYPE } from "@/src/utils/consts";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+import DownloadingIcon from "@mui/icons-material/Downloading";
 import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import { notification } from "../../shared/notification";
-import { LAMPORTS_PER_SOL } from "@/src/utils/consts";
 
-type CreateEscrowProps = {
-  loading: boolean;
-  updateStatus: (address: string) => Promise<void>;
+type CancelEscrowProps = {
+  order: OrderType;
+  updateStatus: () => void;
 };
 
 const programId = new PublicKey(idl.metadata.address);
 
-export default function CreateEscrow({
-  loading,
+export default function CancelEscrow({
   updateStatus,
-}: CreateEscrowProps) {
-  const cart = useAppSelector((state) => state.cart);
+  order,
+}: CancelEscrowProps) {
   const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(
     `https://rpc.ironforge.network/devnet?apiKey=${process.env.NEXT_PUBLIC_RPC_KEY}`,
@@ -39,61 +39,78 @@ export default function CreateEscrow({
   const provider = new AnchorProvider(connection, wallet!, {});
   setProvider(provider);
 
-  const { publicKey: businessPk, sendTransaction, connect } = useWallet();
+  const { publicKey, sendTransaction, connect } = useWallet();
 
-  const createEscrow = async () => {
+  const updateBusinessTransactionAddress = async (address: string) => {
+    try {
+      const { isSuccess, message } = await postService(
+        `orders/create-transaction/`,
+        {
+          order_id: order?.id,
+          transaction_address: address,
+          transaction_type: TRANSACTION_TYPE.CANCEL_ESCROW,
+          status: "success",
+        }
+      );
+
+      if (isSuccess) {
+        notification("Refund successfully claimed!", "success");
+      } else {
+        notification(
+          message
+            ? message
+            : "Something went wrong, couldn't update order status",
+          "error"
+        );
+      }
+    } finally {
+      updateStatus();
+    }
+  };
+
+  const cancelEscrow = async () => {
     try {
       setLocalLoading(true);
-      if (cart?.order_number && cart?.influencer_wallet) {
+      if (order?.influencer_wallet && order?.order_number) {
         // Get influencer wallet address
         const influencer_pk = new PublicKey(
-          cart?.influencer_wallet?.wallet_address_id
+          order?.influencer_wallet?.wallet_address_id
         );
 
+        // breakpoint
+
         // Check if wallet is connected
-        if (!connection || !businessPk) {
+        if (!connection || !publicKey) {
           await connect();
           notification("Please connect your wallet first", "error");
           return;
         }
 
-        console.log("Business PK", businessPk.toString());
-        console.log("Influencer PK", influencer_pk.toString());
-        console.log("Order Number", cart?.order_number);
-
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
           [
             utf8.encode("escrow"),
-            businessPk.toBuffer(),
+            publicKey.toBuffer(),
             influencer_pk.toBuffer(),
-            utf8.encode(cart?.order_number?.toString()),
+            utf8.encode(order?.order_number?.toString()),
           ],
           programId
         );
 
-       
-        const amount = Number(cart?.orderTotal) * LAMPORTS_PER_SOL;
-
-
         // Create the escrow
         const ix = await program.methods
-          .createEscrow(
-            new anchor.BN(amount),
-            new anchor.BN(cart?.order_number)
-          )
+          .cancelEscrowSol()
           .accounts({
-            from: businessPk,
-            to: influencer_pk,
+            business: publicKey,
+            escrowAccount: escrowPDA,
             systemProgram: anchor.web3.SystemProgram.programId,
-            escrow: escrowPDA,
           })
           .instruction();
 
         const tx = new Transaction().add(ix);
 
         const options = {
-          skipPreflight: true, // WARNING: This is dangerous on Mainnet
+          skipPreflight: true,
         };
 
         try {
@@ -112,13 +129,8 @@ export default function CreateEscrow({
                 txSign?.value?.err?.toString(),
               "error"
             );
-            console.error(
-              `Instruction error number found: ` +
-                txSign?.value?.err?.toString(),
-              "error"
-            );
           } else {
-            updateStatus(signature);
+            updateBusinessTransactionAddress(signature);
           }
         } catch (error) {
           console.error("Transaction error", error);
@@ -130,27 +142,15 @@ export default function CreateEscrow({
   };
 
   return (
-    <Button
-      disableElevation
-      fullWidth
-      variant="outlined"
-      sx={{
-        background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-        color: "black",
-        border: "1px solid black",
-        borderRadius: "20px",
-        mt: 2,
-      }}
-      disabled={loading || !cart?.orderId || localLoading}
-      onClick={() => {
-        createEscrow();
-      }}
-    >
-      {localLoading ? (
-        <CircularProgress size={24} color="secondary" />
-      ) : (
-        "Make Offer"
-      )}
-    </Button>
+    <Tooltip title="Claim">
+      <IconButton
+        onClick={() => {
+          cancelEscrow();
+        }}
+        disabled={localLoading}
+      >
+        <DownloadingIcon />
+      </IconButton>
+    </Tooltip>
   );
 }

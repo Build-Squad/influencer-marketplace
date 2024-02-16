@@ -3,6 +3,7 @@ import Star from "@/public/svg/Star.svg";
 import { notification } from "@/src/components/shared/notification";
 import { postService, putService } from "@/src/services/httpServices";
 import { KeyboardBackspace, OpenInFull } from "@mui/icons-material";
+import BackIcon from "@/public/svg/Back.svg";
 import Image from "next/image";
 
 import OrderSummaryDetails from "@/src/components/dashboardComponents/orderSummaryDetails";
@@ -297,19 +298,15 @@ export default function Orders() {
           xs={selectedOrder ? 9 : 12}
           sx={{ padding: "16px 20px 0 40px" }}
         >
-          <Button
-            variant="outlined"
-            sx={{
-              color: "rgb(0, 137, 234)",
-              border: "1px solid rgb(0, 137, 234)",
-              mt: 2,
-            }}
+          <Image
+            src={BackIcon}
+            alt={"BackIcon"}
+            height={30}
+            style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
             onClick={() => {
               router.back();
             }}
-          >
-            Back
-          </Button>
+          />
           <Box
             sx={{ display: "flex", columnGap: "8px", alignItems: "flex-start" }}
           >

@@ -79,7 +79,7 @@ export default function LoginPrompt({ setLoginAs }: Props) {
                 setOpen(false);
               }}
             >
-              Login as Influencer
+              I am an Influencer
             </Button>
           </Box>
         </Grid>
@@ -108,7 +108,7 @@ export default function LoginPrompt({ setLoginAs }: Props) {
                 setOpen(false);
               }}
             >
-              Login as Business
+              I am a Business
             </Button>
           </Box>
         </Grid>
