@@ -42,6 +42,39 @@ authorization_url, state = twitter.authorization_url(
     auth_url, code_challenge=code_challenge, code_challenge_method="S256"
 )
 
+def createNewCredentials():
+    print("Createing new creds")
+    try:
+        global code_verifier, twitter, code_challenge, authorization_url, state
+        # Creating a new code verifier to update the previous variables.
+        new_code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
+        new_code_verifier = re.sub("[^a-zA-Z0-9]+", "", new_code_verifier)
+
+        # Sending the code challenge to Twitter authentication.
+        new_code_challenge = hashlib.sha256(new_code_verifier.encode("utf-8")).digest()
+        new_code_challenge = base64.urlsafe_b64encode(new_code_challenge).decode("utf-8")
+        new_code_challenge = new_code_challenge.replace("=", "")
+
+        new_twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
+        new_authorization_url, new_state = new_twitter.authorization_url(
+            auth_url, code_challenge=new_code_challenge, code_challenge_method="S256"
+        )
+        print("code_verifier old === ", code_verifier)
+        if new_twitter is not None:
+            code_verifier= new_code_verifier
+            twitter =new_twitter
+            code_challenge=new_code_challenge
+            authorization_url= new_authorization_url
+            state=new_state
+        
+        print("new === ", code_verifier)
+
+    except Exception as e:
+        print(e)
+        logger.error(f"createNewCredentials - {e}")
+
+
+
 def logoutUser(request):
     response_data = {
         'isSuccess': True,
@@ -57,6 +90,7 @@ def logoutUser(request):
 
 def authTwitterUser(request, role):
     request.session["role"] = role
+    createNewCredentials()
     request.session["oauth_state"] = state
     return redirect(authorization_url)
 
