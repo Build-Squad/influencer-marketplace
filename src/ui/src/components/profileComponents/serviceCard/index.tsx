@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 type ServiceCardProps = {
   service: ServiceType;
@@ -32,6 +33,7 @@ type ServiceCardProps = {
   setSelectedService: React.Dispatch<React.SetStateAction<ServiceType | null>>;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   addItemToCart: (service: ServiceType) => void;
+  setOpenWalletConnectModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function ServiceCard({
@@ -42,22 +44,30 @@ export default function ServiceCard({
   setSelectedService,
   setOpenModal,
   addItemToCart,
+  setOpenWalletConnectModal,
 }: ServiceCardProps) {
   const router = useRouter();
   const loggedInUser = useAppSelector((state) => state.user?.user);
   const [deleteLoading, setDeleteLoading] = React.useState<boolean>(false);
+  const { publicKey } = useWallet();
 
-  const checkValidAddition = async () => {
+  const checkValidAddition = async (buttonType: string) => {
     // First check if the user is logged in
-    if (!loggedInUser) {
-      notification(
-        "Please login before adding services to the cart",
-        "error",
-        3000
-      );
-      return false;
+    if (buttonType === "buyNow") {
+      if (!loggedInUser || !publicKey) {
+        setOpenWalletConnectModal(true);
+        return false;
+      }
+    } else {
+      if (!loggedInUser) {
+        notification(
+          "Please login before adding services to the cart",
+          "error",
+          3000
+        );
+        return false;
+      }
     }
-
     // Check if the logged in user is a business
     if (loggedInUser?.role?.name !== ROLE_NAME.BUSINESS_OWNER) {
       notification(
@@ -351,7 +361,7 @@ export default function ServiceCard({
                 }}
                 fullWidth
                 onClick={async (e) => {
-                  const isValid = await checkValidAddition();
+                  const isValid = await checkValidAddition("addToCard");
                   if (!isValid) {
                     e.stopPropagation();
                     return;
@@ -373,7 +383,7 @@ export default function ServiceCard({
                 }}
                 fullWidth
                 onClick={async (e) => {
-                  const isValid = await checkValidAddition();
+                  const isValid = await checkValidAddition("buyNow");
                   if (!isValid) {
                     e.stopPropagation();
                     return;

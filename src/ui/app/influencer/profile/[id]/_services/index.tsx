@@ -4,6 +4,7 @@ import CheckoutModal from "@/src/components/checkoutComponents/checkoutModal";
 import CreateUpdateService from "@/src/components/profileComponents/createUpdateService";
 import ServiceCard from "@/src/components/profileComponents/serviceCard";
 import { notification } from "@/src/components/shared/notification";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { addOrderItem, resetCart } from "@/src/reducers/cartSlice";
 import { getService } from "@/src/services/httpServices";
@@ -50,6 +51,8 @@ const Services = ({
   const [selectedService, setSelectedService] =
     React.useState<ServiceType | null>(null);
   const [openCheckoutModal, setOpenCheckoutModal] =
+    React.useState<boolean>(false);
+  const [openWalletConnectModal, setOpenWalletConnectModal] =
     React.useState<boolean>(false);
 
   const getServices = async () => {
@@ -271,6 +274,7 @@ const Services = ({
                     setSelectedService={setSelectedService}
                     setOpenModal={setOpenModal}
                     addItemToCart={addItemToCart}
+                    setOpenWalletConnectModal={setOpenWalletConnectModal}
                   />
                 );
               })}
@@ -302,6 +306,12 @@ const Services = ({
         open={openCheckoutModal}
         handleClose={closeCheckoutModal}
         currentInfluencer={currentInfluencer}
+      />
+      <WalletConnectModal
+        open={openWalletConnectModal}
+        setOpen={setOpenWalletConnectModal}
+        connect={false}
+        onlyAddress={false}
       />
     </Box>
   );
