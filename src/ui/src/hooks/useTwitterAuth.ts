@@ -52,8 +52,8 @@ export default function useTwitterAuth() {
         setTwitterUserLoggedIn(false);
         dispatch(logoutReducer());
         dispatch(resetCart());
-        localStorage.clear();
-        sessionStorage.clear();
+        localStorage.removeItem("persist:user");
+        localStorage.removeItem("persist:cart");
       } else {
         notification(
           message ? message : "Something went wrong, please try again later",
@@ -78,8 +78,8 @@ export default function useTwitterAuth() {
         setTwitterUserLoggedIn(false);
         dispatch(logoutReducer());
         dispatch(resetCart());
-        localStorage.clear();
-        sessionStorage.clear();
+        localStorage.removeItem("persist:user");
+        localStorage.removeItem("persist:cart");
       }
     } catch (error) {
       console.error("Error during authentication check:", error);
