@@ -24,7 +24,7 @@ import {
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
 import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
@@ -101,6 +101,7 @@ export default function OrderItemForm({
   if (user?.role?.name == "influencer") {
     disabled = orderItem?.order_item?.status != ORDER_ITEM_STATUS.ACCEPTED;
   }
+  const [publishDateUpdated, setPublishDateUpdated] = useState(false);
 
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
@@ -136,6 +137,61 @@ export default function OrderItemForm({
       setLoading(false);
     }
   };
+
+  /**
+   * React useEffect hook that updates the publish date of an order item or a specific index.
+   *
+   * The hook first checks if the publish date of the order item is not defined and if the publish date has not been updated.
+   * If both conditions are true, it proceeds with the logic inside the hook.
+   *
+   * It then creates a default date. If the current time is before 4 PM, the default date is set to 5 PM of the current day.
+   * If the current time is 4 PM or later, the default date is set to one hour later than the current time.
+   *
+   * If the function `updateOrderItemPublishDate` is defined and the order item has an id, it calls `updateOrderItemPublishDate`
+   * with the order item id and the formatted default date as arguments. It then sets `publishDateUpdated` to true and ends the execution of the hook.
+   *
+   * If the above condition is not met and `index` is not undefined, it dispatches an action to update the publish date at the given index
+   * with the formatted default date. It then sets `publishDateUpdated` to true.
+   *
+   * The hook will re-run whenever any of the values in the dependency array change. The dependency array includes `orderItem?.publish_date`,
+   * `publishDateUpdated`, `updateOrderItemPublishDate`, `dispatch`, `updatePublishDate`, and `index`.
+   */
+
+  useEffect(() => {
+    if (!orderItem?.publish_date && !publishDateUpdated) {
+      let defaultDate = dayjs();
+      if (defaultDate.hour() < 16) {
+        // if current time is before 4 PM
+        defaultDate = defaultDate.startOf("day").add(17, "hour"); // set to 5 PM
+      } else {
+        // if current time is 4 PM or later
+        defaultDate = defaultDate.add(60, "minute"); // set to one hour later
+      }
+      if (updateOrderItemPublishDate && orderItem?.order_item?.id) {
+        updateOrderItemPublishDate(
+          orderItem.order_item.id,
+          defaultDate.format(FORM_DATE_TIME_TZ_FORMAT)
+        );
+        setPublishDateUpdated(true);
+        return;
+      } else if (index !== undefined) {
+        dispatch(
+          updatePublishDate({
+            index: index,
+            value: defaultDate.format(FORM_DATE_TIME_TZ_FORMAT),
+          })
+        );
+        setPublishDateUpdated(true);
+      }
+    }
+  }, [
+    orderItem?.publish_date,
+    publishDateUpdated,
+    updateOrderItemPublishDate,
+    dispatch,
+    updatePublishDate,
+    index,
+  ]);
 
   return (
     <Box
@@ -456,7 +512,9 @@ export default function OrderItemForm({
           <DateTimePicker
             disabled={disabled}
             value={
-              orderItem?.order_item?.publish_date
+              orderItem?.publish_date
+                ? dayjs(orderItem?.publish_date)
+                : orderItem?.order_item?.publish_date
                 ? dayjs(orderItem?.order_item?.publish_date)
                 : null
             }

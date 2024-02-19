@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
 import { useRouter } from "next/navigation";
-import LoginPrompt from "../components/loginPrompt";
 import ScrollTop from "@/public/svg/ScrollTop.svg";
 import Image from "next/image";
 
@@ -32,7 +31,6 @@ const formatTwitterFollowers = (followersCount: any) => {
 export default function BusinessHome() {
   const router = useRouter();
   const [topInfluencers, setTopInfluencers] = useState([]);
-  const [loginAs, setLoginAs] = useState("");
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -50,10 +48,6 @@ export default function BusinessHome() {
     // Clean up the event listener on component unmount
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
-
-  useEffect(() => {
-    if (loginAs == "Influencer") router.push("/influencer?loginAs=Influencer");
-  }, [loginAs]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -170,8 +164,6 @@ export default function BusinessHome() {
           <Image src={ScrollTop} alt="ScrollTop" height={50} />
         </div>
       )}
-
-      <LoginPrompt setLoginAs={setLoginAs} />
     </Box>
   );
 }
