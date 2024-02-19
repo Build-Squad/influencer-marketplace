@@ -8,7 +8,6 @@ import GuideContainer from "./components/guideContainer";
 import FAQSection from "./components/faqSection";
 import ElevateSection from "./components/elevateSection";
 import { useRouter, useSearchParams } from "next/navigation";
-import LoginPrompt from "../components/loginPrompt";
 import ScrollTop from "@/public/svg/ScrollTop.svg";
 import Image from "next/image";
 
@@ -16,7 +15,6 @@ type Props = {};
 
 export default function Influencer({}: Props) {
   const router = useRouter();
-  const [loginAs, setLoginAs] = useState("");
 
   const [isVisible, setIsVisible] = useState(false);
 
@@ -35,10 +33,6 @@ export default function Influencer({}: Props) {
     // Clean up the event listener on component unmount
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
-
-  useEffect(() => {
-    if (loginAs == "Business") router.push("/business?loginAs=Business");
-  }, [loginAs]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -93,7 +87,7 @@ export default function Influencer({}: Props) {
           <Image src={ScrollTop} alt="ScrollTop" height={50} />
         </div>
       )}
-      <LoginPrompt setLoginAs={setLoginAs} />
+      
     </Fragment>
   );
 }

@@ -7,6 +7,7 @@ import {
   Box,
   Chip,
   Link,
+  Tooltip,
 } from "@mui/material";
 import React from "react";
 import { TopInfluencersType } from "../types";
@@ -17,6 +18,48 @@ import { stringToColor } from "@/src/utils/helper";
 type Props = {
   influencer: TopInfluencersType;
   sx?: any;
+};
+
+const ServiceChipsComponent = ({ services }: { services: string[] }) => {
+  if (services.length == 1) {
+    return <Chip label={services[0]} size="small" />;
+  } else {
+    return (
+      <Box
+        sx={{
+          overflowX: "auto",
+          maxWidth: "100%",
+          display: "flex",
+          flexWrap: "nowrap",
+          alignItems: "center",
+          columnGap: "4px",
+        }}
+      >
+        <Chip label={services[0]} size="small" sx={{ maxWidth: "70%" }} />
+        <Tooltip
+          title={
+            <React.Fragment>
+              <ul style={{ margin: 0, padding: 10 }}>
+                {services.slice(1).map((ser: string, ind: number) => {
+                  return <li key={ind}>{ser}</li>;
+                })}
+              </ul>
+            </React.Fragment>
+          }
+          enterDelay={300}
+          leaveDelay={200}
+        >
+          <Typography
+            variant="caption"
+            fontWeight={"bold"}
+            sx={{ color: "#0089EA", cursor: "pointer" }}
+          >
+            +{services.length - 1} more
+          </Typography>
+        </Tooltip>
+      </Box>
+    );
+  }
 };
 
 export default function InfluencersCards({ influencer, sx = {} }: Props) {
@@ -84,7 +127,17 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
                 {influencer?.twitterUsername?.charAt(0)?.toUpperCase()}
               </Avatar>
             )}
-            <Typography gutterBottom variant="subtitle1" fontWeight={"bold"}>
+            <Typography
+              gutterBottom
+              variant="subtitle1"
+              fontWeight={"bold"}
+              sx={{
+                width: "95%",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              }}
+            >
               {influencer?.name}
             </Typography>
             <Typography
@@ -101,30 +154,13 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
                 mt: 2,
                 justifyContent: "center",
                 width: "100%",
+                columnGap: "4px",
               }}
             >
-              <Typography variant="subtitle1" fontWeight={"bold"} mr={1}>
+              <Typography variant="subtitle1" fontWeight={"bold"}>
                 Services:
               </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "nowrap",
-                  gap: "4px",
-                  overflowX: "auto",
-                  maxWidth: "100%",
-                  // "&::-webkit-scrollbar": {
-                  //   height: "5px",
-                  // },
-                  // "&::-webkit-scrollbar-thumb": {
-                  //   background: "grey",
-                  // },
-                }}
-              >
-                {influencer?.services.map((ser, index) => (
-                  <Chip key={ser} label={ser} size="small" />
-                ))}
-              </Box>
+              <ServiceChipsComponent services={influencer?.services} />
             </Box>
 
             <Box
