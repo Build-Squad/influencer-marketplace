@@ -22,6 +22,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import dayjs from "dayjs";
 
 export default function CheckoutPage() {
   const dispatch = useAppDispatch();
@@ -94,6 +95,19 @@ export default function CheckoutPage() {
       if (!orderItem?.publish_date) {
         notification("Please select a publish date", "error", 3000);
         isValid = false;
+      }
+      if (orderItem?.publish_date) {
+        // Make sure that publish_date is atleast 30 minutes from now that is if current time is 12:00 then publish_date should be atleast 12:30
+        const publishDate = dayjs(orderItem?.publish_date);
+        const _30MinutesLater = dayjs().add(30, "minutes");
+        if (publishDate.isBefore(_30MinutesLater)) {
+          notification(
+            "Please select a publish date atleast 30 minutes from now",
+            "error",
+            3000
+          );
+          isValid = false;
+        }
       }
       orderItem?.order_item?.order_item_meta_data?.forEach((metaData) => {
         if (metaData.regex && metaData?.value) {
