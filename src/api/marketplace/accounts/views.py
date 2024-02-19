@@ -215,9 +215,12 @@ class TwitterAccountList(APIView):
                 twitterAccount = twitterAccount.filter(verified=isVerified)
 
             if collaborationIds:
-                twitterAccount = TwitterAccount.objects.filter(
-                    user_twitter_account_id__in=collaborationIds
-                )
+                if collaborationIds[0] == "nil":
+                    twitterAccount = TwitterAccount.objects.none()
+                else:
+                    twitterAccount = TwitterAccount.objects.filter(
+                        user_twitter_account_id__in=collaborationIds
+                    )
 
             if categories:
                 for category in categories:

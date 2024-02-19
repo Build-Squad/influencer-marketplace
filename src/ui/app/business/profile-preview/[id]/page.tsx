@@ -87,7 +87,6 @@ const BADGES = [
 const getProfileCompletedStatus: (businessDetails: any) => string = (
   businessDetails
 ) => {
-  console.log(businessDetails);
   if (businessDetails) {
     let count = 0;
     if (businessDetails?.isTwitterAccountConnected) count += 5;
@@ -96,7 +95,6 @@ const getProfileCompletedStatus: (businessDetails: any) => string = (
       Object.values(businessDetails).filter(
         (value) => value !== "" && value !== null
       ).length - 5;
-    console.log(count);
     return `${count} / ${10 + Object.keys(businessDetails).length - 5}`;
   }
   return "-";
@@ -149,8 +147,10 @@ export default function BusinessProfilePreview({ params }: Props) {
       "/account/twitter-account/",
       {
         page_number: 1,
-        page_size: 6,
-        collaborationIds,
+        page_size: 5,
+        collaborationIds: collaborationIds.length
+          ? collaborationIds
+          : ["nil"],
       }
     );
     if (isSuccess) {
@@ -217,7 +217,7 @@ export default function BusinessProfilePreview({ params }: Props) {
         src={BackIcon}
         alt={"BackIcon"}
         height={30}
-        style={{ marginTop: "16px", marginLeft: "40px", cursor:"pointer" }}
+        style={{ marginTop: "16px", marginLeft: "40px", cursor: "pointer" }}
         onClick={() => {
           router.back();
         }}
