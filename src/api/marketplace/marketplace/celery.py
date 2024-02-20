@@ -4,12 +4,22 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
+from decouple import config
+
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "marketplace.settings")
 
 app = Celery("marketplace")
 
 app.config_from_object("django.conf:settings", namespace="CELERY")
+
+app.conf.ONCE = {
+    'backend': 'celery_once.backends.Redis',
+    'settings': {
+        'url': config('CELERY_BROKER_URL'),
+        'default_timeout': 60 * 60
+    }
+}
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
