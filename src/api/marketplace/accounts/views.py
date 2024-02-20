@@ -1708,7 +1708,7 @@ class ReferralLink(APIView):
 class ReferralValidity(APIView):
     def check_validity(self, code):
             try:
-                user_referral = UserReferrals.objects.get(referral_code=code)
+                UserReferrals.objects.get(referral_code=code)
                 return True
             except UserReferrals.DoesNotExist:
                 return False

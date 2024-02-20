@@ -20,6 +20,7 @@ import {
   Avatar,
   Box,
   Button,
+  ButtonGroup,
   Chip,
   Grid,
   IconButton,
@@ -42,16 +43,17 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
 import { stringToColor } from "@/src/utils/helper";
+import Referrals from "./_referrals";
 
 const tabs = [
   {
     value: "services",
     label: "Services",
   },
-  // {
-  //   value: "packages",
-  //   label: "Packages",
-  // },
+  {
+    value: "referrals",
+    label: "Referrals",
+  },
 ];
 
 const debounce = (fn: Function, ms = 500) => {
@@ -80,7 +82,7 @@ const ProfileLayout = ({
   const [userRegion, setUserRegion] = React.useState<RegionType>();
   const [editibleBio, setEditibleBio] = React.useState<string>("");
   const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
-  const [referralLink, setReferralLink] = React.useState<string>("");
+  const [type, setType] = React.useState<string>("services");
 
   useEffect(() => {
     if (params.id) {
@@ -112,7 +114,6 @@ const ProfileLayout = ({
 
   useEffect(() => {
     getRegions();
-    getUserReferralLink();
   }, []);
 
   useEffect(() => {
@@ -126,20 +127,6 @@ const ProfileLayout = ({
       setEditibleBio(currentUser?.twitter_account?.description);
     }
   }, [currentUser]);
-
-  const getUserReferralLink = async () => {
-    const { isSuccess, message, data } = await getService(
-      `/account/user/referral-link/`
-    );
-    if (isSuccess) {
-      setReferralLink(data?.data?.referralLink);
-    } else {
-      notification(
-        message ? message : "Error fetching user referral link",
-        "error"
-      );
-    }
-  };
 
   const getUserDetails = async () => {
     const { isSuccess, message, data } = await getService(
@@ -829,33 +816,52 @@ const ProfileLayout = ({
                     }}
                   />
                 ) : null}
-
-                <Typography
-                  variant="h6"
-                  fontWeight={"bold"}
-                  sx={{ mt: 2, ml: 2 }}
-                >
-                  Influencer Referral Link: {referralLink}
-                </Typography>
-
                 <Box
                   sx={{
                     m: 2,
                   }}
                 >
-                  {tabs.map((item) => (
-                    <Typography variant="h4" key={item.value}>
-                      {item.label}
-                    </Typography>
-                  ))}
+                  {params?.id === loggedInUser?.id ? (
+                    <ButtonGroup
+                      aria-label="outlined primary button group"
+                      sx={{
+                        mb: 2,
+                        borderRadius: 8,
+                      }}
+                      size="large"
+                    >
+                      {tabs.map((item) => (
+                        <Button
+                          variant={
+                            type === item.value ? "contained" : "outlined"
+                          }
+                          color="secondary"
+                          onClick={() => {
+                            setType(item.value);
+                          }}
+                          sx={{
+                            borderRadius: "20px",
+                          }}
+                        >
+                          {item.label}
+                        </Button>
+                      ))}{" "}
+                    </ButtonGroup>
+                  ) : (
+                    <Typography variant="h4">Services</Typography>
+                  )}
                 </Box>
                 <Box sx={{ p: 2 }}>
-                  <Services
-                    currentInfluencer={currentUser}
-                    id={params.id}
-                    wallets={wallets}
-                    setOpen={setOpenWalletConnectModal}
-                  />
+                  {type == "services" ? (
+                    <Services
+                      currentInfluencer={currentUser}
+                      id={params.id}
+                      wallets={wallets}
+                      setOpen={setOpenWalletConnectModal}
+                    />
+                  ) : (
+                    <Referrals />
+                  )}
                 </Box>
               </Grid>
             </Grid>

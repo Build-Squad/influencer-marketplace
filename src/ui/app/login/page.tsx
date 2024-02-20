@@ -189,6 +189,9 @@ const Login: React.FC = () => {
                     </InputAdornment>
                   }
                 />
+                <Typography variant="caption" sx={{ color: "grey" }}>
+                  *Only for first time users
+                </Typography>
               </Grid>
             ) : null}
 
