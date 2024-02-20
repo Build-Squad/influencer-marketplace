@@ -172,7 +172,7 @@ class WalletCompleteSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = "__all__"
 
-class UserReferralSerializer(serializers.ModelSerializer):
+class UserReferralsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserReferrals
         fields = "__all__"
@@ -189,7 +189,7 @@ class UserSerializer(serializers.ModelSerializer):
     region = AccountRegionSerializer(
         read_only=True, source="region_user_account"
     )
-    referral = UserReferralSerializer(read_only=True, source="user_referral_account")
+    referral = UserReferralsSerializer(read_only=True, source="user_referral_account")
 
     class Meta:
         model = User

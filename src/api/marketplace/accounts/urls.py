@@ -3,6 +3,7 @@ from .views import (
     AccountRegionList,
     OTPAuth,
     OTPVerification,
+    ReferralLink,
     TopInfluencers,
     TwitterAccountList,
     TwitterAccountDetail,
@@ -53,6 +54,7 @@ urlpatterns = [
     path("user/<uuid:pk>/", UserDetail.as_view(), name="user-detail"),
 
 
+    path("user/referral-link/", ReferralLink.as_view(), name="referral-link"),
 
     path("business-meta-data/<uuid:userId>/", BusinessAccountMetaDataDetail.as_view(), name="business-account-meta-data-detail"),
 

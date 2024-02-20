@@ -2,7 +2,6 @@ from distutils.util import strtobool
 from http.client import HTTPResponse
 import secrets
 from accounts.tasks import sendEmail
-
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
 from marketplace.services import (
@@ -30,6 +29,7 @@ from .models import (
     User,
     BankAccount,
     Role,
+    UserReferrals,
     Wallet,
     WalletNetwork,
     WalletNonce,
@@ -1662,5 +1662,45 @@ class BusinessAccountMetaDataDetail(APIView):
                 )
             else:
                 return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class ReferralLink(APIView):
+    def get_or_create_referral(self, user):
+        try:
+            return UserReferrals.objects.get(user_account=user)
+        except UserReferrals.DoesNotExist:
+            return UserReferrals.objects.create(user_account=user)
+        
+    def createLink(self,code):
+        hostname = config('SERVER')
+        return f"{hostname}auth-twitter-user/influencer/?code={code}"
+    
+    authentication_classes = [JWTAuthentication]
+    def get(self, request):
+        try:
+            user = request.user_account
+            userReferrals = self.get_or_create_referral(user)
+            if userReferrals:
+                referralLink = self.createLink(userReferrals.referral_code)
+            if userReferrals and referralLink:
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": {"referralLink": referralLink},
+                        "message": "User Referrals retrieved successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "data": None,
+                        "message": "User Referrals not found",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
         except Exception as e:
             return handleServerException(e)

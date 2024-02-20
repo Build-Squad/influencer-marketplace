@@ -80,6 +80,7 @@ const ProfileLayout = ({
   const [userRegion, setUserRegion] = React.useState<RegionType>();
   const [editibleBio, setEditibleBio] = React.useState<string>("");
   const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
+  const [referralLink, setReferralLink] = React.useState<string>("");
 
   useEffect(() => {
     if (params.id) {
@@ -111,6 +112,7 @@ const ProfileLayout = ({
 
   useEffect(() => {
     getRegions();
+    getUserReferralLink();
   }, []);
 
   useEffect(() => {
@@ -124,6 +126,20 @@ const ProfileLayout = ({
       setEditibleBio(currentUser?.twitter_account?.description);
     }
   }, [currentUser]);
+
+  const getUserReferralLink = async () => {
+    const { isSuccess, message, data } = await getService(
+      `/account/user/referral-link/`
+    );
+    if (isSuccess) {
+      setReferralLink(data?.referralLink);
+    } else {
+      notification(
+        message ? message : "Error fetching user referral link",
+        "error"
+      );
+    }
+  };
 
   const getUserDetails = async () => {
     const { isSuccess, message, data } = await getService(
