@@ -83,7 +83,7 @@ const CreateUpdateService = ({
         },
         status: values.status,
         platform_fees: PLATFORM_FEE,
-        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(2),
+        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(4),
       };
       const { message, data, errors, isSuccess } = await putService(
         `/packages/service/${serviceItem?.id}/`,
@@ -121,7 +121,7 @@ const CreateUpdateService = ({
         },
         status: values.status,
         platform_fees: PLATFORM_FEE,
-        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(2),
+        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(4),
       };
       const { message, isSuccess } = await postService(
         "/packages/service/",
@@ -500,7 +500,7 @@ const CreateUpdateService = ({
                       Platform Fee ({PLATFORM_FEE}%)
                     </Typography>
                     <Typography variant="body1">
-                      {((formik.values.price * PLATFORM_FEE) / 100).toFixed(2) +
+                      {((formik.values.price * PLATFORM_FEE) / 100).toFixed(4) +
                         " "}{" "}
                       {formik?.values?.currencyObject?.symbol}
                     </Typography>
