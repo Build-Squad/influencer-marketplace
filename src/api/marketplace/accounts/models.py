@@ -145,12 +145,12 @@ class UserReferrals(models.Model):
     )
     user_account = models.OneToOneField(
         User,
-        related_name="user_referral_account",
+        related_name="user_account",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
-    referred_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals')
+    referred_by = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='referred_by_account')
     referral_code = models.CharField(max_length=16, unique=True)
 
     def generate_referral_code(self):
@@ -171,18 +171,6 @@ class UserReferrals(models.Model):
 
     def __str__(self):
         return f"{self.user_account.username} referrals"
-
-    
-@receiver(post_save, sender=User)
-def create_user_referral_data(sender, instance, created, **kwargs):
-    """
-    Signal handler to create influencer's referrals instance when a User with role 'influencer' is created.
-    """
-    if created and instance.role and instance.role.name == "influencer":
-        UserReferrals.objects.create(
-            user_account=instance
-        )
-
 
 class AccountRegion(models.Model):
     id = models.UUIDField(

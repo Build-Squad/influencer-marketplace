@@ -6,7 +6,7 @@ from django.http import (
     HttpResponseRedirect,
 )
 from decouple import config
-from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User
+from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User, UserReferrals
 import datetime
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
@@ -72,6 +72,9 @@ def storingCredsPerSession(request):
 def authTwitterUser(request, role):
     try:
         request.session["role"] = role
+        referral_code = request.GET.get("referral_code", "")
+        if referral_code:
+            request.session["referral_code"] = referral_code
         auth_url = storingCredsPerSession(request)
         return redirect(auth_url)
     except Exception as e:
@@ -87,6 +90,7 @@ def twitterLoginCallback(request):
     # Exchange the authorization code for an access token
     code = request.GET.get("code")
     role = request.session.get("role", "")
+    referral_code = request.session.get("referral_code", "")
     try:
         # Authenticate User
         authentication_result = authenticateUser(request, code)
@@ -94,7 +98,7 @@ def twitterLoginCallback(request):
         access_token = authentication_result["access_token"]
         refresh_token = authentication_result["refresh_token"]
         # Create USER and JWT and send response
-        return createJWT(userData, access_token, role, refresh_token)
+        return createJWT(userData, access_token, role, refresh_token, referral_code)
     except Exception as e:
         logger.error("Error in twitterLoginCallback -", e)
         if role == "business_owner":
@@ -177,7 +181,7 @@ def manage_categories(hashtags, twitter_account):
             )
             new_account_category.save()
 
-def createUser(userData, access_token, role, refresh_token):
+def createUser(userData, access_token, role, refresh_token, referral_code):
     try:
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
@@ -242,6 +246,21 @@ def createUser(userData, access_token, role, refresh_token):
                 role=Role.objects.filter(name=role).first(),
             )
             new_user_account.save()
+
+            # New user login with referral_code - 
+            if referral_code:
+                # Get user account based on referral_code
+                try:
+                    referred_by = User.objects.get(user_account__referral_code=referral_code)
+                    if referred_by:
+                        UserReferrals.objects.create(user_account=new_user_account, referred_by=referred_by)
+                except referred_by.DoesNotExist:
+                    return {
+                        "status": "error",
+                        "message": f"Invalid Referral Code - {referral_code}",
+                    }
+            
+
         else:
             if existing_user_account.role.name != role:
                 return {
@@ -264,7 +283,7 @@ def createUser(userData, access_token, role, refresh_token):
 
 
 # The userData here is from twitter
-def createJWT(userData, access_token, role, refresh_token):
+def createJWT(userData, access_token, role, refresh_token, referral_code):
     try:
         # Creating a response object with JWT cookie
         if role == "business_owner":
@@ -272,7 +291,7 @@ def createJWT(userData, access_token, role, refresh_token):
         elif role == "influencer":
             redirect_url = f"{config('FRONT_END_URL')}influencer/"
 
-        current_user_data = createUser(userData, access_token, role, refresh_token)
+        current_user_data = createUser(userData, access_token, role, refresh_token, referral_code)
         if current_user_data["status"] == "error":
             return redirect(
                 redirect_url

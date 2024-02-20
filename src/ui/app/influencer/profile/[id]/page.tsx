@@ -132,7 +132,7 @@ const ProfileLayout = ({
       `/account/user/referral-link/`
     );
     if (isSuccess) {
-      setReferralLink(data?.referralLink);
+      setReferralLink(data?.data?.referralLink);
     } else {
       notification(
         message ? message : "Error fetching user referral link",
@@ -829,6 +829,14 @@ const ProfileLayout = ({
                     }}
                   />
                 ) : null}
+
+                <Typography
+                  variant="h6"
+                  fontWeight={"bold"}
+                  sx={{ mt: 2, ml: 2 }}
+                >
+                  Influencer Referral Link: {referralLink}
+                </Typography>
 
                 <Box
                   sx={{
