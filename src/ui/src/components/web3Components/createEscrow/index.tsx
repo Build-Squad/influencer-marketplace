@@ -39,7 +39,7 @@ export default function CreateEscrow({
   const provider = new AnchorProvider(connection, wallet!, {});
   setProvider(provider);
 
-  const { publicKey: businessPk, sendTransaction, connect } = useWallet();
+  const { publicKey: businessPk, sendTransaction } = useWallet();
 
   const createEscrow = async () => {
     try {
@@ -52,7 +52,6 @@ export default function CreateEscrow({
 
         // Check if wallet is connected
         if (!connection || !businessPk) {
-          await connect();
           notification("Please connect your wallet first", "error");
           return;
         }
@@ -72,9 +71,7 @@ export default function CreateEscrow({
           programId
         );
 
-       
         const amount = Number(cart?.orderTotal) * LAMPORTS_PER_SOL;
-
 
         // Create the escrow
         const ix = await program.methods

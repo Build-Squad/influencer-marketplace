@@ -81,7 +81,6 @@ export default function CancelEscrow({
 
         // Check if wallet is connected
         if (!connection || !publicKey) {
-          await connect();
           notification("Please connect your wallet first", "error");
           return;
         }
