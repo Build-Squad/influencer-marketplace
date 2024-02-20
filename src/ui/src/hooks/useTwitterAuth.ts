@@ -8,11 +8,14 @@ import { useAppDispatch } from "./useRedux";
 import { loginReducer, logoutReducer } from "../reducers/userSlice";
 import { resetCart } from "../reducers/cartSlice";
 import { ROLE_NAME } from "../utils/consts";
+import { usePathname, useRouter } from "next/navigation";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // Hook for handling user login/signup via X
 export default function useTwitterAuth() {
+  const pathname = usePathname();
+  const router = useRouter();
   const dispatch = useAppDispatch();
   // State to track whether the user is logged in via X
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
@@ -52,8 +55,13 @@ export default function useTwitterAuth() {
         setTwitterUserLoggedIn(false);
         dispatch(logoutReducer());
         dispatch(resetCart());
-        localStorage.clear();
-        sessionStorage.clear();
+        localStorage.removeItem("persist:user");
+        localStorage.removeItem("persist:cart");
+        if (pathname.includes(ROLE_NAME.INFLUENCER)) {
+          router.push(`/${ROLE_NAME.INFLUENCER}`);
+        } else {
+          router.push(`/business`);
+        }
       } else {
         notification(
           message ? message : "Something went wrong, please try again later",
@@ -78,8 +86,8 @@ export default function useTwitterAuth() {
         setTwitterUserLoggedIn(false);
         dispatch(logoutReducer());
         dispatch(resetCart());
-        localStorage.clear();
-        sessionStorage.clear();
+        localStorage.removeItem("persist:user");
+        localStorage.removeItem("persist:cart");
       }
     } catch (error) {
       console.error("Error during authentication check:", error);
