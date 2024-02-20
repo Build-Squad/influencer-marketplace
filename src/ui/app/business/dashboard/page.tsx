@@ -1,5 +1,6 @@
 "use client";
 
+import BackIcon from "@/public/svg/Back.svg";
 import AcceptedOrders from "@/public/svg/acceptedOrders.svg?icon";
 import CompletedOrders from "@/public/svg/completedOrders.svg?icon";
 import PendingOrders from "@/public/svg/pendingOrders.svg?icon";
@@ -19,12 +20,10 @@ import {
   ORDER_STATUS,
   TRANSACTION_TYPE,
 } from "@/src/utils/consts";
-import { KeyboardBackspace } from "@mui/icons-material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
-  Button,
   Grid,
   IconButton,
   Link,
@@ -38,6 +37,7 @@ import {
   GridTreeNodeWithRender,
 } from "@mui/x-data-grid";
 import dayjs from "dayjs";
+import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -482,21 +482,17 @@ export default function BusinessDashboardPage() {
           p: 2,
         }}
       >
+        <Image
+          src={BackIcon}
+          alt={"BackIcon"}
+          height={30}
+          style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
+          onClick={() => {
+            router.back();
+          }}
+        />
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Tooltip title="Go Back" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  router.back();
-                }}
-                sx={{
-                  boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.15)",
-                  mb: 2,
-                }}
-              >
-                <KeyboardBackspace />
-              </IconButton>
-            </Tooltip>
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (
