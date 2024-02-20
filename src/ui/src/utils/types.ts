@@ -220,6 +220,7 @@ type OrderItemType = {
   order_item_meta_data: OrderItemMetaDataType[];
   publish_date?: string;
   published_tweet_id?: string;
+  status?: string;
 };
 
 type TransactionType = {
