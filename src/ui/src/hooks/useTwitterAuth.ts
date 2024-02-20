@@ -1,14 +1,13 @@
 "use client";
 
-import axios from "axios";
-import { useState, useEffect } from "react";
-import { getService } from "../services/httpServices";
-import { notification } from "../components/shared/notification";
-import { useAppDispatch } from "./useRedux";
-import { loginReducer, logoutReducer } from "../reducers/userSlice";
-import { resetCart } from "../reducers/cartSlice";
-import { ROLE_NAME } from "../utils/consts";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { notification } from "../components/shared/notification";
+import { resetCart } from "../reducers/cartSlice";
+import { loginReducer, logoutReducer } from "../reducers/userSlice";
+import { getService } from "../services/httpServices";
+import { ROLE_NAME } from "../utils/consts";
+import { useAppDispatch } from "./useRedux";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
