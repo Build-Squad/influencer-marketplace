@@ -425,6 +425,7 @@ export default function BusinessDashboardPage() {
       headerName: "Transactions",
       flex: 1,
       sortable: false,
+      minWidth: 300,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
