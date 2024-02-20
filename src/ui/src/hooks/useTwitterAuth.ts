@@ -8,6 +8,7 @@ import { loginReducer, logoutReducer } from "../reducers/userSlice";
 import { getService } from "../services/httpServices";
 import { ROLE_NAME } from "../utils/consts";
 import { useAppDispatch } from "./useRedux";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -16,6 +17,9 @@ export default function useTwitterAuth() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  const { publicKey, disconnect } = useWallet();
+
   // State to track whether the user is logged in via X
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
   const [isAccountSetupComplete, setIsAccountSetupComplete] = useState(true);
@@ -56,6 +60,9 @@ export default function useTwitterAuth() {
         dispatch(resetCart());
         localStorage.removeItem("persist:user");
         localStorage.removeItem("persist:cart");
+        if (publicKey) {
+          await disconnect();
+        }
         if (pathname.includes(ROLE_NAME.INFLUENCER)) {
           router.push(`/${ROLE_NAME.INFLUENCER}`);
         } else {
