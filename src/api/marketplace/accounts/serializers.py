@@ -14,6 +14,7 @@ from .models import (
     User,
     BankAccount,
     Role,
+    UserReferrals,
     Wallet,
     WalletNetwork,
     WalletNonce,
@@ -171,6 +172,11 @@ class WalletCompleteSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = "__all__"
 
+class UserReferralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserReferrals
+        fields = "__all__"
+
 
 class UserSerializer(serializers.ModelSerializer):
     twitter_account = TwitterAccountSerializer(required=False)
@@ -183,6 +189,7 @@ class UserSerializer(serializers.ModelSerializer):
     region = AccountRegionSerializer(
         read_only=True, source="region_user_account"
     )
+    referral = UserReferralSerializer(read_only=True, source="user_referral_account")
 
     class Meta:
         model = User

@@ -1,3 +1,6 @@
+import random
+import string
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import SET_NULL
@@ -132,6 +135,53 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+class UserReferrals(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="User Referral ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    user_account = models.OneToOneField(
+        User,
+        related_name="user_referral_account",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    referred_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals')
+    referral_code = models.CharField(max_length=16, unique=True)
+
+    def generate_referral_code(self):
+        # Generate a unique referral code
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        # Check if the generated code is unique
+        while UserReferrals.objects.filter(referral_code=code).exists():
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        return code
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            self.referral_code = self.generate_referral_code()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = "user_referrals"
+
+    def __str__(self):
+        return f"{self.user_account.username} referrals"
+
+    
+@receiver(post_save, sender=User)
+def create_user_referral_data(sender, instance, created, **kwargs):
+    """
+    Signal handler to create influencer's referrals instance when a User with role 'influencer' is created.
+    """
+    if created and instance.role and instance.role.name == "influencer":
+        UserReferrals.objects.create(
+            user_account=instance
+        )
 
 
 class AccountRegion(models.Model):

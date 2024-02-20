@@ -89,12 +89,10 @@ const Login: React.FC = () => {
           <Typography variant="h5" fontWeight="bold" sx={{ mt: 1 }}>
             Sign in to XFluencer as a {loginAs}
           </Typography>
-          <Typography
-            variant="subtitle2"
-            sx={{ color: "#0089EA", textTransform: "none", cursor: "pointer" }}
-            onClick={handleLoginAsToggle}
-          >
-            Login as {loginAs === "Business" ? "Influencer" : "Business"}?
+          <Typography variant="caption" sx={{ lineHeight: "2px" }}>
+            {loginAs == "Business"
+              ? "Discover a world of opportunity on our marketplace, where you can connect with top influencers on X to elevate your brand's presence. Browse through a variety of services, from tweets to retweets and more, all priced in Solana – the trusted cryptocurrency for secure transactions."
+              : "Monetize your X influence with our marketplace. Set your rates in Solana and showcase your services to businesses eager to connect with you. Link your X account to get started!"}
           </Typography>
         </Box>
 
@@ -114,7 +112,9 @@ const Login: React.FC = () => {
         <LoginAccordion
           title="Connect with Socials"
           subtitle={
-            loginAs == "Influencer" ? "Sign in with your X" : "Sign in with your email or socials"
+            loginAs == "Influencer"
+              ? "Sign in with your X"
+              : "Sign in with your email or socials"
           }
           defaultExpanded={loginAs === "Influencer"}
         >
@@ -132,6 +132,19 @@ const Login: React.FC = () => {
             ) : null}
           </Grid>
         </LoginAccordion>
+        <Typography
+          variant="subtitle2"
+          sx={{
+            color: "#0089EA",
+            textTransform: "none",
+            cursor: "pointer",
+            mt: 3,
+            textAlign: "end",
+          }}
+          onClick={handleLoginAsToggle}
+        >
+          Login as {loginAs === "Business" ? "Influencer" : "Business"}?
+        </Typography>
       </Box>
 
       {/* Wallet Model */}
