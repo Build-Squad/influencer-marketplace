@@ -1506,6 +1506,15 @@ class WalletConnect(APIView):
                 if wallet:
                     user = User.objects.get(id=wallet.user_id.id)
                     if user == request.user_account:
+                        # Mark all other wallets as non-primary and this wallet as primary
+                        added_wallets = Wallet.objects.filter(
+                            user_id=request.user_account)
+                        for added_wallet in added_wallets:
+                            if added_wallet.id != wallet.id:
+                                added_wallet.is_primary = False
+                                added_wallet.save()
+                        wallet.is_primary = True
+                        wallet.save()
                         return Response(
                             {
                                 "isSuccess": True,
