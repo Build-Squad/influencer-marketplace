@@ -1704,3 +1704,25 @@ class ReferralLink(APIView):
                 )
         except Exception as e:
             return handleServerException(e)
+        
+class ReferralValidity(APIView):
+    def check_validity(self, code):
+            try:
+                user_referral = UserReferrals.objects.get(referral_code=code)
+                return True
+            except UserReferrals.DoesNotExist:
+                return False
+    def get(self, request):
+        try:
+            referral_code = request.GET.get("referral_code", "")
+            is_valid = self.check_validity(referral_code)
+            return Response(
+                {
+                    "isSuccess": is_valid,
+                    "data": {"isValid": is_valid},
+                    "message": f"Is referral code valid? - {is_valid}",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)

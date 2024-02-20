@@ -1,6 +1,15 @@
 "use client";
 import Image from "next/image";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  Input,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import XfluencerLogo from "@/public/XfluencerLogo_Icon.png";
 import LoginOptions from "./components/loginOptions";
@@ -10,6 +19,9 @@ import WalletConnectModal from "@/src/components/web3Components/walletConnectMod
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import EmailLoginModal from "@/src/components/emailLoginModal";
+import { getService } from "@/src/services/httpServices";
+import { Send } from "@mui/icons-material";
+import { notification } from "@/src/components/shared/notification";
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -20,6 +32,8 @@ const Login: React.FC = () => {
   const [loginAs, setLoginAs] = useState(role ?? "Business");
   const [walletOpen, setWalletOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [isReferralCodeValid, setIsReferralCodeValid] = useState(false);
   const user = useAppSelector((state) => state.user);
 
   const {
@@ -65,7 +79,26 @@ const Login: React.FC = () => {
   const handleConnectX = () => {
     startTwitterAuthentication({
       role: loginAs == "Business" ? "business_owner" : "influencer",
+      referral_code: isReferralCodeValid ? referralCode : "",
     });
+  };
+
+  const checkReferralCode = async () => {
+    try {
+      const { isSuccess, data } = await getService(
+        `account/user/check-referral-validity/?referral_code=${referralCode}`
+      );
+      if (isSuccess) {
+        notification("Referral Code is Valid");
+        setIsReferralCodeValid(true);
+      } else {
+        notification("Invalid Referral Code", "error");
+        setIsReferralCodeValid(false);
+      }
+    } catch (error) {
+      console.error("Error during referal code checking:", error);
+      setIsReferralCodeValid(false);
+    }
   };
 
   return (
@@ -118,10 +151,47 @@ const Login: React.FC = () => {
           }
           defaultExpanded={loginAs === "Influencer"}
         >
-          <Grid container spacing={2}>
+          <Grid
+            container
+            spacing={2}
+            justifyContent={
+              loginAs === "Influencer" ? "space-between" : "flex-start"
+            }
+          >
             <Grid item>
               <LoginOptions label="Connect with X" onClick={handleConnectX} />
             </Grid>
+            {loginAs === "Influencer" ? (
+              <Grid item xs={5} md={5} lg={5} sm={5} sx={{ float: "right" }}>
+                <Input
+                  type="text"
+                  color="secondary"
+                  sx={{
+                    ".MuiInputBase-root": {
+                      borderRadius: "24px",
+                    },
+                  }}
+                  placeholder="Enter Referral Code"
+                  size="small"
+                  fullWidth
+                  value={referralCode}
+                  onChange={(e) => {
+                    setReferralCode(e.target.value);
+                  }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={checkReferralCode}
+                      >
+                        <Send />
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </Grid>
+            ) : null}
+
             {loginAs === "Business" ? (
               <Grid item>
                 <LoginOptions

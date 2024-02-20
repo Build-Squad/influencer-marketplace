@@ -4,6 +4,7 @@ from .views import (
     OTPAuth,
     OTPVerification,
     ReferralLink,
+    ReferralValidity,
     TopInfluencers,
     TwitterAccountList,
     TwitterAccountDetail,
@@ -55,6 +56,7 @@ urlpatterns = [
 
 
     path("user/referral-link/", ReferralLink.as_view(), name="referral-link"),
+    path("user/check-referral-validity/", ReferralValidity.as_view(), name="referral-validity"),
 
     path("business-meta-data/<uuid:userId>/", BusinessAccountMetaDataDetail.as_view(), name="business-account-meta-data-detail"),
 
