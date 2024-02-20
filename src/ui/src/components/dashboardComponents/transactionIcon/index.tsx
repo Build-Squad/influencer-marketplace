@@ -1,16 +1,17 @@
 import { TRANSACTION_TYPE } from "@/src/utils/consts";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
-import { IconButton, Link, Tooltip } from "@mui/material";
+import { Button, IconButton, Link, Tooltip } from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 type TransactionIconProps = {
   transaction: TransactionType;
 };
 
 export default function TransactionIcon({ transaction }: TransactionIconProps) {
-  const colors = {
-    [TRANSACTION_TYPE.INITIATE_ESCROW]: "success.main",
-    [TRANSACTION_TYPE.CANCEL_ESCROW]: "warning.main",
-    [TRANSACTION_TYPE.CLAIM_ESCROW]: "success.main",
+  const labels = {
+    [TRANSACTION_TYPE.INITIATE_ESCROW]: "Offer TXN",
+    [TRANSACTION_TYPE.CANCEL_ESCROW]: "Refund TXN",
+    [TRANSACTION_TYPE.CLAIM_ESCROW]: "Payment TXN",
   };
 
   return (
@@ -25,13 +26,21 @@ export default function TransactionIcon({ transaction }: TransactionIconProps) {
           },
         }}
       >
-        <IconButton>
-          <TravelExploreIcon
-            sx={{
-              color: colors[transaction?.transaction_type],
-            }}
-          />
-        </IconButton>
+        <Button
+          variant={
+            transaction?.transaction_type === TRANSACTION_TYPE.CANCEL_ESCROW
+              ? "outlined"
+              : "contained"
+          }
+          color="secondary"
+          size="small"
+          sx={{
+            mx: 0.5,
+          }}
+          endIcon={<OpenInNewIcon />}
+        >
+          {labels[transaction?.transaction_type]}
+        </Button>
       </Link>
     </Tooltip>
   );
