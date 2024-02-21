@@ -1,4 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
+import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 
 import {
   createMint,
@@ -73,7 +74,8 @@ export async function getAccountInfo(
     closeAuthority: rawAccount.closeAuthorityOption ? rawAccount.closeAuthority : null,
   }
 }
-/*
+
+
 export async function createNewMint(
   connection: anchor.Provider,
   wallet: NodeWallet,
@@ -86,7 +88,7 @@ export async function createNewMint(
     wallet.publicKey,
     mint_decimals
   );
-}*/
+}
 
 export const getAnchorProvider = async () => {
   return anchor.getProvider() as anchor.AnchorProvider;
@@ -95,6 +97,14 @@ export const getAnchorProvider = async () => {
 export function getAnchorProviderSync(){
   return anchor.getProvider() as anchor.AnchorProvider;
 }
+
+export async function getTokenAccountBalance_v2(
+    provider: anchor.Provider,
+    tokenAccount: anchor.web3.PublicKey
+  ) {
+    const result = await provider.connection.getTokenAccountBalance(tokenAccount);
+    
+    return parseInt(result.value.amount);
 
 export const getTokenAccountBalance = async ( 
   tokenAccount: anchor.web3.PublicKey
@@ -125,6 +135,7 @@ export async function airdrop(
         signature: airdropSignature,
       });
   }
+
 
 
 export const createAssociatedTokenAccountWithBalance = async (
@@ -365,3 +376,4 @@ export const getKeypairFromSecret = async (secret?: string) => {
   }
   return Keypair.fromSecretKey(parsedFileContents);
 };
+

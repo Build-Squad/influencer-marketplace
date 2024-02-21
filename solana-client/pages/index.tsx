@@ -2,17 +2,26 @@ import { NextPage } from 'next'
 import styles from '../styles/Home.module.css'
 import WalletContextProvider from '../components/WalletContextProvider'
 import { AppBar } from '../components/AppBar'
+
+
+import { BalanceDisplay } from '../components/BalanceDisplay'
+
+import {NextUIProvider} from "@nextui-org/react";
+
 import { PingButton } from '../components/PingButton'
+
 import Head from 'next/head'
 import {Input} from "@nextui-org/react";
 import { CreateEscrowSolana } from '../components/CreateEscrowSolana'
 import { ClaimEscrowSolana } from '../components/ClaimEscrowSolana'
 import { CancelEscrowSolana } from '../components/CancelEscrowSolana'
 
+
 const Home: NextPage = (props) => {
 
   const sizes = ["sm", "md", "lg"];
   const size = sizes[0];
+
 
   let business: string =null;
   let influencer: string = null;
@@ -38,6 +47,7 @@ const Home: NextPage = (props) => {
         <AppBar />
 
 
+
         <div className={styles.input}>
            <Input type="address_business" label="Business Address" placeholder="Enter a valid solana address" onChangeCapture={business} value={BUSINESS} />
            <Input type="address_influencer" label="Influencer Address" placeholder="Enter a valid solana address" value={INFLUENCER} />
@@ -51,6 +61,7 @@ const Home: NextPage = (props) => {
           <CancelEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
         </div>
        
+
       </WalletContextProvider >
 
     </div>
