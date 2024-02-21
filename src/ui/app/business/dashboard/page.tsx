@@ -498,7 +498,6 @@ export default function BusinessDashboardPage() {
                     name="read-only"
                     value={Number(params?.row?.review?.rating)}
                     readOnly
-                    precision={0.5}
                   />
                 </Box>
               </Tooltip>

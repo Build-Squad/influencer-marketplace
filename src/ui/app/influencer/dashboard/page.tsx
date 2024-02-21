@@ -467,16 +467,21 @@ export default function BusinessDashboardPage() {
                 arrow
                 disableHoverListener={!params?.row?.review?.note}
               >
-                <Rating
-                  name="read-only"
-                  value={params?.row?.review?.rating}
-                  readOnly
-                  precision={0.5}
+                <Box
                   onClick={() => {
                     setSelectedReviewOrder(params?.row);
                     setOpenReviewModal(true);
                   }}
-                />
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <Rating
+                    name="read-only"
+                    value={Number(params?.row?.review?.rating)}
+                    readOnly
+                  />
+                </Box>
               </Tooltip>
             ) : (
               <Typography sx={{ textAlign: "center", fontStyle: "italic" }}>
