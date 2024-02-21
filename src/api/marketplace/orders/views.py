@@ -857,6 +857,10 @@ class OrderMessageCreateView(APIView):
 # Review API-Endpoint
 # List-Create-API
 class ReviewList(APIView):
+    def get_authenticators(self):
+        if self.request.method == 'POST':
+            return [JWTAuthentication()]
+        return super().get_authenticators()
     def get(self, request):
         try:
             review = Review.objects.all()
@@ -879,12 +883,47 @@ class ReviewList(APIView):
         try:
             serializer = ReviewSerializer(data=request.data)
             if serializer.is_valid():
+                # Check that the current user is the buyer of the order
+                order = Order.objects.get(pk=request.data["order"])
+                if order.buyer != request.user_account:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to review this order",
+                            "data": None,
+                            "errors": "You are not authorized to review this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+                # Check that the order does not have a review already
+                review_exists = Review.objects.filter(order=order).exists()
+                if review_exists:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order already has a review",
+                            "data": None,
+                            "errors": "Order already has a review",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                # Check that the order is in completed state
+                if order.status != "completed":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is not yet complete",
+                            "data": None,
+                            "errors": "Order is not yet complete",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
                         "data": ReviewSerializer(serializer.instance).data,
-                        "message": "Review data created successfully",
+                        "message": "Review added successfully",
                     },
                     status=status.HTTP_201_CREATED,
                 )
@@ -896,6 +935,10 @@ class ReviewList(APIView):
 
 # Retrieve-Update-Destroy API
 class ReviewDetail(APIView):
+    def get_authenticators(self):
+        if self.request.method == 'PUT' or self.request.method == 'DELETE':
+            return [JWTAuthentication()]
+        return super().get_authenticators()
     def get_object(self, pk):
         try:
             return Review.objects.get(pk=pk)
@@ -927,12 +970,34 @@ class ReviewDetail(APIView):
                 return handleNotFound("review")
             serializer = ReviewSerializer(instance=review, data=request.data)
             if serializer.is_valid():
+                order = Order.objects.get(pk=request.data["order"])
+                if order.buyer != request.user_account:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to review this order",
+                            "data": None,
+                            "errors": "You are not authorized to review this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+                # Check that the order is in completed state
+                if order.status != "completed":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is not yet complete",
+                            "data": None,
+                            "errors": "Order is not yet complete",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 serializer.save()
                 return Response(
                     {
                         "isSuccess": True,
                         "data": ReviewSerializer(serializer.instance).data,
-                        "message": "Review data updated successfully",
+                        "message": "Review updated successfully",
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -947,6 +1012,17 @@ class ReviewDetail(APIView):
             if review is None:
                 return handleNotFound("review")
             try:
+                order = Order.objects.get(pk=review.order.id)
+                if order.buyer != request.user_account:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to delete this review",
+                            "data": None,
+                            "errors": "You are not authorized to delete this review",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
                 review.delete()
             except ValidationError as e:
                 return handleDeleteNotAllowed("review")
@@ -954,7 +1030,7 @@ class ReviewDetail(APIView):
                 {
                     "isSuccess": True,
                     "data": None,
-                    "message": "review deleted successfully",
+                    "message": "Review deleted successfully",
                 },
                 status=status.HTTP_200_OK,
             )

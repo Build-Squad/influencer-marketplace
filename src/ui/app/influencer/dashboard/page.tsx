@@ -28,6 +28,7 @@ import {
   IconButton,
   Link,
   Pagination,
+  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -40,12 +41,16 @@ import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 
 export default function BusinessDashboardPage() {
   const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
+  const [selectedReviewOrder, setSelectedReviewOrder] =
+    useState<OrderType | null>(null);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
@@ -440,6 +445,53 @@ export default function BusinessDashboardPage() {
         );
       },
     },
+    {
+      field: "review__rating",
+      headerName: "Review",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <>
+            {params?.row?.review?.rating ? (
+              <Tooltip
+                title={
+                  params?.row?.review?.note
+                    ? params?.row?.review?.note
+                    : "No Review Available"
+                }
+                placement="top"
+                arrow
+                disableHoverListener={!params?.row?.review?.note}
+              >
+                <Box
+                  onClick={() => {
+                    setSelectedReviewOrder(params?.row);
+                    setOpenReviewModal(true);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <Rating
+                    name="read-only"
+                    value={Number(params?.row?.review?.rating)}
+                    readOnly
+                  />
+                </Box>
+              </Tooltip>
+            ) : (
+              <Typography sx={{ textAlign: "center", fontStyle: "italic" }}>
+                No Review
+              </Typography>
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   useEffect(() => {
@@ -548,6 +600,12 @@ export default function BusinessDashboardPage() {
             setSelectedOrder(null);
           }}
           getOrders={getOrders}
+        />
+        <ReviewModal
+          reviewOrder={selectedReviewOrder}
+          open={openReviewModal}
+          setOpen={setOpenReviewModal}
+          readonly={true}
         />
       </Box>
     </RouteProtection>

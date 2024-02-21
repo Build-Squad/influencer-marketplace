@@ -234,6 +234,14 @@ type TransactionType = {
   wallet: string;
 };
 
+type ReviewType = {
+  id: string;
+  order: string;
+  note: string;
+  is_visible: boolean;
+  rating: number;
+};
+
 type OrderType = {
   id?: string;
   buyer?: UserType;
@@ -248,6 +256,7 @@ type OrderType = {
   influencer_wallet?: WalletType;
   order_number?: number;
   transactions?: TransactionType[] | null;
+  review?: ReviewType | null;
 };
 
 type OrderFilterType = {
