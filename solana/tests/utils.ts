@@ -83,10 +83,11 @@ export async function airdrop(
       wallet.payer,
       mintPk,
       associatedTokenAcc,
-      getAnchorProvider().wallet.publicKey, // Assumption mint was created by provider.wallet,
+      provider.wallet.publicKey, // Assumption mint was created by provider.wallet,
       balance * 10 ** mintInfo.decimals,
       []
     );
+    
     // Add Small timeout to ensure funds added before proceeding
     await new Promise((e) => setTimeout(e, 1000)); 
     return associatedTokenAcc;
