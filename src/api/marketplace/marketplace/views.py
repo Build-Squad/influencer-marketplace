@@ -251,13 +251,13 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
             if referral_code:
                 # Get user account based on referral_code
                 try:
-                    referred_by = User.objects.get(user_account__referral_code=referral_code)
+                    referred_by = User.objects.get(referral_code=referral_code)
                     if referred_by:
                         UserReferrals.objects.create(user_account=new_user_account, referred_by=referred_by)
-                except referred_by.DoesNotExist:
+                except Exception as e:
                     return {
                         "status": "error",
-                        "message": f"Invalid Referral Code - {referral_code}",
+                        "message": f"No referral given, invalid referral code- {referral_code}",
                     }
             
 

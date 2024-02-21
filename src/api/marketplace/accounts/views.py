@@ -1,6 +1,8 @@
 from distutils.util import strtobool
 from http.client import HTTPResponse
+import random
 import secrets
+import string
 from accounts.tasks import sendEmail
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
@@ -1667,11 +1669,23 @@ class BusinessAccountMetaDataDetail(APIView):
 
 
 class ReferralLink(APIView):
-    def get_or_create_referral(self, user):
+    def generate_referral_code(self):
+        # Generate a unique referral code
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        # Check if the generated code is unique
+        while User.objects.filter(referral_code=code).exists():
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        return code
+    
+    def get_or_create_referral(self, requestUser):
         try:
-            return UserReferrals.objects.get(user_account=user)
+            if not requestUser.referral_code:
+                requestUser.referral_code = self.generate_referral_code()
+                requestUser.save()
+            return requestUser.referral_code
+            
         except UserReferrals.DoesNotExist:
-            return UserReferrals.objects.create(user_account=user)
+            return None
         
     def createLink(self,code):
         hostname = config('SERVER')
@@ -1680,11 +1694,11 @@ class ReferralLink(APIView):
     authentication_classes = [JWTAuthentication]
     def get(self, request):
         try:
-            user = request.user_account
-            userReferrals = self.get_or_create_referral(user)
-            if userReferrals:
-                referralLink = self.createLink(userReferrals.referral_code)
-            if userReferrals and referralLink:
+            requestUser = request.user_account
+            referral_code = self.get_or_create_referral(requestUser)
+            if referral_code:
+                referralLink = self.createLink(referral_code)
+            if referral_code and referralLink:
                 return Response(
                     {
                         "isSuccess": True,
@@ -1708,9 +1722,9 @@ class ReferralLink(APIView):
 class ReferralValidity(APIView):
     def check_validity(self, code):
             try:
-                UserReferrals.objects.get(referral_code=code)
+                User.objects.get(referral_code=code)
                 return True
-            except UserReferrals.DoesNotExist:
+            except User.DoesNotExist:
                 return False
     def get(self, request):
         try:

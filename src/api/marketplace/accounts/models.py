@@ -127,6 +127,7 @@ class User(AbstractUser):
         blank=True,
     )
     jwt = models.CharField(max_length=255, blank=True, null=True)
+    referral_code = models.CharField(max_length=16, unique=True, blank=True, null=True)
 
     ordering = ("email",)
 
@@ -151,20 +152,6 @@ class UserReferrals(models.Model):
         blank=True,
     )
     referred_by = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='referred_by_account')
-    referral_code = models.CharField(max_length=16, unique=True)
-
-    def generate_referral_code(self):
-        # Generate a unique referral code
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        # Check if the generated code is unique
-        while UserReferrals.objects.filter(referral_code=code).exists():
-            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        return code
-
-    def save(self, *args, **kwargs):
-        if not self.referral_code:
-            self.referral_code = self.generate_referral_code()
-        super().save(*args, **kwargs)
 
     class Meta:
         db_table = "user_referrals"
