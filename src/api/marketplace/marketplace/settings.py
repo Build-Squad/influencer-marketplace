@@ -158,6 +158,7 @@ INSTALLED_APPS = [
     "core",
     "orders",
     "notifications",
+    "referrals",
     "corsheaders",
     "drf_yasg",
     "django_celery_beat",

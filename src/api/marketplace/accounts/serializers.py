@@ -1,4 +1,5 @@
 from unicodedata import category
+from referrals.serializers import UserReferralsSerializer
 from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
 
@@ -14,7 +15,6 @@ from .models import (
     User,
     BankAccount,
     Role,
-    UserReferrals,
     Wallet,
     WalletNetwork,
     WalletNonce,
@@ -172,10 +172,7 @@ class WalletCompleteSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = "__all__"
 
-class UserReferralsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserReferrals
-        fields = "__all__"
+
 
 
 class UserSerializer(serializers.ModelSerializer):

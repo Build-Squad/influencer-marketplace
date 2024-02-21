@@ -8,7 +8,8 @@ from django.http import (
     HttpResponseRedirect,
 )
 from decouple import config
-from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User, UserReferrals
+from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User
+from referrals.models import UserReferrals
 import datetime
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations

@@ -31,7 +31,6 @@ from .models import (
     User,
     BankAccount,
     Role,
-    UserReferrals,
     Wallet,
     WalletNetwork,
     WalletNonce,
