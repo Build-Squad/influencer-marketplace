@@ -12,6 +12,8 @@ use spl_token::instruction::AuthorityType;
 mod errors;
 mod processor;
 
+use crate::errors::CustomError;
+
 declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
 
 //fn log_errors(e: DomainOrProgramError) -> ProgramError {
@@ -63,9 +65,10 @@ pub mod xfluencer {
 
         escrow.from = ctx.accounts.from.key();
         escrow.to = ctx.accounts.to.key();
+        escrow.validation_authority = ctx.accounts.validation_authority.key();
         escrow.order_code = order_code;
         escrow.amount = amount;
-        escrow.delivered = false; 
+        escrow.status = 0; 
 
         let escrow_pubkey = escrow.key();
 
@@ -97,6 +100,7 @@ pub mod xfluencer {
         let influencer = ctx.accounts.influencer.key();
         let escrow_pda = ctx.accounts.escrow_account.key();
         let amount = ctx.accounts.escrow_account.get_lamports();
+     
         
         msg!("Business {}", business);
         msg!("Influencer {}", influencer);
@@ -151,8 +155,33 @@ pub mod xfluencer {
         Ok(())
     }
 
-    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>) -> ProgramResult {
+    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, target_state: u8) -> Result<()> {
 
+        msg!("start validation of escrow for target state: {}",target_state);
+
+        let current_state = ctx.accounts.escrow_account.status;
+        msg!("current escrow state : {}",current_state);
+
+        // valid transitions
+        // 0 -> 1  new to cancel
+        // 0 -> 2  new to delivered
+
+        let cancel_state: u8 = 1;
+        let delivered_state: u8 = 2;
+
+        if current_state == cancel_state {
+            return err!(CustomError::EscrowAlreadyCancel);
+        }
+
+        if current_state == delivered_state {
+            return err!(CustomError::EscrowAlreadyReleased);
+        }
+
+        if target_state != cancel_state && target_state != delivered_state {
+            return err!(CustomError::BadTargetStateForEscrow);
+        }
+
+        ctx.accounts.escrow_account.status = target_state;
 
         Ok(())
     }
@@ -195,11 +224,17 @@ impl EscrowAccount {
 
 #[account]
 pub struct EscrowAccountSolana {
+    pub validation_authority: Pubkey, // (32)
     pub from: Pubkey, // (32)
     pub to: Pubkey, // (32)
     pub amount: u64, // (32)
     pub order_code: u64, // (8)
-    pub delivered: bool, // (1)
+    /** status
+        0: New
+        1: Cancel
+        2: Delivered
+    */
+    pub status: u8, // (1)
 }
 
 #[account]
@@ -226,7 +261,7 @@ pub struct CreateEscrow<'info> {
     
     #[account(
          mut,
-         constraint = buyer_deposit_token_account.amount >= amount
+         constraint = buyer_deposit_token_account.amount >= amount 
     )]
     pub buyer_deposit_token_account: Account<'info, TokenAccount>,
     pub seller_receive_token_account: Account<'info, TokenAccount>,
@@ -292,6 +327,9 @@ pub struct Cancel<'info> {
 #[derive(Accounts)]
 #[instruction(amount: u64, order_code: u64)]
 pub struct CreateEscrowSolana<'info> {
+    /// CHECK: safe
+    #[account(mut)]
+    pub validation_authority: AccountInfo<'info>,
     // Escrow Account PDA
     #[account(
         init,
@@ -327,9 +365,9 @@ pub struct ClaimEscrowSolana<'info> {
     pub business: AccountInfo<'info>,
     #[account(
         mut,
-        constraint = escrow_account.from == *business.key,
-        constraint = escrow_account.to == *influencer.key,
-        constraint = escrow_account.delivered == true
+        constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
+        constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
+        constraint = escrow_account.status == 2 @CustomError::BadEscrowState 
         //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
@@ -345,7 +383,8 @@ pub struct CancelEscrowSolana<'info> {
     pub business: Signer<'info>,
     #[account(
         mut,
-        constraint = escrow_account.from == *business.key,
+        constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
+        constraint = escrow_account.status == 1 @CustomError::BadEscrowState,
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
     pub system_program: Program<'info, System>,
@@ -384,6 +423,7 @@ pub struct UpdateFees<'info> {
 
 
 #[derive(Accounts)]
+#[instruction(state: u8)]
 pub struct ValidateEscrowSolana<'info> {
     #[account(mut)]
     pub validation_authority: Signer<'info>,
@@ -395,8 +435,9 @@ pub struct ValidateEscrowSolana<'info> {
     pub business: AccountInfo<'info>,
     #[account(
         mut,
-        constraint = escrow_account.from == *business.key,
-        constraint = escrow_account.to == *influencer.key,
+        constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
+        constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
+        constraint = escrow_account.validation_authority == *validation_authority.key @CustomError::MissmatchAuthority
         //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
