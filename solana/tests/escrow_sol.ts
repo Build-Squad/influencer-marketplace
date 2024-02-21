@@ -13,9 +13,23 @@ describe("Testing Escrow for SOL", () => {
     
   const program = anchor.workspace.Xfluencer as Program<Xfluencer>;
 
-  const orderCode = 99;
+  
+
+  const validationAuthority: anchor.web3.Keypair 
+        = anchor.web3.Keypair.generate();
+
+  const validationAuthorityPublicKey = validationAuthority.publicKey;
+
+  const influencer: anchor.web3.Keypair 
+        = anchor.web3.Keypair.generate();
+  const influencerPublicKey = influencer.publicKey;
+
+  const amount = 10 ** 11; // lamports ()
   
   it('Create Escrow for SOL', async () => {
+
+    const orderCode = 1;
+
     const provider = anchor.getProvider()
 
     const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
@@ -23,16 +37,16 @@ describe("Testing Escrow for SOL", () => {
     const initial_funds = account_data.value;
     console.log(initial_funds)
 
-    const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    //const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
     const [escrowPDA] = await anchor.web3.PublicKey.findProgramAddress([
         utf8.encode('escrow'),
         buyerPublicKey.toBuffer(), 
-        toWallet.publicKey.toBuffer(),
+        influencerPublicKey.toBuffer(),
         Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
       ],
       program.programId
     );
-    const amount = 10 ** 11
+    
 
     const options = {
       skipPreflight: true      
@@ -43,8 +57,9 @@ describe("Testing Escrow for SOL", () => {
       new anchor.BN(amount),
       new anchor.BN(orderCode))
     .accounts({
+      validationAuthority: validationAuthorityPublicKey,
       from: buyerPublicKey,
-      to: toWallet.publicKey,
+      to: influencerPublicKey,
       systemProgram:  anchor.web3.SystemProgram.programId,
       escrow: escrowPDA
     }).rpc(options);
@@ -57,7 +72,10 @@ describe("Testing Escrow for SOL", () => {
   });
 
 
-  it('Create Escrow for SOL and Cancel', async () => {
+  it('Create Escrow for SOL, Validate Cancel to Business, and Claim Cancel By Business', async () => {
+
+    const orderCode = 2;
+
     const provider = anchor.getProvider()
 
     const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
@@ -65,38 +83,64 @@ describe("Testing Escrow for SOL", () => {
     const initial_funds = account_data.value;
     console.log(initial_funds)
 
-    const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    //const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
     const [escrowPDA] = await anchor.web3.PublicKey.findProgramAddress([
         utf8.encode('escrow'),
         buyerPublicKey.toBuffer(), 
-        toWallet.publicKey.toBuffer(),
+        influencerPublicKey.toBuffer(),
         Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
       ],
       program.programId
     );
-    const amount = 123456789
+    
 
     const options = {
       skipPreflight: true      
     }
-    console.log("ok")
+
+    /////////////////// 
+    // create escrow //
+    ///////////////////
+
     await program.methods
     .createEscrow(
       new anchor.BN(amount),
       new anchor.BN(orderCode))
     .accounts({
+      validationAuthority: validationAuthorityPublicKey,
       from: buyerPublicKey,
-      to: toWallet.publicKey,
+      to: influencerPublicKey,
       systemProgram:  anchor.web3.SystemProgram.programId,
       escrow: escrowPDA
     }).rpc(options);
 
-    const escrowAccount = await program.account.escrowAccountSolana.fetch(escrowPDA)    
-    const escrow_value = escrowAccount.amount.toNumber();
-    const account_data2 = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    const escrow_value = (await program.account.escrowAccountSolana.fetch(escrowPDA)).amount.toNumber();
     console.log("escrow amount",escrow_value)
     assert.ok(escrow_value == amount);
-    
+
+
+    /////////////////////
+    // validate escrow //
+    /////////////////////
+    const state = 1;  // 1 == cancel escrow state
+
+    await program.methods
+    .validateEscrowSol(
+      state
+      )
+    .accounts(
+      { 
+        validationAuthority: validationAuthorityPublicKey,
+        influencer: influencerPublicKey,
+        business: buyerPublicKey,
+        escrowAccount: escrowPDA
+      }
+    ).signers([validationAuthority])
+    .rpc(options);
+
+    //////////////////////////
+    // claim cancel escrow //
+    /////////////////////////
     await program.methods
     .cancelEscrowSol()
     .accounts({
@@ -104,92 +148,197 @@ describe("Testing Escrow for SOL", () => {
       escrowAccount: escrowPDA,
     }).rpc(options);
 
-    let account_data3 = await provider.connection.getBalanceAndContext(buyerPublicKey);
-    const initial_funds2 = account_data3.value;
-    console.log(initial_funds2)
-
 
   });
 
 
-  it('Crease Escrow for SOL and Claim', async () => {
+  it('Create Escrow for SOL, Validate Delivered for Influencer, and Claim Delivered By Business', async () => {
+
+    const orderCode = 3;
 
     const provider = anchor.getProvider()
 
     const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
-  
     let account_data = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    const initial_funds = account_data.value;
+    console.log("Initial Funds",initial_funds)
 
     const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    
     const [escrowPDA] = await anchor.web3.PublicKey.findProgramAddress([
-        utf8.encode('escrow'),
-        buyerPublicKey.toBuffer(), 
-        toWallet.publicKey.toBuffer(),
-        Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
-      ],
-      program.programId
+      utf8.encode('escrow'),
+      buyerPublicKey.toBuffer(), 
+      influencerPublicKey.toBuffer(),
+      Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
+    ],
+    program.programId
     );
-    //console.log("escrowPDA", escrowPDA);
+
+    const amount = 123456789;
 
     const options = {
       skipPreflight: true      
     }
+    
+    /////////////////// 
+    // create escrow //
+    ///////////////////
 
-  
     await program.methods
     .createEscrow(
-      new anchor.BN(10**11),
+      new anchor.BN(amount),
       new anchor.BN(orderCode))
     .accounts({
+      validationAuthority: validationAuthorityPublicKey,
       from: buyerPublicKey,
-      to: toWallet.publicKey,
+      to: influencerPublicKey,
       systemProgram:  anchor.web3.SystemProgram.programId,
       escrow: escrowPDA
     }).rpc(options);
 
-    const escrowAccount = await program.account.escrowAccountSolana.fetch(escrowPDA)
-    //console.log(escrowAccount);
     
-    let account_data2 = await provider.connection.getBalanceAndContext(buyerPublicKey);
-    //console.log(account_data2);
+    const escrowAccount = await program.account.escrowAccountSolana.fetch(escrowPDA)  
 
+    const escrow_value = escrowAccount.amount.toNumber();
+    const account_data2 = await provider.connection.getBalanceAndContext(buyerPublicKey);
 
-    ///// claim amount 
+    console.log("escrow amount",escrow_value)
+    assert.ok(escrow_value == amount);
+
+    /////////////////////
+    // validate escrow //
+    /////////////////////    
+    const state = 2;  // 2 == delivered escrow state
+
+    await program.methods
+    .validateEscrowSol(
+      state
+      )
+    .accounts(
+      { 
+        validationAuthority: validationAuthorityPublicKey,
+        influencer: influencerPublicKey,
+        business: buyerPublicKey,
+        escrowAccount: escrowPDA
+      }
+    ).signers([validationAuthority])
+    .rpc(options);
+
+    ////////////////////////////
+    // claim delivered escrow //
+    ////////////////////////////
     const tx = await program.methods
-    .claimEscrow(
-      new anchor.BN(orderCode))
-    .accounts({
-      influencer: toWallet.publicKey,
-      business: buyerPublicKey,
-      escrowAccount: escrowPDA, 
-      systemProgram:  anchor.web3.SystemProgram.programId,
-    }
-    ).transaction();
-  
-    tx.feePayer = toWallet.publicKey;
-    await utils.airdrop(program, toWallet, 1);
-    
-    const txID = await provider.connection.sendTransaction(tx,[toWallet]);
-    await provider.connection.confirmTransaction(txID);
+      .claimEscrow(
+        new anchor.BN(orderCode))
+      .accounts({
+        influencer: influencer.publicKey,
+        business: buyerPublicKey,
+        escrowAccount: escrowPDA, 
+        systemProgram:  anchor.web3.SystemProgram.programId,
+      }
+      ).transaction();
 
-    try {
-      await program.account.escrowAccountSolana.fetch(escrowPDA)
-    }
-    catch(error){            
-      assert.ok(true);
-      return;
-    }
-    assert.ok(false)
+      tx.feePayer = influencer.publicKey;
+      await utils.airdrop(program, influencer, 1);
+ 
+      const txID = await provider.connection.sendTransaction(tx,[influencer]);
+      await provider.connection.confirmTransaction(txID);
+
+      try {
+        await program.account.escrowAccountSolana.fetch(escrowPDA)
+      }
+      catch(error){            
+        assert.ok(true);
+        return;
+      }
+      assert.ok(false)
 
   });
 
 
-
-
-
-
-
-
-
   
+  it('Create Escrow for SOL, Validate to Bad State', async () => {
+
+    const orderCode = 4;
+
+    const provider = anchor.getProvider()
+
+    const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
+    let account_data = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    const initial_funds = account_data.value;
+    console.log("Initial Funds",initial_funds)
+
+    const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    
+    const [escrowPDA] = await anchor.web3.PublicKey.findProgramAddress([
+      utf8.encode('escrow'),
+      buyerPublicKey.toBuffer(), 
+      influencerPublicKey.toBuffer(),
+      Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
+    ],
+    program.programId
+    );
+
+    const amount = 123456789;
+
+    const options = {
+      skipPreflight: true      
+    }
+    
+    /////////////////// 
+    // create escrow //
+    ///////////////////
+
+    await program.methods
+    .createEscrow(
+      new anchor.BN(amount),
+      new anchor.BN(orderCode))
+    .accounts({
+      validationAuthority: validationAuthorityPublicKey,
+      from: buyerPublicKey,
+      to: influencerPublicKey,
+      systemProgram:  anchor.web3.SystemProgram.programId,
+      escrow: escrowPDA
+    }).rpc(options);
+
+    
+    const escrowAccount = await program.account.escrowAccountSolana.fetch(escrowPDA)  
+
+    const escrow_value = escrowAccount.amount.toNumber();
+    const account_data2 = await provider.connection.getBalanceAndContext(buyerPublicKey);
+
+    console.log("escrow amount",escrow_value)
+    assert.ok(escrow_value == amount);
+
+    /////////////////////
+    // validate escrow //
+    /////////////////////    
+    const state = 3;  // 3 is a bad state transiction (only 1 or 2)
+
+    try {
+      await program.methods
+        .validateEscrowSol(
+          state
+          )
+        .accounts(
+          { 
+            validationAuthority: validationAuthorityPublicKey,
+            influencer: influencerPublicKey,
+            business: buyerPublicKey,
+            escrowAccount: escrowPDA
+          }
+        ).signers([validationAuthority])
+        .rpc(options);
+      assert.fail("Should not be able to validate escrow");
+    } catch (err) {
+      assert.strictEqual(err.code, 6004);
+      assert.strictEqual(err.msg, "Bad Target State for Escrow (1) for cancel, (2) for release");
+    }
+
+  });
+
+  // @TODO: missing test cases
+  // 1. Check that influencer cannot claim funds if no validation delivered is done
+  // 2. Check that business cannot claim back its funds if no validation cancel is done
+
 });
