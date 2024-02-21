@@ -126,6 +126,11 @@ export type Xfluencer = {
       "name": "createEscrow",
       "accounts": [
         {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "escrow",
           "isMut": true,
           "isSigner": false
@@ -280,7 +285,12 @@ export type Xfluencer = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "targetState",
+          "type": "u8"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -341,6 +351,10 @@ export type Xfluencer = {
         "kind": "struct",
         "fields": [
           {
+            "name": "validationAuthority",
+            "type": "publicKey"
+          },
+          {
             "name": "from",
             "type": "publicKey"
           },
@@ -357,8 +371,11 @@ export type Xfluencer = {
             "type": "u64"
           },
           {
-            "name": "delivered",
-            "type": "bool"
+            "name": "status",
+            "docs": [
+              "status\n        0: New\n        1: Cancel\n        2: Delivered"
+            ],
+            "type": "u8"
           }
         ]
       }
@@ -390,6 +407,41 @@ export type Xfluencer = {
       "code": 6001,
       "name": "AlreadyClaim",
       "msg": "Already claim"
+    },
+    {
+      "code": 6002,
+      "name": "EscrowAlreadyCancel",
+      "msg": "Escrow already cancel for business"
+    },
+    {
+      "code": 6003,
+      "name": "EscrowAlreadyReleased",
+      "msg": "Escrow already released for influencer"
+    },
+    {
+      "code": 6004,
+      "name": "BadTargetStateForEscrow",
+      "msg": "Bad Target State for Escrow (1) for cancel, (2) for release"
+    },
+    {
+      "code": 6005,
+      "name": "MissmatchBusiness",
+      "msg": "Missmatch business public key"
+    },
+    {
+      "code": 6006,
+      "name": "MissmatchInfluencer",
+      "msg": "Missmatch influencer publick key"
+    },
+    {
+      "code": 6007,
+      "name": "BadEscrowState",
+      "msg": "Bad Escrow State"
+    },
+    {
+      "code": 6008,
+      "name": "MissmatchAuthority",
+      "msg": "Missmatch Authority"
     }
   ]
 };
@@ -522,6 +574,11 @@ export const IDL: Xfluencer = {
       "name": "createEscrow",
       "accounts": [
         {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "escrow",
           "isMut": true,
           "isSigner": false
@@ -676,7 +733,12 @@ export const IDL: Xfluencer = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "targetState",
+          "type": "u8"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -737,6 +799,10 @@ export const IDL: Xfluencer = {
         "kind": "struct",
         "fields": [
           {
+            "name": "validationAuthority",
+            "type": "publicKey"
+          },
+          {
             "name": "from",
             "type": "publicKey"
           },
@@ -753,8 +819,11 @@ export const IDL: Xfluencer = {
             "type": "u64"
           },
           {
-            "name": "delivered",
-            "type": "bool"
+            "name": "status",
+            "docs": [
+              "status\n        0: New\n        1: Cancel\n        2: Delivered"
+            ],
+            "type": "u8"
           }
         ]
       }
@@ -786,6 +855,41 @@ export const IDL: Xfluencer = {
       "code": 6001,
       "name": "AlreadyClaim",
       "msg": "Already claim"
+    },
+    {
+      "code": 6002,
+      "name": "EscrowAlreadyCancel",
+      "msg": "Escrow already cancel for business"
+    },
+    {
+      "code": 6003,
+      "name": "EscrowAlreadyReleased",
+      "msg": "Escrow already released for influencer"
+    },
+    {
+      "code": 6004,
+      "name": "BadTargetStateForEscrow",
+      "msg": "Bad Target State for Escrow (1) for cancel, (2) for release"
+    },
+    {
+      "code": 6005,
+      "name": "MissmatchBusiness",
+      "msg": "Missmatch business public key"
+    },
+    {
+      "code": 6006,
+      "name": "MissmatchInfluencer",
+      "msg": "Missmatch influencer publick key"
+    },
+    {
+      "code": 6007,
+      "name": "BadEscrowState",
+      "msg": "Bad Escrow State"
+    },
+    {
+      "code": 6008,
+      "name": "MissmatchAuthority",
+      "msg": "Missmatch Authority"
     }
   ]
 };
