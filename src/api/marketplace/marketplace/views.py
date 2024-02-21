@@ -1,3 +1,5 @@
+import random
+import string
 from django.shortcuts import redirect
 from accounts.serializers import UserSerializer
 from tweepy import Client
@@ -28,6 +30,14 @@ token_url = "https://api.twitter.com/2/oauth2/token"
 redirect_uri = TWITTER_CALLBACK_URL
 
 twitter = None
+
+def generate_referral_code():
+        # Generate a unique referral code
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        # Check if the generated code is unique
+        while User.objects.filter(referral_code=code).exists():
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        return code 
 
 def logoutUser(request):
     response_data = {
@@ -246,6 +256,7 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
                 role=Role.objects.filter(name=role).first(),
             )
             new_user_account.save()
+            existing_user_account=new_user_account
 
             # New user login with referral_code - 
             if referral_code:
@@ -259,7 +270,11 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
                         "status": "error",
                         "message": f"No referral given, invalid referral code- {referral_code}",
                     }
-            
+                
+        # Creating referral_code for users
+        if not existing_user_account.referral_code:
+            existing_user_account.referral_code = generate_referral_code()
+            existing_user_account.save()
 
         else:
             if existing_user_account.role.name != role:

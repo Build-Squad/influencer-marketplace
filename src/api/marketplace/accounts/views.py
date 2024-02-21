@@ -1669,24 +1669,6 @@ class BusinessAccountMetaDataDetail(APIView):
 
 
 class ReferralLink(APIView):
-    def generate_referral_code(self):
-        # Generate a unique referral code
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        # Check if the generated code is unique
-        while User.objects.filter(referral_code=code).exists():
-            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        return code
-    
-    def get_or_create_referral(self, requestUser):
-        try:
-            if not requestUser.referral_code:
-                requestUser.referral_code = self.generate_referral_code()
-                requestUser.save()
-            return requestUser.referral_code
-            
-        except UserReferrals.DoesNotExist:
-            return None
-        
     def createLink(self,code):
         hostname = config('SERVER')
         return f"{hostname}auth-twitter-user/influencer/?referral_code={code}"
@@ -1694,8 +1676,7 @@ class ReferralLink(APIView):
     authentication_classes = [JWTAuthentication]
     def get(self, request):
         try:
-            requestUser = request.user_account
-            referral_code = self.get_or_create_referral(requestUser)
+            referral_code = request.user_account.referral_code
             if referral_code:
                 referralLink = self.createLink(referral_code)
             if referral_code and referralLink:
