@@ -907,6 +907,17 @@ class ReviewList(APIView):
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+                # Check that the order is in completed state
+                if order.status != "completed":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is not yet complete",
+                            "data": None,
+                            "errors": "Order is not yet complete",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 serializer.save()
                 return Response(
                     {
@@ -969,6 +980,17 @@ class ReviewDetail(APIView):
                             "errors": "You are not authorized to review this order",
                         },
                         status=status.HTTP_403_FORBIDDEN,
+                    )
+                # Check that the order is in completed state
+                if order.status != "completed":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is not yet complete",
+                            "data": None,
+                            "errors": "Order is not yet complete",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
                 serializer.save()
                 return Response(
