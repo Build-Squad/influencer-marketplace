@@ -1,12 +1,21 @@
 "use client";
 
-import { useAppDispatch } from "@/src/hooks/useRedux";
-import { removeOrderItem, updateFieldValues } from "@/src/reducers/cartSlice";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
+import {
+  removeOrderItem,
+  updateFieldValues,
+  updatePublishDate,
+} from "@/src/reducers/cartSlice";
 import { deleteService } from "@/src/services/httpServices";
+import {
+  FORM_DATE_TIME_TZ_FORMAT,
+  ORDER_ITEM_STATUS,
+} from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
   Button,
+  Chip,
   Divider,
   FormLabel,
   Grid,
@@ -15,18 +24,13 @@ import {
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
-
-type OrderItem = {
-  order_item: OrderItemType;
-  index: number;
-  service_id?: string;
-};
+import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
 
 type OrderItemFormProps = {
-  orderItem: OrderItem;
+  orderItem: any;
   index: number;
   disableDelete: boolean;
   sx?: any;
@@ -35,6 +39,53 @@ type OrderItemFormProps = {
     orderItemMetaDataId: string,
     value: string | null
   ) => Promise<void>;
+  updateOrderItemPublishDate?: (
+    orderItemId: string,
+    publishDate: string
+  ) => Promise<void>;
+};
+
+const GetOrderItemBadge = ({
+  orderStatus,
+  eachOrderItem,
+}: {
+  orderStatus: any;
+  eachOrderItem: any;
+}) => {
+  const user = useAppSelector((state) => state.user?.user);
+  switch (eachOrderItem?.status) {
+    case ORDER_ITEM_STATUS.CANCELLED:
+      return (
+        <Chip
+          label="Cancelled"
+          color="error"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
+    case ORDER_ITEM_STATUS.PUBLISHED:
+      return (
+        <Chip
+          label="Published"
+          color="success"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
+    case ORDER_ITEM_STATUS.SCHEDULED:
+      return (
+        <Box sx={{ display: "flex", columnGap: "8px" }}>
+          <Chip
+            label="Scheduled"
+            color="warning"
+            disabled={true}
+            sx={{ fontWeight: "bold" }}
+          />
+        </Box>
+      );
+    default:
+      return null;
+  }
 };
 
 export default function OrderItemForm({
@@ -43,7 +94,15 @@ export default function OrderItemForm({
   disableDelete,
   sx,
   updateFunction,
+  updateOrderItemPublishDate,
 }: OrderItemFormProps) {
+  let disabled = false;
+  const user = useAppSelector((state) => state.user?.user);
+  if (user?.role?.name == "influencer") {
+    disabled = orderItem?.order_item?.status != ORDER_ITEM_STATUS.ACCEPTED;
+  }
+  const [publishDateUpdated, setPublishDateUpdated] = useState(false);
+
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
 
@@ -79,6 +138,61 @@ export default function OrderItemForm({
     }
   };
 
+  /**
+   * React useEffect hook that updates the publish date of an order item or a specific index.
+   *
+   * The hook first checks if the publish date of the order item is not defined and if the publish date has not been updated.
+   * If both conditions are true, it proceeds with the logic inside the hook.
+   *
+   * It then creates a default date. If the current time is before 4 PM, the default date is set to 5 PM of the current day.
+   * If the current time is 4 PM or later, the default date is set to one hour later than the current time.
+   *
+   * If the function `updateOrderItemPublishDate` is defined and the order item has an id, it calls `updateOrderItemPublishDate`
+   * with the order item id and the formatted default date as arguments. It then sets `publishDateUpdated` to true and ends the execution of the hook.
+   *
+   * If the above condition is not met and `index` is not undefined, it dispatches an action to update the publish date at the given index
+   * with the formatted default date. It then sets `publishDateUpdated` to true.
+   *
+   * The hook will re-run whenever any of the values in the dependency array change. The dependency array includes `orderItem?.publish_date`,
+   * `publishDateUpdated`, `updateOrderItemPublishDate`, `dispatch`, `updatePublishDate`, and `index`.
+   */
+
+  useEffect(() => {
+    if (!orderItem?.publish_date && !publishDateUpdated) {
+      let defaultDate = dayjs();
+      if (defaultDate.hour() < 16) {
+        // if current time is before 4 PM
+        defaultDate = defaultDate.startOf("day").add(17, "hour"); // set to 5 PM
+      } else {
+        // if current time is 4 PM or later
+        defaultDate = defaultDate.add(60, "minute"); // set to one hour later
+      }
+      if (updateOrderItemPublishDate && orderItem?.order_item?.id) {
+        updateOrderItemPublishDate(
+          orderItem.order_item.id,
+          defaultDate.format(FORM_DATE_TIME_TZ_FORMAT)
+        );
+        setPublishDateUpdated(true);
+        return;
+      } else if (index !== undefined) {
+        dispatch(
+          updatePublishDate({
+            index: index,
+            value: defaultDate.format(FORM_DATE_TIME_TZ_FORMAT),
+          })
+        );
+        setPublishDateUpdated(true);
+      }
+    }
+  }, [
+    orderItem?.publish_date,
+    publishDateUpdated,
+    updateOrderItemPublishDate,
+    dispatch,
+    updatePublishDate,
+    index,
+  ]);
+
   return (
     <Box
       sx={{
@@ -105,6 +219,13 @@ export default function OrderItemForm({
         >
           {`${index + 1}. ${orderItem?.order_item?.package?.name}`}
         </Typography>
+        {disabled && (
+          <GetOrderItemBadge
+            orderStatus={orderItem?.order_item?.status}
+            eachOrderItem={orderItem?.order_item}
+          />
+        )}
+
         {!disableDelete && (
           <ConfirmDelete
             title="this order item"
@@ -141,12 +262,13 @@ export default function OrderItemForm({
         }}
       >
         {orderItem?.order_item?.order_item_meta_data
-          .toSorted((a, b) => {
+          .toSorted((a: any, b: any) => {
             return a?.order - b?.order;
           })
-          ?.map((formFields) => {
+          ?.map((formFields: any, ind: number) => {
             return (
               <Grid
+                item
                 md={formFields?.span}
                 lg={formFields?.span}
                 xs={12}
@@ -157,6 +279,7 @@ export default function OrderItemForm({
                   flexDirection: "column",
                   p: 1,
                 }}
+                key={ind}
               >
                 <FormLabel
                   sx={{
@@ -167,10 +290,11 @@ export default function OrderItemForm({
                 </FormLabel>
                 {formFields?.field_type === "text" && (
                   <TextField
-                    value={formFields?.value}
+                    disabled={disabled}
+                    color="secondary"
+                    value={formFields?.value ? formFields?.value : ""}
                     name={formFields?.id}
                     onChange={(e) => {
-                      console.log(e.target.value, formFields);
                       if (updateFunction) {
                         updateFunction(
                           orderItem?.order_item?.id
@@ -209,6 +333,7 @@ export default function OrderItemForm({
                     }}
                     helperText={
                       <Box
+                        component="span"
                         sx={{
                           display: "flex",
                           justifyContent: "flex-end",
@@ -227,8 +352,10 @@ export default function OrderItemForm({
                 )}
                 {formFields?.field_type === "long_text" && (
                   <TextField
+                    disabled={disabled}
+                    color="secondary"
                     name={formFields?.id}
-                    value={formFields?.value}
+                    value={formFields?.value ? formFields?.value : ""}
                     onChange={(e) => {
                       if (updateFunction) {
                         updateFunction(
@@ -273,6 +400,7 @@ export default function OrderItemForm({
                     }}
                     helperText={
                       <Box
+                        component="span"
                         sx={{
                           display: "flex",
                           justifyContent: "flex-end",
@@ -291,6 +419,7 @@ export default function OrderItemForm({
                 )}
                 {formFields?.field_type === "date_time" && (
                   <DateTimePicker
+                    disabled={disabled}
                     value={
                       dayjs(formFields?.value).isValid()
                         ? dayjs(formFields?.value)
@@ -344,6 +473,7 @@ export default function OrderItemForm({
                     }}
                   >
                     <Button
+                      disabled={disabled}
                       variant="contained"
                       disableElevation
                       sx={{
@@ -359,6 +489,75 @@ export default function OrderItemForm({
               </Grid>
             );
           })}
+        <Grid
+          item
+          md={6}
+          lg={6}
+          xs={12}
+          sm={12}
+          sx={{
+            my: 1,
+            display: "flex",
+            flexDirection: "column",
+            p: 1,
+          }}
+        >
+          <FormLabel
+            sx={{
+              color: "secondary.main",
+            }}
+          >
+            {`Publish Date and Time`}
+          </FormLabel>
+          <DateTimePicker
+            disabled={disabled}
+            value={
+              orderItem?.publish_date
+                ? dayjs(orderItem?.publish_date)
+                : orderItem?.order_item?.publish_date
+                ? dayjs(orderItem?.order_item?.publish_date)
+                : null
+            }
+            onChange={(e) => {
+              if (updateOrderItemPublishDate) {
+                updateOrderItemPublishDate(
+                  orderItem?.order_item?.id ? orderItem?.order_item?.id : "",
+                  dayjs(e).format(FORM_DATE_TIME_TZ_FORMAT)
+                );
+                return;
+              }
+              dispatch(
+                updatePublishDate({
+                  index: index,
+                  value: dayjs(e).format(FORM_DATE_TIME_TZ_FORMAT),
+                })
+              );
+            }}
+            minDateTime={dayjs().add(30, "minute")}
+            slotProps={{
+              textField: {
+                size: "small",
+                color: "secondary",
+                variant: "outlined",
+                fullWidth: true,
+                placeholder: "Publish Date and Time",
+                name: "publish_date",
+                sx: {
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 3,
+                  },
+                },
+              },
+            }}
+            viewRenderers={{
+              hours: renderTimeViewClock,
+              minutes: renderTimeViewClock,
+              seconds: renderTimeViewClock,
+            }}
+            closeOnSelect={false}
+            formatDensity="spacious"
+          />
+        </Grid>
       </Grid>
     </Box>
   );

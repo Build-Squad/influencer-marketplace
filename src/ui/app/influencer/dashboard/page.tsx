@@ -7,18 +7,27 @@ import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
+import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
 import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
+import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import Image from "next/image";
+import BackIcon from "@/public/svg/Back.svg";
+import {
+  DISPLAY_DATE_FORMAT,
+  ORDER_STATUS,
+  TRANSACTION_TYPE,
+} from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
   Grid,
   IconButton,
   Link,
   Pagination,
-  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -30,14 +39,21 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function BusinessDashboardPage() {
+  const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
-    status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
+    status: [
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.REJECTED,
+      ORDER_STATUS.COMPLETED,
+    ],
+    order_by: "-created_at",
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
@@ -70,6 +86,15 @@ export default function BusinessDashboardPage() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+
+        // To update the drawer component when updating status.
+        if (selectedOrder) {
+          setSelectedOrder(
+            data?.data?.find(
+              (item: OrderType) => item?.id === selectedOrder?.id
+            )
+          );
+        }
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
@@ -115,7 +140,15 @@ export default function BusinessDashboardPage() {
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
-          status: [ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED, ORDER_STATUS.COMPLETED]
+          status: [
+            ORDER_STATUS.ACCEPTED,
+            ORDER_STATUS.REJECTED,
+            ORDER_STATUS.COMPLETED,
+          ],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(0);
       },
@@ -135,6 +168,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.ACCEPTED],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(1);
       },
       value: 1,
@@ -152,6 +189,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.COMPLETED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(2);
       },
@@ -171,13 +212,17 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.REJECTED],
         }));
-        setSelectedCard(3);
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(4);
       },
       value: 4,
       icon: (
         <RejectedOrders
           style={{
-            fill: selectedCard === 3 ? "#fff" : "#19191929",
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
           }}
         />
       ),
@@ -208,7 +253,7 @@ export default function BusinessDashboardPage() {
             }}
           >
             <Link
-              href={`/business/profile/${params?.row?.buyer?.id}`}
+              href={`/business/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"
               component={NextLink}
               sx={{
@@ -319,6 +364,64 @@ export default function BusinessDashboardPage() {
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
+            {params?.row?.status === ORDER_STATUS.ACCEPTED && (
+              <Tooltip
+                title="Go To Order"
+                placement="top"
+                arrow
+                disableInteractive
+              >
+                <Link
+                  href={`/influencer/edit-order/${params?.row?.id}`}
+                  component={NextLink}
+                  sx={{
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  <IconButton>
+                    <OpenInNewIcon color="secondary" />
+                  </IconButton>
+                </Link>
+              </Tooltip>
+            )}
+            {params?.row?.status === ORDER_STATUS.COMPLETED &&
+              params?.row?.transactions.filter(
+                (transaction: TransactionType) =>
+                  transaction.transaction_type === TRANSACTION_TYPE.CLAIM_ESCROW
+              )?.length === 0 && (
+                <ClaimEscrow order={params?.row} updateStatus={getOrders} />
+              )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "transactions",
+      headerName: "Transactions",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {params?.row?.transactions?.map((transaction: TransactionType) => {
+              return (
+                <TransactionIcon
+                  key={transaction?.transaction_address}
+                  transaction={transaction}
+                />
+              );
+            })}
           </Box>
         );
       },
@@ -337,31 +440,6 @@ export default function BusinessDashboardPage() {
         );
       },
     },
-    // {
-    //   field: "review_order_id__rating",
-    //   headerName: "Rating",
-    //   flex: 1,
-    //   renderCell: (
-    //     params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
-    //   ): React.ReactNode => {
-    //     return (
-    //       <Box
-    //         sx={{
-    //           display: "flex",
-    //           justifyContent: "center",
-    //           alignItems: "center",
-    //         }}
-    //       >
-    //         <Rating
-    //           name="read-only"
-    //           value={params?.row?.rating}
-    //           size="small"
-    //           readOnly
-    //         />
-    //       </Box>
-    //     );
-    //   },
-    // },
   ];
 
   useEffect(() => {
@@ -376,90 +454,102 @@ export default function BusinessDashboardPage() {
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            {statusCards.map((card, index) => {
-              return (
-                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                  <StatusCard
-                    card={card}
-                    selectedCard={selectedCard}
-                    orderCount={orderCount}
-                  />
-                </Grid>
-              );
-            })}
+    <RouteProtection logged_in={true} influencer={true}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Image
+          src={BackIcon}
+          alt={"BackIcon"}
+          height={30}
+          style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
+          onClick={() => {
+            router.back();
+          }}
+        />
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
+              {statusCards.map((card, index) => {
+                return (
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                    <StatusCard
+                      card={card}
+                      selectedCard={selectedCard}
+                      orderCount={orderCount}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          {/* Filters bar */}
-          <FilterBar filters={filters} setFilters={setFilters} />
-        </Grid>
-        <Grid item xs={12}>
-          <DataGrid
-            getRowId={(row) => (row?.id ? row?.id : 0)}
-            autoHeight
-            loading={loading}
-            rows={orders}
-            columns={columns}
-            disableRowSelectionOnClick
-            disableColumnFilter
-            hideFooter
-            getRowHeight={(params) => 100}
-            sx={{
-              backgroundColor: "#fff",
-            }}
-            sortingMode="server"
-            onSortModelChange={(model) => {
-              setFilters((prev) => ({
-                ...prev,
-                order_by: model?.[0]?.field
-                  ? model?.[0]?.sort === "asc"
-                    ? `-${model?.[0]?.field}`
-                    : `${model?.[0]?.field}`
-                  : undefined,
-              }));
-            }}
-            localeText={{
-              noRowsLabel: "No Orders found",
-            }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Pagination
-              count={pagination.total_page_count}
-              page={pagination.current_page_number}
-              onChange={handlePaginationChange}
+          <Grid item xs={12}>
+            {/* Filters bar */}
+            <FilterBar filters={filters} setFilters={setFilters} />
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              getRowId={(row) => (row?.id ? row?.id : 0)}
+              autoHeight
+              loading={loading}
+              rows={orders}
+              columns={columns}
+              disableRowSelectionOnClick
+              disableColumnFilter
+              hideFooter
+              getRowHeight={(params) => 100}
+              sx={{
+                backgroundColor: "#fff",
+              }}
+              sortingMode="server"
+              onSortModelChange={(model) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  order_by: model?.[0]?.field
+                    ? model?.[0]?.sort === "asc"
+                      ? `-${model?.[0]?.field}`
+                      : `${model?.[0]?.field}`
+                    : undefined,
+                }));
+              }}
+              localeText={{
+                noRowsLabel: "No Orders found",
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
               sx={{
                 display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                mt: 2,
               }}
-              color="secondary"
-              shape="rounded"
-            />
-          </Box>
+            >
+              <Pagination
+                count={pagination.total_page_count}
+                page={pagination.current_page_number}
+                onChange={handlePaginationChange}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                color="secondary"
+                shape="rounded"
+              />
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-      <OrderDetails
-        order={selectedOrder}
-        onClose={() => {
-          setSelectedOrder(null);
-        }}
-      />
-    </Box>
+        <OrderDetails
+          order={selectedOrder}
+          onClose={() => {
+            setSelectedOrder(null);
+          }}
+          getOrders={getOrders}
+        />
+      </Box>
+    </RouteProtection>
   );
 }

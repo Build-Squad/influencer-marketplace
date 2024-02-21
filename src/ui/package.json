@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
@@ -16,12 +17,13 @@
     "@mui/material": "^5.14.19",
     "@mui/x-data-grid": "^6.18.7",
     "@mui/x-date-pickers": "^6.18.2",
+    "@project-serum/anchor": "^0.26.0",
     "@reduxjs/toolkit": "^2.0.1",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-material-ui": "^0.16.33",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-wallets": "^0.19.25",
-    "@solana/web3.js": "^1.88.0",
+    "@solana/web3.js": "^1.89.1",
     "@svgr/webpack": "^8.1.0",
     "axios": "^1.6.1",
     "dayjs": "^1.11.10",

@@ -58,7 +58,7 @@ export default function CheckoutTable() {
             <TableCell>{orderItem?.item?.package?.name}</TableCell>
             <TableCell>{orderItem?.quantity} </TableCell>
             <TableCell>
-              {Number(orderItem?.platform_price)?.toFixed(2)}{" "}
+              {Number(orderItem?.platform_price)?.toFixed(4)}{" "}
               {orderItem?.item?.currency?.symbol}
             </TableCell>
           </TableRow>
@@ -74,7 +74,7 @@ export default function CheckoutTable() {
           </TableCell>
           <TableCell></TableCell>
           <TableCell>
-            {cart?.orderTotal?.toFixed(2)} {cart?.orderTotalCurrency?.symbol}
+            {cart?.orderTotal?.toFixed(4)} {cart?.orderTotalCurrency?.symbol}
           </TableCell>
         </TableRow>
       </TableBody>

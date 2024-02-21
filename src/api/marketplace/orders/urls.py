@@ -1,22 +1,21 @@
 from django.urls import path
 from .views import (
+    CancelTweetView,
     OrderList,
     OrderDetail,
     OrderItemList,
     OrderItemDetail,
     OrderAttachmentList,
     OrderAttachmentDetail,
-    OrderItemTrackingList,
-    OrderItemTrackingDetail,
     OrderListView,
     OrderMessageList,
-    TransactionList,
-    TransactionDetail,
+    SendTweetView,
     ReviewList,
     ReviewDetail,
+    TransactionCreateView,
     UpdateOrderStatus,
     OrderMessageCreateView,
-    UserOrderMessagesView
+    UserOrderMessagesView,
 )
 
 urlpatterns = [
@@ -32,9 +31,6 @@ urlpatterns = [
     path("order-attachment/", OrderAttachmentList.as_view(), name="order-attachment-list"),
     path('order-attachment/<uuid:pk>/', OrderAttachmentDetail.as_view(), name="order-attachment-details"),
 
-    path("order-item-tracking/", OrderItemTrackingList.as_view(), name="order-item-tracking-list"),
-    path('order-item-tracking/<uuid:pk>/', OrderItemTrackingDetail.as_view(), name="order-item-tracking-details"),
-
     path("user-order-messages/", UserOrderMessagesView.as_view(),
          name="user-order-messages"),
 
@@ -43,9 +39,12 @@ urlpatterns = [
     path("order-message/", OrderMessageCreateView.as_view(),
          name="order-message-create"),
 
-    path("transaction/", TransactionList.as_view(), name="transaction-list"),
-    path('transaction/<uuid:pk>/', TransactionDetail.as_view(), name="transactiont-details"),
-
     path("review/", ReviewList.as_view(), name="review-list"),
     path('review/<uuid:pk>/', ReviewDetail.as_view(), name="reviewt-details"),
+
+    path('send-tweet', SendTweetView.as_view(), name="send-tweet"),
+    path('cancel-tweet', CancelTweetView.as_view(), name="cancel-tweet"),
+
+    path('create-transaction/',
+         TransactionCreateView.as_view(), name="create-transaction"),
 ]

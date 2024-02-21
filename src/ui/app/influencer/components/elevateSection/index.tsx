@@ -187,6 +187,7 @@ export default function ElevateSection({}: Props) {
                   onClick={() => {
                     handleSelect({ index });
                   }}
+                  key={index}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -196,8 +197,8 @@ export default function ElevateSection({}: Props) {
                     fill="none"
                   >
                     <path
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
+                      fillRule="evenodd"
+                      clipRule="evenodd"
                       d="M8 10V12L10.7314 9.95143L11.09 9.85021C12.771 9.37573 14 7.8288 14 6C14 3.79086 12.2091 2 10 2H6C3.79086 2 2 3.79086 2 6C2 8.20914 3.79086 10 6 10H8ZM6 16V12C2.68629 12 0 9.31371 0 6C0 2.68629 2.68629 0 6 0H10C13.3137 0 16 2.68629 16 6C16 8.74753 14.1532 11.0637 11.6333 11.775L6 16Z"
                       fill="black"
                     />

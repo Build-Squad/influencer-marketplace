@@ -7,6 +7,7 @@ type OrderItem = {
   order_item: OrderItemType;
   index: number;
   service_id?: string;
+  publish_date?: string;
 };
 
 type ServiceAdded = {
@@ -17,12 +18,15 @@ type ServiceAdded = {
 };
 
 type CartState = {
+  order_number?: number;
   orderId?: string | null;
   influencer: UserType | null;
   orderItems: OrderItem[];
   servicesAdded: ServiceAdded[];
   orderTotal: number;
   orderTotalCurrency: CurrencyType;
+  influencer_wallet?: WalletType;
+  buyer_wallet?: WalletType;
 };
 
 type AddOrderItemPayloadType = {
@@ -130,10 +134,12 @@ export const cartSlice = createSlice({
                   max: item.max,
                   placeholder: item.placeholder,
                   order: item.order,
+                  regex: item.regex,
                 };
               }
             ),
         },
+        publish_date: undefined,
         service_id: action.payload.service.id,
         index: state.orderItems.length,
       });
@@ -167,32 +173,41 @@ export const cartSlice = createSlice({
       // Decrement the quantity of the service
       // If the quantity is 0, remove the service from the servicesAdded array
       // Also update the platform_price
-      state.orderItems.forEach((item) => {
-        const serviceAdded = servicesAdded.find(
-          (service) => service.item?.package.id === action.payload.packageId
-        );
-        if (serviceAdded) {
-          serviceAdded.quantity -= 1;
-          if (serviceAdded.quantity === 0) {
-            // Remove the service from the servicesAdded array
-            const index = servicesAdded.findIndex(
-              (service) => service.item?.package.id === action.payload.packageId
-            );
-            servicesAdded.splice(index, 1);
+      const serviceAdded = servicesAdded.find(
+        (service) => service.item?.package.id === action.payload.packageId
+      );
+      if (serviceAdded) {
+        serviceAdded.quantity -= 1;
+        if (serviceAdded.quantity === 0) {
+          // Remove the service from the servicesAdded array
+          const index = servicesAdded.findIndex(
+            (service) => service.item?.package.id === action.payload.packageId
+          );
+          servicesAdded.splice(index, 1);
+        } else {
+          // Check if the service is a service or an order item by checking the type of the item
+          let platform_fee = "";
+          if ("platform_fees" in serviceAdded.item) {
+            platform_fee = serviceAdded.item?.platform_fees;
           } else {
-            serviceAdded.platform_price = (
-              Number(serviceAdded.platform_price) -
-              Number(item.order_item.platform_price)
-            )?.toString();
+            platform_fee = serviceAdded.item?.platform_fee;
           }
+          serviceAdded.platform_price = (
+            parseFloat(serviceAdded.platform_price) -
+            parseFloat(serviceAdded.item?.price?.toString()) -
+            parseFloat(serviceAdded.item?.price?.toString()) *
+              (parseFloat(platform_fee?.toString()) / 100)
+          )?.toString();
         }
-      });
+      }
 
       state.servicesAdded = servicesAdded;
 
       // If there are no more order items, reset influencer, orderTotal, and orderTotalCurrency here
       if (state.orderItems.length === 0) {
         state.influencer = null;
+        state.influencer_wallet = undefined;
+        state.buyer_wallet = undefined;
         state.orderTotal = 0;
         state.orderTotalCurrency = {
           id: "",
@@ -244,8 +259,11 @@ export const cartSlice = createSlice({
     },
 
     resetCart: (state) => {
+      state.order_number = undefined;
       state.orderId = null;
       state.influencer = null;
+      state.influencer_wallet = undefined;
+      state.buyer_wallet = undefined;
       state.orderItems = [];
       state.servicesAdded = [];
       state.orderTotal = 0;
@@ -261,13 +279,19 @@ export const cartSlice = createSlice({
     initializeCart: (
       state,
       action: PayloadAction<{
+        order_number: number;
         orderId: string;
         influencer: UserType | null;
         orderItems: OrderItemType[];
+        influencer_wallet?: WalletType;
+        buyer_wallet?: WalletType;
       }>
     ) => {
+      state.order_number = action.payload.order_number;
       state.orderId = action.payload.orderId;
       state.influencer = action.payload.influencer;
+      state.influencer_wallet = action.payload.influencer_wallet;
+      state.buyer_wallet = action.payload.buyer_wallet;
       state.orderItems = action.payload.orderItems.map((item) => {
         return {
           order_item: {
@@ -290,9 +314,11 @@ export const cartSlice = createSlice({
                 max: item.max,
                 placeholder: item.placeholder,
                 order: item.order,
+                regex: item.regex,
               };
             }),
           },
+          publish_date: item.publish_date,
           service_id: undefined,
           index: state.orderItems.length,
         };
@@ -333,6 +359,14 @@ export const cartSlice = createSlice({
       }, 0);
       state.orderTotalCurrency = action.payload.orderItems[0].currency;
     },
+
+    updatePublishDate: (
+      state,
+      action: PayloadAction<{ index: number; value: string }>
+    ) => {
+      const orderItem = state.orderItems[action.payload.index];
+      orderItem.publish_date = action.payload.value;
+    },
   },
 });
 
@@ -343,5 +377,6 @@ export const {
   resetCart,
   updateFieldValues,
   initializeCart,
+  updatePublishDate,
 } = cartSlice.actions;
 

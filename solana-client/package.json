@@ -17,6 +17,8 @@
     "@solana/wallet-adapter-react-ui": "^0.9.6",
     "@solana/wallet-adapter-wallets": "^0.15.5",
     "@solana/web3.js": "^1.37.0",
+    "chai": "^5.0.3",
+    "chain": "^0.4.0",
     "framer-motion": "^11.0.3",
     "next": "12.1.2",
     "react": "18.0.0",

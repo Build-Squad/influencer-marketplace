@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
 import { postService } from "@/src/services/httpServices";
 import { ORDER_STATUS } from "@/src/utils/consts";
+import { useWallet } from "@solana/wallet-adapter-react";
 import React, { useEffect } from "react";
 
 export default function BusinessLayout({
@@ -11,6 +12,7 @@ export default function BusinessLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { publicKey } = useWallet();
   const user = useAppSelector((state) => state.user);
   const cart = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
@@ -30,9 +32,12 @@ export default function BusinessLayout({
         }
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
             influencer: order.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
+            influencer_wallet: order?.influencer_wallet,
+            buyer_wallet: order?.buyer_wallet,
           })
         );
       } else {
@@ -48,6 +53,10 @@ export default function BusinessLayout({
       getCurrentDraftOrder();
     }
   }, [user?.loggedIn]);
+
+  useEffect(() => {
+    console.log("Business publicKey", publicKey);
+  }, [publicKey]);
 
   return <div>{children}</div>;
 }

@@ -11,6 +11,9 @@ import FAQSection from "./components/faqSection";
 import { useEffect, useState } from "react";
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import { useRouter } from "next/navigation";
+import ScrollTop from "@/public/svg/ScrollTop.svg";
+import Image from "next/image";
 
 const formatTwitterFollowers = (followersCount: any) => {
   if (followersCount >= 1000000) {
@@ -26,7 +29,48 @@ const formatTwitterFollowers = (followersCount: any) => {
 };
 
 export default function BusinessHome() {
+  const router = useRouter();
   const [topInfluencers, setTopInfluencers] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 200) {
+        // Adjust this value as needed
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener("scroll", toggleVisibility);
+
+    // Clean up the event listener on component unmount
+    return () => window.removeEventListener("scroll", toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const getPrice = (inf: any, type = "max") => {
+    const services = inf.service_types || [];
+    const comparator = type === "max" ? Math.max : Math.min;
+
+    if (services.length === 0) {
+      return "0";
+    }
+
+    const price = comparator(...services.map((service: any) => service.price));
+    const serviceWithPrice = services.find(
+      (service: any) => service.price === price
+    );
+
+    return `${price}${serviceWithPrice.currencySymbol}`;
+  };
 
   const getTopInfluencers = async () => {
     const { isSuccess, data, message } = await getService(
@@ -44,18 +88,8 @@ export default function BusinessHome() {
             : [],
 
           followers: formatTwitterFollowers(inf.followers_count),
-          minPrice:
-            inf.service_types && inf.service_types.length > 0
-              ? Math.min(
-                  ...inf.service_types.map((service: any) => service.price)
-                )
-              : 0,
-          maxPrice:
-            inf.service_types && inf.service_types.length > 0
-              ? Math.max(
-                  ...inf.service_types.map((service: any) => service.price)
-                )
-              : 0,
+          minPrice: getPrice(inf, "min"),
+          maxPrice: getPrice(inf, "max"),
         };
       });
       setTopInfluencers(filteredData);
@@ -116,6 +150,20 @@ export default function BusinessHome() {
       </Box>
       {/* Footer */}
       <Footer />
+      {isVisible && (
+        <div
+          onClick={scrollToTop}
+          style={{
+            position: "fixed",
+            bottom: "6px",
+            right: "16px",
+            cursor: "pointer",
+            zIndex: "10",
+          }}
+        >
+          <Image src={ScrollTop} alt="ScrollTop" height={50} />
+        </div>
+      )}
     </Box>
   );
 }

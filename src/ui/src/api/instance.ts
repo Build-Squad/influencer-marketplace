@@ -12,8 +12,8 @@ instance.interceptors.response.use(
   response => response,
   error => {
     if (error.response.status && error.response.status === 401) {
-      localStorage.clear();
-      sessionStorage.clear();
+      localStorage.removeItem("persist:user");
+      localStorage.removeItem("persist:cart");
       // window.location.href = "/";
     }
     throw error;

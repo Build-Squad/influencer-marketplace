@@ -1,6 +1,11 @@
 version: '3'
 
 services:
+
+  redis:
+    image: redis:latest
+    container_name: redis
+
   api:
     build:
       context: ./src/api/marketplace
@@ -22,6 +27,7 @@ services:
       - POSTGRES_PASSWORD=xsdrt1768
       - DJANGO_SETTINGS_MODULE=marketplace.settings
       - PYTHONPATH=/api/marketplace
+    container_name: api
 
   ui:
     build:
@@ -42,6 +48,7 @@ services:
     command: yarn dev
     depends_on:
       - api
+    container_name: ui
 
   psql:
     image: postgres:latest
@@ -53,3 +60,35 @@ services:
       - "5432:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    container_name: psql
+
+  # Celery worker
+  celery-worker:
+    restart: always
+    build:
+      context: ./src/api/marketplace
+    volumes:
+      - ./src/api:/api
+    command: celery -A marketplace worker -l DEBUG
+    container_name: celery_worker
+    depends_on:
+      - redis
+      - api
+    environment:
+      - DJANGO_SETTINGS_MODULE=marketplace.settings
+      - PYTHONPATH=/api/marketplace
+
+  # Celery Scheduler
+  celery-beat:
+    restart: always
+    build:
+      context: ./src/api/marketplace
+    volumes:
+      - ./src/api:/api
+    command: celery -A marketplace beat -l DEBUG
+    container_name: celery_beat
+    depends_on:
+      - celery-worker
+    environment:
+      - DJANGO_SETTINGS_MODULE=marketplace.settings
+      - PYTHONPATH=/api/marketplace

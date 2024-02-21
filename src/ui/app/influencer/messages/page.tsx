@@ -4,6 +4,7 @@ import OrderChatCard from "@/src/components/messagesComponents/orderChatCard";
 import OrderChatFilterBar from "@/src/components/messagesComponents/orderChatFilterBar";
 import OrderChatPanel from "@/src/components/messagesComponents/orderChatPanel";
 import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { postService } from "@/src/services/httpServices";
 import { ORDER_STATUS } from "@/src/utils/consts";
@@ -59,120 +60,122 @@ export default function BusinessMessages() {
   }, [filters]);
 
   return (
-    <Grid container spacing={2}>
-      <Grid
-        item
-        xs={12}
-        md={4}
-        lg={4}
-        sm={4}
-        sx={{
-          height: "100%",
-          overflow: "auto",
-          minHeight: "93vh",
-          maxHeight: "93vh",
-          mb: 2,
-        }}
-      >
-        <Box sx={{ p: 2 }}>
-          <OrderChatFilterBar filters={filters} setFilters={setFilters} />
-          <Typography
-            variant="h6"
-            sx={{
-              fontStyle: "italic",
-            }}
-          >
-            {orderChats?.length} Orders
-          </Typography>
-          {orderChats?.length > 0 ? (
-            <>
-              {orderChats?.map((orderChat) => {
-                let chatDisplayDetails: ChatDisplayType = {};
-                if (user?.id === orderChat?.order?.buyer?.id) {
-                  if (orderChat?.order?.order_item_order_id) {
-                    chatDisplayDetails = {
-                      username:
-                        orderChat?.order?.order_item_order_id[0]?.package
-                          ?.influencer?.twitter_account?.user_name,
-                      message: orderChat?.order_message,
-                      profile_image_url:
-                        orderChat?.order?.order_item_order_id[0]?.package
-                          ?.influencer?.twitter_account?.profile_image_url,
-                    };
-                  }
-                } else {
-                  chatDisplayDetails = {
-                    username: orderChat?.order?.buyer?.username
-                      ? orderChat?.order?.buyer?.username
-                      : "",
-                    message: orderChat?.order_message,
-                  };
-                }
-                return (
-                  <OrderChatCard
-                    key={orderChat?.order?.id}
-                    orderChat={orderChat}
-                    chatDisplayDetails={chatDisplayDetails}
-                    setSelectedOrderChat={setSelectedOrderChat}
-                  />
-                );
-              })}
-            </>
-          ) : (
+    <RouteProtection logged_in={true} influencer={true}>
+      <Grid container spacing={2}>
+        <Grid
+          item
+          xs={12}
+          md={4}
+          lg={4}
+          sm={4}
+          sx={{
+            height: "100%",
+            overflow: "auto",
+            minHeight: "93vh",
+            maxHeight: "93vh",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ p: 2 }}>
+            <OrderChatFilterBar filters={filters} setFilters={setFilters} />
             <Typography
               variant="h6"
               sx={{
                 fontStyle: "italic",
+              }}
+            >
+              {orderChats?.length} Orders
+            </Typography>
+            {orderChats?.length > 0 ? (
+              <>
+                {orderChats?.map((orderChat) => {
+                  let chatDisplayDetails: ChatDisplayType = {};
+                  if (user?.id === orderChat?.order?.buyer?.id) {
+                    if (orderChat?.order?.order_item_order_id) {
+                      chatDisplayDetails = {
+                        username:
+                          orderChat?.order?.order_item_order_id[0]?.package
+                            ?.influencer?.twitter_account?.user_name,
+                        message: orderChat?.order_message,
+                        profile_image_url:
+                          orderChat?.order?.order_item_order_id[0]?.package
+                            ?.influencer?.twitter_account?.profile_image_url,
+                      };
+                    }
+                  } else {
+                    chatDisplayDetails = {
+                      username: orderChat?.order?.buyer?.username
+                        ? orderChat?.order?.buyer?.username
+                        : "",
+                      message: orderChat?.order_message,
+                    };
+                  }
+                  return (
+                    <OrderChatCard
+                      key={orderChat?.order?.id}
+                      orderChat={orderChat}
+                      chatDisplayDetails={chatDisplayDetails}
+                      setSelectedOrderChat={setSelectedOrderChat}
+                    />
+                  );
+                })}
+              </>
+            ) : (
+              <Typography
+                variant="h6"
+                sx={{
+                  fontStyle: "italic",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                No Orders
+              </Typography>
+            )}
+          </Box>
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={8}
+          lg={8}
+          sm={8}
+          sx={{
+            borderLeft: "1px solid rgba(0,0,0,0.1)",
+            width: "100%",
+          }}
+        >
+          {selectedOrderChat ? (
+            <OrderChatPanel selectedOrderChat={selectedOrderChat} />
+          ) : (
+            <Box
+              sx={{
+                // In the center of this component
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                height: "100%",
+                flexDirection: "column",
               }}
             >
-              No Orders
-            </Typography>
+              <ChatIcon
+                sx={{
+                  fontSize: "10rem",
+                }}
+              />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontStyle: "italic",
+                }}
+              >
+                Select an order to view Chat
+              </Typography>
+            </Box>
           )}
-        </Box>
+        </Grid>
       </Grid>
-      <Grid
-        item
-        xs={12}
-        md={8}
-        lg={8}
-        sm={8}
-        sx={{
-          borderLeft: "1px solid rgba(0,0,0,0.1)",
-          width: "100%",
-        }}
-      >
-        {selectedOrderChat ? (
-          <OrderChatPanel selectedOrderChat={selectedOrderChat} />
-        ) : (
-          <Box
-            sx={{
-              // In the center of this component
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-              flexDirection: "column",
-            }}
-          >
-            <ChatIcon
-              sx={{
-                fontSize: "10rem",
-              }}
-            />
-            <Typography
-              variant="h6"
-              sx={{
-                fontStyle: "italic",
-              }}
-            >
-              Select an order to view Chat
-            </Typography>
-          </Box>
-        )}
-      </Grid>
-    </Grid>
+    </RouteProtection>
   );
 }

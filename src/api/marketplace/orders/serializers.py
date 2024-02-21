@@ -1,6 +1,7 @@
 from email import message
-from accounts.serializers import UserSerializer
-from accounts.models import User
+from accounts.serializers import UserSerializer, WalletCompleteSerializer
+from accounts.models import User, Wallet
+from orders.services import create_order_item_tracking
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service, ServiceMasterMetaData
@@ -10,14 +11,13 @@ from .models import (
     OrderItem,
     OrderAttachment,
     OrderItemMetaData,
-    OrderItemTracking,
     OrderMessage,
     OrderMessageAttachment,
-    Transaction,
     Review,
+    Transaction,
 )
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.utils import timezone
 
 class OrderItemMetaDataSerializer(serializers.ModelSerializer):
     class Meta:
@@ -72,10 +72,14 @@ class OrderListFilterSerializer(serializers.Serializer):
 # The response schema for the list of orders from the POST search request
 class OrderSerializer(serializers.ModelSerializer):
     buyer = UserSerializer(read_only=True)
-    order_item_order_id = OrderItemReadSerializer(many=True, read_only=True)
+    order_item_order_id = serializers.SerializerMethodField()
     review = ReviewSerializer(read_only=True)
     amount = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
+    influencer_wallet = serializers.SerializerMethodField()
+    buyer_wallet = serializers.SerializerMethodField()
+    address = serializers.CharField(required=False)
+    transactions = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -97,10 +101,40 @@ class OrderSerializer(serializers.ModelSerializer):
             return CurrencySerializer(first_order_item.currency).data
         return None
 
+    def get_influencer_wallet(self, obj):
+        # Should return the wallet of the influencer
+        influencer_id = obj.order_item_order_id.first().package.influencer.id
+        influencer = User.objects.get(id=influencer_id)
+        wallet = Wallet.objects.filter(
+            user_id=influencer, is_primary=True).first()
+        if wallet:
+            return WalletCompleteSerializer(wallet).data
+
+    def get_buyer_wallet(self, obj):
+        # Should return the wallet of the buyer
+        buyer = User.objects.get(id=obj.buyer.id)
+        wallet = Wallet.objects.filter(
+            user_id=buyer, is_primary=True).first()
+        if wallet:
+            return WalletCompleteSerializer(wallet).data
+
+    def get_transactions(self, obj):
+        if "request" in self.context:
+            transactions = Transaction.objects.filter(
+                order=obj, transaction_initiated_by=self.context["request"].user_account)
+            return OrderTransactionSerializer(transactions, many=True).data
+        else:
+            return []
+
+    def get_order_item_order_id(self, obj):
+        order_items = OrderItem.objects.filter(
+            order_id=obj, deleted_at=None).order_by('-created_at')
+        return OrderItemReadSerializer(order_items, many=True).data
 
 # The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):
-    value = serializers.CharField(allow_null=True)
+    value = serializers.CharField(
+        allow_null=True, required=False, allow_blank=True)
     service_master_meta_data_id = serializers.UUIDField(required=False)
     order_item_meta_data_id = serializers.UUIDField(required=False)
 
@@ -109,6 +143,7 @@ class OrderItemSerializer(serializers.Serializer):
     service_id = serializers.UUIDField(required=False)
     meta_data = serializers.ListField(child=MetaDataSerializer())
     order_item_id = serializers.UUIDField(required=False)
+    publish_date = serializers.DateTimeField(required=False)
 
 
 class CreateOrderSerializer(serializers.Serializer):
@@ -134,12 +169,21 @@ class CreateOrderSerializer(serializers.Serializer):
             if service_master_meta_data_item is None:
                 raise serializers.ValidationError(
                     {"service_master_meta_data_id": "Service master meta data id not provided.".format(meta_data['service_master_meta_data_id'])})
+                # Create the meta data
             order_item_meta_data = OrderItemMetaData.objects.create(
-                order_item=order_item, label=service_master_meta_data_item.label,
-                value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
-                span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
-                min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
-                order=service_master_meta_data_item.order)
+                order_item=order_item,
+                label=service_master_meta_data_item.label,
+                value=meta_data['value'],
+                field_type=service_master_meta_data_item.field_type,
+                span=service_master_meta_data_item.span,
+                placeholder=service_master_meta_data_item.placeholder,
+                min=service_master_meta_data_item.min,
+                max=service_master_meta_data_item.max,
+                order=service_master_meta_data_item.order,
+                field_name=service_master_meta_data_item.field_name,
+                regex=service_master_meta_data_item.regex,
+            )
+        # Update the meta data
         order_item_meta_data.value = meta_data['value']
         order_item_meta_data.save()
 
@@ -166,7 +210,11 @@ class CreateOrderSerializer(serializers.Serializer):
                 price=service.price,
                 currency=service.currency,
                 platform_fee=service.platform_fees,
+                publish_date=order_item_data["publish_date"],
             )
+
+            # Create an order item tracking object
+            create_order_item_tracking(order_item, order_item.status)
 
             service_master_meta_data = (
                 service.service_master.service_master_meta_data_id.all()
@@ -182,7 +230,8 @@ class CreateOrderSerializer(serializers.Serializer):
                             value=meta_data['value'], field_type=service_master_meta_data_item.field_type,
                             span=service_master_meta_data_item.span, placeholder=service_master_meta_data_item.placeholder,
                             min=service_master_meta_data_item.min, max=service_master_meta_data_item.max,
-                            order=service_master_meta_data_item.order)
+                            order=service_master_meta_data_item.order, field_name=service_master_meta_data_item.field_name,
+                            regex=service_master_meta_data_item.regex)
         return order
 
     def update(self, instance, validated_data):
@@ -201,6 +250,10 @@ class CreateOrderSerializer(serializers.Serializer):
                     order_item = OrderItem.objects.get(
                         id=order_item_data["order_item_id"]
                     )
+                    # Update the publish date
+                    if "publish_date" in order_item_data:
+                        order_item.publish_date = order_item_data["publish_date"]
+                        order_item.save()
                 except ObjectDoesNotExist:
                     raise serializers.ValidationError(
                         {
@@ -227,7 +280,11 @@ class CreateOrderSerializer(serializers.Serializer):
                     price=service.price,
                     currency=service.currency,
                     platform_fee=service.platform_fees,
+                    publish_date=order_item_data["publish_date"],
                 )
+                
+                # Create an order item tracking object
+                create_order_item_tracking(order_item, order_item.status)
 
             # Similar to the create method, the meta data will be updated if the order item meta data already exists
             # If it does not exist, it will be created
@@ -246,18 +303,26 @@ class CreateOrderSerializer(serializers.Serializer):
 
         return order
 
+    def validate(self, data):
+        order_items = data["order_items"]
+        if len(order_items) == 0:
+            raise serializers.ValidationError(
+                {"order_items": "Order items cannot be empty."})
+        for order_item in order_items:
+            if "publish_date" not in order_item:
+                raise serializers.ValidationError(
+                    {"publish_date": "Publish date is required."})
+            if "publish_date" in order_item:
+                if order_item["publish_date"] < timezone.now():
+                    raise serializers.ValidationError(
+                        {"publish_date": "Publish date should be in the future."})
+        return data
+
 
 class OrderAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderAttachment
         fields = "__all__"
-
-
-class OrderItemTrackingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderItemTracking
-        fields = "__all__"
-
 
 class OrderMessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -327,7 +392,36 @@ class UserOrderMessagesSerializer(serializers.Serializer):
     orders = OrderDetailSerializer(many=True, read_only=True)
     total_unread_messages_count = serializers.IntegerField(read_only=True)
 
-class TransactionSerializer(serializers.ModelSerializer):
+class SendTweetSerializer(serializers.Serializer):
+    order_item_id = serializers.UUIDField(required=True)
+
+class OrderTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = "__all__"
+        fields = '__all__'
+
+
+class OrderTransactionCreateSerializer(serializers.Serializer):
+    order_id = serializers.UUIDField(required=True)
+    transaction_type = serializers.CharField(required=True)
+    transaction_address = serializers.CharField(required=True)
+    status = serializers.CharField(required=False)
+
+    def create(self, validated_data):
+        order = Order.objects.get(id=validated_data['order_id'])
+        user = self.context['request'].user_account
+        wallet = Wallet.objects.filter(user_id=user, is_primary=True).first()
+        if wallet is None:
+            raise serializers.ValidationError(
+                {"wallet": "User does not have a primary wallet"})
+            
+        transaction = Transaction.objects.create(
+            order=order, 
+            transaction_initiated_by=user, 
+            transaction_type=validated_data['transaction_type'], 
+            transaction_address=validated_data['transaction_address'],
+            wallet = wallet,
+            status = validated_data.get('status', 'pending')
+        )
+        
+        return transaction

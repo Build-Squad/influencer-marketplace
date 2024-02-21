@@ -4,19 +4,25 @@ import CheckoutTable from "@/src/components/checkoutComponents/checkoutTable";
 import OrderItemForm from "@/src/components/checkoutComponents/orderItemForm";
 import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
+import CreateEscrow from "@/src/components/web3Components/createEscrow";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
+import BackIcon from "@/public/svg/Back.svg";
+import Image from "next/image";
 import {
   deleteService,
   postService,
   putService,
 } from "@/src/services/httpServices";
+import { CHECKOUT_TEXT, ORDER_STATUS } from "@/src/utils/consts";
 import { Box, Button, Grid, Link, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import dayjs from "dayjs";
 
 export default function CheckoutPage() {
   const dispatch = useAppDispatch();
@@ -55,7 +61,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const updateStatus = async () => {
+  const updateStatus = async (address: string) => {
     if (user?.user?.wallets?.length === 0) {
       notification("You need to add a wallet first", "error", 3000);
       return;
@@ -64,7 +70,8 @@ export default function CheckoutPage() {
     const { isSuccess, data, message } = await putService(
       `orders/update-status/${cart?.orderId}/`,
       {
-        status: "pending",
+        status: ORDER_STATUS.PENDING,
+        address: address,
       }
     );
 
@@ -82,10 +89,48 @@ export default function CheckoutPage() {
     }
   };
 
+  const validateMetaDataValues = () => {
+    let isValid = true;
+    cart?.orderItems?.forEach((orderItem) => {
+      if (!orderItem?.publish_date) {
+        notification("Please select a publish date", "error", 3000);
+        isValid = false;
+      }
+      if (orderItem?.publish_date) {
+        // Make sure that publish_date is atleast 30 minutes from now that is if current time is 12:00 then publish_date should be atleast 12:30
+        const publishDate = dayjs(orderItem?.publish_date);
+        const _30MinutesLater = dayjs().add(30, "minutes");
+        if (publishDate.isBefore(_30MinutesLater)) {
+          notification(
+            "Please select a publish date atleast 30 minutes from now",
+            "error",
+            3000
+          );
+          isValid = false;
+        }
+      }
+      orderItem?.order_item?.order_item_meta_data?.forEach((metaData) => {
+        if (metaData.regex && metaData?.value) {
+          const regex = new RegExp(metaData.regex);
+          if (!regex.test(metaData?.value)) {
+            notification(
+              `Please fill the correct value for ${metaData.label}`,
+              "error",
+              3000
+            );
+            isValid = false;
+          }
+        }
+      });
+    });
+    return isValid;
+  };
+
   const createOrder = async () => {
     const body = {
       order_items: cart?.orderItems?.map((orderItem) => {
         return {
+          publish_date: orderItem?.publish_date,
           service_id: orderItem?.service_id,
           meta_data: orderItem?.order_item?.order_item_meta_data?.map(
             (metaData) => {
@@ -109,9 +154,12 @@ export default function CheckoutPage() {
         const order = data?.data;
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
-            influencer: order.order_item_order_id[0].package.influencer,
+            influencer: order?.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
+            influencer_wallet: order?.influencer_wallet,
+            buyer_wallet: order?.buyer_wallet,
           })
         );
       } else {
@@ -127,6 +175,7 @@ export default function CheckoutPage() {
         return {
           service_id: orderItem?.service_id,
           order_item_id: orderItem?.order_item?.id,
+          publish_date: orderItem?.publish_date,
           meta_data: orderItem?.order_item?.order_item_meta_data?.map(
             (metaData) => {
               return {
@@ -150,9 +199,12 @@ export default function CheckoutPage() {
         const order = data?.data;
         dispatch(
           initializeCart({
+            order_number: order.order_number,
             orderId: order.id,
             influencer: order.order_item_order_id[0].package.influencer,
             orderItems: order.order_item_order_id,
+            influencer_wallet: order?.influencer_wallet,
+            buyer_wallet: order?.buyer_wallet,
           })
         );
       } else {
@@ -165,6 +217,10 @@ export default function CheckoutPage() {
   const onSave = async () => {
     try {
       setLoading(true);
+      if (!validateMetaDataValues()) {
+        setLoading(false);
+        return;
+      }
       if (!cart?.orderId) {
         createOrder();
       } else {
@@ -175,204 +231,199 @@ export default function CheckoutPage() {
     }
   };
 
-  if (cart?.orderItems?.length === 0) {
-    return (
-      <Box
-        sx={{
-          width: "100%",
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h6">No items added to the cart</Typography>
-      </Box>
-    );
-  }
-
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Grid
-        container
-        spacing={2}
-        sx={{
-          px: 2,
+    <RouteProtection logged_in={true} business_owner={true}>
+      <Image
+        src={BackIcon}
+        alt={"BackIcon"}
+        height={30}
+        style={{ marginTop: "16px", marginLeft: "32px", cursor: "pointer" }}
+        onClick={() => {
+          router.back();
         }}
-      >
-        <Grid
-          item
-          xs={12}
-          md={8}
-          lg={8}
-          sm={12}
+      />
+      {cart?.orderItems?.length === 0 ? (
+        <Box
           sx={{
-            p: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            width: "100%",
           }}
         >
-          {cart?.orderItems?.map((orderItem, index: number) => {
-            return (
-              <OrderItemForm
-                key={index}
-                orderItem={orderItem}
-                index={index}
-                disableDelete={cart?.orderItems?.length === 1}
-                sx={{
-                  m: 2,
-                }}
-              />
-            );
-          })}
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{
-                  p: 1,
-                  mt: 1,
-                  borderRadius: 8,
-                  minWidth: 100,
-                }}
-                onClick={() => {
-                  onSave();
-                }}
-                disabled={loading}
-              >
-                {loading ? "Saving..." : "Save"}
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-        <Grid item xs={12} md={4} lg={4} sm={12}>
-          <Box
+          <Typography
+            variant="h6"
             sx={{
-              p: 2,
-              borderRadius: 4,
-              border: "1px solid #D3D3D3",
-              m: 2,
-              backgroundColor: "#ffffff",
-              boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+              fontStyle: "italic",
             }}
           >
-            <Typography
-              variant="h6"
+            Cart is Empty
+          </Typography>
+        </Box>
+      ) : (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              px: 2,
+            }}
+          >
+            <Grid
+              item
+              xs={12}
+              md={8}
+              lg={8}
+              sm={12}
               sx={{
-                fontWeight: "bold",
+                p: 2,
               }}
             >
-              Order Details
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: "bold",
-                }}
-              >
-                Infleuncer : &nbsp;
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: "16px",
-                  lineHeight: "19px",
-                }}
-              >
-                <Link
-                  href={`/influencer/profile/${cart?.influencer?.id}`}
-                  target="_blank"
-                  component={NextLink}
+              {cart?.orderItems?.map((orderItem, index: number) => {
+                return (
+                  <OrderItemForm
+                    key={index}
+                    orderItem={orderItem}
+                    index={index}
+                    disableDelete={cart?.orderItems?.length === 1}
+                    sx={{
+                      m: 2,
+                    }}
+                  />
+                );
+              })}
+              <Grid item xs={12}>
+                <Box
                   sx={{
-                    color: "#09F",
-                    textDecoration: "none",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
                   }}
                 >
-                  {cart?.influencer?.twitter_account?.user_name}
-                </Link>
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                overflow: "auto",
-              }}
-            >
-              <CheckoutTable />
-            </Box>
-            <Box
-              sx={{
-                my: 2,
-              }}
-            >
-              <Typography variant="body1">
-                {`Your payment will be held for 72 hours. If ${cart?.influencer?.twitter_account?.name}
-                declines the order, the amount will be added back to your Wallet`}
-              </Typography>
-            </Box>
-            <Box>
-              <ConfirmCancel
-                title="this order"
-                onConfirm={() => {
-                  deleteOrder();
-                }}
-                loading={loading}
-                hide
-                deleteElement={
                   <Button
+                    variant="contained"
                     color="secondary"
-                    disableElevation
-                    fullWidth
-                    variant="outlined"
-                    disabled={loading}
                     sx={{
-                      borderRadius: "20px",
+                      p: 1,
+                      mt: 1,
+                      borderRadius: 8,
+                      minWidth: 100,
                     }}
+                    onClick={() => {
+                      onSave();
+                    }}
+                    disabled={loading}
                   >
-                    Cancel Order
+                    {loading ? "Saving..." : "Save"}
                   </Button>
-                }
-              />
-              <Button
-                disableElevation
-                fullWidth
-                variant="outlined"
+                </Box>
+              </Grid>
+            </Grid>
+            <Grid item xs={12} md={4} lg={4} sm={12}>
+              <Box
                 sx={{
-                  background:
-                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                  color: "black",
-                  border: "1px solid black",
-                  borderRadius: "20px",
-                  mt: 2,
-                }}
-                disabled={loading || !cart?.orderId}
-                onClick={() => {
-                  updateStatus();
+                  p: 2,
+                  borderRadius: 4,
+                  border: "1px solid #D3D3D3",
+                  m: 2,
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
                 }}
               >
-                Make Offer
-              </Button>
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
-    </LocalizationProvider>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Order Details
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Influencer : &nbsp;
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: "16px",
+                      lineHeight: "19px",
+                    }}
+                  >
+                    <Link
+                      href={`/influencer/profile/${cart?.influencer?.id}`}
+                      target="_blank"
+                      component={NextLink}
+                      sx={{
+                        color: "#09F",
+                        textDecoration: "none",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      {cart?.influencer?.twitter_account?.user_name}
+                    </Link>
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    overflow: "auto",
+                  }}
+                >
+                  <CheckoutTable />
+                </Box>
+                <Box
+                  sx={{
+                    my: 2,
+                  }}
+                >
+                  <Typography variant="body1">{CHECKOUT_TEXT}</Typography>
+                </Box>
+                <Box>
+                  <ConfirmCancel
+                    title="this order"
+                    onConfirm={() => {
+                      deleteOrder();
+                    }}
+                    loading={loading}
+                    hide
+                    deleteElement={
+                      <Button
+                        color="secondary"
+                        disableElevation
+                        fullWidth
+                        variant="outlined"
+                        disabled={loading}
+                        sx={{
+                          borderRadius: "20px",
+                        }}
+                      >
+                        Cancel Order
+                      </Button>
+                    }
+                  />
+                  <CreateEscrow loading={loading} updateStatus={updateStatus} />
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </LocalizationProvider>
+      )}
+    </RouteProtection>
   );
 }

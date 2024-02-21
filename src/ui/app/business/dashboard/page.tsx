@@ -8,19 +8,27 @@ import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
+import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
 import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
+import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import {
+  DISPLAY_DATE_FORMAT,
+  ORDER_STATUS,
+  TRANSACTION_TYPE,
+} from "@/src/utils/consts";
+import { KeyboardBackspace } from "@mui/icons-material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
+  Button,
   Grid,
   IconButton,
   Link,
   Pagination,
-  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -31,9 +39,11 @@ import {
 } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function BusinessDashboardPage() {
+  const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -45,6 +55,7 @@ export default function BusinessDashboardPage() {
       ORDER_STATUS.PENDING,
       ORDER_STATUS.COMPLETED,
     ],
+    order_by: "-created_at",
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
@@ -129,6 +140,10 @@ export default function BusinessDashboardPage() {
             ORDER_STATUS.COMPLETED,
           ],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(0);
       },
       value: 0,
@@ -146,6 +161,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.ACCEPTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(1);
       },
@@ -165,6 +184,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.COMPLETED],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(2);
       },
       value: 2,
@@ -183,6 +206,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.PENDING],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(3);
       },
       value: 3,
@@ -200,6 +227,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.REJECTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(4);
       },
@@ -377,6 +408,43 @@ export default function BusinessDashboardPage() {
                 </Tooltip>
               )}
             </>
+            {params?.row?.status === ORDER_STATUS.REJECTED &&
+              params?.row?.transactions.filter(
+                (transaction: TransactionType) =>
+                  transaction.transaction_type ===
+                  TRANSACTION_TYPE.CANCEL_ESCROW
+              )?.length === 0 && (
+                <CancelEscrow order={params?.row} updateStatus={getOrders} />
+              )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "transactions",
+      headerName: "Transactions",
+      flex: 1,
+      sortable: false,
+      minWidth: 300,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {params?.row?.transactions?.map((transaction: TransactionType) => {
+              return (
+                <TransactionIcon
+                  key={transaction?.transaction_address}
+                  transaction={transaction}
+                />
+              );
+            })}
           </Box>
         );
       },
@@ -395,35 +463,6 @@ export default function BusinessDashboardPage() {
         );
       },
     },
-    // {
-    //   field: "review_order_id__rating",
-    //   headerName: "Rating",
-    //   flex: 1,
-    //   renderCell: (
-    //     params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
-    //   ): React.ReactNode => {
-    //     return (
-    //       <Box
-    //         sx={{
-    //           display: "flex",
-    //           justifyContent: "center",
-    //           alignItems: "center",
-    //         }}
-    //       >
-    //         <Rating
-    //           name="read-only"
-    //           value={params?.row?.rating}
-    //           size="small"
-    //           disabled={
-    //             params?.row?.rating || params?.row?.status !== "completed"
-    //               ? true
-    //               : false
-    //           }
-    //         />
-    //       </Box>
-    //     );
-    //   },
-    // },
   ];
 
   useEffect(() => {
@@ -438,90 +477,105 @@ export default function BusinessDashboardPage() {
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            {statusCards.map((card, index) => {
-              return (
-                <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
-                  <StatusCard
-                    card={card}
-                    selectedCard={selectedCard}
-                    orderCount={orderCount}
-                  />
-                </Grid>
-              );
-            })}
+    <RouteProtection logged_in={true} business_owner={true}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Tooltip title="Go Back" placement="top" arrow>
+              <IconButton
+                onClick={() => {
+                  router.back();
+                }}
+                sx={{
+                  boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.15)",
+                  mb: 2,
+                }}
+              >
+                <KeyboardBackspace />
+              </IconButton>
+            </Tooltip>
+            <Grid container spacing={2}>
+              {statusCards.map((card, index) => {
+                return (
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
+                    <StatusCard
+                      card={card}
+                      selectedCard={selectedCard}
+                      orderCount={orderCount}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <FilterBar filters={filters} setFilters={setFilters} />
-        </Grid>
-        <Grid item xs={12}>
-          <DataGrid
-            getRowId={(row) => (row?.id ? row?.id : 0)}
-            autoHeight
-            loading={loading}
-            rows={orders}
-            columns={columns}
-            disableRowSelectionOnClick
-            disableColumnFilter
-            hideFooter
-            getRowHeight={(params) => 100}
-            sx={{
-              backgroundColor: "#fff",
-            }}
-            // Sorting
-            sortingMode="server"
-            onSortModelChange={(model) => {
-              setFilters((prev) => ({
-                ...prev,
-                order_by: model?.[0]?.field
-                  ? model?.[0]?.sort === "asc"
-                    ? `-${model?.[0]?.field}`
-                    : `${model?.[0]?.field}`
-                  : undefined,
-              }));
-            }}
-            localeText={{
-              noRowsLabel: "No Orders found",
-            }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Pagination
-              count={pagination.total_page_count}
-              page={pagination.current_page_number}
-              onChange={handlePaginationChange}
+          <Grid item xs={12}>
+            <FilterBar filters={filters} setFilters={setFilters} />
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              getRowId={(row) => (row?.id ? row?.id : 0)}
+              autoHeight
+              loading={loading}
+              rows={orders}
+              columns={columns}
+              disableRowSelectionOnClick
+              disableColumnFilter
+              hideFooter
+              getRowHeight={(params) => 100}
+              sx={{
+                backgroundColor: "#fff",
+              }}
+              // Sorting
+              sortingMode="server"
+              onSortModelChange={(model) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  order_by: model?.[0]?.field
+                    ? model?.[0]?.sort === "asc"
+                      ? `-${model?.[0]?.field}`
+                      : `${model?.[0]?.field}`
+                    : undefined,
+                }));
+              }}
+              localeText={{
+                noRowsLabel: "No Orders found",
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
               sx={{
                 display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                mt: 2,
               }}
-              color="secondary"
-              shape="rounded"
-            />
-          </Box>
+            >
+              <Pagination
+                count={pagination.total_page_count}
+                page={pagination.current_page_number}
+                onChange={handlePaginationChange}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                color="secondary"
+                shape="rounded"
+              />
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-      <OrderDetails
-        order={selectedOrder}
-        onClose={() => {
-          setSelectedOrder(null);
-        }}
-      />
-    </Box>
+        <OrderDetails
+          order={selectedOrder}
+          onClose={() => {
+            setSelectedOrder(null);
+          }}
+        />
+      </Box>
+    </RouteProtection>
   );
 }

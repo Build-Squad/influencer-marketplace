@@ -1,16 +1,20 @@
 "use client";
 
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
+import BackIcon from "@/public/svg/Back.svg";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
+import EmailVerifyModal from "@/src/components/profileComponents/emailVerifyModal";
 import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
-import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import {
+  getService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
+import { DISPLAY_DATE_FORMAT, EMAIL_PRIVACY_TEXT } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import {
   Avatar,
@@ -27,13 +31,17 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import Image from "next/image";
 import NextLink from "next/link";
-import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
+import { stringToColor } from "@/src/utils/helper";
 
 const tabs = [
   {
@@ -46,6 +54,14 @@ const tabs = [
   // },
 ];
 
+const debounce = (fn: Function, ms = 500) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
+};
+
 const ProfileLayout = ({
   params,
 }: {
@@ -53,6 +69,7 @@ const ProfileLayout = ({
     id: string;
   };
 }) => {
+  const router = useRouter();
   const loggedInUser = useAppSelector((state) => state.user?.user);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [categoryOpen, setCategoryOpen] = React.useState<boolean>(false);
@@ -61,6 +78,8 @@ const ProfileLayout = ({
   const [wallets, setWallets] = React.useState<WalletType[]>([]);
   const [regions, setRegions] = React.useState<RegionType[]>([]);
   const [userRegion, setUserRegion] = React.useState<RegionType>();
+  const [editibleBio, setEditibleBio] = React.useState<string>("");
+  const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (params.id) {
@@ -73,6 +92,12 @@ const ProfileLayout = ({
       getUserDetails();
     }
   }, [categoryOpen]);
+
+  useEffect(() => {
+    if (!emailOpen) {
+      getUserDetails();
+    }
+  }, [emailOpen]);
 
   useEffect(() => {
     if (
@@ -89,11 +114,14 @@ const ProfileLayout = ({
   }, []);
 
   useEffect(() => {
-    if (currentUser?.region?.length) {
+    if (currentUser?.region) {
       const regionOfUser = regions.find(
-        (item) => item.id === currentUser?.region?.[0].region
+        (item) => item.id === currentUser?.region?.region
       );
       setUserRegion(regionOfUser);
+    }
+    if (currentUser?.twitter_account?.description) {
+      setEditibleBio(currentUser?.twitter_account?.description);
     }
   }, [currentUser]);
 
@@ -136,7 +164,7 @@ const ProfileLayout = ({
       attribute: currentUser?.twitter_account?.following_count,
     },
     {
-      label: "Tweets",
+      label: "Posts",
       attribute: currentUser?.twitter_account?.tweet_count,
     },
   ];
@@ -163,6 +191,36 @@ const ProfileLayout = ({
       );
     }
   };
+
+  const handleChange = async (e: any) => {
+    try {
+      const { isSuccess, message } = await putService(
+        `/account/user/${params?.id}/`,
+        {
+          twitter_account: {
+            description: e.target.value,
+          },
+        }
+      );
+      if (isSuccess) {
+        notification(message);
+      } else {
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const debouncedHandleChange = debounce(handleChange, 1000);
+
+  const updatedHandleChange = useCallback((e: any) => {
+    setEditibleBio(e.target.value);
+    debouncedHandleChange(e);
+  }, []);
 
   return (
     <Box
@@ -210,79 +268,98 @@ const ProfileLayout = ({
                       backgroundColor: "#FFF",
                       zIndex: "1",
                       display: "flex",
-                      maxWidth: "100%",
+                      minWidth: "100%",
                       flexDirection: "column",
                       mt: "-120px",
                     }}
                   >
-                    <Avatar
+                    {currentUser?.twitter_account?.profile_image_url &&
+                    !currentUser?.twitter_account?.profile_image_url.includes(
+                      "default"
+                    ) ? (
+                      <>
+                        <Avatar
+                          sx={{
+                            width: "100px",
+                            height: "100px",
+                            cursor: "pointer",
+                            margin: "20px auto",
+                          }}
+                          src={currentUser?.twitter_account?.profile_image_url}
+                        />
+                      </>
+                    ) : (
+                      <Avatar
+                        sx={{
+                          bgcolor: stringToColor(
+                            currentUser?.username ? currentUser?.username : ""
+                          ),
+                          width: "100px",
+                          height: "100px",
+                          cursor: "pointer",
+                          margin: "20px auto",
+                          fontSize: "50px",
+                        }}
+                      >
+                        {currentUser?.username?.charAt(0)?.toUpperCase()}
+                      </Avatar>
+                    )}
+
+                    <Typography
                       sx={{
-                        width: "100px",
-                        height: "100px",
-                        margin: "20px auto",
+                        textAlign: "center",
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        lineHeight: "29px",
                       }}
-                      src={currentUser?.twitter_account?.profile_image_url}
-                    />
+                    >
+                      {currentUser?.first_name} {currentUser?.last_name}
+                    </Typography>
+
                     <Box
                       sx={{
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
+                        mt: 1,
                       }}
                     >
                       <Typography
                         sx={{
                           textAlign: "center",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                          lineHeight: "29px",
+                          fontSize: "16px",
+                          lineHeight: "19px",
+                          color: "#000",
                         }}
                       >
-                        {currentUser?.first_name} {currentUser?.last_name}
+                        <Link
+                          href={`https://x.com/${currentUser?.twitter_account?.user_name}`}
+                          target="_blank"
+                          component={NextLink}
+                          sx={{
+                            color: "#000",
+                            textDecoration: "none",
+                            "&:hover": {
+                              textDecoration: "underline",
+                            },
+                          }}
+                        >
+                          @{currentUser?.twitter_account?.user_name}
+                        </Link>
                       </Typography>
-                      {currentUser?.twitter_account?.verified ? (
-                        <VerifiedIcon
-                          sx={{
-                            color: "#1DA1F2",
-                            fontSize: "20px",
-                            marginLeft: "5px",
-                          }}
-                        />
-                      ) : (
-                        <NewReleasesIcon
-                          sx={{
-                            color: "#f50057",
-                            fontSize: "20px",
-                            marginLeft: "5px",
-                          }}
-                        />
+                      {currentUser?.twitter_account?.verified && (
+                        <Tooltip title={"Verified On X"}>
+                          <VerifiedIcon
+                            sx={{
+                              color: "#1DA1F2",
+                              fontSize: "20px",
+                              marginLeft: "5px",
+                            }}
+                          />
+                        </Tooltip>
                       )}
                     </Box>
-                    <Typography
-                      sx={{
-                        textAlign: "center",
-                        fontSize: "16px",
-                        lineHeight: "19px",
-                        color: "#000",
-                        mt: 1,
-                      }}
-                    >
-                      <Link
-                        href={`https://x.com/${currentUser?.twitter_account?.user_name}`}
-                        target="_blank"
-                        component={NextLink}
-                        sx={{
-                          color: "#000",
-                          textDecoration: "none",
-                          "&:hover": {
-                            textDecoration: "underline",
-                          },
-                        }}
-                      >
-                        @{currentUser?.twitter_account?.user_name}
-                      </Link>
-                    </Typography>
                     <Box
                       sx={{
                         display: "flex",
@@ -364,11 +441,98 @@ const ProfileLayout = ({
                         >
                           Bio
                         </Typography>
-                        <Typography>
-                          {currentUser?.twitter_account?.description
-                            ? currentUser?.twitter_account?.description
-                            : "No Bio Added"}
-                        </Typography>
+                        {currentUser?.id === loggedInUser?.id ? (
+                          <TextField
+                            size="small"
+                            fullWidth
+                            multiline
+                            rows={4}
+                            color="secondary"
+                            value={editibleBio}
+                            onChange={updatedHandleChange}
+                            sx={{
+                              ".MuiOutlinedInput-notchedOutline": {
+                                border: "1px solid black",
+                                borderRadius: "24px",
+                              },
+                            }}
+                            InputProps={{
+                              inputProps: {
+                                maxLength: 160,
+                              },
+                            }}
+                            helperText={
+                              <Box
+                                component="span"
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "flex-end",
+                                }}
+                              >
+                                {editibleBio ? editibleBio.length : 0} / 160
+                              </Box>
+                            }
+                          />
+                        ) : (
+                          <Typography>
+                            {currentUser?.twitter_account?.description
+                              ? currentUser?.twitter_account?.description
+                              : "No Bio Added"}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box>
+                        {currentUser?.id === loggedInUser?.id && (
+                          <>
+                            <Typography
+                              sx={{
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Email ID
+                            </Typography>
+                            {currentUser?.email &&
+                            currentUser?.email_verified_at ? (
+                              <Typography>{currentUser?.email}</Typography>
+                            ) : (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <Button
+                                  variant="outlined"
+                                  color="secondary"
+                                  sx={{
+                                    my: 1,
+                                    background:
+                                      "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                                    color: "black",
+                                    border: "1px solid black",
+                                    borderRadius: "20px",
+                                  }}
+                                  onClick={() => {
+                                    setEmailOpen(true);
+                                  }}
+                                  fullWidth
+                                >
+                                  Add Email
+                                </Button>
+                              </Box>
+                            )}
+                            <Typography
+                              sx={{
+                                fontStyle: "italic",
+                                fontSize: "12px",
+                              }}
+                            >
+                              {EMAIL_PRIVACY_TEXT}
+                            </Typography>
+                          </>
+                        )}
                       </Box>
                       <Box sx={{ mt: 2 }}>
                         <Typography
@@ -393,13 +557,18 @@ const ProfileLayout = ({
                                 },
                               }}
                             >
-                              {regions.map((item: RegionType) => {
-                                return (
-                                  <MenuItem value={item?.regionName}>
-                                    <em>{item?.regionName}</em>
-                                  </MenuItem>
-                                );
-                              })}
+                              {regions.map(
+                                (item: RegionType, index: number) => {
+                                  return (
+                                    <MenuItem
+                                      value={item?.regionName}
+                                      key={index}
+                                    >
+                                      <em>{item?.regionName}</em>
+                                    </MenuItem>
+                                  );
+                                }
+                              )}
                             </Select>
                           </>
                         ) : (
@@ -488,7 +657,10 @@ const ProfileLayout = ({
                         <Grid
                           item
                           xs={12}
-                          sx={{ display: "flex", justifyContent: "flex-start" }}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-start",
+                          }}
                         >
                           <Image
                             src={Star_Coloured}
@@ -626,6 +798,22 @@ const ProfileLayout = ({
                 </Box>
               </Grid>
               <Grid item xs={12} md={9} sm={12} lg={9}>
+                {!(loggedInUser?.role.name == "influencer") ? (
+                  <Image
+                    src={BackIcon}
+                    alt={"BackIcon"}
+                    height={30}
+                    style={{
+                      marginTop: "16px",
+                      marginLeft: "16px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      router.back();
+                    }}
+                  />
+                ) : null}
+
                 <Box
                   sx={{
                     m: 2,
@@ -666,6 +854,7 @@ const ProfileLayout = ({
           ) || []
         }
       />
+      <EmailVerifyModal open={emailOpen} setOpen={setEmailOpen} />
     </Box>
   );
 };

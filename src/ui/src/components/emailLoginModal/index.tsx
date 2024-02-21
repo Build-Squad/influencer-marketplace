@@ -259,7 +259,6 @@ export default function EmailLoginModal({
                         onChange={(e) => {
                           // Correct way to update the OTP
                           const otpArray = otp.split("");
-                          console.log(otpArray);
                           otpArray[index] = e.target.value;
                           setOTP(otpArray.join(""));
                           // Also set the focus to the next input box

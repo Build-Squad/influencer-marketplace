@@ -1,4 +1,3 @@
-from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import SET_NULL
@@ -20,6 +19,7 @@ class TwitterAccount(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     user_name = models.CharField(max_length=100, blank=True, null=True)
     access_token = models.CharField(max_length=255, blank=True, null=True)
+    refresh_token = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=255, blank=True, null=True)
     profile_image_url = models.CharField(max_length=255, blank=True, null=True)
     followers_count = models.IntegerField(blank=True, null=True)
@@ -141,13 +141,12 @@ class AccountRegion(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    user_account = models.ForeignKey(
+    user_account = models.OneToOneField(
         User,
         related_name="region_user_account",
         on_delete=SET_NULL,
         null=True,
         blank=True,
-        unique=True,
     )
     region = models.ForeignKey(
         RegionMaster,
@@ -299,3 +298,17 @@ class Wallet(models.Model):
 
     def __str__(self):
         return self.wallet_address_id
+
+
+class WalletNonce(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name="Wallet Nonce ID", default=uuid.uuid4, editable=False
+    )
+    wallet_address = models.CharField(max_length=255, blank=True, null=True)
+    nonce = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.wallet_address
+
+    class Meta:
+        db_table = "wallet_nonce"

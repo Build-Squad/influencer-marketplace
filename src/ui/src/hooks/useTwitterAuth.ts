@@ -1,22 +1,25 @@
 "use client";
 
-import axios from "axios";
-import { useState, useEffect } from "react";
-import { getServicewithCredentials } from "../services/httpServices";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { notification } from "../components/shared/notification";
-import { useAppDispatch } from "./useRedux";
-import { loginReducer, logoutReducer } from "../reducers/userSlice";
 import { resetCart } from "../reducers/cartSlice";
+import { loginReducer, logoutReducer } from "../reducers/userSlice";
+import { getService } from "../services/httpServices";
+import { ROLE_NAME } from "../utils/consts";
+import { useAppDispatch } from "./useRedux";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // Hook for handling user login/signup via X
 export default function useTwitterAuth() {
+  const pathname = usePathname();
+  const router = useRouter();
   const dispatch = useAppDispatch();
   // State to track whether the user is logged in via X
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
   const [isAccountSetupComplete, setIsAccountSetupComplete] = useState(true);
-  const [userDetails, setUserDetails] = useState(null);
+  const [userDetails, setUserDetails] = useState<UserType | null>(null);
   const [categoriesAdded, setCategoriesAdded] = useState(false);
 
   useEffect(() => {
@@ -45,20 +48,34 @@ export default function useTwitterAuth() {
   // Function to logout the X user
   const logoutTwitterUser = async () => {
     try {
-      await axios.get(`${BACKEND_URL}logout/`, { withCredentials: true });
-      notification("Logged out successfully");
-      setTwitterUserLoggedIn(false);
-      dispatch(logoutReducer());
-      dispatch(resetCart());
+      const { isSuccess, message } = await getService("logout/");
+      if (isSuccess) {
+        notification("Logged out successfully");
+        setTwitterUserLoggedIn(false);
+        dispatch(logoutReducer());
+        dispatch(resetCart());
+        localStorage.removeItem("persist:user");
+        localStorage.removeItem("persist:cart");
+        if (pathname.includes(ROLE_NAME.INFLUENCER)) {
+          router.push(`/${ROLE_NAME.INFLUENCER}`);
+        } else {
+          router.push(`/business`);
+        }
+      } else {
+        notification(
+          message ? message : "Something went wrong, please try again later",
+          "error"
+        );
+      }
     } catch (error) {
       console.error("Error during logout:", error);
     }
   };
 
-  // Function to check if the X user is authenticated
+  // Function to check if the user is authenticated
   const checkTwitterUserAuthentication = async () => {
     try {
-      const { isSuccess, data } = await getServicewithCredentials("account/");
+      const { isSuccess, data } = await getService("account/");
       if (isSuccess) {
         setUserDetails(data?.data);
         setTwitterUserLoggedIn(true);
@@ -68,7 +85,8 @@ export default function useTwitterAuth() {
         setTwitterUserLoggedIn(false);
         dispatch(logoutReducer());
         dispatch(resetCart());
-        localStorage.clear();
+        localStorage.removeItem("persist:user");
+        localStorage.removeItem("persist:cart");
       }
     } catch (error) {
       console.error("Error during authentication check:", error);
@@ -78,16 +96,22 @@ export default function useTwitterAuth() {
 
   const checkAccountSetup = async () => {
     try {
-      const { isSuccess, data } = await getServicewithCredentials(
-        "account/account-category/"
-      );
-      if (isSuccess) {
-        if (data?.data?.length > 0) {
-          setIsAccountSetupComplete(true);
-          setCategoriesAdded(true);
-        } else if (data?.data?.length === 0) {
-          setIsAccountSetupComplete(false);
-          setCategoriesAdded(false);
+      if (
+        isTwitterUserLoggedIn &&
+        userDetails?.role?.name === ROLE_NAME.INFLUENCER &&
+        !categoriesAdded
+      ) {
+        const { isSuccess, data } = await getService(
+          "account/account-category/"
+        );
+        if (isSuccess) {
+          if (data?.data?.length > 0) {
+            setIsAccountSetupComplete(true);
+            setCategoriesAdded(true);
+          } else if (data?.data?.length === 0) {
+            setIsAccountSetupComplete(false);
+            setCategoriesAdded(false);
+          }
         }
       }
     } catch (error) {

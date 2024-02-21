@@ -121,6 +121,93 @@ export type Xfluencer = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "createEscrow",
+      "accounts": [
+        {
+          "name": "escrow",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "from",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "to",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "orderCode",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claimEscrow",
+      "accounts": [
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "orderCode",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "canceEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -174,6 +261,46 @@ export type Xfluencer = {
           }
         ]
       }
+    },
+    {
+      "name": "escrowAccountSolana",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "from",
+            "type": "publicKey"
+          },
+          {
+            "name": "to",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "orderCode",
+            "type": "u64"
+          },
+          {
+            "name": "delivered",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CannotClaim",
+      "msg": "Cannot claim"
+    },
+    {
+      "code": 6001,
+      "name": "AlreadyClaim",
+      "msg": "Already claim"
     }
   ]
 };
@@ -301,6 +428,93 @@ export const IDL: Xfluencer = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "createEscrow",
+      "accounts": [
+        {
+          "name": "escrow",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "from",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "to",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "orderCode",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claimEscrow",
+      "accounts": [
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "orderCode",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "canceEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -354,6 +568,47 @@ export const IDL: Xfluencer = {
           }
         ]
       }
+    },
+    {
+      "name": "escrowAccountSolana",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "from",
+            "type": "publicKey"
+          },
+          {
+            "name": "to",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "orderCode",
+            "type": "u64"
+          },
+          {
+            "name": "delivered",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CannotClaim",
+      "msg": "Cannot claim"
+    },
+    {
+      "code": 6001,
+      "name": "AlreadyClaim",
+      "msg": "Already claim"
+
     }
   ]
 };

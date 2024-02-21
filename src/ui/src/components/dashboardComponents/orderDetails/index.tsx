@@ -15,16 +15,19 @@ import {
   useTheme,
 } from "@mui/material";
 import NextLink from "next/link";
-import { useRouter } from "next/navigation";
 import OrderSummaryDetails from "../orderSummaryDetails";
 
 type OrderDetailsProps = {
   order: OrderType | null;
   onClose: () => void;
+  getOrders?: () => void;
 };
 
-export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
-  const router = useRouter();
+export default function OrderDetails({
+  order,
+  onClose,
+  getOrders,
+}: OrderDetailsProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -94,7 +97,11 @@ export default function OrderDetails({ order, onClose }: OrderDetailsProps) {
         </Box>
       </Box>
       <Divider sx={{ mt: 2 }} />
-      <OrderSummaryDetails orderItem={order?.order_item_order_id} />
+      <OrderSummaryDetails
+        orderItem={order?.order_item_order_id}
+        orderStatus={order?.status}
+        getOrders={getOrders}
+      />
     </Drawer>
   );
 }
