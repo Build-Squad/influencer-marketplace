@@ -29,7 +29,7 @@ export default function Referrals({}: Props) {
 
   const getUserReferralLink = async () => {
     const { isSuccess, message, data } = await getService(
-      `/account/user/referral-link/`
+      `/referrals/referral-link/`
     );
     if (isSuccess) {
       setReferralLink(data?.data?.referralLink);
