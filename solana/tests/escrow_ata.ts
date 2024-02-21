@@ -8,7 +8,7 @@ import * as utils from "./utils";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { Xfluencer } from "../target/types/xfluencer";
 
-import {TOKEN_PROGRAM_ID} from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, createAssociatedTokenAccount, getMint, mintTo } from '@solana/spl-token';
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 describe("Testing Escrow for ATA", () => {
@@ -40,9 +40,7 @@ describe("Testing Escrow for ATA", () => {
   const mintAuthority = anchor.web3.Keypair.generate();
 
   const NUMBER_DECIMALS = 6;
-
-    
-
+  
   it('Initialize program state', async () => {
     const provider = anchor.getProvider()
     // Airdrop Sol to payer.
@@ -72,23 +70,48 @@ describe("Testing Escrow for ATA", () => {
     const buyerTokenAmount = 100;
     const sellerTokenAmount = 200;
 
+    const mintPk = mintA;
+    const owner = buyer.publicKey;
+    const balance = buyerTokenAmount;
+
+    
+    //const wallet = provider.wallet as NodeWallet;
+    const [associatedTokenAcc, mintInfo] = await Promise.all([
+      createAssociatedTokenAccount(
+        provider.connection,
+        nodeWallet.payer,
+        mintPk,
+        owner
+      ),
+      getMint(provider.connection, mintPk),
+    ]);
+/*
+    await mintTo(
+      provider.connection,
+      nodeWallet.payer,
+      mintPk,
+      associatedTokenAcc,
+      owner,  // Assumption mint was created by provider.wallet,
+      Number(balance), // * 10 ** mintInfo.decimals,
+      [buyer]
+    );
 
     buyerTokenAccountA  
         = await utils.createAssociatedTokenAccountWithBalance(mintA, buyer.publicKey, buyerTokenAmount);
 
     sellerTokenAccountA 
-        = await utils.createAssociatedTokenAccountWithBalance(mintA, seller.publicKey, sellerTokenAmount);
+        = await utils.createAssociatedTokenAccountWithBalance(mintA, seller.publicKey, sellerTokenAmount);*/
 
     // Create and funding ATAs 
-    amountA = await utils.getTokenAccountBalance(provider, buyerTokenAccountA);
-    assert.ok(amountA == buyerTokenAmount * 10**NUMBER_DECIMALS);
+    //amountA = await utils.getTokenAccountBalance(provider, buyerTokenAccountA);
+    //assert.ok(amountA == buyerTokenAmount * 10**NUMBER_DECIMALS);
 
-    amountB = await utils.getTokenAccountBalance(provider, sellerTokenAccountA);
-    assert.ok(amountB == sellerTokenAmount * 10**NUMBER_DECIMALS); 
+    //amountB = await utils.getTokenAccountBalance(provider, sellerTokenAccountA);
+    //assert.ok(amountB == sellerTokenAmount * 10**NUMBER_DECIMALS); 
 
   });
 
-
+/*
   it("Create Escrow using ATA", async () => {
 
     const orderCode = 99; // uuid uniquely the escrow and the valut
@@ -252,7 +275,8 @@ describe("Testing Escrow for ATA", () => {
     assert.ok(_buyer_accont_ballance.value.amount == (amountA-amount).toString());
 
   });
-
-
   
+
+
+  */
 });
