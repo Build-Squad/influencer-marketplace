@@ -1,22 +1,28 @@
 "use client";
-import { Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import {
-  TableRow,
-  TableHead,
-  TableContainer,
-  TableCell,
-  TableBody,
-  Table,
-} from "@mui/material";
-import { getService } from "@/src/services/httpServices";
-import { notification } from "../shared/notification";
 import EmptyWalletIcon from "@/public/svg/No_wallets_connected.svg";
-import Image from "next/image";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import { deleteService, getService } from "@/src/services/httpServices";
+import DeleteOutline from "@mui/icons-material/DeleteOutline";
+import LinkOffIcon from "@mui/icons-material/LinkOff";
+import {
+  Box,
+  Chip,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { useWallet } from "@solana/wallet-adapter-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { ConfirmDelete } from "../shared/confirmDeleteModal";
+import { notification } from "../shared/notification";
 
 type Props = {
   walletOpen: boolean;
@@ -26,6 +32,7 @@ type walletsType = {
   addr: string;
   walletName: string;
   isPrimary: boolean;
+  id: string;
 }[];
 
 const styles = {
@@ -47,6 +54,7 @@ export default function WalletsTable({ walletOpen }: Props) {
   const [connectedWallet, setConnectedWallet] = useState<WalletType | null>(
     null
   );
+  const [loading, setLoading] = useState<boolean>(false);
 
   const getUserWallets = async () => {
     const { isSuccess, data, message } = await getService("/account/wallets/");
@@ -58,12 +66,30 @@ export default function WalletsTable({ walletOpen }: Props) {
           addr: wal.wallet_address_id,
           walletName: wal?.wallet_provider_id?.wallet_provider,
           isPrimary: wal?.is_primary,
+          id: wal.id,
         };
       });
       setUserWallets(wallets);
       setWallets(data?.data);
     } else {
       notification(message ? message : "Something went wrong", "error");
+    }
+  };
+
+  const deleteWallet = async (id: string) => {
+    try {
+      setLoading(true);
+      const { isSuccess, message } = await deleteService(
+        `/account/wallets/${id}/`
+      );
+      if (isSuccess) {
+        notification(message);
+        getUserWallets();
+      } else {
+        notification(message, "error");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,17 +194,30 @@ export default function WalletsTable({ walletOpen }: Props) {
                     {row.walletName}
                   </TableCell>
                   <TableCell>
-                    {connectedWallet?.wallet_address_id === row.addr && (
-                      <Tooltip title="Disconnect Wallet">
-                        <IconButton
-                          onClick={() => {
-                            disConnectWallet();
+                    <>
+                      {!row.isPrimary && (
+                        <ConfirmDelete
+                          title={row?.addr}
+                          onConfirm={() => {
+                            deleteWallet(row.id);
                           }}
-                        >
-                          <RemoveCircleOutlineIcon color="error" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
+                          deleteElement={<DeleteOutline color="error" />}
+                          loading={loading}
+                          sx={{ ml: 1 }}
+                        />
+                      )}
+                      {connectedWallet?.wallet_address_id === row.addr && (
+                        <Tooltip title="Disconnect Wallet">
+                          <IconButton
+                            onClick={() => {
+                              disConnectWallet();
+                            }}
+                          >
+                            <LinkOffIcon color="error" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </>
                   </TableCell>
                 </TableRow>
               ))

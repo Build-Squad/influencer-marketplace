@@ -643,6 +643,7 @@ const ProfileLayout = ({
                     <WalletsTable
                       wallets={wallets}
                       setOpenWalletConnectModal={setOpenWalletConnectModal}
+                      getWallets={getWallets}
                     />
                   )}
                 </Box>

@@ -1,7 +1,9 @@
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import { deleteService } from "@/src/services/httpServices";
+import DeleteOutline from "@mui/icons-material/DeleteOutline";
+import LinkOffIcon from "@mui/icons-material/LinkOff";
 import {
   Box,
   Button,
@@ -19,22 +21,56 @@ import {
 import { useWallet } from "@solana/wallet-adapter-react";
 import Image from "next/image";
 import React, { useEffect } from "react";
+import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
 
 type WalletsTableProps = {
   wallets: WalletType[];
   setOpenWalletConnectModal: (value: boolean) => void;
+  getWallets: () => void;
 };
 
 export default function WalletsTable({
   wallets,
   setOpenWalletConnectModal,
+  getWallets,
 }: WalletsTableProps) {
   const user = useAppSelector((state) => state.user);
   const { logoutTwitterUser } = useTwitterAuth();
   const { publicKey, disconnect } = useWallet();
   const [connectedWallet, setConnectedWallet] =
     React.useState<WalletType | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(false);
+
+  const disConnectWallet = async () => {
+    try {
+      if (connectedWallet?.wallet_address_id === user?.user?.username) {
+        await logoutTwitterUser();
+        return;
+      }
+      await disconnect();
+      notification("Wallet has been disconnected");
+    } catch (error) {
+      notification("Error disconnecting wallet " + error, "error");
+    }
+  };
+
+  const deleteWallet = async (id: string) => {
+    try {
+      setLoading(true);
+      const { isSuccess, message } = await deleteService(
+        `/account/wallets/${id}/`
+      );
+      if (isSuccess) {
+        notification(message);
+        getWallets();
+      } else {
+        notification(message, "error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (publicKey) {
@@ -55,19 +91,6 @@ export default function WalletsTable({
       setConnectedWallet(null);
     }
   }, [publicKey]);
-
-  const disConnectWallet = async () => {
-    try {
-      if (connectedWallet?.wallet_address_id === user?.user?.username) {
-        await logoutTwitterUser();
-        return;
-      }
-      await disconnect();
-      notification("Wallet has been disconnected");
-    } catch (error) {
-      notification("Error disconnecting wallet " + error, "error");
-    }
-  };
 
   return (
     <Box
@@ -209,17 +232,30 @@ export default function WalletsTable({
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {connectedWallet?.id === wallet.id && (
-                          <Tooltip title="Disconnect Wallet">
-                            <IconButton
-                              onClick={() => {
-                                disConnectWallet();
+                        <>
+                          {!wallet.is_primary && (
+                            <ConfirmDelete
+                              title={wallet?.wallet_address_id}
+                              onConfirm={() => {
+                                deleteWallet(wallet.id);
                               }}
-                            >
-                              <RemoveCircleOutlineIcon color="error" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
+                              deleteElement={<DeleteOutline color="error" />}
+                              loading={loading}
+                            />
+                          )}
+                          {connectedWallet?.id === wallet.id &&
+                            wallet.is_primary && (
+                              <Tooltip title="Disconnect Wallet">
+                                <IconButton
+                                  onClick={() => {
+                                    disConnectWallet();
+                                  }}
+                                >
+                                  <LinkOffIcon color="error" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                        </>
                       </TableCell>
                     </TableRow>
                   ))}
