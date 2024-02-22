@@ -11,32 +11,19 @@ from anchorpy.borsh_extension import BorshPubkey
 from ..program_id import PROGRAM_ID
 
 
-class EscrowAccountSolanaJSON(typing.TypedDict):
-    validation_authority: str
-    from_: str
-    to: str
-    amount: int
-    order_code: int
-    status: int
+class FeesConfigJSON(typing.TypedDict):
+    authority: str
+    percentage_rate: int
 
 
 @dataclass
-class EscrowAccountSolana:
-    discriminator: typing.ClassVar = b"\x10\x907\x85x\xb0\xebC"
+class FeesConfig:
+    discriminator: typing.ClassVar = b"d>\xb4\xe7m\xcc\xcf?"
     layout: typing.ClassVar = borsh.CStruct(
-        "validation_authority" / BorshPubkey,
-        "from_" / BorshPubkey,
-        "to" / BorshPubkey,
-        "amount" / borsh.U64,
-        "order_code" / borsh.U64,
-        "status" / borsh.U8,
+        "authority" / BorshPubkey, "percentage_rate" / borsh.I32
     )
-    validation_authority: Pubkey
-    from_: Pubkey
-    to: Pubkey
-    amount: int
-    order_code: int
-    status: int
+    authority: Pubkey
+    percentage_rate: int
 
     @classmethod
     async def fetch(
@@ -45,7 +32,7 @@ class EscrowAccountSolana:
         address: Pubkey,
         commitment: typing.Optional[Commitment] = None,
         program_id: Pubkey = PROGRAM_ID,
-    ) -> typing.Optional["EscrowAccountSolana"]:
+    ) -> typing.Optional["FeesConfig"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
         if info is None:
@@ -62,9 +49,9 @@ class EscrowAccountSolana:
         addresses: list[Pubkey],
         commitment: typing.Optional[Commitment] = None,
         program_id: Pubkey = PROGRAM_ID,
-    ) -> typing.List[typing.Optional["EscrowAccountSolana"]]:
+    ) -> typing.List[typing.Optional["FeesConfig"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
-        res: typing.List[typing.Optional["EscrowAccountSolana"]] = []
+        res: typing.List[typing.Optional["FeesConfig"]] = []
         for info in infos:
             if info is None:
                 res.append(None)
@@ -75,38 +62,26 @@ class EscrowAccountSolana:
         return res
 
     @classmethod
-    def decode(cls, data: bytes) -> "EscrowAccountSolana":
+    def decode(cls, data: bytes) -> "FeesConfig":
         if data[:ACCOUNT_DISCRIMINATOR_SIZE] != cls.discriminator:
             raise AccountInvalidDiscriminator(
                 "The discriminator for this account is invalid"
             )
-        dec = EscrowAccountSolana.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
+        dec = FeesConfig.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
-            validation_authority=dec.validation_authority,
-            from_=dec.from_,
-            to=dec.to,
-            amount=dec.amount,
-            order_code=dec.order_code,
-            status=dec.status,
+            authority=dec.authority,
+            percentage_rate=dec.percentage_rate,
         )
 
-    def to_json(self) -> EscrowAccountSolanaJSON:
+    def to_json(self) -> FeesConfigJSON:
         return {
-            "validation_authority": str(self.validation_authority),
-            "from_": str(self.from_),
-            "to": str(self.to),
-            "amount": self.amount,
-            "order_code": self.order_code,
-            "status": self.status,
+            "authority": str(self.authority),
+            "percentage_rate": self.percentage_rate,
         }
 
     @classmethod
-    def from_json(cls, obj: EscrowAccountSolanaJSON) -> "EscrowAccountSolana":
+    def from_json(cls, obj: FeesConfigJSON) -> "FeesConfig":
         return cls(
-            validation_authority=Pubkey.from_string(obj["validation_authority"]),
-            from_=Pubkey.from_string(obj["from"]),
-            to=Pubkey.from_string(obj["to"]),
-            amount=obj["amount"],
-            order_code=obj["order_code"],
-            status=obj["status"],
+            authority=Pubkey.from_string(obj["authority"]),
+            percentage_rate=obj["percentage_rate"],
         )
