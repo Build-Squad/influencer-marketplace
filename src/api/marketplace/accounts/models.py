@@ -98,7 +98,8 @@ class Role(models.Model):
 
 class User(AbstractUser):
     STATUS_CHOICES = (("active", "active"), ("inactive", "inactive"))
-
+    LOGIN_METHOD_CHOICES = (
+        ("email", "email"), ("twitter", "twitter"), ("wallet", "wallet"))
     id = models.UUIDField(
         primary_key=True, verbose_name="User ID", default=uuid.uuid4, editable=False
     )
@@ -125,7 +126,9 @@ class User(AbstractUser):
         blank=True,
     )
     jwt = models.CharField(max_length=255, blank=True, null=True)
-
+    login_method = models.CharField(
+        choices=LOGIN_METHOD_CHOICES, max_length=25, blank=True, null=True
+    )
     ordering = ("email",)
 
     class Meta:
