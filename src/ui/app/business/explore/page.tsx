@@ -18,6 +18,7 @@ type InfluencersType = {
   followers: string;
   minPrice: number;
   maxPrice: number;
+  rating: number;
 };
 
 type Props = {};
@@ -116,6 +117,7 @@ export default function Explore({}: Props) {
           followers: formatTwitterFollowers(inf.followers_count),
           minPrice: getPrice(inf, "min"),
           maxPrice: getPrice(inf, "max"),
+          rating: inf.rating || 0,
         };
       });
       setPagination({
@@ -123,6 +125,7 @@ export default function Explore({}: Props) {
         total_data_count: data?.pagination?.total_data_count,
         total_page_count: data?.pagination?.total_page_count,
       });
+      console.log("filteredData", filteredData);
       setInfluencersData(filteredData);
     } else {
       notification(message ? message : "Something went wrong", "error");

@@ -1,5 +1,5 @@
 export type TopInfluencersType = {
-  id:string;
+  id: string;
   name: string;
   twitterUsername: string;
   profileUrl: string;
@@ -7,4 +7,5 @@ export type TopInfluencersType = {
   followers: string;
   minPrice: number;
   maxPrice: number;
+  rating: number;
 };
