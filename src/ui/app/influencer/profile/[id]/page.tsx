@@ -7,6 +7,7 @@ import EmailVerifyModal from "@/src/components/profileComponents/emailVerifyModa
 import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
+import { Lock } from "@mui/icons-material";
 import {
   getService,
   postService,
@@ -45,23 +46,26 @@ import Services from "./_services";
 import { stringToColor } from "@/src/utils/helper";
 import Referrals from "./_referrals";
 
-const tabs = [
-  {
-    value: "services",
-    label: "Services",
-  },
-  {
-    value: "referrals",
-    label: "Referrals",
-  },
-];
-
 const debounce = (fn: Function, ms = 500) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   return function (this: any, ...args: any[]) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
+};
+
+const getReferralStyles = (referralsEnabled: number | boolean | undefined) => {
+  if (!referralsEnabled) {
+    return {
+      cursor: "not-allowed",
+      color: "rgba(0, 0, 0, 0.26)",
+      border: "1px solid rgba(0, 0, 0, 0.12)",
+      "&:hover": {
+        border: "1px solid rgba(0, 0, 0, 0.12)",
+      },
+    };
+  }
+  return {};
 };
 
 const ProfileLayout = ({
@@ -127,6 +131,10 @@ const ProfileLayout = ({
       setEditibleBio(currentUser?.twitter_account?.description);
     }
   }, [currentUser]);
+
+  // Check if the loggedIn user is visiting his own profile and also has a wallet connect
+  const referralsEnabled =
+    loggedInUser?.wallets?.length && params?.id == loggedInUser?.id;
 
   const getUserDetails = async () => {
     const { isSuccess, message, data } = await getService(
@@ -830,22 +838,50 @@ const ProfileLayout = ({
                       }}
                       size="large"
                     >
-                      {tabs.map((item) => (
+                      <Button
+                        variant={type === "services" ? "contained" : "outlined"}
+                        color="secondary"
+                        onClick={() => {
+                          setType("services");
+                        }}
+                        sx={{
+                          borderRadius: "20px",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        Services
+                      </Button>
+                      <Tooltip
+                        title={
+                          !referralsEnabled
+                            ? "Connect a wallet to unlock referrals."
+                            : ""
+                        }
+                      >
                         <Button
                           variant={
-                            type === item.value ? "contained" : "outlined"
+                            type === "referrals" ? "contained" : "outlined"
                           }
                           color="secondary"
                           onClick={() => {
-                            setType(item.value);
+                            if (!referralsEnabled) return;
+                            setType("referrals");
                           }}
                           sx={{
                             borderRadius: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            ...getReferralStyles(referralsEnabled),
                           }}
+                          // disabled={true}
                         >
-                          {item.label}
+                          Referrals
+                          {!referralsEnabled ? (
+                            <Lock fontSize="small" sx={{ ml: 1 }} />
+                          ) : null}
                         </Button>
-                      ))}{" "}
+                      </Tooltip>
                     </ButtonGroup>
                   ) : (
                     <Typography variant="h4">Services</Typography>
