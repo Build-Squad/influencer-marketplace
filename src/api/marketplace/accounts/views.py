@@ -1160,7 +1160,8 @@ class OTPVerification(APIView):
                     # If user is logging in for the first time, set email_verified_at to current time
                     if user.email_verified_at is None:
                         user.email_verified_at = datetime.datetime.now()
-                        user.save()
+                    user.login_method = "email"
+                    user.save()
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
@@ -1460,6 +1461,7 @@ class WalletAuth(APIView):
                 response = Response()
                 token = jwt_operations.generateToken(payload)
                 user.jwt = token
+                user.login_method = "wallet"
                 user.save()
                 response.set_cookie(
                     "jwt",

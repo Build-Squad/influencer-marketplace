@@ -301,6 +301,8 @@ def createJWT(userData, access_token, role, refresh_token):
         response = JWTOperations.setJwtToken(
             response, cookie_name="jwt", payload=payload
         )
+        current_user.login_method = "twitter"
+        current_user.save()
         response.data = {
             "isSuccess": True,
             "data": UserSerializer(current_user).data,
