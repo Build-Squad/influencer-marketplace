@@ -166,7 +166,7 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
                   }}
                 >
                   <Typography variant="subtitle1">
-                    {` | ${influencer?.rating}`}
+                    {` | ${influencer?.rating?.toFixed(1)}`}
                   </Typography>
                   <StarIcon sx={{ color: "#FFC107", fontSize: "18px" }} />
                 </Box>
