@@ -34,6 +34,7 @@ const Login: React.FC = () => {
   const [emailOpen, setEmailOpen] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [isReferralCodeValid, setIsReferralCodeValid] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const user = useAppSelector((state) => state.user);
 
   const {
@@ -95,6 +96,7 @@ const Login: React.FC = () => {
         notification("Invalid Referral Code", "error");
         setIsReferralCodeValid(false);
       }
+      setIsUserTyping(false);
     } catch (error) {
       console.error("Error during referal code checking:", error);
       setIsReferralCodeValid(false);
@@ -160,6 +162,15 @@ const Login: React.FC = () => {
           >
             <Grid item>
               <LoginOptions label="Connect with X" onClick={handleConnectX} />
+              {isReferralCodeValid && !isUserTyping ? (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "green", ml: 1, mt: 0.5 }}
+                  component={"div"}
+                >
+                  Hurray!!! Referral Code {referralCode} Applied.
+                </Typography>
+              ) : null}
             </Grid>
             {loginAs === "Influencer" ? (
               <Grid item xs={5} md={5} lg={5} sm={5} sx={{ float: "right" }}>
@@ -177,6 +188,7 @@ const Login: React.FC = () => {
                   value={referralCode}
                   onChange={(e) => {
                     setReferralCode(e.target.value);
+                    setIsUserTyping(true);
                   }}
                   endAdornment={
                     <InputAdornment position="end">
