@@ -279,7 +279,9 @@ export default function ServiceCard({
                 }}
               >
                 <Typography sx={{ fontWeight: "bold" }} variant="h6">
-                  {service?.platform_price + " " + service?.currency?.symbol}
+                  {Number(service?.platform_price)?.toFixed(4) +
+                    " " +
+                    service?.currency?.symbol}
                 </Typography>
               </Box>
             )}
@@ -328,7 +330,9 @@ export default function ServiceCard({
                   Paid to You
                 </FormLabel>
                 <Typography sx={{ fontWeight: "bold" }} variant="body1">
-                  {Number(service?.price)?.toFixed(4) + " " + service?.currency?.symbol}
+                  {Number(service?.price)?.toFixed(4) +
+                    " " +
+                    service?.currency?.symbol}
                 </Typography>
               </Box>
               <Box
