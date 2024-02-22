@@ -608,6 +608,7 @@ export const IDL: Xfluencer = {
       "code": 6001,
       "name": "AlreadyClaim",
       "msg": "Already claim"
+
     }
   ]
 };

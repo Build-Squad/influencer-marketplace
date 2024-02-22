@@ -43,6 +43,7 @@ import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
 import { stringToColor } from "@/src/utils/helper";
 import WalletsTable from "@/src/components/profileComponents/walletsTable";
+import StarIcon from "@mui/icons-material/Star";
 
 const tabs = [
   {
@@ -339,7 +340,7 @@ const ProfileLayout = ({
                           target="_blank"
                           component={NextLink}
                           sx={{
-                            color: "#000",
+                            color: "#676767",
                             textDecoration: "none",
                             "&:hover": {
                               textDecoration: "underline",
@@ -349,16 +350,24 @@ const ProfileLayout = ({
                           @{currentUser?.twitter_account?.user_name}
                         </Link>
                       </Typography>
-                      {currentUser?.twitter_account?.verified && (
-                        <Tooltip title={"Verified On X"}>
-                          <VerifiedIcon
-                            sx={{
-                              color: "#1DA1F2",
-                              fontSize: "20px",
-                              marginLeft: "5px",
-                            }}
+                      {currentUser?.twitter_account?.rating && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Typography variant="subtitle1">
+                            &nbsp;
+                            {`| ${currentUser?.twitter_account?.rating?.toFixed(
+                              1
+                            )}`}
+                          </Typography>
+                          <StarIcon
+                            sx={{ color: "#FFC107", fontSize: "18px" }}
                           />
-                        </Tooltip>
+                        </Box>
                       )}
                     </Box>
                     <Box

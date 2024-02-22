@@ -8,6 +8,7 @@ import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
 import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
+import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
 import { notification } from "@/src/components/shared/notification";
@@ -28,6 +29,7 @@ import {
   IconButton,
   Link,
   Pagination,
+  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -57,6 +59,9 @@ export default function BusinessDashboardPage() {
     ],
     order_by: "-created_at",
   });
+  const [selectedReviewOrder, setSelectedReviewOrder] =
+    useState<OrderType | null>(null);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
     completed: 0,
@@ -463,6 +468,48 @@ export default function BusinessDashboardPage() {
         );
       },
     },
+    {
+      field: "review.rating",
+      headerName: "Review",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <>
+            {params?.row?.status === ORDER_STATUS.COMPLETED ? (
+              <Tooltip
+                title={params?.row?.review?.id ? "Edit review" : "Add review"}
+                placement="top"
+                arrow
+              >
+                <Box
+                  onClick={() => {
+                    setSelectedReviewOrder(params?.row);
+                    setOpenReviewModal(true);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <Rating
+                    name="read-only"
+                    value={Number(params?.row?.review?.rating)}
+                    readOnly
+                  />
+                </Box>
+              </Tooltip>
+            ) : (
+              <Typography sx={{ textAlign: "center", fontStyle: "italic" }}>
+                Order Not Completed
+              </Typography>
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   useEffect(() => {
@@ -570,6 +617,13 @@ export default function BusinessDashboardPage() {
           onClose={() => {
             setSelectedOrder(null);
           }}
+        />
+        <ReviewModal
+          reviewOrder={selectedReviewOrder}
+          open={openReviewModal}
+          setOpen={setOpenReviewModal}
+          readonly={false}
+          updateState={getOrders}
         />
       </Box>
     </RouteProtection>

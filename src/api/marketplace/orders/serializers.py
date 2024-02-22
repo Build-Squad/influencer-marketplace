@@ -73,7 +73,7 @@ class OrderListFilterSerializer(serializers.Serializer):
 class OrderSerializer(serializers.ModelSerializer):
     buyer = UserSerializer(read_only=True)
     order_item_order_id = serializers.SerializerMethodField()
-    review = ReviewSerializer(read_only=True)
+    review = serializers.SerializerMethodField()
     amount = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
     influencer_wallet = serializers.SerializerMethodField()
@@ -130,6 +130,13 @@ class OrderSerializer(serializers.ModelSerializer):
         order_items = OrderItem.objects.filter(
             order_id=obj, deleted_at=None).order_by('-created_at')
         return OrderItemReadSerializer(order_items, many=True).data
+
+    def get_review(self, obj):
+        try:
+            review = Review.objects.get(order=obj)
+            return ReviewSerializer(review).data
+        except ObjectDoesNotExist:
+            return None
 
 # The request schema for the creation and update of an order item meta data value
 class MetaDataSerializer(serializers.Serializer):

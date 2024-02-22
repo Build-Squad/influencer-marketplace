@@ -18,6 +18,7 @@ type InfluencersType = {
   followers: string;
   minPrice: number;
   maxPrice: number;
+  rating: number;
 };
 
 type Props = {};
@@ -116,6 +117,7 @@ export default function Explore({}: Props) {
           followers: formatTwitterFollowers(inf.followers_count),
           minPrice: getPrice(inf, "min"),
           maxPrice: getPrice(inf, "max"),
+          rating: inf.rating || 0,
         };
       });
       setPagination({
