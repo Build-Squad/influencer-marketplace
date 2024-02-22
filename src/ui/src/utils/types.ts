@@ -118,6 +118,7 @@ type TwitterAccountType = {
   url: string | null;
   joined_at: string | null;
   account_categories?: AccountCategoryType[];
+  rating?: number;
 };
 
 type UserType = {

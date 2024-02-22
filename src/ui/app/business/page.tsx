@@ -90,6 +90,7 @@ export default function BusinessHome() {
           followers: formatTwitterFollowers(inf.followers_count),
           minPrice: getPrice(inf, "min"),
           maxPrice: getPrice(inf, "max"),
+          rating: inf.rating || 0,
         };
       });
       setTopInfluencers(filteredData);

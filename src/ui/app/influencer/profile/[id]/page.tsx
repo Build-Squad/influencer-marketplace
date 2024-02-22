@@ -42,6 +42,7 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
 import { stringToColor } from "@/src/utils/helper";
+import StarIcon from "@mui/icons-material/Star";
 
 const tabs = [
   {
@@ -348,16 +349,21 @@ const ProfileLayout = ({
                           @{currentUser?.twitter_account?.user_name}
                         </Link>
                       </Typography>
-                      {currentUser?.twitter_account?.verified && (
-                        <Tooltip title={"Verified On X"}>
-                          <VerifiedIcon
-                            sx={{
-                              color: "#1DA1F2",
-                              fontSize: "20px",
-                              marginLeft: "5px",
-                            }}
+                      {currentUser?.twitter_account?.rating && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Typography variant="subtitle1">
+                            {` | ${currentUser?.twitter_account?.rating}`}
+                          </Typography>
+                          <StarIcon
+                            sx={{ color: "#FFC107", fontSize: "18px" }}
                           />
-                        </Tooltip>
+                        </Box>
                       )}
                     </Box>
                     <Box
