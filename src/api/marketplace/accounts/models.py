@@ -6,6 +6,7 @@ from core.models import Currency, LanguageMaster, RegionMaster
 from django.db.models.signals import post_save
 from core.models import Country
 import uuid
+from django.utils import timezone
 
 
 class TwitterAccount(models.Model):
@@ -295,10 +296,20 @@ class Wallet(models.Model):
     )
     is_primary = models.BooleanField(default=True, blank=True, null=True)
     wallet_address_id = models.CharField(max_length=255, blank=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.wallet_address_id
 
+    class Meta:
+        db_table = "wallet"
+
+    def delete(self, *args, **kwargs):
+        if not self.is_primary:
+            self.deleted_at = timezone.now()
+            self.save()
+        else:
+            raise Exception('Primary wallet cannot be removed')
 
 class WalletNonce(models.Model):
     id = models.UUIDField(
