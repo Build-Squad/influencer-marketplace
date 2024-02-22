@@ -339,7 +339,7 @@ const ProfileLayout = ({
                           target="_blank"
                           component={NextLink}
                           sx={{
-                            color: "#000",
+                            color: "#676767",
                             textDecoration: "none",
                             "&:hover": {
                               textDecoration: "underline",
@@ -358,7 +358,10 @@ const ProfileLayout = ({
                           }}
                         >
                           <Typography variant="subtitle1">
-                            {` | ${currentUser?.twitter_account?.rating}`}
+                            &nbsp;
+                            {`| ${currentUser?.twitter_account?.rating?.toFixed(
+                              1
+                            )}`}
                           </Typography>
                           <StarIcon
                             sx={{ color: "#FFC107", fontSize: "18px" }}
