@@ -139,6 +139,7 @@ type UserType = {
     region: string;
     user_account: string;
   };
+  login_method: string;
 };
 
 type ServiceCheckOutType = {
