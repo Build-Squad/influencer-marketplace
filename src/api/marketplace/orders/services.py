@@ -158,17 +158,26 @@ def create_order_item_tracking(order_item, status):
         return False
 
 
+def check_notification_sent(order_item_id):
+    notification = Notification.objects.filter(
+        module_id=order_item_id, module='order_item_reminder'
+    )
+    if notification.exists():
+        return True
+    return False
+
 def create_reminider_notification(order_item):
     try:
-        influencer = order_item.package.influencer
-        current_time = timezone.now()
-        time_left = order_item.publish_date - current_time
-        minutes_left = int(time_left.total_seconds() / 60)
-        message = 'You have an order item ' + order_item.package.name + \
-            ' due for publishing in ' + str(minutes_left) + ' minutes'
-        title = 'Order Item Reminder'
-        Notification.objects.create(
-            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL, module='order_item_reminder', module_id=order_item.id)
+        if not check_notification_sent(order_item.id):
+            influencer = order_item.package.influencer
+            current_time = timezone.now()
+            time_left = order_item.publish_date - current_time
+            minutes_left = int(time_left.total_seconds() / 60)
+            message = 'You have an order item ' + order_item.package.name + \
+                ' due for publishing in ' + str(minutes_left) + ' minutes'
+            title = 'Order Item Reminder'
+            Notification.objects.create(
+                user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL, module='order_item_reminder', module_id=order_item.id)
     except Exception as e:
         logger.error("Error creating reminder notification: ", str(e))
         return False

@@ -202,8 +202,8 @@ def createUser(userData, access_token, role, refresh_token):
             )
 
             newUser.save()
-            if userData.entities is not None:
-                if userData.entities["description"] is not None:
+            if userData.get("entities") is not None:
+                if userData.entities.get("description") is not None:
                     hashtags = userData.entities["description"]["hashtags"]
                     manage_categories(hashtags, newUser)
         else:

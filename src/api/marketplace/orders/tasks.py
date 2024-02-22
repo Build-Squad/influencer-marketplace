@@ -11,6 +11,8 @@ from celery import shared_task
 from datetime import datetime
 from django.utils import timezone
 
+from celery_once import QueueOnce
+
 from marketplace import celery_app
 
 
@@ -289,7 +291,7 @@ def check_notification_sent(order_item_id):
     return False
 
 
-@celery_app.task()
+@celery_app.task(base=QueueOnce, once={'keys': [], 'graceful': True})
 def schedule_reminder_notification():
     try:
         # Get all order items that are accepted and have a publish_date in the next 30 minutes
