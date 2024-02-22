@@ -125,7 +125,6 @@ export default function Explore({}: Props) {
         total_data_count: data?.pagination?.total_data_count,
         total_page_count: data?.pagination?.total_page_count,
       });
-      console.log("filteredData", filteredData);
       setInfluencersData(filteredData);
     } else {
       notification(message ? message : "Something went wrong", "error");
