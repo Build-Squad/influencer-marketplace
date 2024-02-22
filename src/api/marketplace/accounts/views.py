@@ -1160,7 +1160,8 @@ class OTPVerification(APIView):
                     # If user is logging in for the first time, set email_verified_at to current time
                     if user.email_verified_at is None:
                         user.email_verified_at = datetime.datetime.now()
-                        user.save()
+                    user.login_method = "email"
+                    user.save()
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
@@ -1324,7 +1325,7 @@ class WalletAuth(APIView):
 
     def get_wallet(self, wallet_address_id):
         try:
-            return Wallet.objects.get(wallet_address_id=wallet_address_id)
+            return Wallet.objects.get(wallet_address_id=wallet_address_id, deleted_at=None)
         except Wallet.DoesNotExist:
             return None
 
@@ -1428,16 +1429,14 @@ class WalletAuth(APIView):
                     user = User.objects.get(username=wallet.user_id)
                 wallet = self.get_wallet(request.data["wallet_address_id"])
 
+                # Mark all other wallets as non-primary
+                added_wallets = Wallet.objects.filter(
+                    user_id=user, deleted_at=None)
+                added_wallets.update(is_primary=False)
+
                 # Mark this wallet as primary
                 wallet.is_primary = True
                 wallet.save()
-
-                # Mark all other wallets as non-primary
-                added_wallets = Wallet.objects.filter(user_id=user)
-                for added_wallet in added_wallets:
-                    if added_wallet.id != wallet.id:
-                        added_wallet.is_primary = False
-                        added_wallet.save()
 
                 user = User.objects.get(username=wallet.user_id)
                 # Only allow business owners to login
@@ -1462,6 +1461,7 @@ class WalletAuth(APIView):
                 response = Response()
                 token = jwt_operations.generateToken(payload)
                 user.jwt = token
+                user.login_method = "wallet"
                 user.save()
                 response.set_cookie(
                     "jwt",
@@ -1490,7 +1490,7 @@ class WalletConnect(APIView):
 
     def get_object(self, wallet_address_id):
         try:
-            return Wallet.objects.get(wallet_address_id=wallet_address_id)
+            return Wallet.objects.get(wallet_address_id=wallet_address_id, deleted_at=None)
         except Wallet.DoesNotExist:
             return None
 
@@ -1506,6 +1506,18 @@ class WalletConnect(APIView):
                 if wallet:
                     user = User.objects.get(id=wallet.user_id.id)
                     if user == request.user_account:
+                        # Make all other wallets as non-primary and this one as primary
+                        # Mark the wallet as primary
+
+                        # Mark all other wallets as non-primary
+                        try:
+                            added_wallets = Wallet.objects.filter(
+                                user_id=request.user_account, deleted_at=None)
+                            added_wallets.update(is_primary=False)
+                        except Wallet.DoesNotExist:
+                            print("No wallets found for this user.")
+                        wallet.is_primary = True
+                        wallet.save()
                         return Response(
                             {
                                 "isSuccess": True,
@@ -1525,17 +1537,13 @@ class WalletConnect(APIView):
                         )
                 else:
                     wallet = serializer.save()
-                # Mark the wallet as primary
+                # Mark all other wallets as non-primary and this one as primary
+                added_wallets = Wallet.objects.filter(
+                    user_id=request.user_account, deleted_at=None)
+                added_wallets.update(is_primary=False)
+
                 wallet.is_primary = True
                 wallet.save()
-
-                # Mark all other wallets as non-primary
-                added_wallets = Wallet.objects.filter(user_id=request.user_account)
-                for added_wallet in added_wallets:
-                    if added_wallet.id != wallet.id:
-                        added_wallet.is_primary = False
-                        added_wallet.save()
-
                 return Response(
                     {
                         "isSuccess": True,
@@ -1598,8 +1606,8 @@ class WalletList(APIView):
 
     def get(self, request):
         try:
-            wallet = Wallet.objects.all()
-            wallet = wallet.filter(user_id=request.user_account.id)
+            wallet = Wallet.objects.filter(
+                user_id=request.user_account.id, deleted_at=None)
             pagination = Pagination(wallet, request)
             serializer = WalletSerializer(pagination.getData(), many=True)
             return Response(
@@ -1614,6 +1622,28 @@ class WalletList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class WalletDetail(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def delete(self, request, pk):
+        try:
+            wallet = Wallet.objects.get(id=pk, deleted_at=None)
+            if wallet.user_id != request.user_account:
+                return handleBadRequest("You are not authorized to delete this wallet")
+            wallet.delete()
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Wallet removed successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Wallet.DoesNotExist:
+            return handleNotFound("Wallet")
+        except Exception as e:
+            return handleServerException(e)
 
 class BusinessAccountMetaDataDetail(APIView):
     def get_object(self, userId):

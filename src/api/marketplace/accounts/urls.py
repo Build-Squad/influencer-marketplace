@@ -21,6 +21,7 @@ from .views import (
     EmailVerification,
     WalletAuth,
     WalletConnect,
+    WalletDetail,
     WalletList,
     BusinessAccountMetaDataDetail,
     WalletNonceCreateView
@@ -68,6 +69,8 @@ urlpatterns = [
 
     path("connect-wallet/", WalletConnect.as_view(), name="connect-wallet"),
     path("wallets/", WalletList.as_view(), name="wallets"),
+    
+    path("wallets/<uuid:pk>/", WalletDetail.as_view(), name="wallets-detail"),
 
 
     path("top-influencers/", TopInfluencers.as_view(), name="TopInfluencers"),

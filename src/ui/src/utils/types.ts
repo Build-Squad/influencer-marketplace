@@ -140,6 +140,7 @@ type UserType = {
     region: string;
     user_account: string;
   };
+  login_method: string;
 };
 
 type ServiceCheckOutType = {
@@ -221,6 +222,7 @@ type OrderItemType = {
   order_item_meta_data: OrderItemMetaDataType[];
   publish_date?: string;
   published_tweet_id?: string;
+  status?: string;
 };
 
 type TransactionType = {
