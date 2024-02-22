@@ -76,6 +76,25 @@ export default function WalletsTable({ walletOpen }: Props) {
     }
   };
 
+  const findConnectedWallet = () => {
+    console.log("findConnectedWallet", publicKey);
+    if (publicKey) {
+      let concatenatedPublicKey = publicKey?.toBase58();
+      concatenatedPublicKey =
+        concatenatedPublicKey?.slice(0, 4) +
+        "..." +
+        concatenatedPublicKey?.slice(-4);
+      const connectedWallet = wallets.find(
+        (wallet) => wallet.wallet_address_id === concatenatedPublicKey
+      );
+      if (connectedWallet) {
+        setConnectedWallet(connectedWallet);
+      } else {
+        setConnectedWallet(null);
+      }
+    }
+  };
+
   const deleteWallet = async (id: string) => {
     try {
       setLoading(true);
@@ -107,25 +126,12 @@ export default function WalletsTable({ walletOpen }: Props) {
   };
 
   useEffect(() => {
-    if (publicKey) {
-      console.log("publicKey", publicKey?.toBase58(), wallets);
-      let concatenatedPublicKey = publicKey?.toBase58();
-      concatenatedPublicKey =
-        concatenatedPublicKey.slice(0, 4) +
-        "..." +
-        concatenatedPublicKey.slice(-4);
-      const connectedWallet = wallets.find(
-        (wallet) => wallet.wallet_address_id === concatenatedPublicKey
-      );
-      if (connectedWallet) {
-        setConnectedWallet(connectedWallet);
-      } else {
-        setConnectedWallet(null);
-      }
+    if (publicKey && wallets.length) {
+      findConnectedWallet();
     } else {
       setConnectedWallet(null);
     }
-  }, [publicKey]);
+  }, [publicKey, wallets]);
 
   useEffect(() => {
     getUserWallets();

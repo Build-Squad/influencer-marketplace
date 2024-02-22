@@ -43,6 +43,24 @@ export default function WalletsTable({
     React.useState<WalletType | null>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
 
+  const findConnectedWallet = () => {
+    if (publicKey) {
+      let concatenatedPublicKey = publicKey?.toBase58();
+      concatenatedPublicKey =
+        concatenatedPublicKey?.slice(0, 4) +
+        "..." +
+        concatenatedPublicKey?.slice(-4);
+      const connectedWallet = wallets.find(
+        (wallet) => wallet.wallet_address_id === concatenatedPublicKey
+      );
+      if (connectedWallet) {
+        setConnectedWallet(connectedWallet);
+      } else {
+        setConnectedWallet(null);
+      }
+    }
+  };
+
   const disConnectWallet = async () => {
     try {
       if (user?.user?.login_method === LOGIN_METHODS.WALLET) {
@@ -74,24 +92,12 @@ export default function WalletsTable({
   };
 
   useEffect(() => {
-    if (publicKey) {
-      let concatenatedPublicKey = publicKey?.toBase58();
-      concatenatedPublicKey =
-        concatenatedPublicKey.slice(0, 4) +
-        "..." +
-        concatenatedPublicKey.slice(-4);
-      const connectedWallet = wallets.find(
-        (wallet) => wallet.wallet_address_id === concatenatedPublicKey
-      );
-      if (connectedWallet) {
-        setConnectedWallet(connectedWallet);
-      } else {
-        setConnectedWallet(null);
-      }
+    if (publicKey && wallets.length) {
+      findConnectedWallet();
     } else {
       setConnectedWallet(null);
     }
-  }, [publicKey]);
+  }, [publicKey, wallets]);
 
   return (
     <Box
