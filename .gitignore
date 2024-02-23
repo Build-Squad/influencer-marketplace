@@ -61,3 +61,5 @@ solana-python/src/*egg*
 src/api/celerybeat-schedule
 
 
+src/ui/.idea
+src/api/marketplace/.idea
