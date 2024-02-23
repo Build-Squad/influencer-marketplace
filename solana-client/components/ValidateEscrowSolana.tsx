@@ -11,52 +11,79 @@ import {
 } from "@project-serum/anchor"
 
 import styles from '../styles/PingButton.module.css'
+//import idl from "../xfluencer.json"
 import idl from "../xfluencer.json"
+import { Xfluencer } from "../types/xfluencer";
 
-import { useAnchorWallet, useWallet } from '@solana/wallet-adapter-react';
+import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
+
 import * as anchor from "@coral-xyz/anchor";
 
 import { FC } from "react";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
+import { Program } from "@coral-xyz/anchor";
 import * as utils from "./utils";
 
 const programId = new PublicKey(idl.metadata.address);
 
-interface CancelEscrowSolanaProps {
+export const getAnchorProgram = (conection: Connection): Program => {  
+	const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+	const program = new Program(idl as anchor.Idl, programId, { connection });
+  
+	return program;
+}
+
+
+interface ValidateEscrowSolanaProps {
+    validator: string,
     business: string,
     influencer: string,
-    orderCode: number
-  }
+    orderCode: number,
+    targetState: number
+}
 
 
-export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influencer, orderCode}) => {
+export const ValidateEscrowSolana:FC = () => {
+    //({validator, business, influencer, orderCode, targetState}) => {
+        const business   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`
+        const influencer = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`
+        const validator = `CwhNj8h9D2rFYodxChKWzmWKWLEfKq4LuxiN1qzmvG6u`
+       
+        const orderCode = 12346 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+        const targetState = 2; 
 
-    const wallet = useAnchorWallet()
+
     const connection = new Connection(clusterApiUrl('devnet'),
     {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
     });
     const program = utils.getAnchorProgram(connection);
+    const wallet = useAnchorWallet()
     const provider = new AnchorProvider(connection, wallet, {})
     setProvider(provider)
+
     const { publicKey, signTransaction, sendTransaction } = useWallet()
-    
+
+    console.log(publicKey)
+
     if (!connection || !publicKey) { 			
         console.warn("Wallet was not connected")
         return (
         <div className={styles.buttonContainer}>
             <button className={styles.button} disabled>CREATE (wallet not connected)</button>
         </div>  )      
+     } else {
+        console.log("Wallet connected")
      }
 
     const onClick = async () => {
 
+        const validator_pk = new PublicKey(validator);
         const business_pk = new PublicKey(business)
         const influencer_pk = new PublicKey(influencer);
         
-
         const [escrowPDA] = await PublicKey.findProgramAddress([
             utf8.encode('escrow'),
             business_pk.toBuffer(), 
@@ -65,19 +92,26 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
           ],
           programId
         );
-               
-        const ix = await program.methods.cancelEscrowSol()
-            .accounts({
-                business: business_pk,
+                      
+        const ix = await program.methods
+            .validateEscrowSol(
+                new anchor.BN(targetState)
+            ).accounts({
+                validationAuthority: validator_pk,
+                influencer: influencer_pk,
+                business: business_pk,                
                 escrowAccount: escrowPDA, 
-                systemProgram:  anchor.web3.SystemProgram.programId,
-            })
-            .instruction();
-        
+            }).instruction();
+
+        console.log(ix)
+         
+
         const tx = new Transaction().add(ix);
         const options = {
 			skipPreflight: true      
 		  }
+
+
         try {
             const signature = await sendTransaction(tx, connection, options);
             const txSign = await connection.confirmTransaction(signature, "processed");
@@ -85,8 +119,8 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
             console.debug("context", txSign.context);
             console.debug("value", txSign.value);
             if(txSign.value.err != null){
-                throw new Error(`Instruction error number found: `+txSign.value.err['InstructionError'][0].toString());
-                
+                throw new Error(`Instruction error number found: `
+                        +txSign.value.err['InstructionError'][0].toString());                
             }
         }
         catch(error)
@@ -97,7 +131,7 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
 
     return (
         <div className={styles.buttonContainer} onClick={onClick}>
-            <button className={styles.button}>CANCEL Business {business}</button>
+            <button className={styles.button}>VALIDATE Escrow {validator}</button>
         </div>
     )
 

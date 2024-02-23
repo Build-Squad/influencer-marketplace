@@ -13,7 +13,7 @@ import {
 import styles from '../styles/PingButton.module.css'
 
 import idl from "../xfluencer.json"
-import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useAnchorWallet, useWallet } from '@solana/wallet-adapter-react';
 import * as anchor from "@coral-xyz/anchor";
 
 import { FC } from "react";
@@ -60,6 +60,8 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
 
         const business_pk = new PublicKey(business)
         const influencer_pk = new PublicKey(influencer);
+        const validator_pk = new PublicKey("CwhNj8h9D2rFYodxChKWzmWKWLEfKq4LuxiN1qzmvG6u")
+
         
         const [escrowPDA] = await PublicKey.findProgramAddress([
             utf8.encode('escrow'),
@@ -79,6 +81,7 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
             new anchor.BN(amount),
             new anchor.BN(orderCode)
             ).accounts({
+                validationAuthority: validator_pk,
                 from: publicKey,
                 to: influencer_pk,
                 systemProgram:  anchor.web3.SystemProgram.programId,
