@@ -1,6 +1,7 @@
 from accounts.models import TwitterAccount, User
 from notifications.models import Notification
-from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_tracking, create_order_tracking, create_reminider_notification
+from orders.services import create_notification_for_order, create_notification_for_order_item, \
+    create_order_item_tracking, create_order_tracking, create_reminider_notification
 from orders.models import Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
@@ -8,13 +9,11 @@ from tweepy import Client
 from decouple import config
 
 from celery import shared_task
-from datetime import datetime
 from django.utils import timezone
 
 from celery_once import QueueOnce
 
 from marketplace import celery_app
-
 
 """
 Sends a tweet for a given order item.
@@ -35,9 +34,10 @@ CONSUMER_KEY = config("CONSUMER_KEY")
 CONSUMER_SECRET = config("CONSUMER_SECRET")
 ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
+TWEET_LIMIT = 280
 
 
-def checkOrderStatus(pk):
+def check_order_status(pk):
     try:
         # Get order
         order = Order.objects.get(id=pk)
@@ -108,7 +108,8 @@ def quote_tweet(text, tweet_id, client):
 def poll(text, poll_options, poll_duration_minutes, client):
     try:
         res = client.create_tweet(text=text,
-                                  poll_options=poll_options, poll_duration_minutes=poll_duration_minutes, user_auth=False)
+                                  poll_options=poll_options, poll_duration_minutes=poll_duration_minutes,
+                                  user_auth=False)
         return res.data['id']
     except Exception as e:
         raise Exception(str(e))
@@ -120,6 +121,35 @@ def retweet(tweet_id, client):
         return res.data['id']
     except Exception as e:
         raise Exception(str(e))
+
+
+def thread(text, client):
+    """
+    Tweet Limit is 280 characters, so we need to split the text into multiple tweets
+    For the first tweet, we will call the create_tweet method
+    For the rest of the tweets, we will call the reply_to_tweet method with the in_reply_to_tweet_id parameter set to
+    the tweet_id of the first tweet
+    """
+    try:
+        if len(text) <= TWEET_LIMIT:
+            res = client.create_tweet(text=text, user_auth=False)
+            return res.data['id']
+        else:
+            # Split the text into multiple tweets
+            tweets = [text[i:i + TWEET_LIMIT]
+                      for i in range(0, len(text), TWEET_LIMIT)]
+            published_tweet_id = ''
+            for i, text in enumerate(tweets):
+                if i == 0:
+                    res = client.create_tweet(text=text, user_auth=False)
+                    published_tweet_id = res.data['id']
+                else:
+                    res = client.create_tweet(
+                        text=text, in_reply_to_tweet_id=published_tweet_id, user_auth=False)
+            return published_tweet_id
+    except Exception as e:
+        raise Exception(str(e))
+
 
 @shared_task
 def twitter_task(order_item_id):
@@ -193,6 +223,8 @@ def twitter_task(order_item_id):
             res = poll(text, poll_options, poll_duration_minutes, client)
         elif service_type == 'retweet':
             res = retweet(tweet_id, client)
+        elif service_type == 'thread':
+            res = thread(text, client)
 
         order_item.published_tweet_id = res
         order_item.status = 'published'
@@ -202,7 +234,7 @@ def twitter_task(order_item_id):
         create_order_item_tracking(order_item, order_item.status)
 
         # Check if the order is completed
-        checkOrderStatus(order_item.order_id.id)
+        check_order_status(order_item.order_id.id)
 
         # Create notification for order item
         create_notification_for_order_item(
