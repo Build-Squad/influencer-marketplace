@@ -15,23 +15,27 @@ def main():
 
     network = configuration["network"]
     program_id = configuration["program_id_testnet"] if configuration["network"] == "testnet" else configuration["program_id_devnet"]
+    
     PROGRAM_ID = Pubkey.from_string(program_id)
     print(f"Network: {network} Program ID: {program_id}")
-
-    path_to_bussines_keypair = "business.json"
-    path_to_influencer_keypair = "influencer.json"
-    print(path_to_bussines_keypair, path_to_influencer_keypair)
     
-    business, business_pk = get_local_keypair_pubkey(path=path_to_bussines_keypair)
-    influencer, influencer_pk = get_local_keypair_pubkey(path=path_to_influencer_keypair)
+    business, business_pk = get_local_keypair_pubkey(path="business.json")
+    influencer, influencer_pk = get_local_keypair_pubkey(path="influencer.json")
+    _, validation_authority_pk = get_local_keypair_pubkey(path="/home/ruben/.config/solana/id.json")
     
     assert str(business_pk) == configuration["business"]
     assert str(influencer_pk) == configuration["influencer"]
 
+    print("Validation Authority:",validation_authority_pk)
+
+    #assert str(validation_authority_pk) == configuration["validation_authority"]
+
+    
     amount = configuration["lamports"]
     order_code = configuration["order_code"]
 
-    args = {"amount":int(amount), "order_code":int(order_code) }
+    args = {"amount":int(amount),
+            "order_code":int(order_code) }
     
     SEEDS = [b"escrow",
             bytes(business_pk),
@@ -42,15 +46,16 @@ def main():
     escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
     
     print("escrow pda found",escrow_pda)
-    
-    
+
     accounts = {"escrow":escrow_pda, 
                 "from_":business_pk,
-                "to":influencer_pk}
+                "to":influencer_pk,
+                "validation_authority": validation_authority_pk
+                }
 
 
     opts = TxOpts(skip_confirmation = True,
-                skip_preflight = True)
+                  skip_preflight = True)
 
     signers = [business]
 

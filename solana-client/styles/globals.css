@@ -11,3 +11,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+@use "react-widgets/styles.scss" with (
+  $input-height: 2.5em,
+  // Most component variables are forwarded with a namespace
+  $list-selected-bg: #49c6de,
+);

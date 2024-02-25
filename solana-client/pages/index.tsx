@@ -17,6 +17,7 @@ import { ClaimEscrowSolana } from '../components/ClaimEscrowSolana'
 import { CancelEscrowSolana } from '../components/CancelEscrowSolana'
 import { ValidateEscrowSolana } from '../components/ValidateEscrowSolana'
 
+import Combobox from "react-widgets/Combobox";
 
 
 const Home: NextPage = (props) => {
@@ -60,6 +61,7 @@ const Home: NextPage = (props) => {
            <Input type="order_number" label="Order Number" placeholder="Enter integer positive number" value= {ORDER_CODE}/>
            <Input type="target_state" label="Target State:  (1) for cancel,  (2) for delivered" placeholder="Enter only  1 or 2" value= {TARGET_STATE}/>
 
+           <Combobox defaultValue="cancel" data={["cancel", "delivered"]}/>
         </div>
 
         <div className={styles.AppBody}>       
@@ -68,6 +70,8 @@ const Home: NextPage = (props) => {
           <CancelEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />    
          
           <ValidateEscrowSolana />   
+   
+         
 
         </div>
        

@@ -1,5 +1,4 @@
 import * as anchor from "@coral-xyz/anchor";
-import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 
 import {
   createMint,
@@ -98,7 +97,7 @@ export function getAnchorProviderSync(){
   return anchor.getProvider() as anchor.AnchorProvider;
 }
 
-export async function getTokenAccountBalance_v2(
+/*export async function getTokenAccountBalance_v2(
     provider: anchor.Provider,
     tokenAccount: anchor.web3.PublicKey
   ) {
@@ -113,7 +112,7 @@ export const getTokenAccountBalance = async (
   const result = await provider.connection.getTokenAccountBalance(tokenAccount);
 
   return parseInt(result.value.amount);
-}
+}*/
 
 export async function airdrop(
     program: any,

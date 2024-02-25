@@ -10,6 +10,16 @@ This contains instruction arguments, public keys and deployed program id's avail
 
 Change this accordantly to your testing requirements.
 
+## Generate Client
+
+Set your prompt at `solana-python`
+
+Create your client, making sure you have the IDL already in place (if not, got to solana folder to generate it)
+
+`$ anchorpy client-gen ../solana/target/idl/xfluencer.json ./pyxfluencer` 
+
+Client will be generated at `pyxfluencer` folder
+
 ## Transaction Script Launchers
 
 You will find CLI scripts ilustrating how the client and instructions should be used and formed respectively.

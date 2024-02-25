@@ -1,10 +1,11 @@
 {
-    "network": "testnet",
+    "network": "devnet",
     "business": "6suvWCcjg5o7xgHrDGc4MXQxraK9PnZyEXzjhhQN6HUK",
     "influencer": "94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA",
     "platform": "EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH",
     "lamports": "10000000",
-    "order_code": 1237,
+    "order_code": 1238,
     "program_id_devnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
-    "program_id_testnet": "EV31JFJxt28CoRUGm2UAsTHndmpYvpuMFH9Y8JZBJcYd"
+    "program_id_testnet": "EV31JFJxt28CoRUGm2UAsTHndmpYvpuMFH9Y8JZBJcYd",
+    "validation_authority": "5nDjL15pv99Rp3cRkuqRJ65G9y3ETA6SWyWMQ4Acvitn"
 }
