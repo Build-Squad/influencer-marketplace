@@ -39,7 +39,7 @@ export default function CreateEscrow({
   const provider = new AnchorProvider(connection, wallet!, {});
   setProvider(provider);
 
-  const { publicKey: businessPk, sendTransaction, connect } = useWallet();
+  const { publicKey: businessPk, sendTransaction } = useWallet();
 
   const createEscrow = async () => {
     try {
@@ -52,7 +52,6 @@ export default function CreateEscrow({
 
         // Check if wallet is connected
         if (!connection || !businessPk) {
-          await connect();
           notification("Please connect your wallet first", "error");
           return;
         }
@@ -60,6 +59,8 @@ export default function CreateEscrow({
         console.log("Business PK", businessPk.toString());
         console.log("Influencer PK", influencer_pk.toString());
         console.log("Order Number", cart?.order_number);
+
+        const validationAuthorityPk = new PublicKey("CwhNj8h9D2rFYodxChKWzmWKWLEfKq4LuxiN1qzmvG6u")
 
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
@@ -72,9 +73,7 @@ export default function CreateEscrow({
           programId
         );
 
-       
         const amount = Number(cart?.orderTotal) * LAMPORTS_PER_SOL;
-
 
         // Create the escrow
         const ix = await program.methods
@@ -83,6 +82,7 @@ export default function CreateEscrow({
             new anchor.BN(cart?.order_number)
           )
           .accounts({
+            validationAuthority: validationAuthorityPk,
             from: businessPk,
             to: influencer_pk,
             systemProgram: anchor.web3.SystemProgram.programId,

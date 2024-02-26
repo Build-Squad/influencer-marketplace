@@ -177,6 +177,7 @@ export default function BusinessProfilePreview({ params }: Props) {
                   ...inf.service_types.map((service: any) => service.price)
                 )
               : 0,
+          rating: inf.rating,
         };
       });
       setCollaborations(filteredData);

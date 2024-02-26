@@ -17,17 +17,20 @@ import Image from "next/image";
 import BackIcon from "@/public/svg/Back.svg";
 import {
   DISPLAY_DATE_FORMAT,
+  ORDER_ITEM_STATUS,
   ORDER_STATUS,
   TRANSACTION_TYPE,
 } from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
+  Badge,
   Box,
   Grid,
   IconButton,
   Link,
   Pagination,
+  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -40,12 +43,16 @@ import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 
 export default function BusinessDashboardPage() {
   const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
+  const [selectedReviewOrder, setSelectedReviewOrder] =
+    useState<OrderType | null>(null);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
@@ -356,13 +363,30 @@ export default function BusinessDashboardPage() {
               arrow
               disableInteractive
             >
-              <IconButton
-                onClick={() => {
-                  setSelectedOrder(params?.row);
-                }}
+              <Badge
+                badgeContent={
+                  params?.row?.order_item_order_id?.filter(
+                    (orderItem: OrderItemType) =>
+                      orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+                      dayjs(orderItem?.publish_date) > dayjs()
+                  )?.length
+                }
+                color="secondary"
+                overlap="circular"
+                // Dont show badge if the order is completed
+                invisible={
+                  params?.row?.status === ORDER_STATUS.COMPLETED ||
+                  params?.row?.status === ORDER_STATUS.REJECTED
+                }
               >
-                <EditNoteIcon />
-              </IconButton>
+                <IconButton
+                  onClick={() => {
+                    setSelectedOrder(params?.row);
+                  }}
+                >
+                  <EditNoteIcon />
+                </IconButton>
+              </Badge>
             </Tooltip>
             {params?.row?.status === ORDER_STATUS.ACCEPTED && (
               <Tooltip
@@ -437,6 +461,53 @@ export default function BusinessDashboardPage() {
           <Typography>
             {dayjs(params?.row?.created_at).format(DISPLAY_DATE_FORMAT)}
           </Typography>
+        );
+      },
+    },
+    {
+      field: "review__rating",
+      headerName: "Review",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <>
+            {params?.row?.review?.rating ? (
+              <Tooltip
+                title={
+                  params?.row?.review?.note
+                    ? params?.row?.review?.note
+                    : "No Review Available"
+                }
+                placement="top"
+                arrow
+                disableHoverListener={!params?.row?.review?.note}
+              >
+                <Box
+                  onClick={() => {
+                    setSelectedReviewOrder(params?.row);
+                    setOpenReviewModal(true);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <Rating
+                    name="read-only"
+                    value={Number(params?.row?.review?.rating)}
+                    readOnly
+                  />
+                </Box>
+              </Tooltip>
+            ) : (
+              <Typography sx={{ textAlign: "center", fontStyle: "italic" }}>
+                No Review
+              </Typography>
+            )}
+          </>
         );
       },
     },
@@ -548,6 +619,12 @@ export default function BusinessDashboardPage() {
             setSelectedOrder(null);
           }}
           getOrders={getOrders}
+        />
+        <ReviewModal
+          reviewOrder={selectedReviewOrder}
+          open={openReviewModal}
+          setOpen={setOpenReviewModal}
+          readonly={true}
         />
       </Box>
     </RouteProtection>

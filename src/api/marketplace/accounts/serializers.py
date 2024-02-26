@@ -4,7 +4,7 @@ from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
 
 from core.serializers import LanguageMasterSerializer, RegionMasterSerializer
-from orders.models import Order, OrderItem
+from orders.models import Order, OrderItem, Review
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
@@ -21,6 +21,9 @@ from .models import (
     WalletProvider,
     BusinessAccountMetaData,
 )
+
+from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 
 
 class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
@@ -94,10 +97,11 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
     )
     service_types = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = TwitterAccount
-        exclude = ("access_token",)
+        exclude = ("access_token", "refresh_token")
 
     def get_user_id(self, twitter_account):
         user = User.objects.filter(twitter_account=twitter_account)
@@ -116,6 +120,15 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
 
         return service_data
 
+    def get_rating(self, twitter_account):
+        user = get_object_or_404(User, twitter_account=twitter_account)
+        reviews = Review.objects.filter(
+            order__order_item_order_id__package__influencer=user,
+            order__deleted_at=None,
+            order__status="completed"
+        )
+        total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        return total_rating
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:

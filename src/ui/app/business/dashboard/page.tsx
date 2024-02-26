@@ -1,5 +1,6 @@
 "use client";
 
+import BackIcon from "@/public/svg/Back.svg";
 import AcceptedOrders from "@/public/svg/acceptedOrders.svg?icon";
 import CompletedOrders from "@/public/svg/completedOrders.svg?icon";
 import PendingOrders from "@/public/svg/pendingOrders.svg?icon";
@@ -7,6 +8,7 @@ import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
 import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
+import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
 import { notification } from "@/src/components/shared/notification";
@@ -19,16 +21,15 @@ import {
   ORDER_STATUS,
   TRANSACTION_TYPE,
 } from "@/src/utils/consts";
-import { KeyboardBackspace } from "@mui/icons-material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Box,
-  Button,
   Grid,
   IconButton,
   Link,
   Pagination,
+  Rating,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -38,6 +39,7 @@ import {
   GridTreeNodeWithRender,
 } from "@mui/x-data-grid";
 import dayjs from "dayjs";
+import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -57,6 +59,9 @@ export default function BusinessDashboardPage() {
     ],
     order_by: "-created_at",
   });
+  const [selectedReviewOrder, setSelectedReviewOrder] =
+    useState<OrderType | null>(null);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
     completed: 0,
@@ -425,6 +430,7 @@ export default function BusinessDashboardPage() {
       headerName: "Transactions",
       flex: 1,
       sortable: false,
+      minWidth: 300,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
@@ -462,6 +468,48 @@ export default function BusinessDashboardPage() {
         );
       },
     },
+    {
+      field: "review.rating",
+      headerName: "Review",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <>
+            {params?.row?.status === ORDER_STATUS.COMPLETED ? (
+              <Tooltip
+                title={params?.row?.review?.id ? "Edit review" : "Add review"}
+                placement="top"
+                arrow
+              >
+                <Box
+                  onClick={() => {
+                    setSelectedReviewOrder(params?.row);
+                    setOpenReviewModal(true);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <Rating
+                    name="read-only"
+                    value={Number(params?.row?.review?.rating)}
+                    readOnly
+                  />
+                </Box>
+              </Tooltip>
+            ) : (
+              <Typography sx={{ textAlign: "center", fontStyle: "italic" }}>
+                Order Not Completed
+              </Typography>
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   useEffect(() => {
@@ -482,21 +530,17 @@ export default function BusinessDashboardPage() {
           p: 2,
         }}
       >
+        <Image
+          src={BackIcon}
+          alt={"BackIcon"}
+          height={30}
+          style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
+          onClick={() => {
+            router.back();
+          }}
+        />
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Tooltip title="Go Back" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  router.back();
-                }}
-                sx={{
-                  boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.15)",
-                  mb: 2,
-                }}
-              >
-                <KeyboardBackspace />
-              </IconButton>
-            </Tooltip>
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (
@@ -573,6 +617,13 @@ export default function BusinessDashboardPage() {
           onClose={() => {
             setSelectedOrder(null);
           }}
+        />
+        <ReviewModal
+          reviewOrder={selectedReviewOrder}
+          open={openReviewModal}
+          setOpen={setOpenReviewModal}
+          readonly={false}
+          updateState={getOrders}
         />
       </Box>
     </RouteProtection>

@@ -217,8 +217,8 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
             )
 
             newUser.save()
-            if userData.entities is not None:
-                if userData.entities["description"] is not None:
+            if userData.get("entities") is not None:
+                if userData.entities.get("description") is not None:
                     hashtags = userData.entities["description"]["hashtags"]
                     manage_categories(hashtags, newUser)
         else:
@@ -336,6 +336,8 @@ def createJWT(userData, access_token, role, refresh_token, referral_code):
         response = JWTOperations.setJwtToken(
             response, cookie_name="jwt", payload=payload
         )
+        current_user.login_method = "twitter"
+        current_user.save()
         response.data = {
             "isSuccess": True,
             "data": UserSerializer(current_user).data,

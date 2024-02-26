@@ -14,6 +14,7 @@ import { TopInfluencersType } from "../types";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { stringToColor } from "@/src/utils/helper";
+import StarIcon from "@mui/icons-material/Star";
 
 type Props = {
   influencer: TopInfluencersType;
@@ -140,13 +141,37 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
             >
               {influencer?.name}
             </Typography>
-            <Typography
-              variant="subtitle1"
-              component="div"
-              sx={{ color: "#676767" }}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                columnGap: "4px",
+              }}
             >
-              @{influencer?.twitterUsername}
-            </Typography>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ color: "#676767" }}
+              >
+                @{influencer?.twitterUsername}
+              </Typography>
+              {influencer?.rating > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography variant="subtitle1">
+                    {` | ${influencer?.rating?.toFixed(1)}`}
+                  </Typography>
+                  <StarIcon sx={{ color: "#FFC107", fontSize: "18px" }} />
+                </Box>
+              )}
+            </Box>
             <Box
               sx={{
                 display: "flex",

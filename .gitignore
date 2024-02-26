@@ -50,15 +50,10 @@ solana/target/debug/*
 solana/.anchor*
 solana/target/release/*
 solana/target/sbf-solana*
-solana/target/deploy
+solana/target/deploy*
 solana-client/node_modules/*
 solana-client/.next*
 solana/docker-target*
-*__pycache__*
-*~
-#*#
-#*
-.#*
 solana-python/build*
 solana-python/src/*egg*
 
@@ -66,4 +61,5 @@ solana-python/src/*egg*
 src/api/celerybeat-schedule
 
 
-
+src/ui/.idea
+src/api/marketplace/.idea

@@ -118,6 +118,7 @@ type TwitterAccountType = {
   url: string | null;
   joined_at: string | null;
   account_categories?: AccountCategoryType[];
+  rating?: number;
 };
 
 type UserType = {
@@ -139,6 +140,7 @@ type UserType = {
     region: string;
     user_account: string;
   };
+  login_method: string;
 };
 
 type ServiceCheckOutType = {
@@ -220,6 +222,7 @@ type OrderItemType = {
   order_item_meta_data: OrderItemMetaDataType[];
   publish_date?: string;
   published_tweet_id?: string;
+  status?: string;
 };
 
 type TransactionType = {
@@ -232,6 +235,14 @@ type TransactionType = {
   transaction_date: string;
   transaction_initiated_by: string;
   wallet: string;
+};
+
+type ReviewType = {
+  id: string;
+  order: string;
+  note: string;
+  is_visible: boolean;
+  rating: number;
 };
 
 type OrderType = {
@@ -248,6 +259,7 @@ type OrderType = {
   influencer_wallet?: WalletType;
   order_number?: number;
   transactions?: TransactionType[] | null;
+  review?: ReviewType | null;
 };
 
 type OrderFilterType = {

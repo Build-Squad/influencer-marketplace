@@ -9,6 +9,7 @@ from core.models import Currency
 from core.models import Country
 from django.core.exceptions import ValidationError
 
+
 class Package(models.Model):
     TYPE_CHOICES = (
         ('package', 'package'),
@@ -21,7 +22,8 @@ class Package(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='Package', default=uuid.uuid4, editable=False)
-    influencer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='created_by_user', on_delete=SET_NULL, null=True)
+    influencer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='created_by_user', on_delete=SET_NULL,
+                                   null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES,
@@ -33,9 +35,9 @@ class Package(models.Model):
                             max_length=50, default='service')
 
     class Meta:
-        db_table = "package" 
+        db_table = "package"
 
-    def delete (self, *args, **kwargs):
+    def delete(self, *args, **kwargs):
         if self.service_package_id.exists():
             raise ValidationError("This package is being used in a service and cannot be deleted.")
         else:
@@ -45,8 +47,8 @@ class Package(models.Model):
     def __str__(self):
         return self.name
 
-class ServiceMaster(models.Model):
 
+class ServiceMaster(models.Model):
     TYPE_CHOICES = (
         ('standard', 'standard'),
         ('custom', 'custom')
@@ -58,7 +60,8 @@ class ServiceMaster(models.Model):
         ('reply_to_tweet', 'reply_to_tweet'),
         ('quote_tweet', 'quote_tweet'),
         ('poll', 'poll'),
-        ('retweet', 'retweet')
+        ('retweet', 'retweet'),
+        ('thread', 'thread'),
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='ServiceMaster', default=uuid.uuid4, editable=False)
@@ -73,9 +76,9 @@ class ServiceMaster(models.Model):
         choices=TWITTER_SERVICES_TYPES, max_length=50, blank=True, null=True)
 
     class Meta:
-        db_table = "service_master" 
+        db_table = "service_master"
 
-    def delete (self, *args, **kwargs):
+    def delete(self, *args, **kwargs):
         if self.service_master_id.exists():
             raise ValidationError("This service is being used in a service and cannot be deleted.")
         else:
@@ -84,6 +87,7 @@ class ServiceMaster(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Service(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Service', default=uuid.uuid4, editable=False)
@@ -97,10 +101,11 @@ class Service(models.Model):
     status = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
-    class Meta:
-        db_table = "service"   
 
-    def delete (self, *args, **kwargs):
+    class Meta:
+        db_table = "service"
+
+    def delete(self, *args, **kwargs):
         self.deleted_at = timezone.now()
         self.save()
 
@@ -109,14 +114,13 @@ class Service(models.Model):
 
 
 class ServiceMasterMetaData(models.Model):
-
     TYPE_CHOICES = (
         ('text', 'text'),
         ('long_text', 'long_text'),
         ('date_time', 'date_time'),
         ('media', 'media'),
     )
-    
+
     FIELD_NAME_CHOICED = (
         ('instructions', 'instructions'),
         ('text', 'text'),
@@ -140,7 +144,7 @@ class ServiceMasterMetaData(models.Model):
     service_master_id = models.ForeignKey(
         ServiceMaster, related_name='service_master_meta_data_id', on_delete=models.SET_NULL, null=True)
     regex = models.CharField(max_length=100, blank=True, null=True)
-    
+
     class Meta:
         db_table = "service_master_meta_data"
 

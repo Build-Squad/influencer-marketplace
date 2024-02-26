@@ -45,6 +45,8 @@ import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
 import { stringToColor } from "@/src/utils/helper";
 import Referrals from "./_referrals";
+import WalletsTable from "@/src/components/profileComponents/walletsTable";
+import StarIcon from "@mui/icons-material/Star";
 
 const debounce = (fn: Function, ms = 500) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -353,7 +355,7 @@ const ProfileLayout = ({
                           target="_blank"
                           component={NextLink}
                           sx={{
-                            color: "#000",
+                            color: "#676767",
                             textDecoration: "none",
                             "&:hover": {
                               textDecoration: "underline",
@@ -363,16 +365,24 @@ const ProfileLayout = ({
                           @{currentUser?.twitter_account?.user_name}
                         </Link>
                       </Typography>
-                      {currentUser?.twitter_account?.verified && (
-                        <Tooltip title={"Verified On X"}>
-                          <VerifiedIcon
-                            sx={{
-                              color: "#1DA1F2",
-                              fontSize: "20px",
-                              marginLeft: "5px",
-                            }}
+                      {currentUser?.twitter_account?.rating && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Typography variant="subtitle1">
+                            &nbsp;
+                            {`| ${currentUser?.twitter_account?.rating?.toFixed(
+                              1
+                            )}`}
+                          </Typography>
+                          <StarIcon
+                            sx={{ color: "#FFC107", fontSize: "18px" }}
                           />
-                        </Tooltip>
+                        </Box>
                       )}
                     </Box>
                     <Box
@@ -654,161 +664,11 @@ const ProfileLayout = ({
                   </Box>
                   {/* Only for the current logged in user */}
                   {params?.id === loggedInUser?.id && (
-                    <Box
-                      sx={{
-                        borderRadius: "16px",
-                        boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-                        backgroundColor: "#FFF",
-                        zIndex: "1",
-                        display: "flex",
-                        minWidth: "100%",
-                        flexDirection: "column",
-                        mt: 4,
-                        p: 2,
-                        maxWidth: "100%",
-                      }}
-                    >
-                      <Grid container spacing={2}>
-                        <Grid
-                          item
-                          xs={12}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                          }}
-                        >
-                          <Image
-                            src={Star_Coloured}
-                            alt={"Coloured Start"}
-                            height={30}
-                          />
-                          <Typography
-                            variant="h5"
-                            sx={{ ml: 2, fontWeight: "bold" }}
-                          >
-                            Web3 Wallets
-                          </Typography>
-                        </Grid>
-                        <Grid
-                          item
-                          xs={12}
-                          sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <Typography variant="body1">
-                            {/* Text about connecting wallets */}
-                            Connect your wallet to receive payments in crypto
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            color="secondary"
-                            sx={{
-                              borderRadius: 6,
-                            }}
-                            onClick={() => {
-                              setOpenWalletConnectModal(true);
-                            }}
-                          >
-                            Add Wallet
-                          </Button>
-                        </Grid>
-                        <Grid item xs={12}>
-                          {wallets?.length === 0 ? (
-                            <>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  minHeight: "200px",
-                                }}
-                              >
-                                <Image
-                                  src={"/wallets.png"}
-                                  alt={"Wallet"}
-                                  height={100}
-                                  width={100}
-                                />
-                                <Typography
-                                  variant="body1"
-                                  sx={{ textAlign: "center" }}
-                                >
-                                  No Wallets Connected
-                                </Typography>
-                              </Box>
-                            </>
-                          ) : (
-                            <>
-                              <Table>
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell>
-                                      <Typography
-                                        sx={{
-                                          fontWeight: "bold",
-                                        }}
-                                      >
-                                        Address
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Typography
-                                        sx={{
-                                          fontWeight: "bold",
-                                        }}
-                                      >
-                                        Wallet
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell></TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {wallets?.map((wallet) => (
-                                    <TableRow
-                                      key={wallet.id}
-                                      sx={{
-                                        backgroundColor: wallet.is_primary
-                                          ? "#D1EFF2"
-                                          : "",
-                                      }}
-                                    >
-                                      <TableCell>
-                                        <Typography>
-                                          {wallet.wallet_address_id}
-                                        </Typography>
-                                      </TableCell>
-                                      <TableCell>
-                                        <Typography>
-                                          {wallet?.wallet_provider_id
-                                            ? `${
-                                                wallet?.wallet_provider_id?.wallet_provider
-                                                  ?.charAt(0)
-                                                  .toUpperCase() +
-                                                wallet?.wallet_provider_id?.wallet_provider?.slice(
-                                                  1
-                                                )
-                                              }`
-                                            : "N/A"}
-                                        </Typography>
-                                      </TableCell>
-                                      <TableCell>{/* Action Menu */}</TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </>
-                          )}
-                        </Grid>
-                      </Grid>
-                    </Box>
+                    <WalletsTable
+                      wallets={wallets}
+                      setOpenWalletConnectModal={setOpenWalletConnectModal}
+                      getWallets={getWallets}
+                    />
                   )}
                 </Box>
               </Grid>
