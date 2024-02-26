@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import UserReferrals
+from .models import UserReferrals, UserReferralRewards, ReferralRewardsMaster
 # Register your models here.
 
 admin.site.register(UserReferrals)
+admin.site.register(ReferralRewardsMaster)
+admin.site.register(UserReferralRewards)

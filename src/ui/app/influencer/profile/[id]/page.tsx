@@ -87,6 +87,8 @@ const ProfileLayout = ({
   const [editibleBio, setEditibleBio] = React.useState<string>("");
   const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
   const [type, setType] = React.useState<string>("services");
+  const [referralsEnabled, setReferralsEnabled] =
+    React.useState<boolean>(false);
 
   useEffect(() => {
     if (params.id) {
@@ -121,6 +123,10 @@ const ProfileLayout = ({
   }, []);
 
   useEffect(() => {
+    setReferralsEnabled(!!(wallets?.length && params?.id == loggedInUser?.id));
+  }, [wallets]);
+
+  useEffect(() => {
     if (currentUser?.region) {
       const regionOfUser = regions.find(
         (item) => item.id === currentUser?.region?.region
@@ -133,8 +139,6 @@ const ProfileLayout = ({
   }, [currentUser]);
 
   // Check if the loggedIn user is visiting his own profile and also has a wallet connect
-  const referralsEnabled =
-    loggedInUser?.wallets?.length && params?.id == loggedInUser?.id;
 
   const getUserDetails = async () => {
     const { isSuccess, message, data } = await getService(
@@ -874,7 +878,6 @@ const ProfileLayout = ({
                             alignItems: "center",
                             ...getReferralStyles(referralsEnabled),
                           }}
-                          // disabled={true}
                         >
                           Referrals
                           {!referralsEnabled ? (
