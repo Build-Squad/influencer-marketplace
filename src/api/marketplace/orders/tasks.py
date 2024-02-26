@@ -1,6 +1,6 @@
 from accounts.models import TwitterAccount, User
 from notifications.models import Notification
-from orders.services import create_notification_for_order, create_notification_for_order_item, \
+from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
     create_order_item_tracking, create_order_tracking, create_reminider_notification
 from orders.models import Order, OrderItem, OrderItemMetaData
 
@@ -239,6 +239,8 @@ def twitter_task(order_item_id):
         # Create notification for order item
         create_notification_for_order_item(
             order_item, 'scheduled', 'published')
+        create_order_item_status_update_message(
+            order_item, order_item.package.influencer)
 
     except Exception as e:
         raise Exception(str(e))
@@ -281,6 +283,9 @@ def schedule_tweet(order_item_id):
             # Send notification to business
             create_notification_for_order_item(
                 order_item, 'accepted', 'scheduled')
+
+            create_order_item_status_update_message(
+                order_item, order_item.package.influencer)
     except Exception as e:
         raise Exception(str(e))
 
@@ -310,6 +315,8 @@ def cancel_tweet(order_item_id):
             # Send notification to business
             create_notification_for_order_item(
                 order_item, 'scheduled', 'cancelled')
+            create_order_item_status_update_message(
+                order_item, order_item.package.influencer)
     except Exception as e:
         raise Exception(str(e))
 

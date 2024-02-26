@@ -1,7 +1,7 @@
 from email import message
 from accounts.serializers import UserSerializer, WalletCompleteSerializer
 from accounts.models import User, Wallet
-from orders.services import create_order_item_tracking
+from orders.services import create_order_item_meta_data_field_update_message, create_order_item_publish_date_update_message, create_order_item_status_update_message, create_order_item_tracking
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service, ServiceMasterMetaData
@@ -157,7 +157,7 @@ class CreateOrderSerializer(serializers.Serializer):
     order_items = serializers.ListField(child=OrderItemSerializer())
 
     def _create_or_update_meta_data(
-        self, order_item, meta_data, service_master_meta_data_item
+        self, order_item, meta_data, service_master_meta_data_item, updated_by
     ):
         if "order_item_meta_data_id" in meta_data:
             try:
@@ -190,9 +190,15 @@ class CreateOrderSerializer(serializers.Serializer):
                 field_name=service_master_meta_data_item.field_name,
                 regex=service_master_meta_data_item.regex,
             )
+        old_value = order_item_meta_data.value
         # Update the meta data
         order_item_meta_data.value = meta_data['value']
         order_item_meta_data.save()
+
+        order_item = order_item_meta_data.order_item
+        if (order_item.status != "draft" or order_item.status != "pending") and order_item_meta_data.value != old_value:
+            create_order_item_meta_data_field_update_message(
+                order_item_meta_data, updated_by)
 
     def create(self, validated_data):
         order_items = validated_data["order_items"]
@@ -259,8 +265,14 @@ class CreateOrderSerializer(serializers.Serializer):
                     )
                     # Update the publish date
                     if "publish_date" in order_item_data:
+                        old_publish_date = order_item.publish_date
                         order_item.publish_date = order_item_data["publish_date"]
                         order_item.save()
+                        # Call the create_order_item_status_update_message
+                        if (order_item.status != "draft" or order_item.status != "pending") and order_item.publish_date != old_publish_date:
+                            create_order_item_publish_date_update_message(
+                                order_item, self.context["request"].user_account.id
+                            )
                 except ObjectDoesNotExist:
                     raise serializers.ValidationError(
                         {
@@ -306,7 +318,7 @@ class CreateOrderSerializer(serializers.Serializer):
                     service_master_meta_data_item = None
 
                 self._create_or_update_meta_data(
-                    order_item, meta_data, service_master_meta_data_item)
+                    order_item, meta_data, service_master_meta_data_item, self.context["request"].user_account.id)
 
         return order
 
