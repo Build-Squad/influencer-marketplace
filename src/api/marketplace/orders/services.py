@@ -188,7 +188,7 @@ def create_order_item_status_update_message(order_item, updated_by):
         influencer = order_item.package.influencer
         sender_id = buyer if updated_by == buyer.id else influencer
         receiver_id = influencer if updated_by == buyer.id else buyer
-        message = f'{order_item.package.name} has been {order_item.status}'
+        message = f'Status for order item {order_item.package.name} has been {order_item.status}'
         OrderMessage.objects.create(
             sender_id=sender_id, receiver_id=receiver_id, message=message, order_id=order_item.order_id)
     except Exception as e:
@@ -204,7 +204,7 @@ def create_order_item_publish_date_update_message(order_item, updated_by):
         influencer = order_item.package.influencer
         sender_id = buyer if updated_by == buyer.id else influencer
         receiver_id = influencer if updated_by == buyer.id else buyer
-        message = f'Publish date for {order_item.package.name} has been updated.'
+        message = f'Publish date for order item {order_item.package.name} has been updated.'
         OrderMessage.objects.create(
             sender_id=sender_id, receiver_id=receiver_id, message=message, order_id=order_item.order_id)
     except Exception as e:
@@ -222,7 +222,7 @@ def create_order_item_meta_data_field_update_message(order_item_meta_data, updat
         influencer = order_item.package.influencer
         sender_id = buyer if updated_by == buyer.id else influencer
         receiver_id = influencer if updated_by == buyer.id else buyer
-        message = f'{order_item_meta_data.label} for {order_item.package.name} has been updated to {order_item_meta_data.value}.'
+        message = f'{order_item_meta_data.label} for order item {order_item.package.name} has been updated to {order_item_meta_data.value}.'
         OrderMessage.objects.create(
             sender_id=sender_id, receiver_id=receiver_id, message=message, order_id=order_item.order_id)
     except Exception as e:
