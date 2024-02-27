@@ -9,7 +9,7 @@ from django.http import (
 )
 from decouple import config
 from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User
-from referrals.models import UserReferrals
+from referrals.models import ReferralRewardsMaster, UserReferralRewards, UserReferrals
 import datetime
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
@@ -265,17 +265,25 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
                 try:
                     referred_by = User.objects.get(referral_code=referral_code)
                     if referred_by:
-                        UserReferrals.objects.create(user_account=new_user_account, referred_by=referred_by)
+                        # Who referred whom
+                        user_referrals = UserReferrals.objects.create(user_account=new_user_account, referred_by=referred_by)
+
+                        # Referrer rewards (Who's link has been used) Currently 1% comission
+                        referTypeDiscount = ReferralRewardsMaster.objects.get(type="discount")
+                        UserReferralRewards.objects.create(user_account=referred_by, type=referTypeDiscount, user_referrals=user_referrals)
+
+
+                        # Referee rewards (Account using the referral to signup) 0.5% for 5 orders
+                        referTypeDiscount = ReferralRewardsMaster.objects.get(type="comission")
+                        for _ in range(5):
+                            UserReferralRewards.objects.create(user_account=new_user_account, type=referTypeDiscount, user_referrals=user_referrals)
+
+
                 except Exception as e:
                     return {
                         "status": "error",
-                        "message": f"No referral given, invalid referral code- {referral_code}",
+                        "message": f"No referral given, invalid referral code- {referral_code} or error creating.",
                     }
-                
-        # Creating referral_code for users
-        if not existing_user_account.referral_code:
-            existing_user_account.referral_code = generate_referral_code()
-            existing_user_account.save()
 
         else:
             if existing_user_account.role.name != role:
@@ -286,6 +294,11 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
             else:
                 existing_user_account.last_login = datetime.datetime.now()
                 existing_user_account.save()
+
+        # Creating referral_code for users
+        if not existing_user_account.referral_code:
+            existing_user_account.referral_code = generate_referral_code()
+            existing_user_account.save()
 
         current_user = User.objects.filter(twitter_account=current_twitter_user).first()
         logger.info("User Successfully created/updated")

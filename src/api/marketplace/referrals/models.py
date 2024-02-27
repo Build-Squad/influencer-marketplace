@@ -63,14 +63,14 @@ class UserReferralRewards(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    user_account = models.OneToOneField(
+    user_account = models.ForeignKey(
         User,
         related_name="reward_user_account",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
-    type=models.OneToOneField(
+    type=models.ForeignKey(
         ReferralRewardsMaster,
         related_name="reward_referral_referral_master_type",
         on_delete=models.SET_NULL,
@@ -82,6 +82,13 @@ class UserReferralRewards(models.Model):
     is_claimed = models.BooleanField(default=False, blank=True, null=True)
     currency = models.ForeignKey(
         Currency, related_name="reward_bank_account_currency", on_delete=SET_NULL, null=True
+    )
+    user_referrals = models.ForeignKey(
+        UserReferrals,
+        related_name="reward_user_referrals",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
     class Meta:
