@@ -55,8 +55,14 @@ Install the python package on your environment
 
 ## Update Python Client Source Code
 
-
+TBC
 
 ## Usage
 
-TBC
+In order to use this package within Xfluencer:
+
+1. Install the wheel on your vitual environmet as above installation
+2. Follow the example on `test_stand_alone` testing script to either validate an escrow to cancel or to delived
+
+Notice, these functions are asynchronouse so these require asyncio library.
+
