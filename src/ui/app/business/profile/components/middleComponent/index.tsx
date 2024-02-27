@@ -3,6 +3,8 @@ import {
   Box,
   Button,
   Divider,
+  IconButton,
+  InputAdornment,
   TextField,
   Typography,
 } from "@mui/material";
@@ -25,6 +27,7 @@ import { notification } from "@/src/components/shared/notification";
 import EditSvg from "@/public/svg/Edit.svg";
 import { UserDetailsType } from "../../type";
 import Info_Profile from "@/public/Info_Profile.png";
+import { ArrowRightAlt, Verified } from "@mui/icons-material";
 
 const debounce = (fn: Function, ms = 500) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -189,6 +192,7 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
 
 const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   const user = useAppSelector((state) => state.user?.user);
+  const [isEmailVerified, setIsEmailVerified] = useState(true);
 
   const handleChange = async (e: any) => {
     try {
@@ -211,12 +215,7 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
     }
   };
 
-  const debouncedHandleChange = debounce(handleChange, 500);
-
-  // First updating the form fields and calling the update API after 1 second
-  // This is to avoid multiple API calls.
-  // Adding memoisation to avoid function update on rerenders as it will hinder with our debounce function
-  const updatedHandleChange = useCallback((e: any) => {
+  const updateUserDetails = (e: any) => {
     setUserDetails((prevState) => ({
       ...prevState,
       businessDetails: {
@@ -224,8 +223,22 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
         [e.target.name]: e.target.value,
       },
     }));
+  };
+
+  const debouncedHandleChange = debounce(handleChange, 500);
+
+  // First updating the form fields and calling the update API after 1 second
+  // This is to avoid multiple API calls.
+  // Adding memoisation to avoid function update on rerenders as it will hinder with our debounce function
+  const updatedHandleChange = useCallback((e: any) => {
+    updateUserDetails(e);
     debouncedHandleChange(e);
   }, []);
+
+  const handleEmailChange = (e: any) => {
+    setIsEmailVerified(false);
+    updateUserDetails(e);
+  };
   return (
     <>
       <Box>
@@ -328,9 +341,34 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           fullWidth
           name="user_email"
           variant="standard"
-          onChange={updatedHandleChange}
+          onChange={handleEmailChange}
           value={userDetails.businessDetails.user_email}
-          disabled
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => {}}
+                  sx={{
+                    color: "green",
+                    display: "flex",
+                    columnGap: "4px",
+                    "&:hover": {
+                      background: "none",
+                    },
+                  }}
+                >
+                  <Typography variant="caption">
+                    {isEmailVerified ? "Verified" : "Verify Now"}
+                  </Typography>
+                  {isEmailVerified ? (
+                    <Verified fontSize="small" />
+                  ) : (
+                    <ArrowRightAlt fontSize="small" />
+                  )}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
         <Typography
           variant="subtitle1"
