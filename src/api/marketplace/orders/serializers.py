@@ -198,7 +198,7 @@ class CreateOrderSerializer(serializers.Serializer):
         order_item = order_item_meta_data.order_item
         if (order_item.status != "draft" or order_item.status != "pending") and order_item_meta_data.value != old_value:
             create_order_item_meta_data_field_update_message(
-                order_item_meta_data, updated_by)
+                order_item_meta_data, updated_by, old_value)
 
     def create(self, validated_data):
         order_items = validated_data["order_items"]
