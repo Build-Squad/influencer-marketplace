@@ -6,14 +6,61 @@ import {
   Avatar,
   Box,
   Chip,
+  Link,
+  Tooltip,
 } from "@mui/material";
 import React from "react";
 import { TopInfluencersType } from "../types";
 import { useRouter } from "next/navigation";
+import NextLink from "next/link";
+import { stringToColor } from "@/src/utils/helper";
+import StarIcon from "@mui/icons-material/Star";
 
 type Props = {
   influencer: TopInfluencersType;
   sx?: any;
+};
+
+const ServiceChipsComponent = ({ services }: { services: string[] }) => {
+  if (services.length == 1) {
+    return <Chip label={services[0]} size="small" />;
+  } else {
+    return (
+      <Box
+        sx={{
+          overflowX: "auto",
+          maxWidth: "100%",
+          display: "flex",
+          flexWrap: "nowrap",
+          alignItems: "center",
+          columnGap: "4px",
+        }}
+      >
+        <Chip label={services[0]} size="small" sx={{ maxWidth: "70%" }} />
+        <Tooltip
+          title={
+            <React.Fragment>
+              <ul style={{ margin: 0, padding: 10 }}>
+                {services.slice(1).map((ser: string, ind: number) => {
+                  return <li key={ind}>{ser}</li>;
+                })}
+              </ul>
+            </React.Fragment>
+          }
+          enterDelay={300}
+          leaveDelay={200}
+        >
+          <Typography
+            variant="caption"
+            fontWeight={"bold"}
+            sx={{ color: "#0089EA", cursor: "pointer" }}
+          >
+            +{services.length - 1} more
+          </Typography>
+        </Tooltip>
+      </Box>
+    );
+  }
 };
 
 export default function InfluencersCards({ influencer, sx = {} }: Props) {
@@ -28,108 +75,151 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
       key={influencer?.twitterUsername}
       sx={sx}
     >
-      <Card
+      <Link
+        href={`/influencer/profile/${influencer?.id}`}
+        component={NextLink}
         sx={{
-          cursor: "pointer",
-          borderRadius: "16px",
-          boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-        }}
-        onClick={() => {
-          router.push(`/influencer/profile/${influencer?.id}`);
+          textDecoration: "none",
         }}
       >
-        <CardContent
+        <Card
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
+            cursor: "pointer",
+            borderRadius: "16px",
+            boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
           }}
         >
-          <Avatar
-            alt="Influencer profile image"
-            src={influencer?.profileUrl}
-            variant="circular"
-            sx={{
-              height: "60px",
-              width: "60px",
-            }}
-          />
-          <Typography gutterBottom variant="subtitle1" fontWeight={"bold"}>
-            {influencer?.name}
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            component="div"
-            sx={{ color: "#676767" }}
-          >
-            @{influencer?.twitterUsername}
-          </Typography>
-          <Box
+          <CardContent
             sx={{
               display: "flex",
-              alignItems: "center",
-              columnGap: "4px",
-              mt: 2,
-              overflow: "hidden",
+              flexDirection: "column",
               justifyContent: "center",
-              width: "100%",
-            }}
-          >
-            <Typography variant="subtitle1" fontWeight={"bold"}>
-              Services:
-            </Typography>
-            {influencer?.services.length > 2 ? (
-              <>
-                <Box sx={{ display: "flex" }}>
-                  <Box sx={{ flex: 2 }}></Box>
-                  <Box></Box>
-                </Box>
-                <Chip key={0} label={influencer?.services[0]} size="small" />
-                <Chip key={2} label={influencer?.services[1]} size="small" />
-                <Typography>+{influencer?.services.length - 2} more</Typography>
-              </>
-            ) : (
-              influencer?.services.map((ser, index) => {
-                return <Chip key={ser} label={ser} size="small" />;
-              })
-            )}
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              marginTop: "34px",
-              width: "100%",
+              textAlign: "center",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
             }}
           >
-            <Box
-              display={"flex"}
-              justifyContent={"center"}
-              alignItems={"center"}
+            {influencer?.profileUrl &&
+            !influencer?.profileUrl?.includes("default") ? (
+              <Avatar
+                alt="Influencer profile image"
+                src={influencer?.profileUrl}
+                variant="circular"
+                sx={{
+                  height: "60px",
+                  width: "60px",
+                }}
+              />
+            ) : (
+              <Avatar
+                alt="Influencer profile image"
+                variant="circular"
+                sx={{
+                  bgcolor: stringToColor(
+                    influencer?.twitterUsername
+                      ? influencer?.twitterUsername
+                      : ""
+                  ),
+                  height: "60px",
+                  width: "60px",
+                }}
+              >
+                {influencer?.twitterUsername?.charAt(0)?.toUpperCase()}
+              </Avatar>
+            )}
+            <Typography
+              gutterBottom
+              variant="subtitle1"
+              fontWeight={"bold"}
+              sx={{
+                width: "95%",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              }}
             >
-              <Typography variant="subtitle1" fontWeight={"bold"}>
-                Followers:
-              </Typography>
+              {influencer?.name}
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                columnGap: "4px",
+              }}
+            >
               <Typography
                 variant="subtitle1"
-                fontWeight={"light"}
-                sx={{ ml: 1 }}
+                component="div"
+                sx={{ color: "#676767" }}
               >
-                {influencer?.followers}
+                @{influencer?.twitterUsername}
+              </Typography>
+              {influencer?.rating > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography variant="subtitle1">
+                    {` | ${influencer?.rating?.toFixed(1)}`}
+                  </Typography>
+                  <StarIcon sx={{ color: "#FFC107", fontSize: "18px" }} />
+                </Box>
+              )}
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mt: 2,
+                justifyContent: "center",
+                width: "100%",
+                columnGap: "4px",
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={"bold"}>
+                Services:
+              </Typography>
+              <ServiceChipsComponent services={influencer?.services} />
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: "34px",
+                width: "100%",
+              }}
+            >
+              <Box
+                display={"flex"}
+                justifyContent={"center"}
+                alignItems={"center"}
+              >
+                <Typography variant="subtitle1" fontWeight={"bold"}>
+                  Followers:
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={"light"}
+                  sx={{ ml: 1 }}
+                >
+                  {influencer?.followers}
+                </Typography>
+              </Box>
+              <Typography variant="subtitle1" fontWeight={"bold"}>
+                {`${influencer?.minPrice} - ${influencer?.maxPrice}`}
               </Typography>
             </Box>
-            <Typography variant="subtitle1" fontWeight={"bold"}>
-              {`${influencer?.minPrice}$ - ${influencer?.maxPrice}$`}
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Link>
     </Grid>
   );
 }

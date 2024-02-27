@@ -1,49 +1,95 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from accounts.serializers import UserSerializer
-from tweepy import Client, OAuth2UserHandler
+from tweepy import Client
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
 )
 from decouple import config
-from accounts.models import Role, TwitterAccount, User
+from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User
 import datetime
-from .authentication import JWTAuthentication
 from rest_framework.decorators import authentication_classes, api_view
 from .services import JWTOperations
 from .constants import TWITTER_SCOPES, TWITTER_CALLBACK_URL
-
+import os
+import re
+import base64
 import logging
+import hashlib
+from requests_oauthlib import OAuth2Session
+import json
 
 logger = logging.getLogger(__name__)
 
-# This is OAuth2.0 PKCE authentication instance that'll be used to interact with Client for V2 version of API
-oauth2_user_handler = OAuth2UserHandler(
-    client_id=config("CLIENT_ID"),
-    redirect_uri=TWITTER_CALLBACK_URL,
-    scope=TWITTER_SCOPES,
-    client_secret=config("CLIENT_SECRET"),
-)
+client_id = config("CLIENT_ID")
+client_secret = config("CLIENT_SECRET")
+auth_url = "https://twitter.com/i/oauth2/authorize"
+token_url = "https://api.twitter.com/2/oauth2/token"
+redirect_uri = TWITTER_CALLBACK_URL
 
+twitter = None
 
 def logoutUser(request):
-    response = HttpResponse("Token Deleted")
+    response_data = {
+        'isSuccess': True,
+        'data': None,
+        'message': 'Logged out successfully'
+    }
+    response = HttpResponse(content_type='application/json')
+
     response = JWTOperations.deleteJwtToken(res=response, cookie_name="jwt")
+    response.content = json.dumps(response_data)
     return response
 
+def storingCredsPerSession(request):
+    try:
+        global twitter
+        # Creating a new code verifier to update the previous variables.
+        code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
+        code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
+
+        # Sending the code challenge to Twitter authentication.
+        code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+        code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
+        code_challenge = code_challenge.replace("=", "")
+
+        twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
+        authorization_url, state = twitter.authorization_url(
+            auth_url, code_challenge=code_challenge, code_challenge_method="S256"
+        )
+        request.session["code_verifier"] = code_verifier
+        request.session["code_challenge"] = code_challenge
+        request.session["oauth_state"] = state
+
+        print("While Making the URL, code_verifier, code_challenge", code_verifier, code_challenge)
+        return authorization_url
+
+    except Exception as e:
+        print(e)
+        logger.error(f"createNewCredentials - {e}")
+        return None
 
 def authTwitterUser(request, role):
-    request.session["role"] = role
-    auth_url = oauth2_user_handler.get_authorization_url()
-    return HttpResponseRedirect(auth_url)
+    try:
+        request.session["role"] = role
+        auth_url = storingCredsPerSession(request)
+        return redirect(auth_url)
+    except Exception as e:
+        logger.error("authTwitterUser -", e)
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
 
 
 def twitterLoginCallback(request):
+    # Exchange the authorization code for an access token
+    code = request.GET.get("code")
     role = request.session.get("role", "")
-    authorization_response_url = request.build_absolute_uri()
     try:
         # Authenticate User
-        authentication_result = authenticateUser(authorization_response_url)
+        authentication_result = authenticateUser(request, code)
         userData = authentication_result["userData"]
         access_token = authentication_result["access_token"]
         refresh_token = authentication_result["refresh_token"]
@@ -51,52 +97,85 @@ def twitterLoginCallback(request):
         return createJWT(userData, access_token, role, refresh_token)
     except Exception as e:
         logger.error("Error in twitterLoginCallback -", e)
-        return HttpResponseRedirect(
-            config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
-        )
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
 
 
 # Helper functions
-def authenticateUser(authorization_response_url):
-    max_attempts = 4
-    attempt = 0
-    while attempt < max_attempts:
-        try:
-            access_token_obj = oauth2_user_handler.fetch_token(
-                authorization_response_url
+def authenticateUser(request, code):
+    global twitter
+    code_verifier = request.session.get("code_verifier", "")
+    print("Call back", code_verifier, twitter)
+    try:
+        if twitter:
+            token = twitter.fetch_token(
+                token_url=token_url,
+                client_secret=client_secret,
+                code_verifier=code_verifier,
+                code=code,
             )
-            access_token = access_token_obj["access_token"]
-            refresh_token = access_token_obj["refresh_token"]
+        else:
+            twitter = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=TWITTER_SCOPES)
+            token = twitter.fetch_token(
+                token_url=token_url,
+                client_secret=client_secret,
+                code_verifier=code_verifier,
+                code=code,
+            )
+        access_token = token["access_token"]
+        refresh_token = token["refresh_token"]
+        print("token ==== ", token)
 
-            client = Client(access_token)
-            userData = client.get_me(
-                user_auth=False,
-                user_fields=[
-                    "description",
-                    "profile_image_url",
-                    "public_metrics",
-                    "verified",
-                    "created_at",
-                    "location",
-                    "url",
-                ],
-            ).data
-            logger.info("Twitter User Authenticated", userData)
-            return {
-                "userData": userData,
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-            }
-        except Exception as e:
-            attempt += 1
-            logger.error(
-                f"Error authenticating User - Attempt {attempt}/{max_attempts}:", e
-            )
-    # If authentication fails after max_attempts, redirect to an error page
-    return HttpResponseRedirect(
+        client = Client(access_token)
+        userData = client.get_me(
+            user_auth=False,
+            user_fields=[
+                "description",
+                "profile_image_url",
+                "public_metrics",
+                "verified",
+                "created_at",
+                "location",
+                "url",
+                "entities",
+            ],
+        ).data
+        return {
+            "userData": userData,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+        }
+    except Exception as e:
+        logger.error("Error in authenticateUser -", e)
+        return HttpResponseRedirect(
         config("FRONT_END_URL") + "influencer/?authenticationStatus=error"
     )
 
+
+def manage_categories(hashtags, twitter_account):
+    tags = [tag["tag"] for tag in hashtags]
+    for tag in tags:
+        # Check if tag exists in category master
+        category = CategoryMaster.objects.filter(name=tag).first()
+        if category is None:
+            new_category = CategoryMaster.objects.create(
+                name=tag, description=tag)
+            new_category.save()
+        else:
+            new_category = category
+        # Check if tag exists in user category
+        account_category = AccountCategory.objects.filter(
+            category=new_category, twitter_account=twitter_account
+        ).first()
+
+        if account_category is None:
+            new_account_category = AccountCategory.objects.create(
+                category=new_category, twitter_account=twitter_account
+            )
+            new_account_category.save()
 
 def createUser(userData, access_token, role, refresh_token):
     try:
@@ -123,6 +202,10 @@ def createUser(userData, access_token, role, refresh_token):
             )
 
             newUser.save()
+            if userData.get("entities") is not None:
+                if userData.entities.get("description") is not None:
+                    hashtags = userData.entities["description"]["hashtags"]
+                    manage_categories(hashtags, newUser)
         else:
             existing_user.access_token = access_token
             # Update the user data
@@ -138,6 +221,8 @@ def createUser(userData, access_token, role, refresh_token):
             existing_user.joined_at = userData.created_at
             existing_user.location = userData.location
             existing_user.url = userData.url
+            if existing_user.description == "":
+                existing_user.description = userData.description
             existing_user.save()
 
         # Operations for Main User account
@@ -178,6 +263,7 @@ def createUser(userData, access_token, role, refresh_token):
         }
 
 
+# The userData here is from twitter
 def createJWT(userData, access_token, role, refresh_token):
     try:
         # Creating a response object with JWT cookie
@@ -195,6 +281,10 @@ def createJWT(userData, access_token, role, refresh_token):
 
         current_user = current_user_data["current_user"]
 
+        # Redirect influencers to their profile page.
+        if role == "influencer":
+            redirect_url += f"/profile/{current_user.id}"
+
         redirect_url += "?authenticationStatus=success"
 
         response = redirect(redirect_url)
@@ -211,6 +301,8 @@ def createJWT(userData, access_token, role, refresh_token):
         response = JWTOperations.setJwtToken(
             response, cookie_name="jwt", payload=payload
         )
+        current_user.login_method = "twitter"
+        current_user.save()
         response.data = {
             "isSuccess": True,
             "data": UserSerializer(current_user).data,
@@ -220,6 +312,9 @@ def createJWT(userData, access_token, role, refresh_token):
         return response
     except Exception as e:
         logger.error("Error while creating jwt - ", e)
-        return redirect(
-            f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
-        )
+        if role == "business_owner":
+            redirect_uri = f"{config('FRONT_END_URL')}business/?authenticationStatus=error"
+        else:
+            redirect_uri = f"{config('FRONT_END_URL')}influencer/?authenticationStatus=error"
+        return HttpResponseRedirect(redirect_uri)
+

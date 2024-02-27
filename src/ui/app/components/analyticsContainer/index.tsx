@@ -33,8 +33,8 @@ const AnalyticsItem = ({ value, subtitle }: AnalyticsItemProps) => (
       <path
         d="M1 1L0.999995 125"
         stroke="white"
-        stroke-opacity="0.6"
-        stroke-linecap="round"
+        strokeOpacity="0.6"
+        strokeLinecap="round"
       />
     </svg>
   </Grid>

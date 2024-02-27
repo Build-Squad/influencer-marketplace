@@ -4,6 +4,7 @@ from django.db import models
 import uuid
 from django.db.models import SET_NULL
 from django.conf import settings
+from accounts.models import Wallet
 from core.models import Currency
 from packages.models import Package, ServiceMaster
 from django.utils import timezone
@@ -15,7 +16,7 @@ def generate_order_code():
     while True:
         code = ''.join(random.choices(
             string.ascii_uppercase + string.digits, k=12))
-        code = '-'.join(code[i:i+4] for i in range(0, len(code), 4))
+        code = '-'.join(code[i:i + 4] for i in range(0, len(code), 4))
         if not Order.objects.filter(order_code=code).exists():
             return code
 
@@ -26,8 +27,8 @@ def generate_order_number():
         if not Order.objects.filter(order_number=number).exists():
             return number
 
-class Order(models.Model):
 
+class Order(models.Model):
     STATUS_CHOICES = (
         ('draft', 'draft'),
         ('pending', 'pending'),
@@ -39,7 +40,8 @@ class Order(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Order', default=uuid.uuid4, editable=False)
     buyer = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='order_buyer_id', on_delete=SET_NULL, null=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
     currency = models.ForeignKey(
         Currency, related_name='order_currency_id', on_delete=SET_NULL, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
@@ -51,16 +53,13 @@ class Order(models.Model):
         max_length=16, default=generate_order_code, unique=True)
     order_number = models.IntegerField(
         unique=True, default=generate_order_number)
-    influencer_transaction_address = models.CharField(
-        max_length=100, blank=True, null=True)
-    buyer_transaction_address = models.CharField(
-        max_length=100, blank=True, null=True)
 
     class Meta:
-        db_table = "order" 
+        db_table = "order"
 
     def __str__(self):
-        return self.order_code + " - " + (self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
+        return self.order_code + " - " + (
+            self.buyer.username if self.buyer else 'No buyer') + " - " + self.status + " - " + str(self.created_at)
 
     # Delete only if draft
     def delete(self, *args, **kwargs):
@@ -74,10 +73,10 @@ class Order(models.Model):
         else:
             raise Exception('Cannot delete order after payment is made')
 
+
 class OrderItem(models.Model):
-    
     STATUS_CHOICES = (
-        ('in_progress', 'in_progress'),
+        ('draft', 'draft'),
         ('cancelled', 'cancelled'),
         ('rejected', 'rejected'),
         ('accepted', 'accepted'),
@@ -86,18 +85,20 @@ class OrderItem(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='OrderItem', default=uuid.uuid4, editable=False)
-    service_master = models.ForeignKey(ServiceMaster, related_name='order_item_service_master_id', on_delete=SET_NULL, null=True)
+    service_master = models.ForeignKey(ServiceMaster, related_name='order_item_service_master_id', on_delete=SET_NULL,
+                                       null=True)
     quantity = models.IntegerField(blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES,
-                              max_length=50, default='in_progress')
+                              max_length=50, default='draft')
     order_id = models.ForeignKey(Order, related_name='order_item_order_id', on_delete=SET_NULL, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    price = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
     currency = models.ForeignKey(Currency, related_name='order_item_currency_id', on_delete=SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     package = models.ForeignKey(
         Package, related_name='order_item_package_id', on_delete=SET_NULL, null=True)
     platform_fee = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
+        max_digits=10, decimal_places=5, blank=True, null=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
     published_tweet_id = models.CharField(
         max_length=100, blank=True, null=True)
@@ -106,10 +107,11 @@ class OrderItem(models.Model):
         max_length=100, blank=True, null=True)
 
     class Meta:
-        db_table = "order_item" 
+        db_table = "order_item"
 
     def __str__(self):
-        return (self.service_master.name if self.service_master else 'No service master') + " - " + (self.status if self.status else 'No status') + " - " + str(self.created_at)
+        return (self.service_master.name if self.service_master else 'No service master') + " - " + (
+            self.status if self.status else 'No status') + " - " + str(self.created_at)
 
     def delete(self, *args, **kwargs):
         """
@@ -123,8 +125,8 @@ class OrderItem(models.Model):
         else:
             raise Exception('Cannot delete order item after payment is made')
 
+
 class OrderAttachment(models.Model):
-    
     id = models.UUIDField(
         primary_key=True, verbose_name='OrderAttachment', default=uuid.uuid4, editable=False)
     filename = models.TextField(blank=True, null=True)
@@ -133,7 +135,7 @@ class OrderAttachment(models.Model):
     file_type = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        db_table = "order_attachment"    
+        db_table = "order_attachment"
 
     def __str__(self):
         return self.filename + " - " + self.file_type
@@ -161,24 +163,39 @@ class OrderItemMetaData(models.Model):
     placeholder = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(blank=True, null=True)
     field_name = models.CharField(max_length=100, blank=True, null=True)
+    regex = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = "order_item_meta_data"
 
     def __str__(self):
-        return (self.label if self.label else 'No label') + " - " + (self.field_type if self.field_type else 'No field type')
+        return (self.label if self.label else 'No label') + " - " + (
+            self.field_type if self.field_type else 'No field type')
+
 
 class OrderItemTracking(models.Model):
-    
     id = models.UUIDField(primary_key=True, verbose_name='OrderItemTracking', default=uuid.uuid4, editable=False)
     order_item = models.ForeignKey(OrderItem, related_name='order_item_id', on_delete=SET_NULL, null=True)
     status = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "order_item_tracking" 
+        db_table = "order_item_tracking"
+
+
+class OrderTracking(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name='OrderTracking', default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(
+        Order, related_name='order_id', on_delete=SET_NULL, null=True)
+    status = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "order_tracking"
+
 
 class OrderMessage(models.Model):
-    
     STATUS_CHOICES = (
         ('sent', 'sent'),
         ('delivered', 'delivered'),
@@ -195,49 +212,56 @@ class OrderMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "order_message"  
+        db_table = "order_message"
+
 
 class OrderMessageAttachment(models.Model):
-    
     id = models.UUIDField(primary_key=True, verbose_name='OrderMessageAttachment', default=uuid.uuid4, editable=False)
     order_message = models.ForeignKey(OrderMessage, related_name='order_message_id', on_delete=SET_NULL, null=True)
     filename = models.TextField(blank=True, null=True)
 
     class Meta:
-        db_table = "order_message_attachment"    
+        db_table = "order_message_attachment"
+
 
 class Transaction(models.Model):
-    
-    TYPE_CHOICES = (
-        ('debit', 'debit'),
-        ('credit', 'credit')
-    )
-
     STATUS_CHOICES = (
+        ('success', 'success'),
         ('pending', 'pending'),
-        ('completed', 'completed'),
         ('failed', 'failed'),
-        ('cancelled', 'cancelled'),
-        ('refunded', 'refunded'),
-        ('processing', 'processing')
     )
 
-    id = models.UUIDField(primary_key=True, verbose_name='Transactions', default=uuid.uuid4, editable=False)
-    order = models.ForeignKey(Order, related_name='tranaction_order_id', on_delete=SET_NULL, null=True)
-    transaction_reference_id = models.CharField(max_length=100, blank=True, null=True)
-    transaction_type = models.CharField(choices=TYPE_CHOICES, max_length=50, blank=True, null=True)
-    transaction_status = models.CharField(choices=STATUS_CHOICES, max_length=50, blank=True, null=True)
-    transaction_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    currency = models.ForeignKey(Currency, related_name='transaction_currency_id', on_delete=SET_NULL, null=True)
-    note = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True, blank=True)
+    TRANSACTION_TYPE_CHOICES = (
+        # initiate_escrow, cancel_escrow, claim_escrow, validate_escrow
+        ('initiate_escrow', 'initiate_escrow'),
+        ('cancel_escrow', 'cancel_escrow'),
+        ('claim_escrow', 'claim_escrow'),
+        ('validate_escrow', 'validate_escrow'),
+    )
+
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Transactions', default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(
+        Order, related_name='transaction_order_id', on_delete=SET_NULL, null=True)
+    transaction_address = models.CharField(
+        max_length=100, blank=True, null=True)
+    transaction_initiated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='transaction_initiated_by', on_delete=SET_NULL, null=True)
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    wallet = models.ForeignKey(
+        Wallet, related_name='transaction_wallet', on_delete=SET_NULL, null=True)
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=5, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='pending')
+    transaction_type = models.CharField(choices=TRANSACTION_TYPE_CHOICES,
+                                        max_length=50, default='initiate_escrow')
 
     class Meta:
-        db_table = "transaction"    
+        db_table = "transaction"
+
 
 class Review(models.Model):
-
     id = models.UUIDField(primary_key=True, verbose_name='Review', default=uuid.uuid4, editable=False)
     order = models.ForeignKey(Order, related_name='review_order_id', on_delete=SET_NULL, null=True)
     note = models.TextField(blank=True, null=True)
@@ -245,8 +269,4 @@ class Review(models.Model):
     rating = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        db_table = "review"            
-
-
-
-
+        db_table = "review"

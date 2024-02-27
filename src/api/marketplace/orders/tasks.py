@@ -1,5 +1,7 @@
 from accounts.models import TwitterAccount, User
-from orders.services import create_notification_for_order, create_notification_for_order_item
+from notifications.models import Notification
+from orders.services import create_notification_for_order, create_notification_for_order_item, \
+    create_order_item_tracking, create_order_tracking, create_reminider_notification
 from orders.models import Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
@@ -7,9 +9,11 @@ from tweepy import Client
 from decouple import config
 
 from celery import shared_task
-from datetime import datetime
 from django.utils import timezone
 
+from celery_once import QueueOnce
+
+from marketplace import celery_app
 
 """
 Sends a tweet for a given order item.
@@ -30,12 +34,13 @@ CONSUMER_KEY = config("CONSUMER_KEY")
 CONSUMER_SECRET = config("CONSUMER_SECRET")
 ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
+TWEET_LIMIT = 280
 
 
-def checkOrderStatus(order_id):
+def check_order_status(pk):
     try:
         # Get order
-        order = Order.objects.get(id=order_id)
+        order = Order.objects.get(id=pk)
     except Order.DoesNotExist:
         raise Exception('Order does not exist')
 
@@ -52,12 +57,102 @@ def checkOrderStatus(order_id):
     if is_completed:
         order.status = 'completed'
         order.save()
-
+        # Create a Order Tracking for the order
+        create_order_tracking(order, order.status)
         # Send notification to business
         create_notification_for_order(order, 'accepted', 'completed')
 
+
+def tweet(text, client):
+    try:
+        """
+            By default, tweepy uses the OAuth 1.0 Context that even though provided with the bearer token will 
+            instead call the API with the auth of the dev portal account and not the user's account.
+            To fix this, we need to explicitly set the auth to OAuth 2.0 by setting the user_auth to False, 
+            which in turn will use the bearer token of the user's account.
+            
+        """
+        res = client.create_tweet(text=text, user_auth=False)
+        tweet_id = res.data['id']
+        return tweet_id
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def like_tweet(tweet_id, client):
+    try:
+        res = client.like_tweet(tweet_id=tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def reply_to_tweet(text, in_reply_to_tweet_id, client):
+    try:
+        res = client.create_tweet(
+            text=text, in_reply_to_tweet_id=in_reply_to_tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def quote_tweet(text, tweet_id, client):
+    try:
+        res = client.create_tweet(
+            text=text, quote_tweet_id=tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def poll(text, poll_options, poll_duration_minutes, client):
+    try:
+        res = client.create_tweet(text=text,
+                                  poll_options=poll_options, poll_duration_minutes=poll_duration_minutes,
+                                  user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def retweet(tweet_id, client):
+    try:
+        res = client.retweet(tweet_id=tweet_id, user_auth=False)
+        return res.data['id']
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def thread(text, client):
+    """
+    Tweet Limit is 280 characters, so we need to split the text into multiple tweets
+    For the first tweet, we will call the create_tweet method
+    For the rest of the tweets, we will call the reply_to_tweet method with the in_reply_to_tweet_id parameter set to
+    the tweet_id of the first tweet
+    """
+    try:
+        if len(text) <= TWEET_LIMIT:
+            res = client.create_tweet(text=text, user_auth=False)
+            return res.data['id']
+        else:
+            # Split the text into multiple tweets
+            tweets = [text[i:i + TWEET_LIMIT]
+                      for i in range(0, len(text), TWEET_LIMIT)]
+            published_tweet_id = ''
+            for i, text in enumerate(tweets):
+                if i == 0:
+                    res = client.create_tweet(text=text, user_auth=False)
+                    published_tweet_id = res.data['id']
+                else:
+                    res = client.create_tweet(
+                        text=text, in_reply_to_tweet_id=published_tweet_id, user_auth=False)
+            return published_tweet_id
+    except Exception as e:
+        raise Exception(str(e))
+
+
 @shared_task
-def send_tweet(order_item_id):
+def twitter_task(order_item_id):
     try:
         # Get order item
         order_item = OrderItem.objects.get(id=order_item_id)
@@ -85,12 +180,26 @@ def send_tweet(order_item_id):
 
     # Get the tweet text
     text = ''
+    tweet_id = ''
+    in_reply_to_tweet_id = ''
+    poll_options = []
+    poll_duration_minutes = 0
     for order_item_meta_data in order_item_meta_datas:
-        if order_item_meta_data.field_name == 'content':
+        if order_item_meta_data.field_name == 'text':
             text = order_item_meta_data.value
-
-    if not text:
-        raise Exception('No content for tweet')
+        elif order_item_meta_data.field_name == 'tweet_id':
+            # Split the tweet_id and get the last part
+            tweet_id = order_item_meta_data.value.split('/')[-1]
+        elif order_item_meta_data.field_name == 'in_reply_to_tweet_id':
+            # Split the tweet_id and get the last part
+            in_reply_to_tweet_id = order_item_meta_data.value.split('/')[-1]
+        elif order_item_meta_data.field_name == 'poll_options':
+            # This will be a comma separated string, convert to list
+            options = order_item_meta_data.value.split(',')
+            poll_options = [option.strip() for option in options]
+        elif order_item_meta_data.field_name == 'poll_duration_minutes':
+            # Convert to integer
+            poll_duration_minutes = int(order_item_meta_data.value)
 
     client = Client(bearer_token=ACCESS_CODE,
                     consumer_key=CONSUMER_KEY,
@@ -99,25 +208,38 @@ def send_tweet(order_item_id):
                     access_token_secret=ACCESS_SECRET
                     )
     try:
-        """
-            By default, tweepy uses the OAuth 1.0 Context that even though provided with the bearer token will 
-            instead call the API with the auth of the dev portal account and not the user's account.
-            To fix this, we need to explicitly set the auth to OAuth 2.0 by setting the user_auth to False, 
-            which in turn will use the bearer token of the user's account.
-            
-        """
-        res = client.create_tweet(text=text, user_auth=False)
-        tweet_id = res.data['id']
-        order_item.published_tweet_id = tweet_id
+        service_type = order_item.service_master.twitter_service_type
+        res = None
+        # Switch case for different service types
+        if service_type == 'tweet':
+            res = tweet(text, client)
+        elif service_type == 'like_tweet':
+            res = like_tweet(tweet_id, client)
+        elif service_type == 'reply_to_tweet':
+            res = reply_to_tweet(text, in_reply_to_tweet_id, client)
+        elif service_type == 'quote_tweet':
+            res = quote_tweet(text, tweet_id, client)
+        elif service_type == 'poll':
+            res = poll(text, poll_options, poll_duration_minutes, client)
+        elif service_type == 'retweet':
+            res = retweet(tweet_id, client)
+        elif service_type == 'thread':
+            res = thread(text, client)
+
+        order_item.published_tweet_id = res
         order_item.status = 'published'
         order_item.save()
+
+        # Create a order item tracking for the order item
+        create_order_item_tracking(order_item, order_item.status)
+
+        # Check if the order is completed
+        check_order_status(order_item.order_id.id)
 
         # Create notification for order item
         create_notification_for_order_item(
             order_item, 'scheduled', 'published')
 
-        # Check if the order is completed
-        checkOrderStatus(order_item.order_id.id)
     except Exception as e:
         raise Exception(str(e))
 
@@ -147,12 +269,14 @@ def schedule_tweet(order_item_id):
             raise Exception('Publish date is in the past')
 
         # Schedule the task
-        celery_task = send_tweet.apply_async(
+        celery_task = twitter_task.apply_async(
             args=[order_item_id], countdown=delay_until_publish)
         if celery_task:
             order_item.celery_task_id = celery_task.id
             order_item.status = 'scheduled'
             order_item.save()
+
+            create_order_item_tracking(order_item, order_item.status)
 
             # Send notification to business
             create_notification_for_order_item(
@@ -175,14 +299,42 @@ def cancel_tweet(order_item_id):
 
         # Cancel the task
         if order_item.celery_task_id:
-            celery_task = send_tweet.AsyncResult(order_item.celery_task_id)
+            celery_task = twitter_task.AsyncResult(order_item.celery_task_id)
             celery_task.revoke(terminate=True)
             order_item.celery_task_id = None
             order_item.status = 'cancelled'
             order_item.save()
 
+            create_order_item_tracking(order_item, order_item.status)
+
             # Send notification to business
             create_notification_for_order_item(
                 order_item, 'scheduled', 'cancelled')
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def check_notification_sent(order_item_id):
+    notification = Notification.objects.filter(
+        module_id=order_item_id, module='order_item_reminder'
+    )
+    if notification.exists():
+        return True
+    return False
+
+
+@celery_app.task(base=QueueOnce, once={'keys': [], 'graceful': True})
+def schedule_reminder_notification():
+    try:
+        # Get all order items that are accepted and have a publish_date in the next 30 minutes
+        order_items = OrderItem.objects.filter(
+            status='accepted',
+            publish_date__lte=timezone.now() + timezone.timedelta(minutes=30),
+            publish_date__gte=timezone.now())
+
+        for order_item in order_items:
+            if not check_notification_sent(order_item.id):
+                # Send notification to business
+                create_reminider_notification(order_item)
     except Exception as e:
         raise Exception(str(e))

@@ -18,6 +18,7 @@ type InfluencersType = {
   followers: string;
   minPrice: number;
   maxPrice: number;
+  rating: number;
 };
 
 type Props = {};
@@ -66,6 +67,30 @@ export default function Explore({}: Props) {
     getInfluencers(filterData);
   }, []);
 
+  const getPrice = (inf: any, type = "max") => {
+    if (type == "max") {
+      if (inf.service_types && inf.service_types.length > 0) {
+        const services = inf.service_types;
+        const maxService = services.reduce((max: any, service: any) =>
+          service.price > max.price ? service : max
+        );
+        return `${maxService.price}${maxService.currencySymbol}`;
+      } else {
+        return `${0}`;
+      }
+    } else {
+      if (inf.service_types && inf.service_types.length > 0) {
+        const services = inf.service_types;
+        const minService = services.reduce((min: any, service: any) =>
+          service.price < min.price ? service : min
+        );
+        return `${minService.price}${minService.currencySymbol}`;
+      } else {
+        return `${0}`;
+      }
+    }
+  };
+
   const getInfluencers = async (filterData?: any) => {
     const { isSuccess, data, message } = await getService(
       "/account/twitter-account/",
@@ -90,18 +115,9 @@ export default function Explore({}: Props) {
             : [],
 
           followers: formatTwitterFollowers(inf.followers_count),
-          minPrice:
-            inf.service_types && inf.service_types.length > 0
-              ? Math.min(
-                  ...inf.service_types.map((service: any) => service.price)
-                )
-              : 0,
-          maxPrice:
-            inf.service_types && inf.service_types.length > 0
-              ? Math.max(
-                  ...inf.service_types.map((service: any) => service.price)
-                )
-              : 0,
+          minPrice: getPrice(inf, "min"),
+          maxPrice: getPrice(inf, "max"),
+          rating: inf.rating || 0,
         };
       });
       setPagination({
@@ -141,14 +157,14 @@ export default function Explore({}: Props) {
         <Box sx={{ display: "flex", alignItems: "baseline", columnGap: "8px" }}>
           <Typography variant="h5">Top Matches</Typography> -
           <Typography variant="subtitle1" sx={{ fontStyle: "italic" }}>
-            {influencersData?.length ?? 0} Results
+            {pagination?.total_data_count ?? 0} Results
           </Typography>
         </Box>
         <Grid
           container
           spacing={3}
           mt={0}
-          justifyContent={"flex-start"}
+          justifyContent={"center"}
           alignItems={"center"}
         >
           {influencersData?.map((inf, index) => {

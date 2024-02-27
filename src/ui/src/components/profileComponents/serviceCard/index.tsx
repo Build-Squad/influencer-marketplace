@@ -1,30 +1,29 @@
 "use client";
 
-import { ROLE_NAME, SERVICE_STATUS } from "@/src/utils/consts";
-import {
-  Grid,
-  Card,
-  Box,
-  Typography,
-  Chip,
-  Tooltip,
-  IconButton,
-  FormLabel,
-  Button,
-} from "@mui/material";
-import router from "next/router";
-import React from "react";
-import { ConfirmDelete } from "../../shared/confirmDeleteModal";
-import PublishedWithChangesIcon from "@mui/icons-material/PublishedWithChanges";
-import UnpublishedIcon from "@mui/icons-material/Unpublished";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { deleteService, putService } from "@/src/services/httpServices";
-import { notification } from "../../shared/notification";
-import { useRouter } from "next/navigation";
-import DraftsIcon from "@mui/icons-material/Drafts";
+import { ROLE_NAME, SERVICE_STATUS } from "@/src/utils/consts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DraftsIcon from "@mui/icons-material/Drafts";
+import EditIcon from "@mui/icons-material/Edit";
+import PublishedWithChangesIcon from "@mui/icons-material/PublishedWithChanges";
+import UnpublishedIcon from "@mui/icons-material/Unpublished";
+import {
+  Box,
+  Button,
+  Card,
+  FormLabel,
+  Grid,
+  IconButton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { ConfirmDelete } from "../../shared/confirmDeleteModal";
+import { notification } from "../../shared/notification";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 type ServiceCardProps = {
   service: ServiceType;
@@ -34,6 +33,7 @@ type ServiceCardProps = {
   setSelectedService: React.Dispatch<React.SetStateAction<ServiceType | null>>;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   addItemToCart: (service: ServiceType) => void;
+  setOpenWalletConnectModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function ServiceCard({
@@ -44,22 +44,30 @@ export default function ServiceCard({
   setSelectedService,
   setOpenModal,
   addItemToCart,
+  setOpenWalletConnectModal,
 }: ServiceCardProps) {
   const router = useRouter();
   const loggedInUser = useAppSelector((state) => state.user?.user);
   const [deleteLoading, setDeleteLoading] = React.useState<boolean>(false);
+  const { publicKey } = useWallet();
 
-  const checkValidAddition = async () => {
+  const checkValidAddition = async (buttonType: string) => {
     // First check if the user is logged in
-    if (!loggedInUser) {
-      notification(
-        "Please login before adding services to the cart",
-        "error",
-        3000
-      );
-      return false;
+    if (buttonType === "buyNow") {
+      if (!loggedInUser || !publicKey) {
+        setOpenWalletConnectModal(true);
+        return false;
+      }
+    } else {
+      if (!loggedInUser) {
+        notification(
+          "Please login before adding services to the cart",
+          "error",
+          3000
+        );
+        return false;
+      }
     }
-
     // Check if the logged in user is a business
     if (loggedInUser?.role?.name !== ROLE_NAME.BUSINESS_OWNER) {
       notification(
@@ -271,7 +279,9 @@ export default function ServiceCard({
                 }}
               >
                 <Typography sx={{ fontWeight: "bold" }} variant="h6">
-                  {service?.platform_price + " " + service?.currency?.symbol}
+                  {Number(service?.platform_price)?.toFixed(4) +
+                    " " +
+                    service?.currency?.symbol}
                 </Typography>
               </Box>
             )}
@@ -320,7 +330,9 @@ export default function ServiceCard({
                   Paid to You
                 </FormLabel>
                 <Typography sx={{ fontWeight: "bold" }} variant="body1">
-                  {service?.price + " " + service?.currency?.symbol}
+                  {Number(service?.price)?.toFixed(4) +
+                    " " +
+                    service?.currency?.symbol}
                 </Typography>
               </Box>
               <Box
@@ -338,7 +350,9 @@ export default function ServiceCard({
                   Listing Price
                 </FormLabel>
                 <Typography sx={{ fontWeight: "bold" }} variant="body1">
-                  {service?.platform_price + " " + service?.currency?.symbol}
+                  {Number(service?.platform_price)?.toFixed(4) +
+                    " " +
+                    service?.currency?.symbol}
                 </Typography>
               </Box>
             </Box>
@@ -353,7 +367,7 @@ export default function ServiceCard({
                 }}
                 fullWidth
                 onClick={async (e) => {
-                  const isValid = await checkValidAddition();
+                  const isValid = await checkValidAddition("addToCard");
                   if (!isValid) {
                     e.stopPropagation();
                     return;
@@ -375,7 +389,7 @@ export default function ServiceCard({
                 }}
                 fullWidth
                 onClick={async (e) => {
-                  const isValid = await checkValidAddition();
+                  const isValid = await checkValidAddition("buyNow");
                   if (!isValid) {
                     e.stopPropagation();
                     return;

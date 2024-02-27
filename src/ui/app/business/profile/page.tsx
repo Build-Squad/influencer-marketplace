@@ -7,6 +7,7 @@ import RightComponent from "./components/rightComponent";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { BasicBusinessDetailsDefault, UserDetailsType } from "./type";
 import { getService } from "@/src/services/httpServices";
+import RouteProtection from "@/src/components/shared/routeProtection";
 
 type Props = {};
 
@@ -60,26 +61,28 @@ export default function BusinessProfile({}: Props) {
   }, [user]);
 
   return (
-    <Grid container sx={{ height: "100vh" }}>
-      <Grid item xs={12} sm={12} md={3} lg={3}>
-        <LeftComponent userDetails={userDetails} />
+    <RouteProtection logged_in={true} business_owner={true}>
+      <Grid container sx={{ height: "100vh" }}>
+        <Grid item xs={12} sm={12} md={3} lg={3}>
+          <LeftComponent userDetails={userDetails} />
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          sm={12}
+          md={6}
+          lg={6}
+          sx={{ backgroundColor: "#FAFAFA" }}
+        >
+          <MiddleComponent
+            setUserDetails={setUserDetails}
+            userDetails={userDetails}
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={3} lg={3}>
+          <RightComponent userDetails={userDetails} />
+        </Grid>
       </Grid>
-      <Grid
-        item
-        xs={12}
-        sm={12}
-        md={6}
-        lg={6}
-        sx={{ backgroundColor: "#FAFAFA" }}
-      >
-        <MiddleComponent
-          setUserDetails={setUserDetails}
-          userDetails={userDetails}
-        />
-      </Grid>
-      <Grid item xs={12} sm={12} md={3} lg={3}>
-        <RightComponent userDetails={userDetails} />
-      </Grid>
-    </Grid>
+    </RouteProtection>
   );
 }

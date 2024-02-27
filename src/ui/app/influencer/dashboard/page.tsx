@@ -7,14 +7,24 @@ import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
+import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
 import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { getService, postService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import Image from "next/image";
+import BackIcon from "@/public/svg/Back.svg";
+import {
+  DISPLAY_DATE_FORMAT,
+  ORDER_ITEM_STATUS,
+  ORDER_STATUS,
+  TRANSACTION_TYPE,
+} from "@/src/utils/consts";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
+  Badge,
   Box,
   Grid,
   IconButton,
@@ -32,12 +42,17 @@ import {
 import dayjs from "dayjs";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
+import { useRouter } from "next/navigation";
+import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 
 export default function BusinessDashboardPage() {
+  const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
+  const [selectedReviewOrder, setSelectedReviewOrder] =
+    useState<OrderType | null>(null);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
@@ -138,6 +153,10 @@ export default function BusinessDashboardPage() {
             ORDER_STATUS.COMPLETED,
           ],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(0);
       },
       value: 0,
@@ -155,6 +174,10 @@ export default function BusinessDashboardPage() {
         setFilters((prev) => ({
           ...prev,
           status: [ORDER_STATUS.ACCEPTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
         }));
         setSelectedCard(1);
       },
@@ -174,6 +197,10 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.COMPLETED],
         }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
         setSelectedCard(2);
       },
       value: 2,
@@ -192,13 +219,17 @@ export default function BusinessDashboardPage() {
           ...prev,
           status: [ORDER_STATUS.REJECTED],
         }));
-        setSelectedCard(3);
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(4);
       },
       value: 4,
       icon: (
         <RejectedOrders
           style={{
-            fill: selectedCard === 3 ? "#fff" : "#19191929",
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
           }}
         />
       ),
@@ -229,7 +260,7 @@ export default function BusinessDashboardPage() {
             }}
           >
             <Link
-              href={`/business/profile/${params?.row?.buyer?.id}`}
+              href={`/business/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"
               component={NextLink}
               sx={{
@@ -332,13 +363,30 @@ export default function BusinessDashboardPage() {
               arrow
               disableInteractive
             >
-              <IconButton
-                onClick={() => {
-                  setSelectedOrder(params?.row);
-                }}
+              <Badge
+                badgeContent={
+                  params?.row?.order_item_order_id?.filter(
+                    (orderItem: OrderItemType) =>
+                      orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+                      dayjs(orderItem?.publish_date) > dayjs()
+                  )?.length
+                }
+                color="secondary"
+                overlap="circular"
+                // Dont show badge if the order is completed
+                invisible={
+                  params?.row?.status === ORDER_STATUS.COMPLETED ||
+                  params?.row?.status === ORDER_STATUS.REJECTED
+                }
               >
-                <EditNoteIcon />
-              </IconButton>
+                <IconButton
+                  onClick={() => {
+                    setSelectedOrder(params?.row);
+                  }}
+                >
+                  <EditNoteIcon />
+                </IconButton>
+              </Badge>
             </Tooltip>
             {params?.row?.status === ORDER_STATUS.ACCEPTED && (
               <Tooltip
@@ -364,32 +412,40 @@ export default function BusinessDashboardPage() {
               </Tooltip>
             )}
             {params?.row?.status === ORDER_STATUS.COMPLETED &&
-              !params?.row?.influencer_transaction_address && (
+              params?.row?.transactions.filter(
+                (transaction: TransactionType) =>
+                  transaction.transaction_type === TRANSACTION_TYPE.CLAIM_ESCROW
+              )?.length === 0 && (
                 <ClaimEscrow order={params?.row} updateStatus={getOrders} />
               )}
-            {params?.row?.influencer_transaction_address && (
-              <Tooltip
-                title="View Transaction"
-                placement="top"
-                arrow
-                disableInteractive
-              >
-                <Link
-                  href={`https://solana.fm/tx/${params?.row?.influencer_transaction_address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_NETWORK}`}
-                  target="_blank"
-                  sx={{
-                    textDecoration: "none",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  <IconButton>
-                    <TravelExploreIcon color="secondary" />
-                  </IconButton>
-                </Link>
-              </Tooltip>
-            )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "transactions",
+      headerName: "Transactions",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {params?.row?.transactions?.map((transaction: TransactionType) => {
+              return (
+                <TransactionIcon
+                  key={transaction?.transaction_address}
+                  transaction={transaction}
+                />
+              );
+            })}
           </Box>
         );
       },
@@ -408,6 +464,53 @@ export default function BusinessDashboardPage() {
         );
       },
     },
+    {
+      field: "review__rating",
+      headerName: "Review",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <>
+            {params?.row?.review?.rating ? (
+              <Tooltip
+                title={
+                  params?.row?.review?.note
+                    ? params?.row?.review?.note
+                    : "No Review Available"
+                }
+                placement="top"
+                arrow
+                disableHoverListener={!params?.row?.review?.note}
+              >
+                <Box
+                  onClick={() => {
+                    setSelectedReviewOrder(params?.row);
+                    setOpenReviewModal(true);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <Rating
+                    name="read-only"
+                    value={Number(params?.row?.review?.rating)}
+                    readOnly
+                  />
+                </Box>
+              </Tooltip>
+            ) : (
+              <Typography sx={{ textAlign: "center", fontStyle: "italic" }}>
+                No Review
+              </Typography>
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   useEffect(() => {
@@ -422,91 +525,108 @@ export default function BusinessDashboardPage() {
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            {statusCards.map((card, index) => {
-              return (
-                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                  <StatusCard
-                    card={card}
-                    selectedCard={selectedCard}
-                    orderCount={orderCount}
-                  />
-                </Grid>
-              );
-            })}
+    <RouteProtection logged_in={true} influencer={true}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Image
+          src={BackIcon}
+          alt={"BackIcon"}
+          height={30}
+          style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
+          onClick={() => {
+            router.back();
+          }}
+        />
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
+              {statusCards.map((card, index) => {
+                return (
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                    <StatusCard
+                      card={card}
+                      selectedCard={selectedCard}
+                      orderCount={orderCount}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          {/* Filters bar */}
-          <FilterBar filters={filters} setFilters={setFilters} />
-        </Grid>
-        <Grid item xs={12}>
-          <DataGrid
-            getRowId={(row) => (row?.id ? row?.id : 0)}
-            autoHeight
-            loading={loading}
-            rows={orders}
-            columns={columns}
-            disableRowSelectionOnClick
-            disableColumnFilter
-            hideFooter
-            getRowHeight={(params) => 100}
-            sx={{
-              backgroundColor: "#fff",
-            }}
-            sortingMode="server"
-            onSortModelChange={(model) => {
-              setFilters((prev) => ({
-                ...prev,
-                order_by: model?.[0]?.field
-                  ? model?.[0]?.sort === "asc"
-                    ? `-${model?.[0]?.field}`
-                    : `${model?.[0]?.field}`
-                  : undefined,
-              }));
-            }}
-            localeText={{
-              noRowsLabel: "No Orders found",
-            }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Pagination
-              count={pagination.total_page_count}
-              page={pagination.current_page_number}
-              onChange={handlePaginationChange}
+          <Grid item xs={12}>
+            {/* Filters bar */}
+            <FilterBar filters={filters} setFilters={setFilters} />
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              getRowId={(row) => (row?.id ? row?.id : 0)}
+              autoHeight
+              loading={loading}
+              rows={orders}
+              columns={columns}
+              disableRowSelectionOnClick
+              disableColumnFilter
+              hideFooter
+              getRowHeight={(params) => 100}
+              sx={{
+                backgroundColor: "#fff",
+              }}
+              sortingMode="server"
+              onSortModelChange={(model) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  order_by: model?.[0]?.field
+                    ? model?.[0]?.sort === "asc"
+                      ? `-${model?.[0]?.field}`
+                      : `${model?.[0]?.field}`
+                    : undefined,
+                }));
+              }}
+              localeText={{
+                noRowsLabel: "No Orders found",
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
               sx={{
                 display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                mt: 2,
               }}
-              color="secondary"
-              shape="rounded"
-            />
-          </Box>
+            >
+              <Pagination
+                count={pagination.total_page_count}
+                page={pagination.current_page_number}
+                onChange={handlePaginationChange}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                color="secondary"
+                shape="rounded"
+              />
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-      <OrderDetails
-        order={selectedOrder}
-        onClose={() => {
-          setSelectedOrder(null);
-        }}
-        getOrders={getOrders}
-      />
-    </Box>
+        <OrderDetails
+          order={selectedOrder}
+          onClose={() => {
+            setSelectedOrder(null);
+          }}
+          getOrders={getOrders}
+        />
+        <ReviewModal
+          reviewOrder={selectedReviewOrder}
+          open={openReviewModal}
+          setOpen={setOpenReviewModal}
+          readonly={true}
+        />
+      </Box>
+    </RouteProtection>
   );
 }

@@ -1,4 +1,3 @@
-from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import SET_NULL
@@ -7,6 +6,7 @@ from core.models import Currency, LanguageMaster, RegionMaster
 from django.db.models.signals import post_save
 from core.models import Country
 import uuid
+from django.utils import timezone
 
 
 class TwitterAccount(models.Model):
@@ -98,7 +98,8 @@ class Role(models.Model):
 
 class User(AbstractUser):
     STATUS_CHOICES = (("active", "active"), ("inactive", "inactive"))
-
+    LOGIN_METHOD_CHOICES = (
+        ("email", "email"), ("twitter", "twitter"), ("wallet", "wallet"))
     id = models.UUIDField(
         primary_key=True, verbose_name="User ID", default=uuid.uuid4, editable=False
     )
@@ -125,7 +126,9 @@ class User(AbstractUser):
         blank=True,
     )
     jwt = models.CharField(max_length=255, blank=True, null=True)
-
+    login_method = models.CharField(
+        choices=LOGIN_METHOD_CHOICES, max_length=25, blank=True, null=True
+    )
     ordering = ("email",)
 
     class Meta:
@@ -296,6 +299,30 @@ class Wallet(models.Model):
     )
     is_primary = models.BooleanField(default=True, blank=True, null=True)
     wallet_address_id = models.CharField(max_length=255, blank=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.wallet_address_id
+
+    class Meta:
+        db_table = "wallet"
+
+    def delete(self, *args, **kwargs):
+        if not self.is_primary:
+            self.deleted_at = timezone.now()
+            self.save()
+        else:
+            raise Exception('Primary wallet cannot be removed')
+
+class WalletNonce(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name="Wallet Nonce ID", default=uuid.uuid4, editable=False
+    )
+    wallet_address = models.CharField(max_length=255, blank=True, null=True)
+    nonce = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.wallet_address
+
+    class Meta:
+        db_table = "wallet_nonce"

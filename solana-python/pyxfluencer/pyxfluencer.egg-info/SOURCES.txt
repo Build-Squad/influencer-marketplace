@@ -1,0 +1,6 @@
+README.md
+setup.py
+pyxfluencer/pyxfluencer.egg-info/PKG-INFO
+pyxfluencer/pyxfluencer.egg-info/SOURCES.txt
+pyxfluencer/pyxfluencer.egg-info/dependency_links.txt
+pyxfluencer/pyxfluencer.egg-info/top_level.txt
