@@ -350,7 +350,7 @@ const ProfileLayout = ({
                           @{currentUser?.twitter_account?.user_name}
                         </Link>
                       </Typography>
-                      {currentUser?.twitter_account?.rating && (
+                      {Number(currentUser?.twitter_account?.rating) > 0 && (
                         <Box
                           sx={{
                             display: "flex",

@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
 import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
 import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
+import ArrayItem from "../arrayItem";
 
 type OrderItemFormProps = {
   orderItem: any;
@@ -461,6 +462,37 @@ export default function OrderItemForm({
                           },
                         },
                       },
+                    }}
+                  />
+                )}
+                {formFields?.field_type === "array" && (
+                  <ArrayItem
+                    formFields={formFields}
+                    updatevalues={(e: string) => {
+                      if (
+                        updateFunction &&
+                        typeof updateFunction === "function"
+                      ) {
+                        updateFunction(
+                          orderItem?.order_item?.id
+                            ? orderItem?.order_item?.id
+                            : "",
+                          formFields?.id ? formFields?.id : "",
+                          e
+                        );
+                        return;
+                      }
+                      dispatch(
+                        updateFieldValues({
+                          index: index,
+                          service_master_meta_data_id:
+                            formFields?.service_master_meta_data_id
+                              ? formFields?.service_master_meta_data_id
+                              : "",
+                          order_item_meta_data_id: formFields?.id,
+                          value: e,
+                        })
+                      );
                     }}
                   />
                 )}

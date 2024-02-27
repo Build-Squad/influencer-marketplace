@@ -125,28 +125,26 @@ def retweet(tweet_id, client):
 
 def thread(text, client):
     """
-    Tweet Limit is 280 characters, so we need to split the text into multiple tweets
+    We need to split the text into multiple tweets on the basis of commas
     For the first tweet, we will call the create_tweet method
     For the rest of the tweets, we will call the reply_to_tweet method with the in_reply_to_tweet_id parameter set to
     the tweet_id of the first tweet
     """
     try:
-        if len(text) <= TWEET_LIMIT:
-            res = client.create_tweet(text=text, user_auth=False)
-            return res.data['id']
-        else:
-            # Split the text into multiple tweets
-            tweets = [text[i:i + TWEET_LIMIT]
-                      for i in range(0, len(text), TWEET_LIMIT)]
-            published_tweet_id = ''
-            for i, text in enumerate(tweets):
+        tweets = text.split(',')
+        published_tweet_id = ''
+        for i, text in enumerate(tweets):
+            if len(text) <= TWEET_LIMIT:
                 if i == 0:
                     res = client.create_tweet(text=text, user_auth=False)
                     published_tweet_id = res.data['id']
                 else:
                     res = client.create_tweet(
                         text=text, in_reply_to_tweet_id=published_tweet_id, user_auth=False)
-            return published_tweet_id
+            else:
+                raise Exception(
+                    f"Tweet is longer than {TWEET_LIMIT} characters")
+        return published_tweet_id
     except Exception as e:
         raise Exception(str(e))
 

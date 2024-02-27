@@ -93,6 +93,38 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
         </Box>
       );
 
+    case "array":
+      return (
+        // Comma separated values
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            gap: "20px",
+          }}
+        >
+          <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
+            <Image
+              src={Mask_group}
+              height={14}
+              alt="Mask_group"
+              style={{ marginRight: "8px" }}
+            />
+            {meta_data?.label}
+          </Typography>
+          {meta_data?.value?.split(",").map((value: string, index: number) => {
+            return (
+              <Box key={index}>
+                <Typography variant="subtitle1" sx={{ color: "#676767" }}>
+                  {`${index + 1}. `}
+                  {value}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+      );
     default:
       return null;
   }
