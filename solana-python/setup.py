@@ -7,10 +7,9 @@ setup(
    version=xfluencer_solana_python_client_version,
    description='XFluencer Python Solana Program',
    long_description=open('README.md').read(),
-   package_dir={"":"pyxfluencer"},
-   packages=find_packages(include=['pyxfluencer/*']),
-   author="Ruben Colomina",  
-   install_requirements=["anchorpy[cli]"]
-   
+   #package_dir={"":"pyxfluencer"},
+   packages=find_packages(where=".",include=['*']),
+   author="Ruben Colomina Citoler",  
+   install_requirements=["anchorpy[cli]"]   
 )
 

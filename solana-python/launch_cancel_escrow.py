@@ -2,10 +2,9 @@ from solders.pubkey import Pubkey
 from solana.rpc.types import TxOpts
 
 
-from utils import get_local_keypair_pubkey
-from utils import sign_and_send_transaction
-from utils import load_configuration
-
+from pyxfluencer.utils import get_local_keypair_pubkey
+from pyxfluencer.utils import sign_and_send_transaction
+from pyxfluencer.utils import load_configuration
 
 
 def main():

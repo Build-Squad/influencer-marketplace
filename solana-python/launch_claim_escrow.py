@@ -1,9 +1,9 @@
 from solders.pubkey import Pubkey
 from solana.rpc.types import TxOpts
 
-from utils import get_local_keypair_pubkey, select_client
-from utils import sign_and_send_transaction
-from utils import load_configuration
+from pyxfluencer.utils import get_local_keypair_pubkey, select_client
+from pyxfluencer.utils import sign_and_send_transaction
+from pyxfluencer.utils import load_configuration
 
 from pyxfluencer.instructions import claim_escrow
 
@@ -15,15 +15,14 @@ def main():
     PROGRAM_ID = Pubkey.from_string(program_id)
     print(f"Network: {network} Program ID: {program_id}")
 
-
-    path_to_bussines_keypair = "business.json"
-    path_to_influencer_keypair = "influencer.json"
+    path_wallets = "test_wallets"
+    bussines_keypair = "business.json"
+    influencer_keypair = "influencer.json"
     #print(path_to_bussines_keypair, path_to_influencer_keypair)
     
-    
 
-    _, business_pk = get_local_keypair_pubkey(path=path_to_bussines_keypair)
-    influencer, influencer_pk = get_local_keypair_pubkey(path=path_to_influencer_keypair)
+    _, business_pk = get_local_keypair_pubkey(path=path_wallets+"/"+bussines_keypair)
+    influencer, influencer_pk = get_local_keypair_pubkey(path=path_wallets+"/"+influencer_keypair)
     #print(business_pk,influencer_pk)
     
     assert str(business_pk) == configuration["business"]

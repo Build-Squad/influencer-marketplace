@@ -4,11 +4,12 @@ This is a static client for XFluencer Solana program generated with anchorpy, co
 
 ## Settings
 
-A configuration file `config.json` file is included here, used within scripts. 
+A configuration file `config.json` file is included here, which is used within client test scripts. 
 
-This contains instruction arguments, public keys and deployed program id's available on-chain. 
+This contains instruction arguments, public keys and the deployed program id's available on-chain. 
 
-Change this accordantly to your testing requirements.
+Change this accounts accordantly depending on your testing requirements.
+
 
 ## Transaction Script Launchers
 
@@ -50,6 +51,10 @@ After package generation the whl package file shoudl be found at `dist/dist/xflu
 Install the python package on your environment
 
 `pip install dist/pyxfluencer-1.0.0-py3-none-any.whl`
+
+
+## Update Python Client Source Code
+
 
 
 ## Usage

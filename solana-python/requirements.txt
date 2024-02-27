@@ -1,2 +1,3 @@
 anchorpy[cli]
 setuptools
+Pylance

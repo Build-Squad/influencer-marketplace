@@ -60,7 +60,9 @@ export default function CreateEscrow({
         console.log("Influencer PK", influencer_pk.toString());
         console.log("Order Number", cart?.order_number);
 
-        const validationAuthorityPk = new PublicKey("CwhNj8h9D2rFYodxChKWzmWKWLEfKq4LuxiN1qzmvG6u")
+        // TODO: Move xfluencer validation authority string to a configuration area
+        const xfluencerValidationAuthority = "EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH";
+        const validationAuthorityPk = new PublicKey(xfluencerValidationAuthority);
 
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
