@@ -33,6 +33,7 @@ import BlurredSilverBadge from "@/public/svg/Blurred_Silver.svg";
 import BlurredBronzeBadge from "@/public/svg/Blurred_Bronze.svg";
 import BlurredGoldBadge from "@/public/svg/Blurred_Gold.svg";
 import Image from "next/image";
+import NotFound from "@/public/svg/not_found.svg";
 
 type Props = {
   params: {
@@ -148,9 +149,7 @@ export default function BusinessProfilePreview({ params }: Props) {
       {
         page_number: 1,
         page_size: 5,
-        collaborationIds: collaborationIds.length
-          ? collaborationIds
-          : ["nil"],
+        collaborationIds: collaborationIds.length ? collaborationIds : ["nil"],
       }
     );
     if (isSuccess) {
@@ -230,6 +229,7 @@ export default function BusinessProfilePreview({ params }: Props) {
           display: "flex",
           height: "100%",
           justifyContent: "space-between",
+          flexWrap: "wrap",
         }}
       >
         <Box
@@ -257,25 +257,41 @@ export default function BusinessProfilePreview({ params }: Props) {
             </Typography>
             <Typography variant="subtitle1" sx={{ mt: 2, display: "flex" }}>
               <LocationOn />
-              {businessDetails?.headquarters}
+              {businessDetails?.headquarters ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
           </Box>
           <Box sx={{ ...styles.flexStyles, mt: 2 }}>
             <Typography variant="subtitle1">Founded In </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.founded}
+              {businessDetails?.founded ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
           </Box>
           <Box sx={styles.flexStyles}>
             <Typography variant="subtitle1">Headquarters </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.headquarters}
+              {businessDetails?.headquarters ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
           </Box>
           <Box sx={styles.flexStyles}>
             <Typography variant="subtitle1">Industry </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.industry}
+              {businessDetails?.industry ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
           </Box>
           <Box sx={{ mt: 3 }}>
@@ -288,35 +304,55 @@ export default function BusinessProfilePreview({ params }: Props) {
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Email />
-              {businessDetails?.user_email}
+              {businessDetails?.user_email ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <LocalPhone />
-              {businessDetails?.phone}
+              {businessDetails?.phone ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Language />
-              {businessDetails?.website}
+              {businessDetails?.website ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Clear />
-              {businessDetails?.twitter_account}
+              {businessDetails?.twitter_account ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <LinkedIn />
-              {businessDetails?.linked_in}
+              {businessDetails?.linked_in ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
             </Typography>
           </Box>
         </Box>
@@ -334,7 +370,13 @@ export default function BusinessProfilePreview({ params }: Props) {
             }}
           >
             <Typography fontWeight="bold">About</Typography>
-            <Typography>{businessDetails?.bio}</Typography>
+            <Typography>
+              {businessDetails?.bio ?? (
+                <i style={{ fontWeight: "normal", color: "grey" }}>
+                  - Not Added
+                </i>
+              )}
+            </Typography>
           </Box>
           <Box sx={{ padding: "16px" }}>
             <Typography fontWeight="bold">Collaborators</Typography>
@@ -345,13 +387,32 @@ export default function BusinessProfilePreview({ params }: Props) {
               justifyContent={"flex-start"}
               alignItems={"center"}
             >
-              {collaborations.map((inf, index) => (
-                <InfluencersCards
-                  influencer={inf}
-                  key={index}
-                  sx={{ minWidth: "320px" }}
-                />
-              ))}
+              {!!collaborations.length ? (
+                collaborations.map((inf, index) => (
+                  <InfluencersCards
+                    influencer={inf}
+                    key={index}
+                    sx={{ minWidth: "320px" }}
+                  />
+                ))
+              ) : (
+                <Box
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                  sx={{ width: "100%", mt: 4 }}
+                  flexDirection={"column"}
+                >
+                  <Image
+                    src={NotFound}
+                    alt="NotFound"
+                    style={{ height: "auto", width: "50%", minWidth: "200px" }}
+                  />
+                  <Typography sx={{ fontStyle: "italic" }}>
+                    No Collaborations Found!
+                  </Typography>
+                </Box>
+              )}
             </Grid>
           </Box>
         </Box>
