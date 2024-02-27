@@ -258,9 +258,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Typography variant="subtitle1" sx={{ mt: 2, display: "flex" }}>
               <LocationOn />
               {businessDetails?.headquarters ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
           </Box>
@@ -268,9 +266,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Typography variant="subtitle1">Founded In </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
               {businessDetails?.founded ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
           </Box>
@@ -278,9 +274,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Typography variant="subtitle1">Headquarters </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
               {businessDetails?.headquarters ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
           </Box>
@@ -288,9 +282,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Typography variant="subtitle1">Industry </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
               {businessDetails?.industry ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
           </Box>
@@ -305,9 +297,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             >
               <Email />
               {businessDetails?.user_email ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
             <Typography
@@ -316,9 +306,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             >
               <LocalPhone />
               {businessDetails?.phone ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
             <Typography
@@ -327,9 +315,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             >
               <Language />
               {businessDetails?.website ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
             <Typography
@@ -338,9 +324,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             >
               <Clear />
               {businessDetails?.twitter_account ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
             <Typography
@@ -349,9 +333,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             >
               <LinkedIn />
               {businessDetails?.linked_in ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
           </Box>
@@ -372,9 +354,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Typography fontWeight="bold">About</Typography>
             <Typography>
               {businessDetails?.bio ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>
-                  - Not Added
-                </i>
+                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
               )}
             </Typography>
           </Box>

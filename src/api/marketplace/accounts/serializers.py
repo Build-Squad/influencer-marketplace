@@ -272,6 +272,17 @@ class OTPVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 
+class OTPAuthenticationV2Serializer(serializers.Serializer):
+    email = serializers.EmailField()
+    username = serializers.CharField(max_length=100)
+
+
+class OTPVerificationV2Serializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    email = serializers.EmailField()
+    username = serializers.CharField(max_length=100)
+
+
 class EmailVerificationSerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
 

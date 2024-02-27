@@ -22,12 +22,17 @@ import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
-import { getService, putService } from "@/src/services/httpServices";
+import {
+  getService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
 import EditSvg from "@/public/svg/Edit.svg";
 import { UserDetailsType } from "../../type";
 import Info_Profile from "@/public/Info_Profile.png";
 import { ArrowRightAlt, Verified } from "@mui/icons-material";
+import VerifyEmailModal from "@/src/components/verifyEmailModal";
 
 const debounce = (fn: Function, ms = 500) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -192,7 +197,23 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
 
 const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   const user = useAppSelector((state) => state.user?.user);
-  const [isEmailVerified, setIsEmailVerified] = useState(true);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [secondsLeft, setSecondsLeft] = React.useState(0);
+  console.log("userDetails===", userDetails)
+  console.log("user===", user)
+
+  useEffect(() => {
+    setIsEmailVerified(!!userDetails.businessDetails.user_email);
+    setEmail(userDetails.businessDetails.user_email);
+  }, [userDetails.businessDetails.user_email]);
+
+  useEffect(() => {
+    if (email == userDetails.businessDetails.user_email) {
+      setIsEmailVerified(true);
+    }
+  }, [email]);
 
   const handleChange = async (e: any) => {
     try {
@@ -237,8 +258,33 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
 
   const handleEmailChange = (e: any) => {
     setIsEmailVerified(false);
-    updateUserDetails(e);
+    setEmail(e.target.value);
   };
+
+  const handleVerifyEmail = () => {
+    if (!isEmailVerified) {
+      requestOTP();
+    }
+  };
+
+  const requestOTP = async () => {
+    if (!email) {
+      notification("Please enter email", "error");
+      return;
+    }
+    const { isSuccess, message } = await postService("account/otp/v2", {
+      email: email,
+      username: userDetails.username,
+    });
+    if (isSuccess) {
+      notification(message);
+      setEmailOpen(true);
+      setSecondsLeft(60);
+    } else {
+      notification(message, "error");
+    }
+  };
+
   return (
     <>
       <Box>
@@ -342,12 +388,12 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           name="user_email"
           variant="standard"
           onChange={handleEmailChange}
-          value={userDetails.businessDetails.user_email}
+          value={email}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={() => {}}
+                  onClick={handleVerifyEmail}
                   sx={{
                     color: "green",
                     display: "flex",
@@ -358,7 +404,7 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
                   }}
                 >
                   <Typography variant="caption">
-                    {isEmailVerified ? "Verified" : "Verify Now"}
+                    {isEmailVerified ? "Email Verified" : "Verify Now"}
                   </Typography>
                   {isEmailVerified ? (
                     <Verified fontSize="small" />
@@ -431,6 +477,20 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           value={userDetails.businessDetails.linked_in}
         />
       </Box>
+      {/* Email Modal */}
+      {emailOpen ? (
+        <VerifyEmailModal
+          open={emailOpen}
+          setOpen={setEmailOpen}
+          emailProp={email}
+          username={userDetails.username}
+          requestOTP={requestOTP}
+          setSecondsLeft={setSecondsLeft}
+          secondsLeft={secondsLeft}
+          setIsEmailVerified={setIsEmailVerified}
+          setUserDetails={setUserDetails}
+        />
+      ) : null}
     </>
   );
 };
