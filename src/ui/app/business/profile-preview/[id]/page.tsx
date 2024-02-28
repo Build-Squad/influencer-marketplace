@@ -34,6 +34,7 @@ import BlurredBronzeBadge from "@/public/svg/Blurred_Bronze.svg";
 import BlurredGoldBadge from "@/public/svg/Blurred_Gold.svg";
 import Image from "next/image";
 import NotFound from "@/public/svg/not_found.svg";
+import { stringToColor } from "@/src/utils/helper";
 
 type Props = {
   params: {
@@ -47,6 +48,11 @@ const styles = {
     columnGap: "8px",
     justifyContent: "space-between",
     textAlign: "right",
+  },
+  notAddedStyles: {
+    fontWeight: "normal",
+    color: "grey",
+    fontSize: "14px",
   },
 };
 
@@ -250,39 +256,58 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Avatar
               alt={businessDetails?.business_name}
               src={businessDetails?.business_name}
-              sx={{ width: 138, height: 138 }}
+              sx={{
+                width: 138,
+                height: 138,
+                bgcolor: stringToColor(user?.username ?? ""),
+              }}
             />
             <Typography variant="h6" fontWeight={"bold"} sx={{ mt: 2 }}>
-              {businessDetails?.business_name}
+              {!businessDetails?.business_name ||
+              businessDetails?.business_name == "" ? (
+                <i style={styles.notAddedStyles}>-</i>
+              ) : (
+                businessDetails?.business_name
+              )}
             </Typography>
             <Typography variant="subtitle1" sx={{ mt: 2, display: "flex" }}>
               <LocationOn />
-              {businessDetails?.headquarters ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.headquarters ||
+              businessDetails?.headquarters == "" ? (
+                <i style={styles.notAddedStyles}>Location Not Added</i>
+              ) : (
+                businessDetails?.headquarters
               )}
             </Typography>
           </Box>
           <Box sx={{ ...styles.flexStyles, mt: 2 }}>
             <Typography variant="subtitle1">Founded In </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.founded ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.founded || businessDetails?.founded == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.founded
               )}
             </Typography>
           </Box>
           <Box sx={styles.flexStyles}>
             <Typography variant="subtitle1">Headquarters </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.headquarters ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.headquarters ||
+              businessDetails?.headquarters == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.headquarters
               )}
             </Typography>
           </Box>
           <Box sx={styles.flexStyles}>
             <Typography variant="subtitle1">Industry </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.industry ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.industry || businessDetails?.industry == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.industry
               )}
             </Typography>
           </Box>
@@ -296,8 +321,11 @@ export default function BusinessProfilePreview({ params }: Props) {
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Email />
-              {businessDetails?.user_email ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.user_email ||
+              businessDetails?.user_email == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.user_email
               )}
             </Typography>
             <Typography
@@ -305,8 +333,10 @@ export default function BusinessProfilePreview({ params }: Props) {
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <LocalPhone />
-              {businessDetails?.phone ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.phone || businessDetails?.phone == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.phone
               )}
             </Typography>
             <Typography
@@ -314,8 +344,10 @@ export default function BusinessProfilePreview({ params }: Props) {
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Language />
-              {businessDetails?.website ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.website || businessDetails?.website == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.website
               )}
             </Typography>
             <Typography
@@ -323,8 +355,11 @@ export default function BusinessProfilePreview({ params }: Props) {
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Clear />
-              {businessDetails?.twitter_account ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.twitter_account ||
+              businessDetails?.twitter_account == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.twitter_account
               )}
             </Typography>
             <Typography
@@ -332,8 +367,11 @@ export default function BusinessProfilePreview({ params }: Props) {
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <LinkedIn />
-              {businessDetails?.linked_in ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.linked_in ||
+              businessDetails?.linked_in == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.linked_in
               )}
             </Typography>
           </Box>
@@ -353,8 +391,10 @@ export default function BusinessProfilePreview({ params }: Props) {
           >
             <Typography fontWeight="bold">About</Typography>
             <Typography>
-              {businessDetails?.bio ?? (
-                <i style={{ fontWeight: "normal", color: "grey" }}>Not Added</i>
+              {!businessDetails?.bio || businessDetails?.bio == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.bio
               )}
             </Typography>
           </Box>
