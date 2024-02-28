@@ -210,7 +210,8 @@ class OrderMessage(models.Model):
     receiver_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='receiver_id', on_delete=SET_NULL, null=True)
     order_id = models.ForeignKey(Order, related_name='order_message_order_id', on_delete=SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    is_system_message = models.BooleanField(
+        default=False, blank=True, null=True)
     class Meta:
         db_table = "order_message"
 
