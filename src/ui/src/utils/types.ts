@@ -303,6 +303,7 @@ type MessageType = {
   order_id: string;
   is_read: boolean;
   isMe?: boolean;
+  is_system_message?: boolean;
 };
 
 type OrderChatMessageType = {

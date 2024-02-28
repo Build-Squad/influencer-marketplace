@@ -119,6 +119,7 @@ class ServiceMasterMetaData(models.Model):
         ('long_text', 'long_text'),
         ('date_time', 'date_time'),
         ('media', 'media'),
+        ('array', 'array'),
     )
 
     FIELD_NAME_CHOICED = (
