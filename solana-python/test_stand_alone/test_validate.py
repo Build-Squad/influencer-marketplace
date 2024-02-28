@@ -28,12 +28,15 @@ class TestValidator:
 
 path="test_wallets/platform_EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH.json" # path to keypair    
 val_auth_keypair,_ = get_local_keypair_pubkey(path="../"+path)
-b='GQRDv58u1dULSyHSYWPqNTjcWjsFHHi763mbqDaEEgQ3' # business
-i='94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA' # influencer
-order_code=1240 # order code
-network="localnet"
 
-test_validator = TestValidator(val_auth_keypair, b, i, order_code, network)
+###
+bus = 'GQRDv58u1dULSyHSYWPqNTjcWjsFHHi763mbqDaEEgQ3' # business (put YOURS)
+inf='94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA' # influencer (put YOURS)
+order_code=1240 # order code (change this for each escrow order)
+
+network="localnet" # start a local validator for localnet i.e. $ solana-test-validator
+
+test_validator = TestValidator(val_auth_keypair, bus, inf, order_code, network)
 
 #asyncio.run(test_validate_to_delivered_instruction(network))
 asyncio.run(test_validator.test_validate_to_delivered_instruction())
