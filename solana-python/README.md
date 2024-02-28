@@ -4,9 +4,13 @@ This is a static client for XFluencer Solana program generated with anchorpy, co
 
 ## Settings
 
-A configuration file `config.json` file is included here, which is used within client test scripts. 
+A configuration file `config.json` file is included in this clinet used as example on the test launcher scripts for the different types of instructions: escrow creation, validation and claim amounts. 
 
-This contains instruction arguments, public keys and the deployed program id's available on-chain. 
+The config file also contains arguments used as instructions, with public keys for business, influencer and platform validator. 
+
+Change the order code as required. At any point, there will exist a unique escrow triple on-change defined by the triplet: (busines pubkey, influencer pubkey, order code).
+
+Program Id's are specified here, depending on the network choosen.
 
 Change this accounts accordantly depending on your testing requirements.
 
@@ -38,26 +42,62 @@ Launch example script:
 You will get an output from the script with Ok or Error, depending on the settings
 
 
-## Deploying
+## Deploying the Python Client
 
-To create a package from this folder 
+Release the python client in form of python wheel. This allows to work from the API independently to the code changes happened in this repository.
+
+
+Enter in `setup.py` to change the version number, that will be the wheel version to release. 
+
+Once you have change the settings of the setup, create a version of the package from this folder. 
 
 `python setup.py bdist_wheel`
 
-After package generation the whl package file shoudl be found at `dist/dist/xfluencer_python_client-1.0.0-py3-none-any.whl `
+After changing version number, the package generation the whl package file shoudl be found at `dist/dist/xfluencer_python_client-1.0.0-py3-none-any.whl `
 
-## Installation
+## Installation of the Python Package
+
+To use previously package wheel, you have to install it as python requirement. 
 
 Install the python package on your environment
 
 `pip install dist/pyxfluencer-1.0.0-py3-none-any.whl`
 
+## Testing Installation
 
-## Update Python Client Source Code
+Open am intereactive python terminal under the virtual environmnet in which the package has been installed
 
-TBC
+`>> import pyxfluencer`
 
-## Usage
+To see the details of the package under interactive mode type:
+
+`>> help(pyxfluencer)`
+
+Now you should see the name, package contents, and classes included in the package. 
+```
+Help on package pyxfluencer:
+
+NAME
+    pyxfluencer
+
+PACKAGE CONTENTS
+    accounts (package)
+    errors (package)
+    instructions (package)
+    program_id
+    utils
+
+CLASSES
+    enum.Enum(builtins.object)
+        EscrowState
+    
+    class EscrowState(enum.Enum)
+     |  EscrowState(value, names=None, *, module=None, qualname=None, type=None, start=1, boundary=None)
+     |  
+```
+
+
+## Usage Python Package in the Target
 
 As follows the steps to setup a validator instruction:
 
