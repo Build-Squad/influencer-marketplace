@@ -65,7 +65,7 @@ As follows the steps to setup a validator instruction:
 2. Use the right solana network to launch instructions againts e.g. DEVNET
 `solana config set --url devnet`
 
-3. Store your wallet that will work as validation authority. Find the `json` file containing the seed for `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH` wallet. It is already funded with 1 SOL in DEVNET. 
+3. Store your wallet that will work as validation authority. Find the `json` file containing the seed for `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH` wallet. Make sure that this is already funded with at leat 1 SOL on Devnet. 
 
 4. Select the business and influencer addressese for the order  (these must be strings)
 5. Select the order code (this must be an integer)
