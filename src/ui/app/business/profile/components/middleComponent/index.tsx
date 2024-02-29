@@ -201,8 +201,6 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   const [emailOpen, setEmailOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [secondsLeft, setSecondsLeft] = React.useState(0);
-  console.log("userDetails===", userDetails)
-  console.log("user===", user)
 
   useEffect(() => {
     setIsEmailVerified(!!userDetails.businessDetails.user_email);

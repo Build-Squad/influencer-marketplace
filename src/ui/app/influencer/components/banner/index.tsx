@@ -79,9 +79,6 @@ export default function Banner({}: Props) {
                 {it}
               </Button>
             ))}
-            <Typography variant="subtitle1" fontWeight={"Bold"}>
-              + Much More
-            </Typography>
           </Box>
         </Grid>
         <Grid item xs={12} sm={7} md={7} lg={7} sx={{ position: "relative" }}>

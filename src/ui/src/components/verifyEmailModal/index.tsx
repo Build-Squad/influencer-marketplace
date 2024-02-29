@@ -19,7 +19,7 @@ import { notification } from "../shared/notification";
 import CloseIcon from "@mui/icons-material/Close";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
 
-type EmailLoginModalProps = {
+type VerifyEmailModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   emailProp: string;
@@ -31,7 +31,7 @@ type EmailLoginModalProps = {
   setUserDetails: any;
 };
 
-export default function EmailLoginModal({
+export default function VerifyEmailModal({
   open,
   setOpen,
   emailProp = "",
@@ -41,7 +41,7 @@ export default function EmailLoginModal({
   requestOTP,
   setIsEmailVerified,
   setUserDetails,
-}: EmailLoginModalProps) {
+}: VerifyEmailModalProps) {
   const [otp, setOTP] = React.useState("");
   const { checkTwitterUserAuthentication } = useTwitterAuth();
 
