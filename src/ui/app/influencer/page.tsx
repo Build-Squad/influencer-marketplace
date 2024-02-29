@@ -7,7 +7,7 @@ import { Box } from "@mui/material";
 import GuideContainer from "./components/guideContainer";
 import FAQSection from "./components/faqSection";
 import ElevateSection from "./components/elevateSection";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ScrollTop from "@/public/svg/ScrollTop.svg";
 import Image from "next/image";
 
@@ -43,7 +43,7 @@ export default function Influencer({}: Props) {
   return (
     <Fragment>
       <Banner />
-      <AnalyticsContainer />
+      <AnalyticsContainer role={"business"}/>
       <Box
         sx={{
           marginX: "40px",

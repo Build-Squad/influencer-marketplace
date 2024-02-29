@@ -1,12 +1,70 @@
 import React from "react";
 import { Box, Typography, Grid } from "@mui/material";
 
-type AnalyticsItemProps = {
-  value: String;
-  subtitle: String;
+type AnalyticsDataItem = {
+  value: string;
+  subtitle: string;
+  isLast?: boolean;
 };
 
-const AnalyticsItem = ({ value, subtitle }: AnalyticsItemProps) => (
+type AnalyticsRoleData = {
+  role: string;
+  data1: AnalyticsDataItem;
+  data2: AnalyticsDataItem;
+  data3: AnalyticsDataItem;
+  data4: AnalyticsDataItem;
+};
+
+type AnalyticsContainerProps = {
+  role: string;
+};
+
+const ANALYTICS_DATA: AnalyticsRoleData[] = [
+  {
+    role: "business",
+    data1: {
+      value: "69 %",
+      subtitle: "Consumer trust influencer",
+    },
+    data2: {
+      value: "76 %",
+      subtitle: "users have bought something after recommendation.",
+    },
+    data3: {
+      value: "238 M",
+      subtitle: "Monthly active users on X",
+    },
+    data4: {
+      value: "440 M",
+      subtitle: "Total Influencers on X",
+    },
+  },
+  {
+    role: "influencer",
+    data1: {
+      value: "47.3 %",
+      subtitle: "Of all influences are mirco influencers",
+    },
+    data2: {
+      value: "70.2",
+      subtitle: "Average number of post per week",
+    },
+    data3: {
+      value: "$ 214",
+      subtitle: "Brands spends per influencer collab",
+    },
+    data4: {
+      value: "440 M",
+      subtitle: "Total Influencers on X",
+    },
+  },
+];
+
+const AnalyticsItem: React.FC<AnalyticsDataItem> = ({
+  value,
+  subtitle,
+  isLast,
+}) => (
   <Grid
     item
     xs={12}
@@ -29,6 +87,7 @@ const AnalyticsItem = ({ value, subtitle }: AnalyticsItemProps) => (
       height="126"
       viewBox="0 0 2 126"
       fill="none"
+      style={{ visibility: isLast ? "hidden" : "visible" }}
     >
       <path
         d="M1 1L0.999995 125"
@@ -40,7 +99,7 @@ const AnalyticsItem = ({ value, subtitle }: AnalyticsItemProps) => (
   </Grid>
 );
 
-const AnalyticsContainer = () => (
+const AnalyticsContainer: React.FC<AnalyticsContainerProps> = ({ role }) => (
   <Grid
     container
     spacing={2}
@@ -57,17 +116,14 @@ const AnalyticsContainer = () => (
       textAlign: "left",
     }}
   >
-    <AnalyticsItem value="15 M" subtitle="Total Influencer’s on X" />
-    <AnalyticsItem value="500 K" subtitle="Influencers Database on Xfluencer" />
-    <AnalyticsItem value="2 M" subtitle="Avg. following of a Xfluencer" />
-    <Grid item xs={12} sm={12} md={3} lg={3}>
-      <Typography variant="h4" fontWeight="bold">
-        15 M
-      </Typography>
-      <Typography variant="subtitle1">
-        Avg. impressions of Xfluencers
-      </Typography>
-    </Grid>
+    {ANALYTICS_DATA.filter((item) => item.role === role).map((item) => (
+      <React.Fragment key={item.role}>
+        <AnalyticsItem {...item.data1} />
+        <AnalyticsItem {...item.data2} />
+        <AnalyticsItem {...item.data3} />
+        <AnalyticsItem {...item.data4} isLast={true} />
+      </React.Fragment>
+    ))}
   </Grid>
 );
 

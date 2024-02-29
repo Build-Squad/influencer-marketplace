@@ -38,9 +38,8 @@ export default function Banner({}: Props) {
             fontWeight={"bold"}
             sx={{ marginTop: "8px", lineHeight: "60px" }}
           >
-            Connect, Create, Thrive:
-            <br /> Amplify Your X Influence with Business Collaborations!
-            <Image src={Arrow} height={24} width={70} alt={"Coloured Star"} />
+            Tweet Smarter, Not Harder
+            <br /> Make money with Targeted Promos!
           </Typography>
           {user?.loggedIn ? null : (
             <Button

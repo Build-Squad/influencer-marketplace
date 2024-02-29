@@ -114,7 +114,7 @@ export default function BusinessHome() {
           marginTop: "-30px",
         }}
       >
-        <AnalyticsContainer />
+        <AnalyticsContainer role={"influencer"} />
       </Box>
       {/* Influencers section */}
       <Box sx={{ marginTop: "40px", marginX: "40px" }}>
