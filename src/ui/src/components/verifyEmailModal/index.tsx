@@ -271,7 +271,7 @@ export default function VerifyEmailModal({
                   textAlign: "center",
                 }}
               >
-                By logging in, you agree to our Terms & Conditions and Privacy
+                By verifying, you agree to our Terms & Conditions and Privacy
                 Policy
               </Typography>
             </Box>
