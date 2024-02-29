@@ -31,7 +31,7 @@ import { notification } from "@/src/components/shared/notification";
 import EditSvg from "@/public/svg/Edit.svg";
 import { UserDetailsType } from "../../type";
 import Info_Profile from "@/public/Info_Profile.png";
-import { ArrowRightAlt, Verified } from "@mui/icons-material";
+import { ArrowRightAlt, Verified, CheckCircle } from "@mui/icons-material";
 import VerifyEmailModal from "@/src/components/verifyEmailModal";
 
 const debounce = (fn: Function, ms = 500) => {
@@ -201,6 +201,7 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   const [emailOpen, setEmailOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [secondsLeft, setSecondsLeft] = React.useState(0);
+  const [successField, setSuccessField] = useState(null);
 
   useEffect(() => {
     setIsEmailVerified(!!userDetails.businessDetails.user_email);
@@ -213,6 +214,12 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
     }
   }, [email]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setSuccessField(null);
+    }, 1000);
+  }, [successField]);
+
   const handleChange = async (e: any) => {
     try {
       const { isSuccess, message, data } = await putService(
@@ -222,7 +229,7 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
         }
       );
       if (isSuccess) {
-        notification(message);
+        setSuccessField(e.target.name);
       } else {
         notification(
           message ? message : "Something went wrong, try again later",
@@ -302,6 +309,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.business_name}
+          InputProps={{
+            endAdornment:
+              successField == "business_name" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
         <Typography
           variant="subtitle1"
@@ -317,6 +332,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.industry}
+          InputProps={{
+            endAdornment:
+              successField == "industry" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
         <Typography
           variant="subtitle1"
@@ -332,6 +355,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.founded}
+          InputProps={{
+            endAdornment:
+              successField == "founded" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
         <Typography
           variant="subtitle1"
@@ -347,6 +378,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.headquarters}
+          InputProps={{
+            endAdornment:
+              successField == "headquarters" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
       </Box>
       <Box sx={{ mt: 5 }}>
@@ -368,6 +407,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.bio}
+          InputProps={{
+            endAdornment:
+              successField == "bio" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
       </Box>
       <Box sx={{ mt: 5 }}>
@@ -428,6 +475,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.phone}
+          InputProps={{
+            endAdornment:
+              successField == "phone" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
         <Typography
           variant="subtitle1"
@@ -443,6 +498,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.website}
+          InputProps={{
+            endAdornment:
+              successField == "website" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
         <Typography
           variant="subtitle1"
@@ -458,6 +521,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.twitter_account}
+          InputProps={{
+            endAdornment:
+              successField == "twitter_account" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
         <Typography
           variant="subtitle1"
@@ -473,6 +544,14 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
           variant="standard"
           onChange={updatedHandleChange}
           value={userDetails.businessDetails.linked_in}
+          InputProps={{
+            endAdornment:
+              successField == "linked_in" ? (
+                <InputAdornment position="end">
+                  <CheckCircle color="success" fontSize="small" />
+                </InputAdornment>
+              ) : null,
+          }}
         />
       </Box>
       {/* Email Modal */}
