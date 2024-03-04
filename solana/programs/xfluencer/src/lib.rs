@@ -9,17 +9,14 @@ use anchor_lang::solana_program::system_instruction;
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
 use spl_token::instruction::AuthorityType;
 
+use ::u128::mul_div_u64;
+
 mod errors;
 mod processor;
 
 use crate::errors::CustomError;
 
 declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
-
-//fn log_errors(e: DomainOrProgramError) -> ProgramError {
-//    msg!("Error: {}", e);
-//    e.into()
-//}
 
 #[program]
 pub mod xfluencer {
@@ -186,9 +183,26 @@ pub mod xfluencer {
 
         ctx.accounts.escrow_account.status = target_state;
 
-        // transfer funds to validator
+        // in case of state is delivered, transfer funds to the validation_authority
+        if target_state == 2 {
+            msg!("percentage fee to apply by xfluencer platform: {} (2 decimal points)", &percentage_fee.to_string());
 
-        msg!(&percentage_fee.to_string());
+            if percentage_fee > 1000 {  // 10 %
+                return err!(CustomError::PercentageFeeOutOfrange);
+            }
+
+
+            let escrow_amount: u64 = ctx.accounts.escrow_account.get_lamports();
+            
+            let fees_amount: u64 = match mul_div_u64(escrow_amount, percentage_fee as u64, 10000 as u64) {
+                Some(fees_amount) => fees_amount,
+                None => {
+                    return err!(CustomError::NumericalProblemFoundCalculatingFees)
+                }
+            };
+
+            
+        }
 
 
         Ok(())

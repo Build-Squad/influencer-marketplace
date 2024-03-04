@@ -405,9 +405,16 @@
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
     }
-  ],
-  "metadata": {
-    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
-  }
+  ]
 }

@@ -405,6 +405,16 @@ export type Xfluencer = {
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
     }
   ]
 };
@@ -816,6 +826,16 @@ export const IDL: Xfluencer = {
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
     }
   ]
 };
