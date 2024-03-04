@@ -154,36 +154,7 @@ pub mod xfluencer {
         Ok(())
     }
 
-    pub fn create_fees(ctx: Context<CreateFees>, percentage_rate: i32) -> ProgramResult {
-
-        // TODO: Add validation on percentage rate p,  0 < minp < p < maxp < 100
-
-        let fees_config = &mut ctx.accounts.fees_config;
-
-        fees_config.authority = ctx.accounts.fees_authority.key();
-        fees_config.percentage_rate = percentage_rate;
-
-        //**fees_config = FeesConfig {
-        //    authority: ctx.accounts.fees_authority.key(),
-        //    fees_vault_account: ctx.accounts.fees_authority.key(), // TODO: Replace this by a vault
-        //    percentage_rate
-        //};
-
-        /// !emit()
-        
-        Ok(())
-    }
-
-    pub fn update_fees(ctx: Context<UpdateFees>, percentage_rate: i32) -> ProgramResult {
-
-        // TODO: Add validation on percentage rate p,  0 < minp < p < maxp < 100
-
-        let fees_config = &mut ctx.accounts.fees_config;
-        
-        fees_config.percentage_rate = percentage_rate;
-        
-        Ok(())
-    }
+ 
 
     pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, target_state: u8) -> Result<()> {
 
@@ -212,42 +183,8 @@ pub mod xfluencer {
         }
 
         ctx.accounts.escrow_account.status = target_state;
-        
-          // TODO: 
-        
-          ctx.accounts.escrow_account.delivered = true;   
-          
-        // TODO: Send fees to vault account    
-
-        let amount = ctx.accounts.escrow_account.get_lamports();
-
-        let escrow_account_info = ctx.accounts.escrow_account.to_account_info();
-        let fees_account_collector_info  = ctx.accounts.validation_authority.to_account_info();
-        
-        //let fees_authority_key = ctx.accounts.validation_authority.key();
-        //let escrow_seed: String = format!("{}{}", "escrow".to_string(), fees_authority_key.to_string());
-        //let escrow_pda_seed: &[u8] = escrow_seed.as_bytes();
-
-        // Set the Vault Authority to the Escrow PDA
-        //let (vault_authority, _vault_authority_bump) 
-        //    = Pubkey::find_program_address(&[escrow_pda_seed], ctx.program_id);
-        /// find generic fees account
-        /// 
-        /// // Make Seed
-        /// 
-        /// seeds = [b"fees".as_ref(), 
-        //fees_authority.key().as_ref(), 
-        //],
-        /// 
-        /// 
-        /// 
-        /// 
-        //let fees_authority_key = ctx.accounts.validation_authority.key();
-        //let fees_seed: String = format!("{}{}", "fees".to_string(), fees_authority_key.to_string());
-        //let fees_pda_seed: &[u8] = fees_seed.as_bytes();
-        //let (_fees_authority, fees_authority_bump) 
-        //    = Pubkey::find_program_address(&[fees_pda_seed], ctx.program_id);
         Ok(())
+
     }
 
 
@@ -301,12 +238,6 @@ pub struct EscrowAccountSolana {
     pub status: u8, // (1)
 }
 
-#[account]
-pub struct FeesConfig {
-    pub authority: Pubkey, // (32)
-pub fees_vault_account: Pubkey, // (32)
-    pub percentage_rate: i32,   // (4) 
-}
 
 // TODO: Replace buyer by business and seller by influencer
 
@@ -456,46 +387,12 @@ pub struct CancelEscrowSolana<'info> {
 }
 
 
-/// apply this generic fee when no specific fee is passed
-#[derive(Accounts)]
-#[instruction(percentage_rate: i32)]
-pub struct CreateFees<'info> {
-    /// CHECK: safe
-    #[account(mut)]
-    pub fees_authority: Signer<'info>,
-    #[account(
-        init,      
-        seeds = [b"fees".as_ref(), 
-                 fees_authority.key().as_ref(), 
-                 ],
-        bump,
-        payer = fees_authority,
-        space = size_of::<FeesConfig>() + 16
-    )]
-    pub fees_config: Account<'info, FeesConfig>,
-    pub system_program: Program<'info, System>
-}
-
-
-#[derive(Accounts)]
-#[instruction(percentage_rate: i32)]
-pub struct UpdateFees<'info> {
-    #[account(mut)]
-    pub fees_authority: Signer<'info>,
-    #[account(mut,   
-              constraint = fees_config.authority == *fees_authority.key)]
-    pub fees_config: Account<'info, FeesConfig>
-}
-
 
 #[derive(Accounts)]
 #[instruction(state: u8)]
 pub struct ValidateEscrowSolana<'info> {
     #[account(mut)]
     pub validation_authority: Signer<'info>,
-    /// CHECK: safe
-    #[account(mut)]
-    pub fees_authority: AccountInfo<'info>,
     /// CHECK: safe
     #[account(mut)]
     pub influencer: AccountInfo<'info>,
@@ -510,11 +407,6 @@ pub struct ValidateEscrowSolana<'info> {
         //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
-    #[account(mut,
-        constraint = fees.authority == *fees_authority.key
-    )]
-    pub fees: Account<'info, FeesConfig>,
-    
 }
 
 //// messages
@@ -527,7 +419,6 @@ pub struct EscrowAccountSolanaCreated {
     pub order_code: String
 }
 
-///#[]
 
 
 
