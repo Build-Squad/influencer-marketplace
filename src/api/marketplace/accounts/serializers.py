@@ -113,7 +113,12 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
 
         # Extract service types and prices
         service_data = [
-            {"serviceType": service.service_master.name, "price": service.price, "currencySymbol": service.currency.symbol}
+            {
+                "serviceType": service.service_master.name,
+                "price": service.price,
+                "currencySymbol": service.currency.symbol,
+                "packageStatus": Package.objects.filter(service_package_id=service)[0].status
+            }
             for service in services
         ]
 

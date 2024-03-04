@@ -205,6 +205,7 @@ const CustomAutoComplete = ({
           />
         );
       }}
+      isOptionEqualToValue={isOptionEqualToValue}
       renderOption={(props, option, { selected }) => (
         <li {...props}>
           <Checkbox

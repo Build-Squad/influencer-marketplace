@@ -84,7 +84,9 @@ export default function BusinessHome() {
           twitterUsername: inf.user_name || "",
           profileUrl: inf.profile_image_url || "",
           services: inf.service_types
-            ? inf.service_types.map((service: any) => service.serviceType)
+            ? inf.service_types
+                .filter((service: any) => service.packageStatus == "published")
+                .map((service: any) => service.serviceType)
             : [],
 
           followers: formatTwitterFollowers(inf.followers_count),

@@ -55,6 +55,9 @@ export default function FiltersComponent({
               return "";
             }
           }}
+          isOptionEqualToValue={(option: any, value: any) => {
+            return option.id === value.id;
+          }}
           size="medium"
         />
       );
@@ -83,6 +86,9 @@ export default function FiltersComponent({
             } else {
               return "";
             }
+          }}
+          isOptionEqualToValue={(option: any, value: any) => {
+            return option.id === value.id;
           }}
           size="medium"
         />
@@ -113,6 +119,9 @@ export default function FiltersComponent({
               return "";
             }
           }}
+          isOptionEqualToValue={(option: any, value: any) => {
+            return option.id === value.id;
+          }}
           size="medium"
         />
       );
@@ -141,6 +150,9 @@ export default function FiltersComponent({
             } else {
               return "";
             }
+          }}
+          isOptionEqualToValue={(option: any, value: any) => {
+            return option.id === value.id;
           }}
           size="medium"
         />
