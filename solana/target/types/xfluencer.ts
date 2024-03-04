@@ -215,64 +215,12 @@ export type Xfluencer = {
       "args": []
     },
     {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
           "name": "validationAuthority",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": false
         },
         {
           "name": "influencer",
@@ -286,11 +234,6 @@ export type Xfluencer = {
         },
         {
           "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "fees",
           "isMut": true,
           "isSigner": false
         }
@@ -386,26 +329,6 @@ export type Xfluencer = {
               "status\n        0: New\n        1: Cancel\n        2: Delivered"
             ],
             "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "feesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feesVaultAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
           }
         ]
       }
@@ -699,64 +622,12 @@ export const IDL: Xfluencer = {
       "args": []
     },
     {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
           "name": "validationAuthority",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": false
         },
         {
           "name": "influencer",
@@ -770,11 +641,6 @@ export const IDL: Xfluencer = {
         },
         {
           "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "fees",
           "isMut": true,
           "isSigner": false
         }
@@ -870,26 +736,6 @@ export const IDL: Xfluencer = {
               "status\n        0: New\n        1: Cancel\n        2: Delivered"
             ],
             "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "feesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feesVaultAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
           }
         ]
       }

@@ -215,64 +215,12 @@
       "args": []
     },
     {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
           "name": "validationAuthority",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": false
         },
         {
           "name": "influencer",
@@ -286,11 +234,6 @@
         },
         {
           "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "fees",
           "isMut": true,
           "isSigner": false
         }
@@ -389,26 +332,6 @@
           }
         ]
       }
-    },
-    {
-      "name": "FeesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feesVaultAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
-          }
-        ]
-      }
     }
   ],
   "events": [
@@ -479,8 +402,5 @@
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
     }
-  ],
-  "metadata": {
-    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
-  }
+  ]
 }
