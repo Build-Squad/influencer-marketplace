@@ -242,6 +242,10 @@ export type Xfluencer = {
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
     }
@@ -649,6 +653,10 @@ export const IDL: Xfluencer = {
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
     }

@@ -156,7 +156,9 @@ pub mod xfluencer {
 
  
 
-    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, target_state: u8) -> Result<()> {
+    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, 
+                               target_state: u8, 
+                               percentage_fee: u16) -> Result<()> {
 
         msg!("start validation of escrow for target state: {}",target_state);
 
@@ -183,6 +185,12 @@ pub mod xfluencer {
         }
 
         ctx.accounts.escrow_account.status = target_state;
+
+        // transfer funds to validator
+
+        msg!(&percentage_fee.to_string());
+
+
         Ok(())
 
     }
@@ -389,7 +397,7 @@ pub struct CancelEscrowSolana<'info> {
 
 
 #[derive(Accounts)]
-#[instruction(state: u8)]
+#[instruction(state: u8, percentage_fee: u16)]
 pub struct ValidateEscrowSolana<'info> {
     #[account(mut)]
     pub validation_authority: Signer<'info>,
@@ -409,9 +417,6 @@ pub struct ValidateEscrowSolana<'info> {
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
 }
 
-//// messages
-/// 
-/// 
 #[event]
 pub struct EscrowAccountSolanaCreated {
     pub business: Pubkey,

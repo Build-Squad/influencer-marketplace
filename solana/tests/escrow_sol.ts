@@ -123,10 +123,12 @@ describe("Testing Escrow for SOL", () => {
     // validate escrow //
     /////////////////////
     const state = 1;  // 1 == cancel escrow state
+    const percentage_fee = 5;
 
     await program.methods
     .validateEscrowSol(
-      state
+      state,
+      percentage_fee
       )
     .accounts(
       { 
@@ -209,10 +211,12 @@ describe("Testing Escrow for SOL", () => {
     // validate escrow //
     /////////////////////    
     const state = 2;  // 2 == delivered escrow state
+    const percentage_fee = 5;
 
     await program.methods
     .validateEscrowSol(
-      state
+      state,
+      percentage_fee
       )
     .accounts(
       { 
@@ -324,11 +328,13 @@ describe("Testing Escrow for SOL", () => {
     // validate escrow //
     /////////////////////    
     const state = 3;  // 3 is a bad state transiction (only 1 or 2)
+    const percentage_fee = 5;
 
     try {
       await program.methods
         .validateEscrowSol(
-          state
+          state,
+          percentage_fee
           )
         .accounts(
           { 

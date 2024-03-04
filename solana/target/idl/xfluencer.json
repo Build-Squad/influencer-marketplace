@@ -242,6 +242,10 @@
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
     }
@@ -402,5 +406,8 @@
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
+  }
 }
