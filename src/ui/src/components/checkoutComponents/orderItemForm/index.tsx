@@ -6,7 +6,7 @@ import {
   updateFieldValues,
   updatePublishDate,
 } from "@/src/reducers/cartSlice";
-import { deleteService } from "@/src/services/httpServices";
+import { deleteService, postService } from "@/src/services/httpServices";
 import {
   FORM_DATE_TIME_TZ_FORMAT,
   ORDER_ITEM_STATUS,
@@ -19,7 +19,9 @@ import {
   Divider,
   FormLabel,
   Grid,
+  IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
@@ -29,6 +31,8 @@ import { ConfirmDelete } from "../../shared/confirmDeleteModal";
 import { notification } from "../../shared/notification";
 import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
 import ArrayItem from "../arrayItem";
+import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
+import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 
 type OrderItemFormProps = {
   orderItem: any;
@@ -136,6 +140,30 @@ export default function OrderItemForm({
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateStatus = async (action: string) => {
+    let apiEndpoint = "";
+    if (action === ORDER_ITEM_STATUS.SCHEDULED)
+      apiEndpoint = "orders/send-tweet";
+    if (action === ORDER_ITEM_STATUS.CANCELLED)
+      apiEndpoint = "orders/cancel-tweet";
+
+    try {
+      const { isSuccess, data, message } = await postService(apiEndpoint, {
+        order_item_id: orderItem?.order_item?.id,
+      });
+      if (isSuccess) {
+        notification(message);
+        // Once any item is published or cancelled, update the orders data
+      } else {
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
+      }
+    } finally {
     }
   };
 
@@ -249,6 +277,31 @@ export default function OrderItemForm({
             }
           />
         )}
+        {orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+          // Publish date is in the future
+          dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
+            <Tooltip title="Schedule Post" placement="top" arrow>
+              <IconButton
+                onClick={() => {
+                  updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
+                }}
+              >
+                <ScheduleSendIcon color="warning" />
+              </IconButton>
+            </Tooltip>
+          )}
+        {orderItem?.order_item?.status === ORDER_ITEM_STATUS.SCHEDULED &&
+          dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
+            <Tooltip title="Cancel Post" placement="top" arrow>
+              <IconButton
+                onClick={() => {
+                  updateStatus(ORDER_ITEM_STATUS.CANCELLED);
+                }}
+              >
+                <CancelScheduleSendIcon color="error" />
+              </IconButton>
+            </Tooltip>
+          )}
       </Box>
       <Divider
         sx={{
@@ -468,6 +521,7 @@ export default function OrderItemForm({
                 {formFields?.field_type === "array" && (
                   <ArrayItem
                     formFields={formFields}
+                    disabled={disabled}
                     updatevalues={(e: string) => {
                       if (
                         updateFunction &&
