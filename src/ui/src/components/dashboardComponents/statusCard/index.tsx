@@ -2,7 +2,6 @@
 
 import { Box, Typography } from "@mui/material";
 import React from "react";
-import Image from "next/image";
 
 type StatusCardProps = {
   card: {
@@ -18,12 +17,14 @@ type StatusCardProps = {
     pending: number;
     rejected: number;
   };
+  count: number;
 };
 
 export default function StatusCard({
   card,
   selectedCard,
   orderCount,
+  count,
 }: StatusCardProps) {
   return (
     <Box
@@ -48,20 +49,7 @@ export default function StatusCard({
           color: card?.value === selectedCard ? "#fff" : "#000",
         }}
       >
-        {card?.value === 0
-          ? orderCount?.accepted +
-            orderCount?.completed +
-            orderCount?.pending +
-            orderCount?.rejected
-          : card?.value === 1
-          ? orderCount?.accepted
-          : card?.value === 2
-          ? orderCount?.completed
-          : card?.value === 3
-          ? orderCount?.pending
-          : card?.value === 4
-          ? orderCount?.rejected
-          : 0}
+        {count}
       </Typography>
       <Box
         sx={{
@@ -69,16 +57,6 @@ export default function StatusCard({
           alignItems: "center",
         }}
       >
-        {/* <Image
-          src={card.icon}
-          alt={card.label}
-          height={30}
-          color={card?.value === selectedCard ? "#fff" : "#000"}
-          style={{
-            // This is an svg image, so we need to set the fill property to change the color
-            fill: card?.value === selectedCard ? "#fff" : "#000",
-          }}
-        /> */}
         {card.icon}
         <Typography
           variant="body1"
