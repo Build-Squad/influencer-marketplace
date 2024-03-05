@@ -61,6 +61,9 @@ solana-python/src/*egg*
 # celery-beat
 src/api/celerybeat-schedule
 
-
+#idea
 src/ui/.idea
 src/api/marketplace/.idea
+
+#secret
+src/api/marketplace/secret/
