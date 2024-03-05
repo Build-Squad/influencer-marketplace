@@ -13,6 +13,8 @@ const colorMap: any = {
   pending: "#F5F6C9",
   completed: "#CBF8D8",
   draft: "#F8F8F8",
+  published: "#CBF8D8",
+  scheduled: "#F5F6C9",
 };
 
 const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
