@@ -55,7 +55,8 @@ solana-client/node_modules/*
 solana-client/.next*
 solana/docker-target*
 solana-python/build*
-solana-python/src/*egg*
+solana-python/*egg*
+solana-python/venv/
 *pyc
 
 # celery-beat
