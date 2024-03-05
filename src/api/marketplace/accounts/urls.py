@@ -2,7 +2,9 @@ from django.urls import path
 from .views import (
     AccountRegionList,
     OTPAuth,
+    OTPAuthV2,
     OTPVerification,
+    OTPVerifyV2,
     TopInfluencers,
     TwitterAccountList,
     TwitterAccountDetail,
@@ -62,6 +64,9 @@ urlpatterns = [
 
     path("otp/", OTPAuth.as_view(), name="otp-auth"),
     path("otp/verify/", OTPVerification.as_view(), name="otp-verify"),
+    
+    path("otp/v2", OTPAuthV2.as_view(), name="otp-auth-v2"),
+    path("otp/verify/v2", OTPVerifyV2.as_view(), name="otp-verify-v2" ),
 
     path("email-verify/", EmailVerification.as_view(), name="email-verify"),
 

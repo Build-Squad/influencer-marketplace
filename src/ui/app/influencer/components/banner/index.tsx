@@ -38,9 +38,8 @@ export default function Banner({}: Props) {
             fontWeight={"bold"}
             sx={{ marginTop: "8px", lineHeight: "60px" }}
           >
-            Connect, Create, Thrive:
-            <br /> Amplify Your X Influence with Business Collaborations!
-            <Image src={Arrow} height={24} width={70} alt={"Coloured Star"} />
+            Tweet Smarter, Not Harder
+            <br /> Make money with Targeted Promos!
           </Typography>
           {user?.loggedIn ? null : (
             <Button
@@ -80,9 +79,6 @@ export default function Banner({}: Props) {
                 {it}
               </Button>
             ))}
-            <Typography variant="subtitle1" fontWeight={"Bold"}>
-              + Much More
-            </Typography>
           </Box>
         </Grid>
         <Grid item xs={12} sm={7} md={7} lg={7} sx={{ position: "relative" }}>

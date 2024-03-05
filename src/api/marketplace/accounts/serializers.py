@@ -113,7 +113,12 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
 
         # Extract service types and prices
         service_data = [
-            {"serviceType": service.service_master.name, "price": service.price, "currencySymbol": service.currency.symbol}
+            {
+                "serviceType": service.service_master.name,
+                "price": service.price,
+                "currencySymbol": service.currency.symbol,
+                "packageStatus": Package.objects.filter(service_package_id=service)[0].status
+            }
             for service in services
         ]
 
@@ -270,6 +275,17 @@ class OTPAuthenticationSerializer(serializers.Serializer):
 class OTPVerificationSerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
     email = serializers.EmailField()
+
+
+class OTPAuthenticationV2Serializer(serializers.Serializer):
+    email = serializers.EmailField()
+    username = serializers.CharField(max_length=100)
+
+
+class OTPVerificationV2Serializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    email = serializers.EmailField()
+    username = serializers.CharField(max_length=100)
 
 
 class EmailVerificationSerializer(serializers.Serializer):

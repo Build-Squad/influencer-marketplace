@@ -67,26 +67,22 @@ export default function Banner({}: Props) {
           textAlign: "center",
           mt: 1,
           display: "flex",
-          alignItems: "flex-end",
-          columnGap: "8px",
+          justifyContent: "center",
         }}
       >
-        <Typography variant="h4" fontWeight={"bold"}>
-          Connecting Businesses with X Influencers for maximum impact
-          <Image
-            src={Arrow}
-            height={24}
-            width={70}
-            alt=""
-            style={{ marginLeft: "8px" }}
-          />
+        <Typography
+          variant="h4"
+          sx={{ fontSize: "2.65rem" }}
+          fontWeight={"bold"}
+        >
+          Effortless Connections, Powerful Results
         </Typography>
       </Box>
 
       {/* Filters Container */}
       <Box
         sx={{
-          mt: 5,
+          mt: 3,
           px: 5,
           py: 3,
           paddingBottom: "12px",
@@ -162,33 +158,25 @@ export default function Banner({}: Props) {
             mt: 2,
           }}
         >
-          {[
-            "Post",
-            "Thread",
-            "Like",
-            "Reply",
-            "Pinned Post",
-            "Quote a Post",
-          ].map((it: string, ind: number) => {
-            return (
-              <Button
-                key={ind}
-                variant={"outlined"}
-                color="secondary"
-                sx={{
-                  borderRadius: "24px",
-                  border: "1px solid #7B7B7B",
-                  background: "rgba(255, 255, 255, 0.40)",
-                  fontSize: "20px",
-                }}
-              >
-                {it}
-              </Button>
-            );
-          })}
-          <Typography variant="h6" fontWeight={"bold"}>
-            + Much More
-          </Typography>
+          {["Post", "Thread", "Like", "Reply", "Quote a Post"].map(
+            (it: string, ind: number) => {
+              return (
+                <Button
+                  key={ind}
+                  variant={"outlined"}
+                  color="secondary"
+                  sx={{
+                    borderRadius: "24px",
+                    border: "1px solid #7B7B7B",
+                    background: "rgba(255, 255, 255, 0.40)",
+                    fontSize: "20px",
+                  }}
+                >
+                  {it}
+                </Button>
+              );
+            }
+          )}
         </Box>
       </Box>
     </Box>
