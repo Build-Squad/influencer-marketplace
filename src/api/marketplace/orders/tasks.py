@@ -1,4 +1,5 @@
-from accounts.models import TwitterAccount, User
+import asyncio
+from accounts.models import TwitterAccount, User, Wallet
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
     create_order_item_tracking, create_order_tracking, create_reminider_notification
@@ -14,6 +15,9 @@ from django.utils import timezone
 from celery_once import QueueOnce
 
 from marketplace import celery_app
+
+from pyxfluencer import validate_escrow_to_cancel
+from pyxfluencer.utils import get_local_keypair_pubkey
 
 """
 Sends a tweet for a given order item.
@@ -343,3 +347,41 @@ def schedule_reminder_notification():
                 create_reminider_notification(order_item)
     except Exception as e:
         raise Exception(str(e))
+
+
+@celery_app.task(base=QueueOnce, once={'graceful': True})
+def cancel_escrow(order_id: str):
+    try:
+        # Get order
+        print(order_id)
+        order = Order.objects.get(id=order_id)
+
+        # Get the buyer and influencer
+        buyer = User.objects.get(id=order.buyer.id)
+        order_items = OrderItem.objects.filter(order_id=order)
+        influencer = order_items[0].package.influencer
+
+        print(buyer.id, influencer.id, order.order_number)
+
+        buyer_primary_wallet = Wallet.objects.get(
+            user_id=buyer.id, is_primary=True)
+        influencer_primary_wallet = Wallet.objects.get(
+            user_id=influencer.id, is_primary=True)
+
+        # File is in ../secret/vality_keypair.json, get the absolute path
+        # Provide the absolute path to the file
+        path = "/api/secrets/vality_keypair.json"
+        print(path)
+        val_auth_keypair, _ = get_local_keypair_pubkey(path=path)
+        print(val_auth_keypair)
+
+        res = asyncio.run(validate_escrow_to_cancel(val_auth_keypair, buyer_primary_wallet.wallet_address_id,
+                                                    influencer_primary_wallet.wallet_address_id, order.order_number))
+
+        if res:
+            print(res)
+        else:
+            raise Exception('Error in cancelling escrow')
+
+    except Exception as e:
+        raise Exception('Error in cancelling escrow', str(e))
