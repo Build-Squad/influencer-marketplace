@@ -61,11 +61,9 @@ def storingCredsPerSession(request):
         request.session["code_challenge"] = code_challenge
         request.session["oauth_state"] = state
 
-        print("While Making the URL, code_verifier, code_challenge", code_verifier, code_challenge)
         return authorization_url
 
     except Exception as e:
-        print(e)
         logger.error(f"createNewCredentials - {e}")
         return None
 
@@ -108,7 +106,6 @@ def twitterLoginCallback(request):
 def authenticateUser(request, code):
     global twitter
     code_verifier = request.session.get("code_verifier", "")
-    print("Call back", code_verifier, twitter)
     try:
         if twitter:
             token = twitter.fetch_token(
@@ -127,7 +124,6 @@ def authenticateUser(request, code):
             )
         access_token = token["access_token"]
         refresh_token = token["refresh_token"]
-        print("token ==== ", token)
 
         client = Client(access_token)
         userData = client.get_me(
