@@ -501,6 +501,14 @@ class CancelOrderView(APIView):
     def put(self, request, pk):
         try:
             cancel_escrow.apply_async(args=[pk])
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Order cancellation initiated successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             return handleServerException(e)
 

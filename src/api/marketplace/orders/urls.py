@@ -49,5 +49,5 @@ urlpatterns = [
     path('create-transaction/',
          TransactionCreateView.as_view(), name="create-transaction"),
 
-    path("cancel-order/", CancelOrderView.as_view(), name="cancel-order"),
+    path("cancel-order/<uuid:pk>/", CancelOrderView.as_view(), name="cancel-order"),
 ]
