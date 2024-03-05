@@ -15,7 +15,7 @@ import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
-import { getService, postService } from "@/src/services/httpServices";
+import { postService } from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
   ORDER_STATUS,
@@ -87,32 +87,17 @@ export default function BusinessDashboardPage() {
         }
       );
       if (isSuccess) {
-        setOrders(data?.data);
+        setOrders(data?.data?.orders);
+        setOrderCount({
+          accepted: data?.data?.status_counts?.accepted,
+          completed: data?.data?.status_counts?.completed,
+          pending: data?.data?.status_counts?.pending,
+          rejected: data?.data?.status_counts?.rejected,
+        });
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
-        });
-      } else {
-        notification(message ? message : "Something went wrong", "error");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getOrdersCount = async () => {
-    try {
-      setLoading(true);
-      const { isSuccess, data, message } = await getService(
-        `orders/order-list/`
-      );
-      if (isSuccess) {
-        setOrderCount({
-          accepted: data?.data?.accepted,
-          completed: data?.data?.completed,
-          pending: data?.data?.pending,
-          rejected: data?.data?.rejected,
         });
       } else {
         notification(message ? message : "Something went wrong", "error");
@@ -513,10 +498,6 @@ export default function BusinessDashboardPage() {
   ];
 
   useEffect(() => {
-    getOrdersCount();
-  }, []);
-
-  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       getOrders();
     }, 500);
@@ -549,6 +530,22 @@ export default function BusinessDashboardPage() {
                       card={card}
                       selectedCard={selectedCard}
                       orderCount={orderCount}
+                      count={
+                        card?.value === 0
+                          ? orderCount?.accepted +
+                            orderCount?.completed +
+                            orderCount?.pending +
+                            orderCount?.rejected
+                          : card?.value === 1
+                          ? orderCount?.accepted
+                          : card?.value === 2
+                          ? orderCount?.completed
+                          : card?.value === 3
+                          ? orderCount?.pending
+                          : card?.value === 4
+                          ? orderCount?.rejected
+                          : 0
+                      }
                     />
                   </Grid>
                 );
@@ -581,7 +578,7 @@ export default function BusinessDashboardPage() {
                     ? model?.[0]?.sort === "asc"
                       ? `-${model?.[0]?.field}`
                       : `${model?.[0]?.field}`
-                    : undefined,
+                    : "upcoming",
                 }));
               }}
               localeText={{
