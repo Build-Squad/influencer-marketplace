@@ -81,8 +81,8 @@ def tweet(text, client):
 
 def like_tweet(tweet_id, client):
     try:
-        res = client.like_tweet(tweet_id=tweet_id, user_auth=False)
-        return res.data['id']
+        res = client.like(tweet_id=tweet_id, user_auth=False)
+        return tweet_id if res.data['liked'] else None
     except Exception as e:
         raise Exception(str(e))
 
@@ -118,7 +118,7 @@ def poll(text, poll_options, poll_duration_minutes, client):
 def retweet(tweet_id, client):
     try:
         res = client.retweet(tweet_id=tweet_id, user_auth=False)
-        return res.data['id']
+        return res.data['rest_id']
     except Exception as e:
         raise Exception(str(e))
 
