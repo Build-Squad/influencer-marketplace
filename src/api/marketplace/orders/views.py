@@ -1,5 +1,5 @@
 from accounts.models import Wallet
-from orders.tasks import cancel_tweet, schedule_tweet
+from orders.tasks import cancel_escrow, cancel_tweet, schedule_tweet
 from orders.services import create_notification_for_order, create_order_item_tracking, create_order_tracking
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
@@ -494,6 +494,15 @@ class UpdateOrderStatus(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class CancelOrderView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def put(self, request, pk):
+        try:
+            cancel_escrow.apply_async(args=[pk])
+        except Exception as e:
+            return handleServerException(e)
 
 class TransactionCreateView(APIView):
     authentication_classes = [JWTAuthentication]
