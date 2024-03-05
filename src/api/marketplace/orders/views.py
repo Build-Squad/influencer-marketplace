@@ -498,8 +498,82 @@ class UpdateOrderStatus(APIView):
 class CancelOrderView(APIView):
     authentication_classes = [JWTAuthentication]
 
+    def get_object(self, pk):
+        try:
+            return Order.objects.get(pk=pk, deleted_at=None)
+        except Order.DoesNotExist:
+            return None
+
     def put(self, request, pk):
         try:
+            order = self.get_object(pk)
+            if order is None:
+                return handleNotFound("Order")
+            # Get all order items
+            order_items = OrderItem.objects.filter(order_id=order.id)
+
+            # Check that the logged in user is authorized to cancel the order
+            if request.user_account.role.name == "business_owner":
+                if order.buyer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            elif request.user_account.role.name == "influencer":
+                if order_items[0].package.influencer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            # if influencer is cancelling the order, then check if the order is in pending state
+            if request.user_account.role.name == "influencer":
+                if order.status != "pending":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Only business owner can cancel an accepted order",
+                            "data": None,
+                            "errors": "Only business owner can cancel an accepted order",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # if business owner is cancelling the order, then check if the order is in accepted or pending state
+            if request.user_account.role.name == "business_owner":
+                if order.status not in ["accepted", "pending"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not allowed to cancel this order",
+                            "data": None,
+                            "errors": "You are not allowed to cancel this order",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # If any order item is published or scheduled, then the order cannot be cancelled
+            for order_item in order_items:
+                if order_item.status in ["published", "scheduled"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order cannot be cancelled as it has already been published or scheduled",
+                            "data": None,
+                            "errors": "Order cannot be cancelled as it has already been published or scheduled",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             cancel_escrow.apply_async(args=[pk])
             return Response(
                 {

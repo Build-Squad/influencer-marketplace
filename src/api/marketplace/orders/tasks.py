@@ -63,6 +63,9 @@ def cancel_escrow(order_id: str):
 
         asyncio.run(validate_escrow_to_cancel(val_auth_keypair, buyer_primary_wallet.wallet_address_id,
                                               influencer_primary_wallet.wallet_address_id, order.order_number, "devnet"))
+        # After the above task is finished successfully, update the order status to cancelled
+        order.status = 'rejected'
+        order.save()
 
     except Exception as e:
         raise Exception('Error in cancelling escrow', str(e))
@@ -88,6 +91,9 @@ def confirm_escrow(order_id: str):
 
         asyncio.run(validate_escrow_to_delivered(val_auth_keypair, buyer_primary_wallet.wallet_address_id,
                                                  influencer_primary_wallet.wallet_address_id, order.order_number, "devnet"))
+
+        order.status = 'completed'
+        order.save()
 
     except Exception as e:
         raise Exception('Error in confirming escrow', str(e))

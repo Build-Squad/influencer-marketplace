@@ -257,25 +257,40 @@ export default function Orders() {
       const status =
         selectedAction.status == "Accept" ? "accepted" : "rejected";
       setActionLoading(true);
-      const { isSuccess, data, message } = await putService(
-        `orders/update-status/${selectedAction.orderId}/`,
-        {
-          status: status,
+      if (status === "rejected") {
+        const { isSuccess, data, message } = await putService(
+          `/orders/cancel-order/${selectedAction.orderId}/`,
+          {}
+        );
+        if (isSuccess) {
+          notification("Order request was declined successfully");
+        } else {
+          notification(
+            message ? message : "Something went wrong, couldn't cancel order",
+            "error"
+          );
         }
-      );
-      if (isSuccess) {
-        notification(
-          `Order request was ${
-            selectedAction.status == "Accept" ? "accepted" : "rejected"
-          }`
-        );
       } else {
-        notification(
-          message
-            ? message
-            : "Something went wrong, couldn't update order status",
-          "error"
+        const { isSuccess, data, message } = await putService(
+          `orders/update-status/${selectedAction.orderId}/`,
+          {
+            status: status,
+          }
         );
+        if (isSuccess) {
+          notification(
+            `Order request was ${
+              selectedAction.status == "Accept" ? "accepted" : "rejected"
+            }`
+          );
+        } else {
+          notification(
+            message
+              ? message
+              : "Something went wrong, couldn't update order status",
+            "error"
+          );
+        }
       }
       setActionLoading(false);
     }
