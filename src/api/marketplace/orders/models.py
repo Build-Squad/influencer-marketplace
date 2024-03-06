@@ -35,6 +35,7 @@ class Order(models.Model):
         ('accepted', 'accepted'),
         ('rejected', 'rejected'),
         ('completed', 'completed'),
+        ('cancelled', 'cancelled'),
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='Order', default=uuid.uuid4, editable=False)
