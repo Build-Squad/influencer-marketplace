@@ -7,6 +7,7 @@ from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
 from packages.models import Service, ServiceMasterMetaData
 from rest_framework import serializers
 from .models import (
+    Escrow,
     Order,
     OrderItem,
     OrderAttachment,
@@ -103,20 +104,14 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_influencer_wallet(self, obj):
         # Should return the wallet of the influencer
-        influencer_id = obj.order_item_order_id.first().package.influencer.id
-        influencer = User.objects.get(id=influencer_id)
-        wallet = Wallet.objects.filter(
-            user_id=influencer, is_primary=True).first()
-        if wallet:
-            return WalletCompleteSerializer(wallet).data
-
+        escrow = Escrow.objects.filter(order=obj).first()
+        if escrow:
+            return WalletCompleteSerializer(escrow.influencer_wallet).data
     def get_buyer_wallet(self, obj):
         # Should return the wallet of the buyer
-        buyer = User.objects.get(id=obj.buyer.id)
-        wallet = Wallet.objects.filter(
-            user_id=buyer, is_primary=True).first()
-        if wallet:
-            return WalletCompleteSerializer(wallet).data
+        escrow = Escrow.objects.filter(order=obj).first()
+        if escrow:
+            return WalletCompleteSerializer(escrow.business_wallet).data
 
     def get_transactions(self, obj):
         if "request" in self.context:
