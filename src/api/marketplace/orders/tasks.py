@@ -1,5 +1,6 @@
 import asyncio
 from calendar import c
+import logging
 from accounts.models import TwitterAccount, User, Wallet
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
@@ -19,6 +20,8 @@ from marketplace import celery_app
 
 from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered
 from pyxfluencer.utils import get_local_keypair_pubkey
+
+logger = logging.getLogger(__name__)
 
 """
 Sends a tweet for a given order item.
@@ -111,10 +114,8 @@ def check_order_status(pk):
 
     is_completed = True
 
-    for order_item in order_items:
-        if order_item.status != 'published':
-            is_completed = False
-            break
+    if not all(order_item.is_verified for order_item in order_items):
+        is_completed = False
 
     if is_completed:
         confirm_escrow.apply_async(args=[order.id])
@@ -289,6 +290,10 @@ def twitter_task(order_item_id):
         order_item.status = 'published'
         order_item.save()
 
+        # Call the validate_order_item task to run 2 minutes after now
+        validate_order_item.apply_async(
+            args=[order_item.id], countdown=120)
+
         # Create a order item tracking for the order item
         create_order_item_tracking(order_item, order_item.status)
 
@@ -402,5 +407,79 @@ def schedule_reminder_notification():
             if not check_notification_sent(order_item.id):
                 # Send notification to business
                 create_reminider_notification(order_item)
+    except Exception as e:
+        raise Exception(str(e))
+
+
+def is_post_published(order_item_id):
+    try:
+        # Get order item
+        order_item = OrderItem.objects.get(id=order_item_id)
+    except OrderItem.DoesNotExist:
+        raise Exception('Order item does not exist')
+
+    try:
+        # Get the twitter account of the influencer
+        twitter_account = TwitterAccount.objects.get(
+            id=order_item.package.influencer.twitter_account.id)
+        client = Client(bearer_token=twitter_account.access_token,
+                        consumer_key=CONSUMER_KEY,
+                        consumer_secret=CONSUMER_SECRET,
+                        access_token=ACCESS_TOKEN,
+                        access_token_secret=ACCESS_SECRET
+                        )
+        res = client.get_tweet(
+            id=order_item.published_tweet_id, user_auth=False)
+
+        return True if str(res.data['id']) == str(order_item.published_tweet_id) else False
+    except Exception as e:
+        logger.error('Error in checking if post is published: ', str(e))
+        return False
+
+
+def is_post_liked(order_item_id):
+    try:
+        # Get order item
+        order_item = OrderItem.objects.get(id=order_item_id)
+    except OrderItem.DoesNotExist:
+        raise Exception('Order item does not exist')
+
+    try:
+        # Get the twitter account of the influencer
+        twitter_account = TwitterAccount.objects.get(
+            id=order_item.package.influencer.twitter_account.id)
+        client = Client(bearer_token=twitter_account.access_token,
+                        consumer_key=CONSUMER_KEY,
+                        consumer_secret=CONSUMER_SECRET,
+                        access_token=ACCESS_TOKEN,
+                        access_token_secret=ACCESS_SECRET
+                        )
+        res = client.get_liking_users(
+            id=order_item.published_tweet_id, user_auth=False)
+        # res.data is an array of {id, username, name} objects
+        # Check that twitter_account.twitter_id is in the array
+        return True if any(
+            str(user['id']) == str(twitter_account.twitter_id) for user in res.data) else False
+    except Exception as e:
+        logger.error('Error in checking if post is liked: ', str(e))
+        return False
+
+
+@celery_app.task(base=QueueOnce, once={'graceful': True})
+def validate_order_item(order_item_id):
+    try:
+        # Get order item
+        order_item = OrderItem.objects.get(id=order_item_id)
+        if order_item.status != 'published':
+            raise Exception('Order item is not in published status')
+        is_published = False
+        if order_item.service_master.twitter_service_type == 'like_tweet':
+            is_published = is_post_liked(order_item.id)
+        else:
+            is_published = is_post_published(order_item.id)
+        if is_published:
+            order_item.is_verified = True
+            order_item.save()
+            check_order_status(order_item.order_id.id)
     except Exception as e:
         raise Exception(str(e))
