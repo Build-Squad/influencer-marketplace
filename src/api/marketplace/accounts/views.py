@@ -1,6 +1,9 @@
+from decimal import Decimal
 from distutils.util import strtobool
 from http.client import HTTPResponse
 import secrets
+
+from django.shortcuts import get_object_or_404
 from accounts.tasks import sendEmail
 
 from marketplace.authentication import JWTAuthentication
@@ -14,11 +17,13 @@ from marketplace.services import (
     JWTOperations,
     truncateWalletAddress,
 )
+from django.db.models import Avg
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from orders.models import Review
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
@@ -168,8 +173,7 @@ class TwitterAccountList(APIView):
             lowerFollowerLimit = request.GET.get("lowerFollowerLimit", "")
 
             searchString = request.GET.get("searchString", "")
-            isVerified_str = request.GET.get("isVerified", "false")
-            isVerified = bool(strtobool(isVerified_str))
+            rating = request.GET.get("rating", 0)
             
             # Default fetch influencers for explore page
             role = request.GET.get("role", "influencer")
@@ -212,9 +216,6 @@ class TwitterAccountList(APIView):
                     Q(user_name__icontains=searchString)
                     | Q(name__icontains=searchString)
                 )
-
-            if isVerified:
-                twitterAccount = twitterAccount.filter(verified=isVerified)
 
             if collaborationIds:
                 if collaborationIds[0] == "nil":
@@ -303,6 +304,25 @@ class TwitterAccountList(APIView):
                     id__in=twitter_accounts_to_exclude
                 )
             
+            if rating:
+                exclude_ids = [] 
+                
+                for twitter_account in twitterAccount:
+                    user = get_object_or_404(User, twitter_account=twitter_account)
+                    
+                    reviews = Review.objects.filter(
+                        order__order_item_order_id__package__influencer=user,
+                        order__deleted_at=None,
+                        order__status="completed"
+                    )
+                    
+                    total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or Decimal('0')
+                    
+                    if total_rating < Decimal(rating):
+                        exclude_ids.append(twitter_account.id)
+                
+                twitterAccount = twitterAccount.exclude(id__in=exclude_ids)
+
             twitterAccount = twitterAccount.order_by("-followers_count")
 
             # Paginate the results

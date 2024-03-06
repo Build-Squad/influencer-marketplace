@@ -9,7 +9,7 @@ interface ExploreFilterType {
   upperFollowerLimit: number | null;
   lowerFollowerLimit: number | null;
   searchString: string;
-  isVerified: boolean;
+  rating: number;
 }
 
 const ExploreFilterSchema = object({
@@ -29,7 +29,7 @@ const ExploreFilterInitialValues: ExploreFilterType = {
   upperFollowerLimit: null,
   lowerFollowerLimit: null,
   searchString: "",
-  isVerified: false,
+  rating: 0,
 };
 
 export { ExploreFilterSchema, ExploreFilterInitialValues };
