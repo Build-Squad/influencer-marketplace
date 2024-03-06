@@ -47,7 +47,7 @@ TWEET_LIMIT = 280
 
 
 @celery_app.task(base=QueueOnce, once={'graceful': True})
-def cancel_escrow(order_id: str):
+def cancel_escrow(order_id: str, status: str):
     try:
         # Get order
         order = Order.objects.get(id=order_id)
@@ -67,7 +67,7 @@ def cancel_escrow(order_id: str):
         asyncio.run(validate_escrow_to_cancel(val_auth_keypair, buyer_primary_wallet.wallet_address_id,
                                               influencer_primary_wallet.wallet_address_id, order.order_number, "devnet"))
         # After the above task is finished successfully, update the order status to cancelled
-        order.status = 'rejected'
+        order.status = status
         order.save()
 
     except Exception as e:
