@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .models import (
+    Escrow,
     Order,
     OrderItem,
     OrderAttachment,
@@ -433,6 +434,28 @@ class UpdateOrderStatus(APIView):
         except Order.DoesNotExist:
             return None
 
+    def create_escrow(self, order, inlfuencer_id, business_id):
+        influencer_wallet = Wallet.objects.get(
+            user_id=inlfuencer_id, is_primary=True)
+        business_wallet = Wallet.objects.get(
+            user_id=business_id, is_primary=True)
+        Escrow.objects.create(
+            order=order,
+            business_wallet=business_wallet,
+            influencer_wallet=influencer_wallet,
+        )
+
+    def create_transaction(self, order, address, status, user, transaction_type):
+        Transaction.objects.create(
+            order=order,
+            transaction_address=address,
+            status=status,
+            transaction_initiated_by=self.request.user_account,
+            wallet=Wallet.objects.get(
+                user_id=user, is_primary=True),
+            transaction_type=transaction_type
+        )
+
     @swagger_auto_schema(request_body=OrderSerializer)
     def put(self, request, pk):
         try:
@@ -449,16 +472,12 @@ class UpdateOrderStatus(APIView):
                 old_status = order.status
                 if status_data["status"] == "pending":
                     if request.data.get("address"):
+                        # Create an Escrow Object
+                        self.create_escrow(order, order.order_item_order_id.all()[
+                                           0].package.influencer.id, order.buyer.id)
                         # Create a transaction for the order
-                        Transaction.objects.create(
-                            order=order,
-                            transaction_address=request.data.get("address"),
-                            status="success",
-                            transaction_initiated_by=request.user_account,
-                            wallet=Wallet.objects.get(
-                                user_id=request.user_account, is_primary=True),
-                            transaction_type="initiate_escrow"
-                        )
+                        self.create_transaction(
+                            order, request.data.get("address"), "success", request.user_account, "initiate_escrow")
                     else:
                         return Response(
                             {
