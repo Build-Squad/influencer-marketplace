@@ -1,11 +1,10 @@
 import asyncio
-from calendar import c
 import logging
 from accounts.models import TwitterAccount, User, Wallet
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
     create_order_item_tracking, create_order_tracking, create_reminider_notification
-from orders.models import Order, OrderItem, OrderItemMetaData
+from orders.models import Escrow, Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
 
@@ -49,18 +48,14 @@ TWEET_LIMIT = 280
 @celery_app.task(base=QueueOnce, once={'graceful': True})
 def cancel_escrow(order_id: str, status: str):
     try:
-        # Get order
+        # Get order and corresponding escrow
         order = Order.objects.get(id=order_id)
-
-        # Get the buyer and influencer
-        buyer = User.objects.get(id=order.buyer.id)
-        order_items = OrderItem.objects.filter(order_id=order)
-        influencer = order_items[0].package.influencer
+        escrow = Escrow.objects.get(order=order)
 
         buyer_primary_wallet = Wallet.objects.get(
-            user_id=buyer.id, is_primary=True)
+            id=escrow.business_wallet.id)
         influencer_primary_wallet = Wallet.objects.get(
-            user_id=influencer.id, is_primary=True)
+            id=escrow.influencer_wallet.id)
 
         val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
 
@@ -70,6 +65,9 @@ def cancel_escrow(order_id: str, status: str):
         order.status = status
         order.save()
 
+        escrow.status = "cancelled"
+        escrow.save()
+
     except Exception as e:
         raise Exception('Error in cancelling escrow', str(e))
 
@@ -77,18 +75,14 @@ def cancel_escrow(order_id: str, status: str):
 @celery_app.task(base=QueueOnce, once={'graceful': True})
 def confirm_escrow(order_id: str):
     try:
-        # Get order
+        # Get order and corresponding escrow
         order = Order.objects.get(id=order_id)
-
-        # Get the buyer and influencer
-        buyer = User.objects.get(id=order.buyer.id)
-        order_items = OrderItem.objects.filter(order_id=order)
-        influencer = order_items[0].package.influencer
+        escrow = Escrow.objects.get(order=order)
 
         buyer_primary_wallet = Wallet.objects.get(
-            user_id=buyer.id, is_primary=True)
+            id=escrow.business_wallet.id)
         influencer_primary_wallet = Wallet.objects.get(
-            user_id=influencer.id, is_primary=True)
+            id=escrow.influencer_wallet.id)
 
         val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
 
@@ -97,6 +91,9 @@ def confirm_escrow(order_id: str):
 
         order.status = 'completed'
         order.save()
+
+        escrow.status = "delivered"
+        escrow.save()
 
     except Exception as e:
         raise Exception('Error in confirming escrow', str(e))
