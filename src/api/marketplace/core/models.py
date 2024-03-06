@@ -72,3 +72,37 @@ class RegionMaster(models.Model):
 
     def __str__(self):
         return self.regionName
+
+class HowItWorksRoute(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="How it works route",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    route = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, null=True, blank=True, default="")
+    
+    class Meta:
+        db_table = "how_it_works_section"
+
+    def __str__(self):
+        return self.route
+
+class HowItWorksStep(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="How it works Step",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    step_route = models.ForeignKey(HowItWorksRoute, related_name='step_route', on_delete=models.CASCADE)
+    step = models.CharField(max_length=100)
+    step_label = models.CharField(max_length=255)
+    html_content = models.TextField()
+
+    class Meta:
+        db_table = "how_it_works_step"
+
+    def __str__(self):
+        return self.step

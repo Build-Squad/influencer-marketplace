@@ -2,11 +2,12 @@ from marketplace.services import Pagination, handleServerException, handleNotFou
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Country, Currency, LanguageMaster, RegionMaster
+from .models import Country, Currency, HowItWorksStep, LanguageMaster, RegionMaster
 from django.db.models import Q
 from .serializers import (
     CountrySerializer,
     CurrencySerializer,
+    HowItWorksStepSerializer,
     LanguageMasterSerializer,
     RegionMasterSerializer,
 )
@@ -170,6 +171,24 @@ class RegionListView(APIView):
                     "data": serializer.data,
                     "message": "All Regions retrieved successfully",
                     "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+
+class HowItWorksStepsView(APIView):
+    def get(self, request, route):
+        try:
+            steps = HowItWorksStep.objects.all()
+            serializer = HowItWorksStepSerializer(steps, many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": f"Data fetched for {route} route successful",
                 },
                 status=status.HTTP_200_OK,
             )
