@@ -302,6 +302,8 @@ class TwitterAccountList(APIView):
                 twitterAccount = twitterAccount.exclude(
                     id__in=twitter_accounts_to_exclude
                 )
+            
+            twitterAccount = twitterAccount.order_by("-followers_count")
 
             # Paginate the results
             pagination = Pagination(twitterAccount, request)
