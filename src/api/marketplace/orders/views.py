@@ -103,6 +103,7 @@ class OrderListView(APIView):
             pending = orders.filter(status="pending").count()
             completed = orders.filter(status="completed").count()
             rejected = orders.filter(status="rejected").count()
+            cancelled = orders.filter(status="cancelled").count()
 
             return Response(
                 {
@@ -112,6 +113,7 @@ class OrderListView(APIView):
                         "pending": pending,
                         "completed": completed,
                         "rejected": rejected,
+                        "cancelled": cancelled,
                     },
                     "message": "All Order Count retrieved successfully",
                 },
@@ -574,7 +576,8 @@ class CancelOrderView(APIView):
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-            cancel_escrow.apply_async(args=[pk])
+            order_status = "cancelled" if request.user_account.id == order.buyer.id else "rejected"
+            cancel_escrow.apply_async(args=[pk, order_status])
             return Response(
                 {
                     "isSuccess": True,
