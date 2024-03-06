@@ -67,6 +67,7 @@ export default function BusinessDashboardPage() {
     completed: 0,
     pending: 0,
     rejected: 0,
+    cancelled: 0,
   });
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
@@ -120,8 +121,9 @@ export default function BusinessDashboardPage() {
         setOrderCount({
           accepted: data?.data?.accepted,
           completed: data?.data?.completed,
-          pending: 0,
+          pending: data?.data?.pending,
           rejected: data?.data?.rejected,
+          cancelled: data?.data?.cancelled,
         });
       } else {
         notification(message ? message : "Something went wrong", "error");
@@ -230,6 +232,28 @@ export default function BusinessDashboardPage() {
         <RejectedOrders
           style={{
             fill: selectedCard === 4 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Cancelled Orders",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_STATUS.CANCELLED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(5);
+      },
+      value: 5,
+      icon: (
+        <RejectedOrders
+          style={{
+            fill: selectedCard === 5 ? "#fff" : "#19191929",
           }}
         />
       ),
@@ -545,7 +569,7 @@ export default function BusinessDashboardPage() {
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (
-                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
                     <StatusCard
                       card={card}
                       selectedCard={selectedCard}
