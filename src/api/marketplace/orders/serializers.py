@@ -107,11 +107,23 @@ class OrderSerializer(serializers.ModelSerializer):
         escrow = Escrow.objects.filter(order=obj).first()
         if escrow:
             return WalletCompleteSerializer(escrow.influencer_wallet).data
+        else:
+            # Get the primary wallet of the influencer
+            influencer = obj.order_item_order_id.first().package.influencer
+            wallet = Wallet.objects.filter(
+                user_id=influencer, is_primary=True).first()
+            return WalletCompleteSerializer(wallet).data
     def get_buyer_wallet(self, obj):
         # Should return the wallet of the buyer
         escrow = Escrow.objects.filter(order=obj).first()
         if escrow:
             return WalletCompleteSerializer(escrow.business_wallet).data
+        else:
+            # Get the primary wallet of the buyer
+            buyer = obj.buyer
+            wallet = Wallet.objects.filter(
+                user_id=buyer, is_primary=True).first()
+            return WalletCompleteSerializer(wallet).data
 
     def get_transactions(self, obj):
         if "request" in self.context:
