@@ -13,30 +13,32 @@ class TestValidator:
         self.network = network
 
     async def test_validate_to_delivered_instruction(self):   
-        await validate_escrow_to_delivered(self.validator_keypair, 
-                                           self.business, 
-                                           self.influencer, 
-                                           self.order_code, 
-                                           self.network)
-    async def test_validate_to_delivered_instruction(self):   
-        await validate_escrow_to_cancel(self.validator_keypair, 
-                                        self.business, 
-                                        self.influencer, 
-                                        self.order_code, 
-                                        self.network)
+        results = await validate_escrow_to_delivered(self.validator_keypair, 
+                                                     self.business, 
+                                                     self.influencer, 
+                                                     self.order_code, 
+                                                     self.network)
+        print(results)
+        
+    async def test_validate_to_canel_instruction(self):   
+        results = await validate_escrow_to_cancel(self.validator_keypair, 
+                                                  self.business, 
+                                                  self.influencer, 
+                                                  self.order_code, 
+                                                  self.network)
+        print(results)
 
 
 path="test_wallets/platform_EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH.json" # path to keypair    
 val_auth_keypair,_ = get_local_keypair_pubkey(path="../"+path)
 
-###
-bus = 'GQRDv58u1dULSyHSYWPqNTjcWjsFHHi763mbqDaEEgQ3' # business (put YOURS)
-inf='94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA' # influencer (put YOURS)
-order_code=1240 # order code (change this for each escrow order)
-
-network="localnet" # start a local validator for localnet i.e. $ solana-test-validator
+### configure test
+bus = '6suvWCcjg5o7xgHrDGc4MXQxraK9PnZyEXzjhhQN6HUK' # business   (put YOURS)
+inf = '94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA' # influencer (put YOURS)
+order_code=1241  # order code (change this for each escrow order)
+network="devnet" # start a local validator for localnet i.e. $ solana-test-validator
 
 test_validator = TestValidator(val_auth_keypair, bus, inf, order_code, network)
 
-#asyncio.run(test_validate_to_delivered_instruction(network))
-asyncio.run(test_validator.test_validate_to_delivered_instruction())
+asyncio.run(test_validator.test_validate_to_canel_instruction())
+#asyncio.run(test_validator.test_validate_to_delivered_instruction())

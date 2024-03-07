@@ -8,7 +8,16 @@ from .instructions import validate_escrow_sol
 from .utils import sign_and_send_transaction
 from .program_id import PROGRAM_ID
 
-xfluencer_solana_python_client_version="1.0.1"
+xfluencer_solana_python_client_version="1.0.2"
+###################
+# Version: 1.0.2
+# Bump: Patch
+# Updated: 6.03.2024
+###################
+# Issues
+# -Return signature status upon validation
+# -Fix stand alone test for pyxfluencer python package
+#
 ###################
 # Version: 1.0.1 
 # Bump: Patch
@@ -31,7 +40,7 @@ async def validate_escrow_to_cancel(validator_authority: Keypair,
                                     order_code:int, 
                                     network="https://api.devnet.solana.com"):
     
-    await validate_escrow(validator_authority,
+    return await validate_escrow(validator_authority,
                           business_address, 
                           influencer_address, 
                           EscrowState.CANCEL, 
@@ -45,7 +54,7 @@ async def validate_escrow_to_delivered(validator_authority: Keypair,
                                        order_code:int,
                                        network="https://api.devnet.solana.com"):
     
-    await validate_escrow(validator_authority,
+    return await validate_escrow(validator_authority,
                           business_address, 
                           influencer_address, 
                           EscrowState.DELIVERED, 
@@ -80,7 +89,7 @@ async def validate_escrow(validation_authority: Keypair,
         "business":business_pk,
         "escrow_account":escrow_pda
         }
-    #print(accounts)
+    
     
     print("business pk", business_pk)
 
@@ -92,4 +101,5 @@ async def validate_escrow(validation_authority: Keypair,
 
     signers = [validation_authority]        
     
-    await sign_and_send_transaction(ix, signers, opts, network)
+    signature_status = await sign_and_send_transaction(ix, signers, opts, network)
+    return signature_status
