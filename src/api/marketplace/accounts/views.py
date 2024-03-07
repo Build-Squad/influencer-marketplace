@@ -1115,7 +1115,6 @@ class OTPAuth(APIView):
                             "isSuccess": True,
                             "data": None,
                             "message": "OTP sent successfully",
-                            "otp": otp,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -1259,7 +1258,6 @@ class OTPAuthV2(APIView):
                             "isSuccess": True,
                             "data": None,
                             "message": "OTP sent successfully",
-                            "otp": otp,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -1378,7 +1376,6 @@ class EmailVerification(APIView):
                         "isSuccess": True,
                         "data": None,
                         "message": "Email sent successfully",
-                        "otp": otp,
                     },
                     status=status.HTTP_200_OK,
                 )
