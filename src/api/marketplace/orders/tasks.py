@@ -1,11 +1,10 @@
 import asyncio
-from calendar import c
 import logging
 from accounts.models import TwitterAccount, User, Wallet
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
     create_order_item_tracking, create_order_tracking, create_reminider_notification
-from orders.models import Order, OrderItem, OrderItemMetaData
+from orders.models import Escrow, Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
 
@@ -44,31 +43,31 @@ ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 VALIDATOR_KEY_PATH = config("VALIDATOR_KEY_PATH")
 TWEET_LIMIT = 280
+NETWORK = config("NETWORK")
 
 
 @celery_app.task(base=QueueOnce, once={'graceful': True})
 def cancel_escrow(order_id: str, status: str):
     try:
-        # Get order
+        # Get order and corresponding escrow
         order = Order.objects.get(id=order_id)
-
-        # Get the buyer and influencer
-        buyer = User.objects.get(id=order.buyer.id)
-        order_items = OrderItem.objects.filter(order_id=order)
-        influencer = order_items[0].package.influencer
+        escrow = Escrow.objects.get(order=order)
 
         buyer_primary_wallet = Wallet.objects.get(
-            user_id=buyer.id, is_primary=True)
+            id=escrow.business_wallet.id)
         influencer_primary_wallet = Wallet.objects.get(
-            user_id=influencer.id, is_primary=True)
+            id=escrow.influencer_wallet.id)
 
         val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
 
-        asyncio.run(validate_escrow_to_cancel(val_auth_keypair, buyer_primary_wallet.wallet_address_id,
-                                              influencer_primary_wallet.wallet_address_id, order.order_number, "devnet"))
+        asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
+                                              influencer_address=influencer_primary_wallet.wallet_address_id, order_code=order.order_number, network=NETWORK))
         # After the above task is finished successfully, update the order status to cancelled
         order.status = status
         order.save()
+
+        escrow.status = "cancelled"
+        escrow.save()
 
     except Exception as e:
         raise Exception('Error in cancelling escrow', str(e))
@@ -77,26 +76,25 @@ def cancel_escrow(order_id: str, status: str):
 @celery_app.task(base=QueueOnce, once={'graceful': True})
 def confirm_escrow(order_id: str):
     try:
-        # Get order
+        # Get order and corresponding escrow
         order = Order.objects.get(id=order_id)
-
-        # Get the buyer and influencer
-        buyer = User.objects.get(id=order.buyer.id)
-        order_items = OrderItem.objects.filter(order_id=order)
-        influencer = order_items[0].package.influencer
+        escrow = Escrow.objects.get(order=order)
 
         buyer_primary_wallet = Wallet.objects.get(
-            user_id=buyer.id, is_primary=True)
+            id=escrow.business_wallet.id)
         influencer_primary_wallet = Wallet.objects.get(
-            user_id=influencer.id, is_primary=True)
+            id=escrow.influencer_wallet.id)
 
         val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
 
-        asyncio.run(validate_escrow_to_delivered(val_auth_keypair, buyer_primary_wallet.wallet_address_id,
-                                                 influencer_primary_wallet.wallet_address_id, order.order_number, "devnet"))
+        asyncio.run(validate_escrow_to_delivered(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
+                                                 influencer_address=influencer_primary_wallet.wallet_address_id, order_code=order.order_number, network=NETWORK))
 
         order.status = 'completed'
         order.save()
+
+        escrow.status = "delivered"
+        escrow.save()
 
     except Exception as e:
         raise Exception('Error in confirming escrow', str(e))
@@ -120,9 +118,9 @@ def check_order_status(pk):
     if is_completed:
         confirm_escrow.apply_async(args=[order.id])
         # Create a Order Tracking for the order
-        create_order_tracking(order, order.status)
+        create_order_tracking(order=order, status=order.status)
         # Send notification to business
-        create_notification_for_order(order, 'accepted', 'completed')
+        create_notification_for_order(order=order, old_status='accepted', new_status='completed')
 
 
 def tweet(text, client):
@@ -272,19 +270,19 @@ def twitter_task(order_item_id):
         res = None
         # Switch case for different service types
         if service_type == 'tweet':
-            res = tweet(text, client)
+            res = tweet(text=text, client=client)
         elif service_type == 'like_tweet':
-            res = like_tweet(tweet_id, client)
+            res = like_tweet(tweet_id=tweet_id, client=client)
         elif service_type == 'reply_to_tweet':
-            res = reply_to_tweet(text, in_reply_to_tweet_id, client)
+            res = reply_to_tweet(text=text, in_reply_to_tweet_id=in_reply_to_tweet_id, client=client)
         elif service_type == 'quote_tweet':
-            res = quote_tweet(text, tweet_id, client)
+            res = quote_tweet(text=text, tweet_id=tweet_id, client=client)
         elif service_type == 'poll':
-            res = poll(text, poll_options, poll_duration_minutes, client)
+            res = poll(text=text, poll_options=poll_options, poll_duration_minutes=poll_duration_minutes, client=client)
         elif service_type == 'retweet':
-            res = retweet(tweet_id, client)
+            res = retweet(tweet_id=tweet_id, client=client)
         elif service_type == 'thread':
-            res = thread(text, client)
+            res = thread(text=text, client=client)
 
         order_item.published_tweet_id = res
         order_item.status = 'published'
@@ -295,16 +293,16 @@ def twitter_task(order_item_id):
             args=[order_item.id], countdown=120)
 
         # Create a order item tracking for the order item
-        create_order_item_tracking(order_item, order_item.status)
+        create_order_item_tracking(order_item=order_item, status=order_item.status)
 
         # Check if the order is completed
-        check_order_status(order_item.order_id.id)
+        check_order_status(pk=order_item.order_id.id)
 
         # Create notification for order item
         create_notification_for_order_item(
-            order_item, 'scheduled', 'published')
+            order_item=order_item, old_status='scheduled', new_status='published')
         create_order_item_status_update_message(
-            order_item, order_item.package.influencer)
+            order_item=order_item, updated_by=order_item.package.influencer)
 
     except Exception as e:
         raise Exception(str(e))
@@ -342,14 +340,14 @@ def schedule_tweet(order_item_id):
             order_item.status = 'scheduled'
             order_item.save()
 
-            create_order_item_tracking(order_item, order_item.status)
+            create_order_item_tracking(order_item=order_item, status=order_item.status)
 
             # Send notification to business
             create_notification_for_order_item(
-                order_item, 'accepted', 'scheduled')
+                order_item=order_item, old_status='accepted', new_status='scheduled')
 
             create_order_item_status_update_message(
-                order_item, order_item.package.influencer)
+                order_item=order_item, updated_by=order_item.package.influencer)
     except Exception as e:
         raise Exception(str(e))
 
@@ -374,13 +372,13 @@ def cancel_tweet(order_item_id):
             order_item.status = 'cancelled'
             order_item.save()
 
-            create_order_item_tracking(order_item, order_item.status)
+            create_order_item_tracking(order_item=order_item, status=order_item.status)
 
             # Send notification to business
             create_notification_for_order_item(
-                order_item, 'scheduled', 'cancelled')
+                order_item=order_item, old_status='scheduled', new_status='cancelled')
             create_order_item_status_update_message(
-                order_item, order_item.package.influencer)
+                order_item=order_item, updated_by=order_item.package.influencer)
     except Exception as e:
         raise Exception(str(e))
 
@@ -404,14 +402,14 @@ def schedule_reminder_notification():
             publish_date__gte=timezone.now())
 
         for order_item in order_items:
-            if not check_notification_sent(order_item.id):
+            if not check_notification_sent(order_item_id=order_item.id):
                 # Send notification to business
-                create_reminider_notification(order_item)
+                create_reminider_notification(order_item=order_item)
     except Exception as e:
         raise Exception(str(e))
 
 
-def is_post_published(order_item_id):
+def is_post_published(order_item_id) -> bool:
     try:
         # Get order item
         order_item = OrderItem.objects.get(id=order_item_id)
@@ -433,11 +431,11 @@ def is_post_published(order_item_id):
 
         return True if str(res.data['id']) == str(order_item.published_tweet_id) else False
     except Exception as e:
-        logger.error('Error in checking if post is published: ', str(e))
+        logger.error('Error in checking if post is published: %s', str(e))
         return False
 
 
-def is_post_liked(order_item_id):
+def is_post_liked(order_item_id) -> bool:
     try:
         # Get order item
         order_item = OrderItem.objects.get(id=order_item_id)
@@ -461,7 +459,7 @@ def is_post_liked(order_item_id):
         return True if any(
             str(user['id']) == str(twitter_account.twitter_id) for user in res.data) else False
     except Exception as e:
-        logger.error('Error in checking if post is liked: ', str(e))
+        logger.error('Error in checking if post is liked: %s', str(e))
         return False
 
 
@@ -474,12 +472,12 @@ def validate_order_item(order_item_id):
             raise Exception('Order item is not in published status')
         is_published = False
         if order_item.service_master.twitter_service_type == 'like_tweet':
-            is_published = is_post_liked(order_item.id)
+            is_published = is_post_liked(order_item_id=order_item.id)
         else:
-            is_published = is_post_published(order_item.id)
+            is_published = is_post_published(order_item_id=order_item.id)
         if is_published:
             order_item.is_verified = True
             order_item.save()
-            check_order_status(order_item.order_id.id)
+            check_order_status(pk=order_item.order_id.id)
     except Exception as e:
         raise Exception(str(e))

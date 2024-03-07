@@ -54,5 +54,5 @@ def sendEmail(subject, message, template_name, context, recipient_list):
         html_message = get_template(template_name).render(context)
         send_mail(subject=subject, message=message, html_message=html_message,
                   from_email=from_email, recipient_list=recipient_list)
-    except Exception:
-        raise Exception()
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
