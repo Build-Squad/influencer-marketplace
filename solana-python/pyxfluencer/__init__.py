@@ -89,9 +89,7 @@ async def validate_escrow(validation_authority: Keypair,
         "business":business_pk,
         "escrow_account":escrow_pda
         }
-    
-    
-    print("business pk", business_pk)
+        
 
     opts = TxOpts(skip_confirmation = True,
                   skip_preflight = True,
