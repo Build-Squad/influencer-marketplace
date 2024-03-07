@@ -47,11 +47,27 @@ export default function Explore({}: Props) {
   });
   const formik = useFormik({
     initialValues: ExploreFilterInitialValues,
-    onSubmit: (values) => {
-      getInfluencers(values);
-    },
+    onSubmit: () => {},
     validationSchema: ExploreFilterSchema,
   });
+
+  // Applying debouncing for filter's section
+  useEffect(() => {
+    let timeoutId: any;
+
+    const debouncedGetInfluencers = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        getInfluencers(formik.values);
+      }, 1000);
+    };
+
+    debouncedGetInfluencers();
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [formik.values]);
 
   useEffect(() => {
     getInfluencers();

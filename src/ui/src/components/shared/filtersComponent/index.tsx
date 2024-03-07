@@ -208,23 +208,6 @@ export default function FiltersComponent({
           id="standard-bare"
           variant="outlined"
           placeholder="Search Influencers by Category or Username"
-          InputProps={{
-            endAdornment: (
-              <Button
-                type="submit"
-                variant="contained"
-                color="secondary"
-                sx={{
-                  borderRadius: "12px",
-                  fontWeight: "bold",
-                  px: 4,
-                }}
-                onClick={() => {}}
-              >
-                Search
-              </Button>
-            ),
-          }}
         />
       );
     case "FOLLOWERS": {
