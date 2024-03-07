@@ -1,5 +1,5 @@
 "use client";
-import { Box, Grid, Pagination, Typography } from "@mui/material";
+import { Box, Grid, Pagination, Tooltip, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import React, { useEffect, useState } from "react";
 import { ExploreFilterInitialValues, ExploreFilterSchema } from "./validation";
@@ -8,6 +8,7 @@ import Footer from "@/src/components/shared/footer";
 import InfluencersCards from "../components/influencersContainer/influencersCards";
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import HelperButton from "@/src/components/helperButton";
 
 type InfluencersType = {
   id: string;
@@ -156,11 +157,13 @@ export default function Explore({}: Props) {
 
       {/* Top Influencers section */}
       <Box sx={{ px: 3, py: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "baseline", columnGap: "8px" }}>
+        <Box sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}>
           <Typography variant="h5">Top Matches</Typography> -
           <Typography variant="subtitle1" sx={{ fontStyle: "italic" }}>
             {pagination?.total_data_count ?? 0} Results
           </Typography>
+          {/* The step should be in the database with the corresponding route */}
+          <HelperButton step={"filters"} />
         </Box>
         <Grid
           container

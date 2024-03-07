@@ -18,5 +18,5 @@ urlpatterns = [
     path("language-master/", LanguageListView.as_view()),
     path("language-master/<str:pk>/", LanguageDetailView.as_view()),
     path("regions-master/", RegionListView.as_view()),
-    path("how-it-works-steps/<str:route>", HowItWorksStepsView.as_view()),
+    path("how-it-works-steps/", HowItWorksStepsView.as_view()),
 ]

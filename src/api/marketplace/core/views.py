@@ -180,9 +180,10 @@ class RegionListView(APIView):
 
 
 class HowItWorksStepsView(APIView):
-    def get(self, request, route):
+    def post(self, request):
         try:
-            steps = HowItWorksStep.objects.all()
+            route = request.data["route"]
+            steps = HowItWorksStep.objects.filter(step_route__route = route)
             serializer = HowItWorksStepSerializer(steps, many=True)
             return Response(
                 {
