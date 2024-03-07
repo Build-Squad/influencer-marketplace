@@ -430,7 +430,7 @@ def is_post_published(order_item_id):
 
         return True if str(res.data['id']) == str(order_item.published_tweet_id) else False
     except Exception as e:
-        logger.error('Error in checking if post is published: ', str(e))
+        logger.error('Error in checking if post is published: %s', str(e))
         return False
 
 
@@ -458,7 +458,7 @@ def is_post_liked(order_item_id):
         return True if any(
             str(user['id']) == str(twitter_account.twitter_id) for user in res.data) else False
     except Exception as e:
-        logger.error('Error in checking if post is liked: ', str(e))
+        logger.error('Error in checking if post is liked: %s', str(e))
         return False
 
 
