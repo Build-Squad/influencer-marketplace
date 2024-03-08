@@ -61,7 +61,9 @@ async def main():
            
     signers = [business]    
 
-    await sign_and_send_transaction(ix, signers, opts, network)
+    sign_status = await sign_and_send_transaction(ix, signers, opts, network)
+
+    print(sign_status)
 
 import asyncio
 
