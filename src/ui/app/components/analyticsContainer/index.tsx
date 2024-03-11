@@ -28,15 +28,16 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     },
     data2: {
       value: "76 %",
-      subtitle: "users have bought something after recommendation.",
+      subtitle:
+        "users say they bought something after a recommendation from X.",
     },
     data3: {
       value: "238 M",
-      subtitle: "Monthly active users on X",
+      subtitle: "monthly active years (mAU)",
     },
     data4: {
-      value: "440 M",
-      subtitle: "Total Influencers on X",
+      value: "79 %",
+      subtitle: "of users use X as a news site",
     },
   },
   {

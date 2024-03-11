@@ -43,7 +43,7 @@ export default function Influencer({}: Props) {
   return (
     <Fragment>
       <Banner />
-      <AnalyticsContainer role={"business"}/>
+      <AnalyticsContainer role={"influencer"}/>
       <Box
         sx={{
           marginX: "40px",
