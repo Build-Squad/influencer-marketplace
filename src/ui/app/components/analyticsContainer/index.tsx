@@ -86,7 +86,7 @@ const AnalyticsItem: React.FC<AnalyticsDataItem> = ({
       xmlns="http://www.w3.org/2000/svg"
       width="2"
       height="126"
-      viewBox="0 0 2 126"
+      viewBox="0 0 2 100%"
       fill="none"
       style={{ visibility: isLast ? "hidden" : "visible" }}
     >
