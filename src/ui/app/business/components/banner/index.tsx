@@ -58,7 +58,7 @@ export default function Banner({}: Props) {
           style={{ marginBottom: "8px" }}
         />
         <Typography variant="body1">
-          Directly Connect With X's Finest Influencers
+          1<sup>st</sup> Influencer marketplace for X
         </Typography>
       </Box>
       <Box
@@ -75,9 +75,12 @@ export default function Banner({}: Props) {
           sx={{ fontSize: "2.65rem" }}
           fontWeight={"bold"}
         >
-          1<sup>st</sup> Influencer marketplace for X
+          Effortless Connections, Powerful Results
         </Typography>
       </Box>
+      <Typography variant="body1">
+        Directly Connect With X's Finest Influencers
+      </Typography>
 
       {/* Filters Container */}
       <Box
