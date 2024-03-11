@@ -688,11 +688,12 @@ const ProfileLayout = ({
                       {item.label}
                     </Typography>
                   ))}
-                  <HelperButton
+                  {/* For dynamic routes pass props like this (In correspondence with Backend) */}
+                  {/* <HelperButton
                     step={"services"}
                     isDynamic={true}
                     route={"/influencer/profile/[]"}
-                  />
+                  /> */}
                 </Box>
                 <Box sx={{ p: 2 }}>
                   <Services

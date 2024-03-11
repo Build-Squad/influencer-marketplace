@@ -163,7 +163,7 @@ export default function Explore({}: Props) {
             {pagination?.total_data_count ?? 0} Results
           </Typography>
           {/* The step should be in the database with the corresponding route */}
-          <HelperButton step={"filters"} />
+          {/* <HelperButton step={"filters"} /> */}
         </Box>
         <Grid
           container
