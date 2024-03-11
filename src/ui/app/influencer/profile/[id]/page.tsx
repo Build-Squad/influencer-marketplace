@@ -44,6 +44,7 @@ import Services from "./_services";
 import { stringToColor } from "@/src/utils/helper";
 import WalletsTable from "@/src/components/profileComponents/walletsTable";
 import StarIcon from "@mui/icons-material/Star";
+import HelperButton from "@/src/components/helperButton";
 
 const tabs = [
   {
@@ -677,6 +678,9 @@ const ProfileLayout = ({
                 <Box
                   sx={{
                     m: 2,
+                    display: "flex",
+                    columnGap: "4px",
+                    alignItems: "flex-top",
                   }}
                 >
                   {tabs.map((item) => (
@@ -684,6 +688,12 @@ const ProfileLayout = ({
                       {item.label}
                     </Typography>
                   ))}
+                  {/* For dynamic routes pass props like this (In correspondence with Backend) */}
+                  {/* <HelperButton
+                    step={"services"}
+                    isDynamic={true}
+                    route={"/influencer/profile/[]"}
+                  /> */}
                 </Box>
                 <Box sx={{ p: 2 }}>
                   <Services
