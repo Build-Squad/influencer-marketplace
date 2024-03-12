@@ -158,7 +158,7 @@ def manage_categories(hashtags, twitter_account):
         category = CategoryMaster.objects.filter(name=tag).first()
         if category is None:
             new_category = CategoryMaster.objects.create(
-                name=tag, description=tag)
+                name=tag, description=tag, type="custom")
             new_category.save()
         else:
             new_category = category
