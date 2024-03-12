@@ -128,7 +128,11 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
             ? `/influencer${item?.route}`
             : "";
           if (item?.label == "Profile") {
-            route = `${route}/${user?.user?.id}` ?? "";
+            if (user?.user?.role?.name?.includes("business")) {
+              route = "/business/profile?tab=wallet";
+            } else {
+              route = `${route}/${user?.user?.id}` ?? "";
+            }
           }
         }
 
@@ -329,7 +333,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
               user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
                   items={[
-                    "Home",
+                    "Profile",
                     "Explore",
                     "Dashboard",
                     "Messages",

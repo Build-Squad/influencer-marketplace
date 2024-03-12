@@ -81,7 +81,7 @@ export default function InfluencersContainer({}: Props) {
           color: "#505050",
         }}
       >
-        Dive into the future of the web with top influencers
+        Find the right influencers for your niche / needs.
       </Typography>
       <Grid container mt={3} justifyContent="center" alignItems="center">
         <Grid item>

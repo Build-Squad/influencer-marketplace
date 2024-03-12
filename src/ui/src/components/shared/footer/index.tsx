@@ -24,7 +24,7 @@ const styles = {
     mt: 5,
   },
   accountLinks: {
-    variant: "h6",
+    fontWeight: "bold",
   },
 };
 
@@ -34,66 +34,54 @@ const Footer = () => {
       {/** Column 1 */}
       <Grid item xs={12} sm={6} md={4} lg={4}>
         <Typography sx={styles.footerText}>
-          XFluencer: Where influencers monetize tweets, likes, and retweets, and
-          businesses effortlessly discover and purchase impactful social media
-          services on X. Bridging the gap for seamless collaborations.
-          Elevate your X presence with XFluencer.
+          XFluencer: Where influencers & creators monetize tweets, likes, and
+          retweets, and businesses, brands, and agencies effortlessly discover
+          and purchase impactful social media marketing services on X. Bridging
+          the gap for seamless collaborations. Elevate your X presence with
+          XFluencer.
         </Typography>
         <Typography sx={styles.copyright}>
-          © 2020, All Rights Reserved
+          © 2024, All Rights Reserved
         </Typography>
       </Grid>
 
       {/** Column 2 */}
       <Grid item xs={12} sm={6} md={2} lg={2}>
-        <Typography sx={styles.accountLinks}>My Account</Typography>
-        {[
-          "Profile",
-          "Favourites",
-          "Watchlist",
-          "Studio",
-          "XFluencer Pro",
-          "Settings",
-        ].map((link) => (
-          <Typography key={link}>{link}</Typography>
-        ))}
-      </Grid>
-
-      {/** Column 3 */}
-      <Grid item xs={12} sm={6} md={2} lg={2}>
-        <Typography sx={styles.accountLinks}>Resources</Typography>
-        {[
-          "Blog",
-          "Learn",
-          "Help center",
-          "Community standards",
-          "Taxes",
-          "Developer platform",
-          "Platform status",
-        ].map((link) => (
-          <Typography key={link}>{link}</Typography>
-        ))}
+        <Typography sx={styles.accountLinks} variant="h6">
+          Company
+        </Typography>
+        {["Blog", "Privacy Policy", "Xfluencer Pro (coming soon)"].map(
+          (link) => (
+            <Typography key={link}>{link}</Typography>
+          )
+        )}
       </Grid>
 
       {/** Column 4 */}
       <Grid item xs={12} sm={6} md={2} lg={2}>
-        <Typography sx={styles.accountLinks}>Contact</Typography>
+        <Typography sx={styles.accountLinks} variant="h6">
+          Contact
+        </Typography>
 
         <Typography sx={{ mt: 2 }}>Follow us on social media</Typography>
 
         <Box sx={{ mb: 2, display: "flex", columnGap: "4px" }}>
-          {[X, Facebook, Instgram, LinkedIn].map((icon, index) => (
+          {[X].map((icon, index) => (
             <Image
               key={index}
               src={icon}
               height={30}
               width={30}
               alt={`Social Icon ${index + 1}`}
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                window.open("https://twitter.com/xfluencermarket", "_blank");
+              }}
             />
           ))}
         </Box>
 
-        {["Careers", "Need Help?", "help@xfluencer.io"].map((link) => (
+        {["help@xfluencer.io"].map((link) => (
           <Typography key={link}>{link}</Typography>
         ))}
       </Grid>
