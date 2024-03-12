@@ -195,9 +195,6 @@ class BusinessAccountMetaData(models.Model):
     class Meta:
         db_table = "business_account_meta_data"
 
-    def __str__(self):
-        return self.business_name
-
 
 @receiver(post_save, sender=User)
 def create_business_account_metadata(sender, instance, created, **kwargs):

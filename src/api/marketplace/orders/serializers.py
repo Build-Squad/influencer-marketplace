@@ -1,6 +1,6 @@
 from email import message
-from accounts.serializers import UserSerializer, WalletCompleteSerializer
-from accounts.models import User, Wallet
+from accounts.serializers import BusinessAccountMetaDataSerializer, UserSerializer, WalletCompleteSerializer
+from accounts.models import BusinessAccountMetaData, User, Wallet
 from orders.services import create_order_item_meta_data_field_update_message, create_order_item_publish_date_update_message, create_order_item_status_update_message, create_order_item_tracking
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
@@ -80,11 +80,17 @@ class OrderSerializer(serializers.ModelSerializer):
     buyer_wallet = serializers.SerializerMethodField()
     address = serializers.CharField(required=False)
     transactions = serializers.SerializerMethodField()
-
+    buyer_meta_data = serializers.SerializerMethodField()
+ 
     class Meta:
         model = Order
         fields = "__all__"
 
+    def get_buyer_meta_data(self, obj):
+        buyer_meta_data = BusinessAccountMetaData.objects.filter(user_account = obj.buyer.id)
+        if(buyer_meta_data):
+            return BusinessAccountMetaDataSerializer(buyer_meta_data[0]).data
+            
     def get_amount(self, obj):
         # Should return the sum of the price of each order item and also add the platform fee
         order_items = obj.order_item_order_id.all()
