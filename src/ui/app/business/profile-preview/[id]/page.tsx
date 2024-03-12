@@ -20,21 +20,13 @@ import {
   Clear,
   LinkedIn,
   Language,
-  KeyboardBackspace,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/src/hooks/useRedux";
-import BasicBadge from "@/public/svg/BasicBadge.svg";
-import SilverBadge from "@/public/svg/SilverBadge.svg";
-import BronzeBadge from "@/public/svg/BronzeBadge.svg";
-import GoldBadge from "@/public/svg/GoldBadge.svg";
-import BlurredBasicBadge from "@/public/svg/Blurred_Basic.svg";
-import BlurredSilverBadge from "@/public/svg/Blurred_Silver.svg";
-import BlurredBronzeBadge from "@/public/svg/Blurred_Bronze.svg";
-import BlurredGoldBadge from "@/public/svg/Blurred_Gold.svg";
 import Image from "next/image";
 import NotFound from "@/public/svg/not_found.svg";
 import { stringToColor } from "@/src/utils/helper";
+import { BADGES } from "@/src/utils/consts";
 
 type Props = {
   params: {
@@ -56,41 +48,6 @@ const styles = {
   },
 };
 
-const BADGES = [
-  {
-    id: "BASIC",
-    icon: BasicBadge,
-    blurredIcon: BlurredBasicBadge,
-    name: "Startup Shell  (0-25 %)",
-    description:
-      "The basic form of the turtle, symbolizing the starting point for businesses on the platform.",
-  },
-  {
-    id: "BRONZE",
-    icon: BronzeBadge,
-    blurredIcon: BlurredSilverBadge,
-    name: "Branded Banditurtle  (25-50 %)",
-    description:
-      "With the addition of a headband, the turtle is embracing its identity, marking the first steps towards recognition.",
-  },
-  {
-    id: "SILVER",
-    icon: SilverBadge,
-    blurredIcon: BlurredBronzeBadge,
-    name: "Badge-Adorned Warrior  (50-75 %)",
-    description:
-      "Now sporting a chest badge in addition to the headband, this turtle is showcasing its achievements and additional profile details.",
-  },
-  {
-    id: "GOLD",
-    icon: GoldBadge,
-    blurredIcon: BlurredGoldBadge,
-    name: "Swordmaster Tycoon  (75-100 %)",
-    description:
-      "The ultimate evolution with two swords, a headband, and a chest badge, signifying the business's complete mastery and excellence on the platform.",
-  },
-];
-
 const getProfileCompletedStatus: (businessDetails: any) => string = (
   businessDetails
 ) => {
@@ -101,8 +58,8 @@ const getProfileCompletedStatus: (businessDetails: any) => string = (
     count +=
       Object.values(businessDetails).filter(
         (value) => value !== "" && value !== null
-      ).length - 5;
-    return `${count} / ${10 + Object.keys(businessDetails).length - 5}`;
+      ).length - 7;
+    return `${count} / ${10 + Object.keys(businessDetails).length - 7}`;
   }
   return "-";
 };
@@ -128,6 +85,10 @@ export default function BusinessProfilePreview({ params }: Props) {
   const user = useAppSelector((state) => state.user?.user);
 
   const router = useRouter();
+
+  useEffect(() => {
+    getAccount();
+  }, []);
 
   useEffect(() => {
     const percentage = getProgressPercentage();
@@ -214,9 +175,6 @@ export default function BusinessProfilePreview({ params }: Props) {
     return per <= 25 ? 0 : per <= 50 ? 1 : per <= 75 ? 2 : per <= 100 ? 3 : 0;
   };
 
-  useEffect(() => {
-    getAccount();
-  }, []);
   return (
     <Box sx={{ backgroundColor: "#FAFAFA" }}>
       <Image

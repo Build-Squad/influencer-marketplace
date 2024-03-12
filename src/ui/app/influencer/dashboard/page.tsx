@@ -24,6 +24,7 @@ import {
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
+  Avatar,
   Badge,
   Box,
   Grid,
@@ -256,9 +257,12 @@ export default function BusinessDashboardPage() {
               fontSize: "16px",
               lineHeight: "19px",
               color: "#000",
-              mt: 1,
+              display: "flex",
+              alignItems: "center",
+              columnGap: "8px",
             }}
           >
+            <Avatar sx={{ width: 24, height: 24 }}></Avatar>
             <Link
               href={`/business/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"

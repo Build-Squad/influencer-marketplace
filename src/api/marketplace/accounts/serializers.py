@@ -27,6 +27,8 @@ from django.db.models import Avg
 
 class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
     influencer_ids = serializers.SerializerMethodField(read_only=True)
+    is_twitter_connected = serializers.SerializerMethodField(read_only=True)
+    is_wallet_connected = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = BusinessAccountMetaData
@@ -47,6 +49,19 @@ class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
             influencer_ids.update(influencers)
 
         return list(influencer_ids)
+
+    def get_is_twitter_connected(self, business_meta_data):
+        userAccount = business_meta_data.user_account
+        if userAccount.twitter_account:
+            return True
+        return False
+
+
+    def get_is_wallet_connected(self, business_meta_data):
+        user_wallet = Wallet.objects.filter(user_id = business_meta_data.user_account)
+        if(user_wallet):
+            return True
+        return False
 
 
 class CategoryMasterSerializer(serializers.ModelSerializer):
