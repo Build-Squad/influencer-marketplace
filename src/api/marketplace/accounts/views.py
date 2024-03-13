@@ -1551,6 +1551,7 @@ class WalletAuth(APIView):
     @swagger_auto_schema(request_body=WalletAuthSerializer)
     def post(self, request):
         try:
+            is_new_user = False
             serializer = WalletAuthSerializer(data=request.data)
             if serializer.is_valid():
 
@@ -1591,6 +1592,7 @@ class WalletAuth(APIView):
                     )
                     wallet.user_id = user
                     wallet.save()
+                    is_new_user = True
                 else:
                     user = User.objects.get(username=wallet.user_id)
                 wallet = self.get_wallet(request.data["wallet_address_id"])
@@ -1638,10 +1640,13 @@ class WalletAuth(APIView):
                     httponly=True,
                     samesite="None",
                 )
+                message = "Logged in successfully"
+                if is_new_user:
+                    message="New user? Head to your profile to earn badges!"
                 response.data = {
                     "isSuccess": True,
                     "data": UserSerializer(user).data,
-                    "message": "Logged in successfully",
+                    "message": message,
                 }
                 response.status_code = status.HTTP_200_OK
                 return response

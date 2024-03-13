@@ -64,7 +64,7 @@ export default function WalletConnectModal({
       if (!connect) {
         dispatch(loginReducer(data?.data));
       }
-      notification(message);
+      notification(message, "success", 3000);
       setOpen(false);
     } else {
       notification(
