@@ -131,6 +131,7 @@ export default function FiltersComponent({
           isMulti={true}
           sx={styles.inputBoxBorderStyles}
           apiEndpoint="/account/category-master"
+          customFilter={{ is_verified: true }}
           label="Category"
           value={formik.values.categories}
           helperText="Enter keywords for categories"

@@ -435,7 +435,19 @@ class TwitterAccountDetail(APIView):
 class CategoryMasterList(APIView):
     def get(self, request):
         try:
+            is_verified = request.GET.get("is_verified" , None)
+            show_on_main = request.GET.get("show_on_main" , None)
+            
             categoryMaster = CategoryMaster.objects.all()
+            if is_verified:
+                is_verified = bool(is_verified)
+                categoryMaster = categoryMaster.filter(is_verified=is_verified)
+            
+
+            if show_on_main:
+                show_on_main = bool(show_on_main)
+                categoryMaster = categoryMaster.filter(show_on_main=show_on_main)
+
             pagination = Pagination(categoryMaster, request)
             serializer = CategoryMasterSerializer(pagination.getData(), many=True)
             return Response(

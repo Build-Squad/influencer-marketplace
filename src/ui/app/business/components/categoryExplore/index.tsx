@@ -22,6 +22,7 @@ export default function InfluencersContainer({}: Props) {
       {
         page_size: 8,
         page_number: 1,
+        show_on_main: true,
       }
     );
     if (isSuccess) {

@@ -38,51 +38,6 @@ class TwitterAccount(models.Model):
     def __str__(self):
         return self.user_name
 
-
-class CategoryMaster(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        verbose_name="Category Master ID",
-        default=uuid.uuid4,
-        editable=False,
-    )
-    name = models.CharField(max_length=255, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "category_master"
-
-    def __str__(self):
-        return self.name
-
-
-class AccountCategory(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        verbose_name="Account Category ID",
-        default=uuid.uuid4,
-        editable=False,
-    )
-    twitter_account = models.ForeignKey(
-        TwitterAccount,
-        related_name="cat_twitter_account_id",
-        on_delete=SET_NULL,
-        null=True,
-    )
-    category = models.ForeignKey(
-        CategoryMaster,
-        related_name="cat_category_master_id",
-        on_delete=SET_NULL,
-        null=True,
-    )
-
-    class Meta:
-        db_table = "account_category"
-
-    def __str__(self):
-        return self.twitter_account.user_name + " - " + self.category.name
-
-
 class Role(models.Model):
     id = models.UUIDField(
         primary_key=True, verbose_name="Role ID", default=uuid.uuid4, editable=False
@@ -136,6 +91,56 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+class CategoryMaster(models.Model):
+    CATEGORY_CHOICES = (("custom", "custom"), ("standard", "standard"))
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="Category Master ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    name = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    show_on_main = models.BooleanField(default=False, blank=True, null=True)
+    is_verified = models.BooleanField(default=False, blank=True, null=True)
+    type = models.CharField(
+        choices=CATEGORY_CHOICES, max_length=25, blank=True, null=True
+    )
+    image = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "category_master"
+
+    def __str__(self):
+        return self.name
+
+
+class AccountCategory(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="Account Category ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    twitter_account = models.ForeignKey(
+        TwitterAccount,
+        related_name="cat_twitter_account_id",
+        on_delete=SET_NULL,
+        null=True,
+    )
+    category = models.ForeignKey(
+        CategoryMaster,
+        related_name="cat_category_master_id",
+        on_delete=SET_NULL,
+        null=True,
+    )
+
+    class Meta:
+        db_table = "account_category"
+
+    def __str__(self):
+        return self.twitter_account.user_name + " - " + self.category.name
 
 
 class AccountRegion(models.Model):
