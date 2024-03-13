@@ -82,6 +82,9 @@ def cancel_escrow(order_id: str, status: str):
         order.status = status
         order.save()
 
+        create_order_tracking(order=order, status=status)
+        create_notification_for_order(order=order, old_status='accepted', new_status=status)
+
         escrow.status = "cancelled"
         escrow.save()
 
