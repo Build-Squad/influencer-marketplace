@@ -16,6 +16,7 @@ import { getService, postService } from "@/src/services/httpServices";
 import Image from "next/image";
 import BackIcon from "@/public/svg/Back.svg";
 import {
+  BADGES,
   DISPLAY_DATE_FORMAT,
   ORDER_ITEM_STATUS,
   ORDER_STATUS,
@@ -45,6 +46,22 @@ import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
+
+const getProfileCompletedStatus: (businessDetails: any) => string = (
+  businessDetails
+) => {
+  if (businessDetails) {
+    let count = 0;
+    if (businessDetails?.isTwitterAccountConnected) count += 5;
+    if (businessDetails?.isWalletConnected) count += 5;
+    count +=
+      Object.values(businessDetails).filter(
+        (value) => value !== "" && value !== null
+      ).length - 7;
+    return `${count} / ${10 + Object.keys(businessDetails).length - 7}`;
+  }
+  return "-";
+};
 
 export default function BusinessDashboardPage() {
   const router = useRouter();
@@ -237,6 +254,24 @@ export default function BusinessDashboardPage() {
     },
   ];
 
+  const getProgressPercentage = (order: OrderType) => {
+    const completionStringArr = getProfileCompletedStatus(
+      order?.buyer_meta_data
+    )
+      .replace(/\s/g, "")
+      .split("/");
+
+    return (
+      (parseInt(completionStringArr[0]) / parseInt(completionStringArr[1])) *
+      100
+    );
+  };
+
+  const getCurrentBadgeIndex = (order: OrderType) => {
+    const per = getProgressPercentage(order);
+    return per <= 25 ? 0 : per <= 50 ? 1 : per <= 75 ? 2 : per <= 100 ? 3 : 0;
+  };
+
   const columns = [
     {
       field: "order_code",
@@ -250,6 +285,7 @@ export default function BusinessDashboardPage() {
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
+        const badge = BADGES[getCurrentBadgeIndex(params?.row)];
         return (
           <Typography
             sx={{
@@ -262,7 +298,25 @@ export default function BusinessDashboardPage() {
               columnGap: "8px",
             }}
           >
-            <Avatar sx={{ width: 24, height: 24 }}></Avatar>
+            <Tooltip
+              title={
+                <React.Fragment>
+                  <Typography variant="body2" fontWeight={"bold"}>
+                    {badge?.name}
+                  </Typography>
+                  <Typography variant="caption">
+                    {badge?.description}
+                  </Typography>
+                </React.Fragment>
+              }
+              arrow
+            >
+              <Image
+                src={badge?.icon}
+                style={{ width: 24, height: 24 }}
+                alt="Business Badge"
+              />
+            </Tooltip>
             <Link
               href={`/business/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"
