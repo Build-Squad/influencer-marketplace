@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .models import (
     Escrow,
+    OnChainTransaction,
     Order,
     OrderItem,
     OrderAttachment,
@@ -519,6 +520,21 @@ class UpdateOrderStatus(APIView):
 class CancelOrderView(APIView):
     authentication_classes = [JWTAuthentication]
 
+    def get_escrow(self, order):
+        escrow = Escrow.objects.get(order=order)
+        if escrow is None:
+            return handleNotFound("Escrow")
+        return escrow
+
+    def create_on_chain_transaction(self, order):
+        # Get the escrow
+        escrow = self.get_escrow(order=order)
+        # Create an on chain transaction
+        OnChainTransaction.objects.create(
+            escrow=escrow,
+            transaction_type="cancel_escrow",
+        )
+
     def get_object(self, pk):
         try:
             return Order.objects.get(pk=pk, deleted_at=None)
@@ -563,9 +579,9 @@ class CancelOrderView(APIView):
                     return Response(
                         {
                             "isSuccess": False,
-                            "message": "Only business owner can cancel an accepted order",
+                            "message": "Order is already " + order.status,
                             "data": None,
-                            "errors": "Only business owner can cancel an accepted order",
+                            "errors": "Order is already " + order.status,
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -576,9 +592,9 @@ class CancelOrderView(APIView):
                     return Response(
                         {
                             "isSuccess": False,
-                            "message": "You are not allowed to cancel this order",
+                            "message": "Order is already " + order.status,
                             "data": None,
-                            "errors": "You are not allowed to cancel this order",
+                            "errors": "Order is already " + order.status,
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -596,6 +612,39 @@ class CancelOrderView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
             order_status = "cancelled" if request.user_account.id == order.buyer.id else "rejected"
+            # See if an on chain transaction is already created
+            escrow = self.get_escrow(order)
+            on_chain_transaction = OnChainTransaction.objects.filter(
+                escrow=escrow, transaction_type="cancel_escrow"
+            ).first()
+            if on_chain_transaction:
+                if on_chain_transaction.is_confirmed:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order has already been cancelled",
+                            "data": None,
+                            "errors": "Order has already been cancelled",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                else:
+                    if not on_chain_transaction.err:
+                        action = "cancellation" if request.user_account.id == order.buyer.id else "rejection"
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Order " + action + " is in progress, please wait",
+                                "data": None,
+                                "errors": "Order " + action + " is in progress, please wait",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    else:
+                        pass
+            # Create an on chain transaction
+            else:
+                self.create_on_chain_transaction(order)
             cancel_escrow.apply_async(args=[pk, order_status])
             return Response(
                 {
