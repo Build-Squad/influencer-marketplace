@@ -136,7 +136,11 @@ export default function BusinessDashboardPage() {
       {}
     );
     if (isSuccess) {
-      notification("Order was cancelled successfully");
+      notification(
+        "Order cancellation request sent successfully, please wait for confirmation",
+        "success",
+        5000
+      );
       getOrders();
     } else {
       notification(

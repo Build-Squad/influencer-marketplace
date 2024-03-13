@@ -263,7 +263,11 @@ export default function Orders() {
           {}
         );
         if (isSuccess) {
-          notification("Order request was declined successfully");
+          notification(
+            "Order decline request sent successfully, please wait for confirmation",
+            "success",
+            5000
+          );
         } else {
           notification(
             message ? message : "Something went wrong, couldn't cancel order",
