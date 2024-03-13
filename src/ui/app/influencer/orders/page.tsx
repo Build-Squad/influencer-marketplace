@@ -68,7 +68,7 @@ export default function Orders() {
         }
       );
       if (isSuccess) {
-        setOrders(data?.data);
+        setOrders(data?.data?.orders);
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,
