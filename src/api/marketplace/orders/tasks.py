@@ -4,7 +4,7 @@ from accounts.models import TwitterAccount, User, Wallet
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
     create_order_item_tracking, create_order_tracking, create_reminider_notification
-from orders.models import Escrow, Order, OrderItem, OrderItemMetaData
+from orders.models import Escrow, OnChainTransaction, Order, OrderItem, OrderItemMetaData
 
 from tweepy import Client
 
@@ -60,8 +60,24 @@ def cancel_escrow(order_id: str, status: str):
 
         val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
 
-        asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
+        on_chain_transaction = OnChainTransaction.objects.get(
+            escrow=escrow, transaction_type='cancel_escrow'
+        )
+
+        result = asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
                                               influencer_address=influencer_primary_wallet.wallet_address_id, order_code=order.order_number, network=NETWORK))
+
+        # Update all the values of the on_chain_transaction with result.value[0]
+        transaction_result = result.value[0]
+
+        on_chain_transaction.confirmation_status = transaction_result.confirmation_status
+        on_chain_transaction.confirmations = transaction_result.confirmations
+        on_chain_transaction.err = transaction_result.err
+        on_chain_transaction.slot = transaction_result.slot
+        on_chain_transaction.is_confirmed = transaction_result.err is None
+
+        on_chain_transaction.save()
+
         # After the above task is finished successfully, update the order status to cancelled
         order.status = status
         order.save()
