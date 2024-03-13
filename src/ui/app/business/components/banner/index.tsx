@@ -58,7 +58,7 @@ export default function Banner({}: Props) {
           style={{ marginBottom: "8px" }}
         />
         <Typography variant="body1">
-          Strategically Match Your Business with X's Finest Influencers.
+          1<sup>st</sup> Influencer marketplace for X
         </Typography>
       </Box>
       <Box
@@ -78,6 +78,9 @@ export default function Banner({}: Props) {
           Effortless Connections, Powerful Results
         </Typography>
       </Box>
+      <Typography variant="body1">
+        Directly Connect With X's Finest Influencers
+      </Typography>
 
       {/* Filters Container */}
       <Box

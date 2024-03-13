@@ -9,7 +9,7 @@ interface BannerFilterType {
   upperFollowerLimit: number | null;
   lowerFollowerLimit: number | null;
   searchString: string;
-  isVerified: boolean;
+  rating: number;
 }
 
 const BannerFilterSchema = object({
@@ -29,7 +29,7 @@ const BannerFilterInitialValues: BannerFilterType = {
   upperFollowerLimit: null,
   lowerFollowerLimit: null,
   searchString: "",
-  isVerified: false,
+  rating: 0,
 };
 
 export { BannerFilterSchema, BannerFilterInitialValues };
