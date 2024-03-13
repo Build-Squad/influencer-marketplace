@@ -296,3 +296,31 @@ class Escrow(models.Model):
     class Meta:
         db_table = "escrow"
     
+
+class OnChainTransaction(models.Model):
+
+    TRANSACTION_TYPE_CHOICES = (
+        ('cancel_escrow', 'cancel_escrow'),
+        ('confirm_escrow', 'confirm_escrow'),
+    )
+    CONFIRMATION_STATUS_CHOICES = (
+        ('processed', 'processed'),
+        ('confirmed', 'confirmed'),
+        ('finalized', 'finalized'),
+    )
+    id = models.UUIDField(
+        primary_key=True, verbose_name='OnChainTransaction', default=uuid.uuid4, editable=False)
+    slot = models.BigIntegerField(blank=True, null=True)
+    confirmations = models.BigIntegerField(blank=True, null=True)
+    err = models.JSONField(blank=True, null=True)
+    confirmation_status = models.CharField(
+        max_length=100, blank=True, null=True, choices=CONFIRMATION_STATUS_CHOICES)
+    transaction_type = models.CharField(
+        max_length=100, blank=True, null=True, choices=TRANSACTION_TYPE_CHOICES)
+    escrow = models.ForeignKey(
+        Escrow, related_name='on_chain_transaction_escrow_id', on_delete=SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_confirmed = models.BooleanField(default=False, blank=True, null=True)
+
+    class Meta:
+        db_table = "on_chain_transaction"
