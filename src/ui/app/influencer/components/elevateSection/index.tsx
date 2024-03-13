@@ -8,11 +8,7 @@ import Article2_Business from "@/public/svg/Article2_Influencer.svg";
 import Article1_Business from "@/public/svg/Article1_Influencer.svg";
 type Props = {};
 
-const TABS = [
-  "Customize Services",
-  "Decentralized Community",
-  "Lasting Replationships",
-];
+const TABS = ["Customize Services", "Trustless Payouts", "Escrow System"];
 
 const FirstTabComponent = () => {
   return (
@@ -65,7 +61,7 @@ const SecondTabComponent = () => {
     <>
       <Box sx={{ flex: 1, textAlign: "left" }}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Enhanced Security Through Web3 Integration
+          Enjoy Trustless Payouts And Enhanced Security
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
@@ -105,18 +101,17 @@ const ThirdTabComponent = () => {
     <>
       <Box sx={{ flex: 1, textAlign: "left" }}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Build Lasting Relationships
+          Escrow System Integrations
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Build Lasting Relationships:Our platform is designed to foster
-            long-term partnerships between influencers and businesses. By
-            offering your services through our marketplace, you gain exposure to
-            a diverse range of clients seeking authentic and impactful
-            collaborations.
+            Experience ultimate security with our escrow integrations, ensuring
+            successful payments through smart contracts on the Solana
+            blockchain. Enjoy a streamlined process for transactions, offering
+            unmatched security and reliability for all parties involved.
           </Typography>
         </Box>
 
@@ -125,8 +120,8 @@ const ThirdTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            This not only boosts your income but also establishes your brand as
-            a go-to influencer in your niche.
+            In case of any need for refunds, our system facilitates a seamless
+            process through smart contracts on the Solana blockchain.
           </Typography>
         </Box>
       </Box>
@@ -154,10 +149,10 @@ export default function ElevateSection({}: Props) {
     <>
       <Box>
         <Typography variant="h6" sx={{ color: "#9B9B9B" }}>
-          Revolutionize Your Engagement
+          Your Influence, Your Control
         </Typography>
         <Typography sx={{ fontSize: "40px" }}>
-          Take your Influencer-Ship to the next level
+          Take your Influence to new Heights
         </Typography>
         <Box
           sx={{ display: "flex", justifyContent: "center", marginTop: "14px" }}

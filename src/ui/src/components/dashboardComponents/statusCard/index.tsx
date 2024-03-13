@@ -16,6 +16,7 @@ type StatusCardProps = {
     completed: number;
     pending: number;
     rejected: number;
+    cancelled: number;
   };
   count: number;
 };

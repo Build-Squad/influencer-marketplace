@@ -51,6 +51,7 @@ export default function CategorySelectionModal({
       {
         page_size: 100,
         page_number: 1,
+        is_verified: true,
       }
     );
     if (isSuccess) {

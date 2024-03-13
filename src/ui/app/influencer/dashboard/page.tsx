@@ -89,6 +89,7 @@ export default function BusinessDashboardPage() {
     completed: 0,
     pending: 0,
     rejected: 0,
+    cancelled: 0,
   });
   const [orderItemsCount, setOrderItemsCount] = React.useState({
     accepted: 0,
@@ -146,6 +147,7 @@ export default function BusinessDashboardPage() {
           completed: data?.data?.status_counts?.completed,
           pending: data?.data?.status_counts?.pending,
           rejected: data?.data?.status_counts?.rejected,
+          cancelled: data?.data?.status_counts?.cancelled,
         });
         setPagination({
           ...pagination,
@@ -292,6 +294,28 @@ export default function BusinessDashboardPage() {
         <RejectedOrders
           style={{
             fill: selectedCard === 4 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Cancelled Orders",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_STATUS.CANCELLED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(5);
+      },
+      value: 5,
+      icon: (
+        <RejectedOrders
+          style={{
+            fill: selectedCard === 5 ? "#fff" : "#19191929",
           }}
         />
       ),

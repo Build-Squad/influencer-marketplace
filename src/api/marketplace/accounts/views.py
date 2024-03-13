@@ -1,6 +1,9 @@
+from decimal import Decimal
 from distutils.util import strtobool
 from http.client import HTTPResponse
 import secrets
+
+from django.shortcuts import get_object_or_404
 from accounts.tasks import sendEmail
 
 from marketplace.authentication import JWTAuthentication
@@ -14,11 +17,13 @@ from marketplace.services import (
     JWTOperations,
     truncateWalletAddress,
 )
+from django.db.models import Avg
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from orders.models import Review
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
@@ -168,8 +173,7 @@ class TwitterAccountList(APIView):
             lowerFollowerLimit = request.GET.get("lowerFollowerLimit", "")
 
             searchString = request.GET.get("searchString", "")
-            isVerified_str = request.GET.get("isVerified", "false")
-            isVerified = bool(strtobool(isVerified_str))
+            rating = request.GET.get("rating", 0)
             
             # Default fetch influencers for explore page
             role = request.GET.get("role", "influencer")
@@ -212,9 +216,6 @@ class TwitterAccountList(APIView):
                     Q(user_name__icontains=searchString)
                     | Q(name__icontains=searchString)
                 )
-
-            if isVerified:
-                twitterAccount = twitterAccount.filter(verified=isVerified)
 
             if collaborationIds:
                 if collaborationIds[0] == "nil":
@@ -302,6 +303,27 @@ class TwitterAccountList(APIView):
                 twitterAccount = twitterAccount.exclude(
                     id__in=twitter_accounts_to_exclude
                 )
+            
+            if rating:
+                exclude_ids = [] 
+                
+                for twitter_account in twitterAccount:
+                    user = get_object_or_404(User, twitter_account=twitter_account)
+                    
+                    reviews = Review.objects.filter(
+                        order__order_item_order_id__package__influencer=user,
+                        order__deleted_at=None,
+                        order__status="completed"
+                    )
+                    
+                    total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or Decimal('0')
+                    
+                    if total_rating < Decimal(rating):
+                        exclude_ids.append(twitter_account.id)
+                
+                twitterAccount = twitterAccount.exclude(id__in=exclude_ids)
+
+            twitterAccount = twitterAccount.order_by("-followers_count")
 
             # Paginate the results
             pagination = Pagination(twitterAccount, request)
@@ -413,7 +435,19 @@ class TwitterAccountDetail(APIView):
 class CategoryMasterList(APIView):
     def get(self, request):
         try:
+            is_verified = request.GET.get("is_verified" , None)
+            show_on_main = request.GET.get("show_on_main" , None)
+            
             categoryMaster = CategoryMaster.objects.all()
+            if is_verified:
+                is_verified = bool(is_verified)
+                categoryMaster = categoryMaster.filter(is_verified=is_verified)
+            
+
+            if show_on_main:
+                show_on_main = bool(show_on_main)
+                categoryMaster = categoryMaster.filter(show_on_main=show_on_main)
+
             pagination = Pagination(categoryMaster, request)
             serializer = CategoryMasterSerializer(pagination.getData(), many=True)
             return Response(
@@ -1115,7 +1149,6 @@ class OTPAuth(APIView):
                             "isSuccess": True,
                             "data": None,
                             "message": "OTP sent successfully",
-                            "otp": otp,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -1161,7 +1194,7 @@ class OTPVerification(APIView):
                 if is_valid:
                     # If user is logging in for the first time, set email_verified_at to current time
                     if user.email_verified_at is None:
-                        user.email_verified_at = datetime.datetime.now()
+                        user.email_verified_at = timezone.now()
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
@@ -1259,7 +1292,6 @@ class OTPAuthV2(APIView):
                             "isSuccess": True,
                             "data": None,
                             "message": "OTP sent successfully",
-                            "otp": otp,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -1304,7 +1336,7 @@ class OTPVerifyV2(APIView):
                 if is_valid:
                     # If the OTP is valid, save the data to the user table
                         
-                    user.email_verified_at = datetime.datetime.now()
+                    user.email_verified_at = timezone.now()
                     user.email = request.data["email"]
                     if user.login_method == "email":
                         user.username = request.data["email"]
@@ -1378,7 +1410,6 @@ class EmailVerification(APIView):
                         "isSuccess": True,
                         "data": None,
                         "message": "Email sent successfully",
-                        "otp": otp,
                     },
                     status=status.HTTP_200_OK,
                 )

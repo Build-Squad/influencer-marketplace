@@ -131,6 +131,7 @@ export default function FiltersComponent({
           isMulti={true}
           sx={styles.inputBoxBorderStyles}
           apiEndpoint="/account/category-master"
+          customFilter={{ is_verified: true }}
           label="Category"
           value={formik.values.categories}
           helperText="Enter keywords for categories"
@@ -208,23 +209,6 @@ export default function FiltersComponent({
           id="standard-bare"
           variant="outlined"
           placeholder="Search Influencers by Category or Username"
-          InputProps={{
-            endAdornment: (
-              <Button
-                type="submit"
-                variant="contained"
-                color="secondary"
-                sx={{
-                  borderRadius: "12px",
-                  fontWeight: "bold",
-                  px: 4,
-                }}
-                onClick={() => {}}
-              >
-                Search
-              </Button>
-            ),
-          }}
         />
       );
     case "FOLLOWERS": {

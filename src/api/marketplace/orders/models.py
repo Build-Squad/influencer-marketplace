@@ -35,6 +35,7 @@ class Order(models.Model):
         ('accepted', 'accepted'),
         ('rejected', 'rejected'),
         ('completed', 'completed'),
+        ('cancelled', 'cancelled'),
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='Order', default=uuid.uuid4, editable=False)
@@ -105,6 +106,7 @@ class OrderItem(models.Model):
     publish_date = models.DateTimeField(blank=True, null=True)
     celery_task_id = models.CharField(
         max_length=100, blank=True, null=True)
+    is_verified = models.BooleanField(default=False, blank=True, null=True)
 
     class Meta:
         db_table = "order_item"
@@ -271,3 +273,54 @@ class Review(models.Model):
 
     class Meta:
         db_table = "review"
+
+
+class Escrow(models.Model):
+    STATUS_CHOICES = (
+        ('new', 'new'),
+        ('cancelled', 'cancelled'),
+        ('delivered', 'delivered'),
+    )
+    id = models.UUIDField(
+        primary_key=True, verbose_name='Escrow', default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(
+        Order, related_name='escrow_order_id', on_delete=SET_NULL, null=True)
+    business_wallet = models.ForeignKey(
+        Wallet, related_name='escrow_from_wallet', on_delete=SET_NULL, null=True)
+    influencer_wallet = models.ForeignKey(
+        Wallet, related_name='escrow_to_wallet', on_delete=SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(choices=STATUS_CHOICES,
+                              max_length=50, default='new')
+
+    class Meta:
+        db_table = "escrow"
+    
+
+class OnChainTransaction(models.Model):
+
+    TRANSACTION_TYPE_CHOICES = (
+        ('cancel_escrow', 'cancel_escrow'),
+        ('confirm_escrow', 'confirm_escrow'),
+    )
+    CONFIRMATION_STATUS_CHOICES = (
+        ('processed', 'processed'),
+        ('confirmed', 'confirmed'),
+        ('finalized', 'finalized'),
+    )
+    id = models.UUIDField(
+        primary_key=True, verbose_name='OnChainTransaction', default=uuid.uuid4, editable=False)
+    slot = models.BigIntegerField(blank=True, null=True)
+    confirmations = models.BigIntegerField(blank=True, null=True)
+    err = models.JSONField(blank=True, null=True)
+    confirmation_status = models.CharField(
+        max_length=100, blank=True, null=True, choices=CONFIRMATION_STATUS_CHOICES)
+    transaction_type = models.CharField(
+        max_length=100, blank=True, null=True, choices=TRANSACTION_TYPE_CHOICES)
+    escrow = models.ForeignKey(
+        Escrow, related_name='on_chain_transaction_escrow_id', on_delete=SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_confirmed = models.BooleanField(default=False, blank=True, null=True)
+
+    class Meta:
+        db_table = "on_chain_transaction"

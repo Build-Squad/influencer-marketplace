@@ -75,11 +75,17 @@ export default function ClaimEscrow({
         // Get influencer wallet address
         const buyer_pk = new PublicKey(order?.buyer_wallet?.wallet_address_id);
 
-        // breakpoint
-
         // Check if wallet is connected
         if (!connection || !publicKey) {
           notification("Please connect your wallet first", "error");
+          return;
+        }
+
+        // Check that the correct wallet is connected
+        if (
+          publicKey?.toBase58() !== order?.influencer_wallet?.wallet_address_id
+        ) {
+          notification("Please connect the correct wallet", "error");
           return;
         }
 
