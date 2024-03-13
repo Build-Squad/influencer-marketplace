@@ -136,7 +136,7 @@ export default function BusinessDashboardPage() {
       {}
     );
     if (isSuccess) {
-      notification("Order request was declined successfully");
+      notification("Order was cancelled successfully");
       getOrders();
     } else {
       notification(
