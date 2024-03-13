@@ -415,6 +415,11 @@ export type Xfluencer = {
       "code": 6010,
       "name": "NumericalProblemFoundCalculatingFees",
       "msg": "Numerical Problem Found Calculating Fees"
+    },
+    {
+      "code": 6011,
+      "name": "BusinessHasInsufficientAmountOfTokens",
+      "msg": "Busines Has Insufficient Amount Of Tokens"
     }
   ]
 };
@@ -836,6 +841,11 @@ export const IDL: Xfluencer = {
       "code": 6010,
       "name": "NumericalProblemFoundCalculatingFees",
       "msg": "Numerical Problem Found Calculating Fees"
+    },
+    {
+      "code": 6011,
+      "name": "BusinessHasInsufficientAmountOfTokens",
+      "msg": "Busines Has Insufficient Amount Of Tokens"
     }
   ]
 };

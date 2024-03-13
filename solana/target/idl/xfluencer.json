@@ -415,9 +415,11 @@
       "code": 6010,
       "name": "NumericalProblemFoundCalculatingFees",
       "msg": "Numerical Problem Found Calculating Fees"
+    },
+    {
+      "code": 6011,
+      "name": "BusinessHasInsufficientAmountOfTokens",
+      "msg": "Busines Has Insufficient Amount Of Tokens"
     }
-  ],
-  "metadata": {
-    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
-  }
+  ]
 }

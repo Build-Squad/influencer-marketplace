@@ -18,6 +18,8 @@ use crate::errors::CustomError;
 
 declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
 
+
+
 #[program]
 pub mod xfluencer {
     
@@ -29,85 +31,21 @@ pub mod xfluencer {
         amount: u64,
         order_code: u64
     ) -> ProgramResult {
-        processor::instructions_ata_escrow::process(ctx,_vault_account_bump, amount, order_code)
-        //processor::instructions_ata_escrow::process(ctx,_vault_account_bump, amount, order_code).map_err(log_errors);
+        processor::initialize_escrow::process(ctx,_vault_account_bump, amount, order_code)
     }
 
-    pub fn cancel(ctx: Context<Cancel>, order_code: u64,) -> ProgramResult {
-        // Make Seed
-        let escrow_seed: String = format!("{}{}", "escrow".to_string(), order_code.to_string());
-        let escrow_pda_seed: &[u8] = escrow_seed.as_bytes();
-        let (_vault_authority, vault_authority_bump) = Pubkey::find_program_address(&[escrow_pda_seed], ctx.program_id);
-        let authority_seeds = &[&escrow_pda_seed[..], &[vault_authority_bump]];
-
-        // Transfer token to buyer.
-        token::transfer(
-            ctx.accounts.into_transfer_to_buyer_context().with_signer(&[&authority_seeds[..]]),
-            ctx.accounts.escrow_account.amount,
-        )?;
-
-        // Close vault account
-        token::close_account(
-            ctx.accounts.into_close_contest().with_signer(&[&authority_seeds[..]]),
-        )?;
-
-        Ok(())
+    pub fn cancel(
+        ctx: Context<Cancel>, order_code: u64
+    ) -> ProgramResult {
+        processor::cancel::process(ctx, order_code)
     }
-
-  
 
     pub fn create_escrow(ctx: Context<CreateEscrowSolana>, amount: u64, order_code: u64) -> ProgramResult {
-
-        let escrow = &mut ctx.accounts.escrow;
-
-        escrow.from = ctx.accounts.from.key();
-        escrow.to = ctx.accounts.to.key();
-        escrow.validation_authority = ctx.accounts.validation_authority.key();
-        escrow.order_code = order_code;
-        escrow.amount = amount;
-        escrow.status = 0; 
-
-        // **escrow = EscrowAccountSolana {
-        //    from: ctx.accounts.from.key(),
-        //    to: ctx.accounts.to.key(),
-        //    order_code,
-        //    amount,
-        //    delivered: false
-        //};
-
-        let order_code_str = order_code.to_string(); 
-
-        emit!(
-            EscrowAccountSolanaCreated {
-                business: ctx.accounts.from.key(),
-                influencer: ctx.accounts.to.key(),
-                order_code: order_code_str
-        });
-
-
-        let escrow_pubkey = escrow.key();
-
-        msg!("Creating Escrow for SOL on business pubkey {} and influencer pubkey {}",escrow.from, escrow.to);
-        msg!("Order code {} amount of lamportst to transfer to escrow {}",order_code, amount);
-      
-        let transfer_instruction = system_instruction::transfer(
-                &escrow.from, 
-                &escrow_pubkey, 
-                amount
-        );
-
-         anchor_lang::solana_program::program::invoke_signed(
-           &transfer_instruction,
-           &[
-                ctx.accounts.from.to_account_info(),   // business
-                ctx.accounts.escrow.to_account_info(), // escrow SOL
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[],
-        )?;
-
-        Ok(())
+        processor::create_escrow_solana::process(ctx, amount, order_code)
     }
+    
+
+  
 
     pub fn claim_escrow(ctx: Context<ClaimEscrowSolana>, order_code: u64) -> ProgramResult {
 
@@ -115,13 +53,12 @@ pub mod xfluencer {
         let influencer = ctx.accounts.influencer.key();
         let escrow_pda = ctx.accounts.escrow_account.key();
         let amount = ctx.accounts.escrow_account.get_lamports();
-     
         
         msg!("Business {}", business);
         msg!("Influencer {}", influencer);
-        msg!("Order to claim {}", order_code);
-        msg!("Escrow PDA address {}", escrow_pda);
-        msg!("Lamports {}", amount);
+        msg!("Order Code {}", order_code);
+        msg!("Escrow PDA Address {}", escrow_pda);
+        msg!("Lamports to Claim {}", amount);
       
         // move sol from escrow to influencer account
         let from_account = ctx.accounts.escrow_account.to_account_info();
@@ -133,7 +70,7 @@ pub mod xfluencer {
         // log amount of lamports transferred
         let amount = ctx.accounts.escrow_account.get_lamports();
         let amount_influencer = ctx.accounts.influencer.get_lamports();
-        msg!("Post transaction lamports escrow {} and influencer {}",amount,amount_influencer);
+        msg!("Post Transaction Lamports Escrow {} and Influencer {}",amount,amount_influencer);
 
         Ok(())
     }
@@ -157,14 +94,12 @@ pub mod xfluencer {
                                target_state: u8, 
                                percentage_fee: u16) -> Result<()> {
 
-        msg!("start validation of escrow for target state: {}",target_state);
-
         let current_state = ctx.accounts.escrow_account.status;
-        msg!("current escrow state : {}",current_state);
+        msg!("Validating Escrow From Current ({}) to Target ({}) state",current_state, target_state);
 
-        // valid transitions
-        // 0 -> 1  new to cancel
-        // 0 -> 2  new to delivered
+        // Valid State Transitions
+        // 0 -> 1  From New to Cancel
+        // 0 -> 2  From New to Delivered
 
         let cancel_state: u8 = 1;
         let delivered_state: u8 = 2;
@@ -185,7 +120,7 @@ pub mod xfluencer {
 
         // in case of state is delivered, transfer funds to the validation_authority
         if target_state == 2 {
-            msg!("percentage fee to apply by xfluencer platform: {} (2 decimal points)", &percentage_fee.to_string());
+            msg!("Percentage Fee to apply By Xfluencer Platform: {} (2 decimal places)", &percentage_fee.to_string());
 
             if percentage_fee > 1000 {  // 10 %
                 return err!(CustomError::PercentageFeeOutOfrange);
@@ -214,19 +149,14 @@ pub mod xfluencer {
             **from_account.try_borrow_mut_lamports()? -= fees_amount;
             **to_account.try_borrow_mut_lamports()? += fees_amount; 
             
-
             msg!("Lamports Remaining in Escrow {}",from_account.get_lamports().to_string());
             msg!("Lamports Tranferred to Validation Authority {}",to_account.get_lamports().to_string());
 
         }
 
-
         Ok(())
 
     }
-
-
-
 
 
 }
@@ -296,7 +226,7 @@ pub struct CreateEscrow<'info> {
     
     #[account(
          mut,
-         constraint = buyer_deposit_token_account.amount >= amount 
+         constraint = buyer_deposit_token_account.amount >= amount @CustomError::BusinessHasInsufficientAmountOfTokens
     )]
     pub buyer_deposit_token_account: Account<'info, TokenAccount>,
     pub seller_receive_token_account: Account<'info, TokenAccount>,
