@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, OrderAttachment, OrderItemTracking, OrderMessage, OrderMessageAttachment, Transaction, Review, OrderItemMetaData, OrderTracking, Escrow, OnChainTransaction
+from .models import Order, OrderItem, OrderAttachment, OrderItemTracking, OrderMessage, OrderMessageAttachment, Transaction, Review, OrderItemMetaData, OrderTracking, Escrow, OnChainTransaction, OrderItemMetric
 
 
 class OrderAdmin(admin.ModelAdmin):
@@ -41,6 +41,10 @@ class EscrowAdmin(admin.ModelAdmin):
 class OnChainTransactionAdmin(admin.ModelAdmin):
     list_display = [field.name for field in OnChainTransaction._meta.fields]
 
+
+class OrderItemMetricAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in OrderItemMetric._meta.fields]
+
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(OrderAttachment)
@@ -53,3 +57,4 @@ admin.site.register(OrderItemMetaData, OrderItemMetaDataAdmin)
 admin.site.register(OrderTracking, OrderTrackingAdmin)
 admin.site.register(Escrow, EscrowAdmin)
 admin.site.register(OnChainTransaction, OnChainTransactionAdmin)
+admin.site.register(OrderItemMetric, OrderItemMetricAdmin)
