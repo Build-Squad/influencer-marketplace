@@ -796,6 +796,10 @@ class OrderItemList(APIView):
                     | Q(order_id__order_code__icontains=filters["search"])
                 )
 
+            if "buyers" in filters:
+                orderItems = orderItems.filter(
+                    order_id__buyer__in=filters["buyers"])
+
             if "order_by" in filters and filters["order_by"] == "upcoming":
                 orderItems = orderItems.annotate(
                     time_difference=ExpressionWrapper(
