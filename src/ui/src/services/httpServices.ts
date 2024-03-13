@@ -97,8 +97,8 @@ const putService = async (url: string, data: unknown, params?: any) => {
         isSuccess: false,
         statusCode: e?.response?.status,
         data: null,
-        message: e?.response?.data?.error,
-        errors: null,
+        message: e?.response?.data?.message,
+        errors: e?.response?.data?.errors,
       };
     }
     return {
