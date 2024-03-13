@@ -9,17 +9,14 @@ use anchor_lang::solana_program::system_instruction;
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
 use spl_token::instruction::AuthorityType;
 
+use ::u128::mul_div_u64;
+
 mod errors;
 mod processor;
 
 use crate::errors::CustomError;
 
 declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
-
-//fn log_errors(e: DomainOrProgramError) -> ProgramError {
-//    msg!("Error: {}", e);
-//    e.into()
-//}
 
 #[program]
 pub mod xfluencer {
@@ -69,6 +66,24 @@ pub mod xfluencer {
         escrow.order_code = order_code;
         escrow.amount = amount;
         escrow.status = 0; 
+
+        // **escrow = EscrowAccountSolana {
+        //    from: ctx.accounts.from.key(),
+        //    to: ctx.accounts.to.key(),
+        //    order_code,
+        //    amount,
+        //    delivered: false
+        //};
+
+        let order_code_str = order_code.to_string(); 
+
+        emit!(
+            EscrowAccountSolanaCreated {
+                business: ctx.accounts.from.key(),
+                influencer: ctx.accounts.to.key(),
+                order_code: order_code_str
+        });
+
 
         let escrow_pubkey = escrow.key();
 
@@ -136,26 +151,11 @@ pub mod xfluencer {
         Ok(())
     }
 
-    pub fn create_fees(ctx: Context<CreateFees>, percentage_rate: i32) -> ProgramResult {
+ 
 
-        let fees_config = &mut ctx.accounts.fees_config;
-
-        fees_config.authority = ctx.accounts.fees_authority.key();
-        fees_config.percentage_rate = percentage_rate;
-        
-        Ok(())
-    }
-
-    pub fn update_fees(ctx: Context<UpdateFees>, percentage_rate: i32) -> ProgramResult {
-
-        let fees_config = &mut ctx.accounts.fees_config;
-        
-        fees_config.percentage_rate = percentage_rate;
-        
-        Ok(())
-    }
-
-    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, target_state: u8) -> Result<()> {
+    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, 
+                               target_state: u8, 
+                               percentage_fee: u16) -> Result<()> {
 
         msg!("start validation of escrow for target state: {}",target_state);
 
@@ -183,7 +183,46 @@ pub mod xfluencer {
 
         ctx.accounts.escrow_account.status = target_state;
 
+        // in case of state is delivered, transfer funds to the validation_authority
+        if target_state == 2 {
+            msg!("percentage fee to apply by xfluencer platform: {} (2 decimal points)", &percentage_fee.to_string());
+
+            if percentage_fee > 1000 {  // 10 %
+                return err!(CustomError::PercentageFeeOutOfrange);
+            }
+
+            let escrow_amount: u64 = ctx.accounts.escrow_account.get_lamports();
+            
+            let fees_amount: u64 = match mul_div_u64(escrow_amount, percentage_fee as u64, 10000 as u64) {
+                Some(fees_amount) => {
+                    if escrow_amount < fees_amount {
+                       return err!(CustomError::NumericalProblemFoundCalculatingFees)
+                    }
+                    else {
+                        fees_amount
+                    }
+                },
+                None => {
+                    return err!(CustomError::NumericalProblemFoundCalculatingFees)
+                }
+            };
+
+            let from_account = ctx.accounts.escrow_account.to_account_info();
+            let to_account = ctx.accounts.validation_authority.to_account_info();
+
+            msg!("Trander fees ({} lamports) from escrow to validation authority",&fees_amount.to_string());
+            **from_account.try_borrow_mut_lamports()? -= fees_amount;
+            **to_account.try_borrow_mut_lamports()? += fees_amount; 
+            
+
+            msg!("Lamports Remaining in Escrow {}",from_account.get_lamports().to_string());
+            msg!("Lamports Tranferred to Validation Authority {}",to_account.get_lamports().to_string());
+
+        }
+
+
         Ok(())
+
     }
 
 
@@ -237,12 +276,8 @@ pub struct EscrowAccountSolana {
     pub status: u8, // (1)
 }
 
-#[account]
-pub struct FeesConfig {
-    pub authority: Pubkey, // (32)
-    pub percentage_rate: i32,   // (4) 
-}
 
+// TODO: Replace buyer by business and seller by influencer
 
 
 #[derive(Accounts)]
@@ -252,11 +287,11 @@ pub struct CreateEscrow<'info> {
     /// CHECK: safe
     pub initializer: Signer<'info>,
     /// CHECK: safe
-    pub buyer: AccountInfo<'info>,
+    pub buyer: AccountInfo<'info>,  // change name to business
     /// CHECK: safe
-    pub seller: AccountInfo<'info>,
+    pub seller: AccountInfo<'info>, // change name to influencer
     /// CHECK: safe 
-    pub judge: AccountInfo<'info>,
+    pub judge: AccountInfo<'info>,  // change name to xfluencer
     pub mint: Account<'info, Mint>,
     
     #[account(
@@ -350,7 +385,6 @@ pub struct CreateEscrowSolana<'info> {
     /// CHECK: safe
     #[account(mut)]
     pub to: AccountInfo<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
@@ -360,7 +394,7 @@ pub struct ClaimEscrowSolana<'info> {
     /// CHECK: safe
     #[account(mut)]
     pub influencer: Signer<'info>,
-    /// CHECK:
+    /// CHECK: safe
     #[account(mut)]
     pub business: AccountInfo<'info>,
     #[account(
@@ -391,43 +425,13 @@ pub struct CancelEscrowSolana<'info> {
 }
 
 
-#[derive(Accounts)]
-#[instruction(percentage_rate: i32)]
-pub struct CreateFees<'info> {
-    /// CHECK: safe
-    #[account(mut)]
-    pub fees_authority: Signer<'info>,
-    #[account(
-        init,      
-        seeds = [b"fees".as_ref(), 
-                 fees_authority.key().as_ref(), 
-                 ],
-        bump,
-        payer = fees_authority,
-        space = size_of::<FeesConfig>() + 16
-    )]
-    pub fees_config: Account<'info, FeesConfig>,
-    pub system_program: Program<'info, System>
-}
-
 
 #[derive(Accounts)]
-#[instruction(percentage_rate: i32)]
-pub struct UpdateFees<'info> {
-    #[account(mut)]
-    pub fees_authority: Signer<'info>,
-    #[account(mut,   
-              constraint = fees_config.authority == *fees_authority.key)]
-    pub fees_config: Account<'info, FeesConfig>
-}
-
-
-#[derive(Accounts)]
-#[instruction(state: u8)]
+#[instruction(state: u8, percentage_fee: u16)]
 pub struct ValidateEscrowSolana<'info> {
     #[account(mut)]
     pub validation_authority: Signer<'info>,
-    /// CHECK:
+    /// CHECK: safe
     #[account(mut)]
     pub influencer: AccountInfo<'info>,
     /// CHECK:
@@ -441,8 +445,15 @@ pub struct ValidateEscrowSolana<'info> {
         //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
-    
 }
+
+#[event]
+pub struct EscrowAccountSolanaCreated {
+    pub business: Pubkey,
+    pub influencer: Pubkey,
+    pub order_code: String
+}
+
 
 
 

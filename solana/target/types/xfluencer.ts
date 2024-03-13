@@ -215,53 +215,6 @@ export type Xfluencer = {
       "args": []
     },
     {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -289,6 +242,10 @@ export type Xfluencer = {
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
     }
@@ -379,22 +336,28 @@ export type Xfluencer = {
           }
         ]
       }
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "feesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
-          }
-        ]
-      }
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -442,6 +405,16 @@ export type Xfluencer = {
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
     }
   ]
 };
@@ -663,53 +636,6 @@ export const IDL: Xfluencer = {
       "args": []
     },
     {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -737,6 +663,10 @@ export const IDL: Xfluencer = {
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
     }
@@ -827,22 +757,28 @@ export const IDL: Xfluencer = {
           }
         ]
       }
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "feesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
-          }
-        ]
-      }
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -890,6 +826,16 @@ export const IDL: Xfluencer = {
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
     }
   ]
 };
