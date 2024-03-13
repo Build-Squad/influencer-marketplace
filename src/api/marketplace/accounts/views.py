@@ -1097,6 +1097,8 @@ class UserAuth(APIView):
             return handleServerException(e)
 
 
+# An explicit global variable for know if the user if first timer for email authentication
+is_new_user = None
 class OTPAuth(APIView):
     def get_or_create_user(self, email):
         try:
@@ -1108,6 +1110,9 @@ class OTPAuth(APIView):
                 username=email,
             )
             user.save()
+            global is_new_user
+            is_new_user = True
+            
             return user
 
     @swagger_auto_schema(request_body=OTPAuthenticationSerializer)
@@ -1218,10 +1223,17 @@ class OTPVerification(APIView):
                         httponly=True,
                         samesite="None",
                     )
+
+                    message = "Logged in successfully"
+                    global is_new_user
+                    if is_new_user:
+                        message = "New user? Head to your profile to earn badges!"
+                        is_new_user = None
+
                     response.data = {
                         "isSuccess": True,
                         "data": UserSerializer(user).data,
-                        "message": "Logged in successfully",
+                        "message": message,
                     }
                     response.status_code = status.HTTP_200_OK
                     return response
