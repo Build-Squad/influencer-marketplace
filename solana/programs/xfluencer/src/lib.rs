@@ -215,8 +215,8 @@ pub mod xfluencer {
             **to_account.try_borrow_mut_lamports()? += fees_amount; 
             
 
-            msg!("{}",from_account.get_lamports().to_string());
-            msg!("{}",to_account.get_lamports().to_string());
+            msg!("Lamports Remaining in Escrow {}",from_account.get_lamports().to_string());
+            msg!("Lamports Tranferred to Validation Authority {}",to_account.get_lamports().to_string());
 
         }
 
