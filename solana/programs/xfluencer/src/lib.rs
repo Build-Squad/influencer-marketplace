@@ -191,12 +191,11 @@ pub mod xfluencer {
                 return err!(CustomError::PercentageFeeOutOfrange);
             }
 
-
             let escrow_amount: u64 = ctx.accounts.escrow_account.get_lamports();
             
             let fees_amount: u64 = match mul_div_u64(escrow_amount, percentage_fee as u64, 10000 as u64) {
                 Some(fees_amount) => {
-                    if escrow_amount > fees_amount {
+                    if escrow_amount < fees_amount {
                        return err!(CustomError::NumericalProblemFoundCalculatingFees)
                     }
                     else {
@@ -211,9 +210,14 @@ pub mod xfluencer {
             let from_account = ctx.accounts.escrow_account.to_account_info();
             let to_account = ctx.accounts.validation_authority.to_account_info();
 
+            msg!("Trander fees ({} lamports) from escrow to validation authority",&fees_amount.to_string());
             **from_account.try_borrow_mut_lamports()? -= fees_amount;
             **to_account.try_borrow_mut_lamports()? += fees_amount; 
             
+
+            msg!("{}",from_account.get_lamports().to_string());
+            msg!("{}",to_account.get_lamports().to_string());
+
         }
 
 
