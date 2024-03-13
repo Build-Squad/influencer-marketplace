@@ -218,7 +218,7 @@ type OrderItemType = {
   created_at: Date | string;
   platform_fee: string;
   platform_price: string;
-  order_id?: string;
+  order_id?: OrderType;
   order_item_meta_data: OrderItemMetaDataType[];
   publish_date?: string;
   published_tweet_id?: string;

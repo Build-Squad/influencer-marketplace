@@ -12,12 +12,10 @@ import { useEffect, useState } from "react";
 type ArrayItemProps = {
   formFields: any;
   updatevalues: any;
+  disabled?: boolean;
 };
 
-export default function ArrayItem({
-  formFields,
-  updatevalues,
-}: ArrayItemProps) {
+export default function ArrayItem({ formFields, updatevalues, disabled }: ArrayItemProps) {
   const [arrayValues, setArrayValues] = useState<string[]>([]);
   useEffect(() => {
     if (formFields?.value) {
@@ -79,6 +77,7 @@ export default function ArrayItem({
               <TextField
                 value={value}
                 size="small"
+                disabled={disabled}
                 fullWidth
                 color="secondary"
                 variant="outlined"

@@ -25,12 +25,20 @@ class OrderItemMetaDataSerializer(serializers.ModelSerializer):
         model = OrderItemMetaData
         fields = '__all__'
 
+
+class OrderReadSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Order
+        fields = '__all__'
+
 # Serializer for the GET details of an order
 class OrderItemReadSerializer(serializers.ModelSerializer):
     package = PackageSerializer(read_only=True)
     service_master = ServiceMasterReadSerializer(read_only=True)
     currency = CurrencySerializer(read_only=True)
     order_item_meta_data = serializers.SerializerMethodField()
+    order_id = OrderReadSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
@@ -68,6 +76,30 @@ class OrderListFilterSerializer(serializers.Serializer):
     gt_amount = serializers.FloatField(required=False)
     order_by = serializers.CharField(required=False)
     search = serializers.CharField(required=False, allow_blank=True)
+
+
+class OrderItemListFilterSerializer(serializers.Serializer):
+    influencers = serializers.ListField(
+        child=serializers.UUIDField(), required=False)
+    buyers = serializers.ListField(
+        child=serializers.UUIDField(), required=False)
+    status = serializers.ListField(
+        child=serializers.CharField(), required=False)
+    service_masters = serializers.ListField(
+        child=serializers.UUIDField(), required=False
+    )
+    order_ids = serializers.ListField(
+        child=serializers.UUIDField(), required=False)
+    lt_created_at = serializers.DateTimeField(required=False)
+    gt_created_at = serializers.DateTimeField(required=False)
+    lt_rating = serializers.FloatField(required=False)
+    gt_rating = serializers.FloatField(required=False)
+    lt_amount = serializers.FloatField(required=False)
+    gt_amount = serializers.FloatField(required=False)
+    order_by = serializers.CharField(required=False)
+    search = serializers.CharField(required=False, allow_blank=True)
+    lt_publish_date = serializers.DateTimeField(required=False)
+    gt_publish_date = serializers.DateTimeField(required=False)
 
 
 # The response schema for the list of orders from the POST search request

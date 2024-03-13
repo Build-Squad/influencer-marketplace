@@ -26,6 +26,8 @@ from .models import (
 from .serializers import (
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
+    OrderItemListFilterSerializer,
+    OrderItemReadSerializer,
     OrderListFilterSerializer,
     OrderSerializer,
     OrderItemSerializer,
@@ -42,6 +44,12 @@ from .serializers import (
 from rest_framework import status
 from django.db.models import Q
 from django.utils import timezone
+from django.db.models import F, ExpressionWrapper, DateTimeField, Case, When, BooleanField
+from django.db.models.functions import Now
+from django.db.models import Min
+
+
+
 
 
 # ORDER API-Endpoint
@@ -153,9 +161,6 @@ class OrderListView(APIView):
             if "buyers" in filters:
                 orders = orders.filter(buyer__in=filters["buyers"])
 
-            if "status" in filters:
-                orders = orders.filter(status__in=filters["status"])
-
             if "service_masters" in filters:
                 orders = orders.filter(
                     order_item_order_id__service_master__in=filters["service_masters"]
@@ -192,16 +197,52 @@ class OrderListView(APIView):
                     | Q(order_code__icontains=filters["search"])
                 )
 
-            if "order_by" in filters:
+            if "order_by" in filters and filters["order_by"] == "upcoming":
+                # Order by the publish date of the order items
+                # Should sort the publish_date closest to the current date first wrt the order
+                orders = orders.annotate(
+                    min_publish_date=Min('order_item_order_id__publish_date'),
+                    time_difference=ExpressionWrapper(
+                        F('min_publish_date') - Now(), output_field=DateTimeField()
+                    ),
+                    is_future=Case(
+                        When(min_publish_date__gte=Now(), then=True),
+                        default=False,
+                        output_field=BooleanField(),
+                    )
+                ).order_by(
+                    '-is_future',
+                    Case(
+                        When(is_future=True, then=F('time_difference')),
+                        When(is_future=False, then=F('time_difference') * -1),
+                        output_field=DateTimeField(),
+                    )
+                )
+            elif "order_by" in filters:
                 orders = orders.order_by(filters["order_by"])
+
+            status_counts = {
+                "accepted": orders.filter(status="accepted").count(),
+                "pending": orders.filter(status="pending").count(),
+                "completed": orders.filter(status="completed").count(),
+                "rejected": orders.filter(status="rejected").count(),
+                "cancelled": orders.filter(status="cancelled").count(),
+            }
+
+            if "status" in filters:
+                orders = orders.filter(status__in=filters["status"])
 
             pagination = Pagination(orders, request)
             serializer = OrderSerializer(pagination.getData(), context={
                                          "request": request}, many=True)
+            combined_data = {
+                "orders": serializer.data,
+                "status_counts": status_counts,
+            }
             return Response(
                 {
                     "isSuccess": True,
-                    "data": serializer.data,
+                    "data": combined_data,
                     "message": "All Order retrieved successfully",
                     "pagination": pagination.getPageInfo(),
                 },
@@ -684,11 +725,13 @@ class TransactionCreateView(APIView):
 # ORDER-Item API-Endpoint
 # List-Create-API
 class OrderItemList(APIView):
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         try:
             orderItems = OrderItem.objects.all()
             pagination = Pagination(orderItems, request)
-            serializer = OrderItemSerializer(pagination.getData(), many=True)
+            serializer = OrderItemReadSerializer(
+                pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -701,22 +744,113 @@ class OrderItemList(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    @swagger_auto_schema(request_body=OrderItemSerializer)
+    @swagger_auto_schema(request_body=OrderItemListFilterSerializer)
     def post(self, request):
         try:
-            serializer = OrderItemSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": OrderItemSerializer(serializer.instance).data,
-                        "message": "Order Item created successfully",
-                    },
-                    status=status.HTTP_201_CREATED,
+            filter_serializer = OrderItemListFilterSerializer(
+                data=request.data)
+            filter_serializer.is_valid(raise_exception=True)
+            filters = filter_serializer.validated_data
+
+            user = request.user_account
+            role = request.user_account.role
+            if role.name == "business_owner":
+                orderItems = OrderItem.objects.filter(
+                    Q(order_id__buyer=user), deleted_at=None
+                ).distinct()
+            elif role.name == "influencer":
+                # For all the order items, there will be a package in it and the package willl have influencer id
+                orderItems = OrderItem.objects.filter(
+                    Q(package__influencer=user), deleted_at=None
+                ).distinct()
+
+            if "service_masters" in filters:
+                orderItems = orderItems.filter(
+                    service_master__in=filters["service_masters"]
                 )
-            else:
-                return handleBadRequest(serializer.errors)
+
+            if "gt_created_at" in filters:
+                gt_created_at = filters["gt_created_at"].date()
+                orderItems = orderItems.filter(
+                    created_at__date__gte=gt_created_at)
+
+            if "lt_created_at" in filters:
+                lt_created_at = filters["lt_created_at"].date()
+                orderItems = orderItems.filter(
+                    created_at__date__lte=lt_created_at)
+
+            if "lt_rating" in filters:
+                orderItems = orderItems.filter(
+                    review__rating__lt=filters["lt_rating"])
+
+            if "gt_rating" in filters:
+                orderItems = orderItems.filter(
+                    review__rating__gt=filters["gt_rating"])
+
+            if "search" in filters:
+                orderItems = orderItems.filter(
+                    Q(order_id__buyer__first_name__icontains=filters["search"])
+                    | Q(order_id__buyer__last_name__icontains=filters["search"])
+                    | Q(package__influencer__first_name__icontains=filters["search"])
+                    | Q(package__influencer__last_name__icontains=filters["search"])
+                    | Q(order_id__order_code__icontains=filters["search"])
+                )
+
+            if "buyers" in filters:
+                orderItems = orderItems.filter(
+                    order_id__buyer__in=filters["buyers"])
+
+            if "order_by" in filters and filters["order_by"] == "upcoming":
+                orderItems = orderItems.annotate(
+                    time_difference=ExpressionWrapper(
+                        F('publish_date') - Now(), output_field=DateTimeField()
+                    ),
+                    is_future=Case(
+                        When(publish_date__gte=Now(), then=True),
+                        default=False,
+                        output_field=BooleanField(),
+                    )
+                ).order_by(
+                    '-is_future',
+                    Case(
+                        When(is_future=True, then=F('time_difference')),
+                        When(is_future=False, then=F('time_difference') * -1),
+                        output_field=DateTimeField(),
+                    )
+                )
+            elif "order_by" in filters:
+                orderItems = orderItems.order_by(filters["order_by"])
+
+            # Attach the total count of each status
+            status_counts = {
+                "accepted": orderItems.filter(status="accepted").count(),
+                "published": orderItems.filter(status="published").count(),
+                "cancelled": orderItems.filter(status="cancelled").count(),
+                "scheduled": orderItems.filter(status="scheduled").count(),
+                "rejected": orderItems.filter(status="rejected").count(),
+            }
+
+            if "status" in filters:
+                orderItems = orderItems.filter(status__in=filters["status"])
+
+            pagination = Pagination(orderItems, request)
+            serializer = OrderItemReadSerializer(
+                pagination.getData(), context={"request": request}, many=True)
+
+            combined_data = {
+                "order_items": serializer.data,
+                "status_counts": status_counts,
+            }
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": combined_data,
+                    "message": "All Order Items retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             return handleServerException(e)
 

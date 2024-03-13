@@ -227,7 +227,7 @@ const CreateUpdateService = ({
                   <FormLabel component="legend">Select Service</FormLabel>
                   <CustomAutoComplete
                     apiEndpoint="/packages/servicemaster"
-                    placeholder="Search Service Master"
+                    placeholder="Search Service"
                     value={formik.values.service_masterObject}
                     onChange={(value) => {
                       if (typeof value === "object" && value) {
