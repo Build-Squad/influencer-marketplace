@@ -62,6 +62,7 @@ export default function BusinessDashboardPage() {
       ORDER_STATUS.REJECTED,
       ORDER_STATUS.PENDING,
       ORDER_STATUS.COMPLETED,
+      ORDER_STATUS.CANCELLED,
     ],
     order_by: "-created_at",
   });
@@ -605,7 +606,8 @@ export default function BusinessDashboardPage() {
                           ? orderCount?.accepted +
                             orderCount?.completed +
                             orderCount?.pending +
-                            orderCount?.rejected
+                            orderCount?.rejected +
+                            orderCount?.cancelled
                           : card?.value === 1
                           ? orderCount?.accepted
                           : card?.value === 2
@@ -614,6 +616,8 @@ export default function BusinessDashboardPage() {
                           ? orderCount?.pending
                           : card?.value === 4
                           ? orderCount?.rejected
+                          : card?.value === 5
+                          ? orderCount?.cancelled
                           : 0
                       }
                     />

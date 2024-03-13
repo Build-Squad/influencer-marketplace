@@ -81,6 +81,7 @@ export default function BusinessDashboardPage() {
       ORDER_STATUS.ACCEPTED,
       ORDER_STATUS.REJECTED,
       ORDER_STATUS.COMPLETED,
+      ORDER_STATUS.CANCELLED,
     ],
     order_by: "-created_at",
   });
@@ -215,6 +216,7 @@ export default function BusinessDashboardPage() {
             ORDER_STATUS.ACCEPTED,
             ORDER_STATUS.REJECTED,
             ORDER_STATUS.COMPLETED,
+            ORDER_STATUS.CANCELLED,
           ],
         }));
         setPagination((prev) => ({
@@ -873,29 +875,6 @@ export default function BusinessDashboardPage() {
               alignItems: "center",
             }}
           >
-            {params?.row?.status === ORDER_STATUS.ACCEPTED && (
-              <Tooltip
-                title="Go To Order Details"
-                placement="top"
-                arrow
-                disableInteractive
-              >
-                <Link
-                  href={`/influencer/edit-order/${params?.row?.order_id?.id}`}
-                  component={NextLink}
-                  sx={{
-                    textDecoration: "none",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  <IconButton>
-                    <OpenInNewIcon color="secondary" />
-                  </IconButton>
-                </Link>
-              </Tooltip>
-            )}
             {params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED &&
               // Publish date is in the future
               dayjs(params?.row?.publish_date) > dayjs() && (
@@ -1056,7 +1035,7 @@ export default function BusinessDashboardPage() {
                 <>
                   {statusCards.map((card, index) => {
                     return (
-                      <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                      <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
                         <StatusCard
                           card={card}
                           selectedCard={selectedCard}
@@ -1066,7 +1045,8 @@ export default function BusinessDashboardPage() {
                               ? orderCount?.accepted +
                                 orderCount?.completed +
                                 orderCount?.pending +
-                                orderCount?.rejected
+                                orderCount?.rejected +
+                                orderCount?.cancelled
                               : card?.value === 1
                               ? orderCount?.accepted
                               : card?.value === 2
@@ -1075,6 +1055,8 @@ export default function BusinessDashboardPage() {
                               ? orderCount?.pending
                               : card?.value === 4
                               ? orderCount?.rejected
+                              : card?.value === 5
+                              ? orderCount?.cancelled
                               : 0
                           }
                         />

@@ -226,6 +226,7 @@ class OrderListView(APIView):
                 "pending": orders.filter(status="pending").count(),
                 "completed": orders.filter(status="completed").count(),
                 "rejected": orders.filter(status="rejected").count(),
+                "cancelled": orders.filter(status="cancelled").count(),
             }
 
             if "status" in filters:
