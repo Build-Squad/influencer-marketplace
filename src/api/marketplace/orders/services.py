@@ -77,6 +77,14 @@ def create_notification_for_order(order, old_status, new_status):
         Notification.objects.create(
             user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
 
+    elif new_status == 'cancelled':
+        # Case 5
+        message = 'Your order ' + order.order_code + \
+            ' has been successfully cancelled. You can now reclaim the funds.'
+        title = 'Order Cancelled'
+        Notification.objects.create(
+            user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
 
 def create_notification_for_order_item(order_item, old_status, new_status):
     """

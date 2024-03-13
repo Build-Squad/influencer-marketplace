@@ -17,6 +17,7 @@ type StatusCardProps = {
     completed: number;
     pending: number;
     rejected: number;
+    cancelled: number;
   };
 };
 
@@ -61,6 +62,8 @@ export default function StatusCard({
           ? orderCount?.pending
           : card?.value === 4
           ? orderCount?.rejected
+          : card?.value === 5
+          ? orderCount?.cancelled
           : 0}
       </Typography>
       <Box

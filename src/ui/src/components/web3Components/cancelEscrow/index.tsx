@@ -85,6 +85,12 @@ export default function CancelEscrow({
           return;
         }
 
+        // Check that the correct wallet is connected
+        if (publicKey?.toBase58() !== order?.buyer_wallet?.wallet_address_id) {
+          notification("Please connect the correct wallet", "error");
+          return;
+        }
+
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
           [

@@ -1,5 +1,5 @@
 from accounts.models import Wallet
-from orders.tasks import cancel_tweet, schedule_tweet
+from orders.tasks import cancel_escrow, cancel_tweet, schedule_tweet
 from orders.services import create_notification_for_order, create_order_item_tracking, create_order_tracking
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
@@ -14,6 +14,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .models import (
+    Escrow,
+    OnChainTransaction,
     Order,
     OrderItem,
     OrderAttachment,
@@ -103,6 +105,7 @@ class OrderListView(APIView):
             pending = orders.filter(status="pending").count()
             completed = orders.filter(status="completed").count()
             rejected = orders.filter(status="rejected").count()
+            cancelled = orders.filter(status="cancelled").count()
 
             return Response(
                 {
@@ -112,6 +115,7 @@ class OrderListView(APIView):
                         "pending": pending,
                         "completed": completed,
                         "rejected": rejected,
+                        "cancelled": cancelled,
                     },
                     "message": "All Order Count retrieved successfully",
                 },
@@ -431,6 +435,28 @@ class UpdateOrderStatus(APIView):
         except Order.DoesNotExist:
             return None
 
+    def create_escrow(self, order, inlfuencer_id, business_id):
+        influencer_wallet = Wallet.objects.get(
+            user_id=inlfuencer_id, is_primary=True)
+        business_wallet = Wallet.objects.get(
+            user_id=business_id, is_primary=True)
+        Escrow.objects.create(
+            order=order,
+            business_wallet=business_wallet,
+            influencer_wallet=influencer_wallet,
+        )
+
+    def create_transaction(self, order, address, status, user, transaction_type):
+        Transaction.objects.create(
+            order=order,
+            transaction_address=address,
+            status=status,
+            transaction_initiated_by=self.request.user_account,
+            wallet=Wallet.objects.get(
+                user_id=user, is_primary=True),
+            transaction_type=transaction_type
+        )
+
     @swagger_auto_schema(request_body=OrderSerializer)
     def put(self, request, pk):
         try:
@@ -447,16 +473,12 @@ class UpdateOrderStatus(APIView):
                 old_status = order.status
                 if status_data["status"] == "pending":
                     if request.data.get("address"):
+                        # Create an Escrow Object
+                        self.create_escrow(order, order.order_item_order_id.all()[
+                                           0].package.influencer.id, order.buyer.id)
                         # Create a transaction for the order
-                        Transaction.objects.create(
-                            order=order,
-                            transaction_address=request.data.get("address"),
-                            status="success",
-                            transaction_initiated_by=request.user_account,
-                            wallet=Wallet.objects.get(
-                                user_id=request.user_account, is_primary=True),
-                            transaction_type="initiate_escrow"
-                        )
+                        self.create_transaction(
+                            order, request.data.get("address"), "success", request.user_account, "initiate_escrow")
                     else:
                         return Response(
                             {
@@ -494,6 +516,146 @@ class UpdateOrderStatus(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
+class CancelOrderView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_escrow(self, order):
+        escrow = Escrow.objects.get(order=order)
+        if escrow is None:
+            return handleNotFound("Escrow")
+        return escrow
+
+    def create_on_chain_transaction(self, order):
+        # Get the escrow
+        escrow = self.get_escrow(order=order)
+        # Create an on chain transaction
+        OnChainTransaction.objects.create(
+            escrow=escrow,
+            transaction_type="cancel_escrow",
+        )
+
+    def get_object(self, pk):
+        try:
+            return Order.objects.get(pk=pk, deleted_at=None)
+        except Order.DoesNotExist:
+            return None
+
+    def put(self, request, pk):
+        try:
+            order = self.get_object(pk)
+            if order is None:
+                return handleNotFound("Order")
+            # Get all order items
+            order_items = OrderItem.objects.filter(order_id=order.id)
+
+            # Check that the logged in user is authorized to cancel the order
+            if request.user_account.role.name == "business_owner":
+                if order.buyer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            elif request.user_account.role.name == "influencer":
+                if order_items[0].package.influencer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            # if influencer is cancelling the order, then check if the order is in pending state
+            if request.user_account.role.name == "influencer":
+                if order.status != "pending":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is already " + order.status,
+                            "data": None,
+                            "errors": "Order is already " + order.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # if business owner is cancelling the order, then check if the order is in accepted or pending state
+            if request.user_account.role.name == "business_owner":
+                if order.status not in ["accepted", "pending"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is already " + order.status,
+                            "data": None,
+                            "errors": "Order is already " + order.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # If any order item is published or scheduled, then the order cannot be cancelled
+            for order_item in order_items:
+                if order_item.status in ["published", "scheduled"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order cannot be cancelled as it has already been published or scheduled",
+                            "data": None,
+                            "errors": "Order cannot be cancelled as it has already been published or scheduled",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            order_status = "cancelled" if request.user_account.id == order.buyer.id else "rejected"
+            # See if an on chain transaction is already created
+            escrow = self.get_escrow(order)
+            on_chain_transaction = OnChainTransaction.objects.filter(
+                escrow=escrow, transaction_type="cancel_escrow"
+            ).first()
+            if on_chain_transaction:
+                if on_chain_transaction.is_confirmed:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order has already been cancelled",
+                            "data": None,
+                            "errors": "Order has already been cancelled",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                else:
+                    if not on_chain_transaction.err:
+                        action = "cancellation" if request.user_account.id == order.buyer.id else "rejection"
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Order " + action + " is in progress, please wait",
+                                "data": None,
+                                "errors": "Order " + action + " is in progress, please wait",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    else:
+                        pass
+            # Create an on chain transaction
+            else:
+                self.create_on_chain_transaction(order)
+            cancel_escrow.apply_async(args=[pk, order_status])
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Order cancellation initiated successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
 
 class TransactionCreateView(APIView):
     authentication_classes = [JWTAuthentication]

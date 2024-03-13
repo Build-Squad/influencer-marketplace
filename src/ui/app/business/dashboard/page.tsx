@@ -11,13 +11,19 @@ import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
+import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
-import { getService, postService } from "@/src/services/httpServices";
+import {
+  getService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
+  ORDER_ITEM_STATUS,
   ORDER_STATUS,
   TRANSACTION_TYPE,
 } from "@/src/utils/consts";
@@ -43,7 +49,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 export default function BusinessDashboardPage() {
   const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
@@ -67,6 +73,7 @@ export default function BusinessDashboardPage() {
     completed: 0,
     pending: 0,
     rejected: 0,
+    cancelled: 0,
   });
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
@@ -113,12 +120,33 @@ export default function BusinessDashboardPage() {
           completed: data?.data?.completed,
           pending: data?.data?.pending,
           rejected: data?.data?.rejected,
+          cancelled: data?.data?.cancelled,
         });
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cancelOrder = async (id: string) => {
+    const { isSuccess, data, message } = await putService(
+      `/orders/cancel-order/${id}/`,
+      {}
+    );
+    if (isSuccess) {
+      notification(
+        "Order cancellation request sent successfully, please wait for confirmation",
+        "success",
+        5000
+      );
+      getOrders();
+    } else {
+      notification(
+        message ? message : "Something went wrong, couldn't cancel order",
+        "error"
+      );
     }
   };
 
@@ -143,6 +171,7 @@ export default function BusinessDashboardPage() {
             ORDER_STATUS.REJECTED,
             ORDER_STATUS.PENDING,
             ORDER_STATUS.COMPLETED,
+            ORDER_STATUS.CANCELLED,
           ],
         }));
         setPagination((prev) => ({
@@ -244,6 +273,28 @@ export default function BusinessDashboardPage() {
         <RejectedOrders
           style={{
             fill: selectedCard === 4 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Cancelled Orders",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_STATUS.CANCELLED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(5);
+      },
+      value: 5,
+      icon: (
+        <RejectedOrders
+          style={{
+            fill: selectedCard === 5 ? "#fff" : "#19191929",
           }}
         />
       ),
@@ -413,13 +464,32 @@ export default function BusinessDashboardPage() {
                 </Tooltip>
               )}
             </>
-            {params?.row?.status === ORDER_STATUS.REJECTED &&
+            {(params?.row?.status === ORDER_STATUS.REJECTED ||
+              params?.row?.status === ORDER_STATUS.CANCELLED) &&
               params?.row?.transactions.filter(
                 (transaction: TransactionType) =>
                   transaction.transaction_type ===
                   TRANSACTION_TYPE.CANCEL_ESCROW
               )?.length === 0 && (
                 <CancelEscrow order={params?.row} updateStatus={getOrders} />
+              )}
+            {(params?.row?.status === ORDER_STATUS.ACCEPTED ||
+              params?.row?.status === ORDER_STATUS.PENDING) &&
+              params?.row?.order_item_order_id?.filter(
+                (item: OrderItemType) =>
+                  item?.status === ORDER_ITEM_STATUS.PUBLISHED ||
+                  item?.status === ORDER_ITEM_STATUS.SCHEDULED
+              ).length === 0 && (
+                <ConfirmCancel
+                  onConfirm={() => {
+                    cancelOrder(params?.row?.id);
+                  }}
+                  deleteElement={
+                    <HighlightOffIcon color="secondary" sx={{ mt: 1 }} />
+                  }
+                  title={`Order ${params?.row?.order_code}`}
+                  hide={true}
+                />
               )}
           </Box>
         );
@@ -544,7 +614,7 @@ export default function BusinessDashboardPage() {
             <Grid container spacing={2}>
               {statusCards.map((card, index) => {
                 return (
-                  <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={2}>
                     <StatusCard
                       card={card}
                       selectedCard={selectedCard}

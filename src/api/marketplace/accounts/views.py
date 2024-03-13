@@ -1149,7 +1149,6 @@ class OTPAuth(APIView):
                             "isSuccess": True,
                             "data": None,
                             "message": "OTP sent successfully",
-                            "otp": otp,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -1195,7 +1194,7 @@ class OTPVerification(APIView):
                 if is_valid:
                     # If user is logging in for the first time, set email_verified_at to current time
                     if user.email_verified_at is None:
-                        user.email_verified_at = datetime.datetime.now()
+                        user.email_verified_at = timezone.now()
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
@@ -1293,7 +1292,6 @@ class OTPAuthV2(APIView):
                             "isSuccess": True,
                             "data": None,
                             "message": "OTP sent successfully",
-                            "otp": otp,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -1338,7 +1336,7 @@ class OTPVerifyV2(APIView):
                 if is_valid:
                     # If the OTP is valid, save the data to the user table
                         
-                    user.email_verified_at = datetime.datetime.now()
+                    user.email_verified_at = timezone.now()
                     user.email = request.data["email"]
                     if user.login_method == "email":
                         user.username = request.data["email"]
@@ -1412,7 +1410,6 @@ class EmailVerification(APIView):
                         "isSuccess": True,
                         "data": None,
                         "message": "Email sent successfully",
-                        "otp": otp,
                     },
                     status=status.HTTP_200_OK,
                 )
