@@ -7,6 +7,41 @@ import BlurredSilverBadge from "@/public/svg/Blurred_Silver.svg";
 import BlurredBronzeBadge from "@/public/svg/Blurred_Bronze.svg";
 import BlurredGoldBadge from "@/public/svg/Blurred_Gold.svg";
 
+export const BADGES = [
+  {
+    id: "BASIC",
+    icon: BasicBadge,
+    blurredIcon: BlurredBasicBadge,
+    name: "Startup Shell  (0-25 %)",
+    description:
+      "The basic form of the turtle, symbolizing the starting point for businesses on the platform.",
+  },
+  {
+    id: "BRONZE",
+    icon: BronzeBadge,
+    blurredIcon: BlurredSilverBadge,
+    name: "Branded Banditurtle  (25-50 %)",
+    description:
+      "With the addition of a headband, the turtle is embracing its identity, marking the first steps towards recognition.",
+  },
+  {
+    id: "SILVER",
+    icon: SilverBadge,
+    blurredIcon: BlurredBronzeBadge,
+    name: "Badge-Adorned Warrior  (50-75 %)",
+    description:
+      "Now sporting a chest badge in addition to the headband, this turtle is showcasing its achievements and additional profile details.",
+  },
+  {
+    id: "GOLD",
+    icon: GoldBadge,
+    blurredIcon: BlurredGoldBadge,
+    name: "Swordmaster Tycoon  (75-100 %)",
+    description:
+      "The ultimate evolution with two swords, a headband, and a chest badge, signifying the business's complete mastery and excellence on the platform.",
+  },
+];
+
 export const DISPLAY_DATE_FORMAT = "DD MMM YYYY";
 
 export const DISPLAY_TIME_FORMAT = "HH:mm A";
@@ -399,38 +434,3 @@ export const IDL: Xfluencer = {
     },
   ],
 };
-
-export const BADGES = [
-  {
-    id: "BASIC",
-    icon: BasicBadge,
-    blurredIcon: BlurredBasicBadge,
-    name: "Startup Shell  (0-25 %)",
-    description:
-      "The basic form of the turtle, symbolizing the starting point for businesses on the platform.",
-  },
-  {
-    id: "BRONZE",
-    icon: BronzeBadge,
-    blurredIcon: BlurredSilverBadge,
-    name: "Branded Banditurtle  (25-50 %)",
-    description:
-      "With the addition of a headband, the turtle is embracing its identity, marking the first steps towards recognition.",
-  },
-  {
-    id: "SILVER",
-    icon: SilverBadge,
-    blurredIcon: BlurredBronzeBadge,
-    name: "Badge-Adorned Warrior  (50-75 %)",
-    description:
-      "Now sporting a chest badge in addition to the headband, this turtle is showcasing its achievements and additional profile details.",
-  },
-  {
-    id: "GOLD",
-    icon: GoldBadge,
-    blurredIcon: BlurredGoldBadge,
-    name: "Swordmaster Tycoon  (75-100 %)",
-    description:
-      "The ultimate evolution with two swords, a headband, and a chest badge, signifying the business's complete mastery and excellence on the platform.",
-  },
-];
