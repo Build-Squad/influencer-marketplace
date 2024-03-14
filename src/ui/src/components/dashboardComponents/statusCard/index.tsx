@@ -11,20 +11,12 @@ type StatusCardProps = {
     onClick: () => void;
   };
   selectedCard: number;
-  orderCount: {
-    accepted: number;
-    completed: number;
-    pending: number;
-    rejected: number;
-    cancelled: number;
-  };
-  count: number;
+  count: number | string;
 };
 
 export default function StatusCard({
   card,
   selectedCard,
-  orderCount,
   count,
 }: StatusCardProps) {
   return (
