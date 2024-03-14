@@ -209,7 +209,7 @@ const DetailsComponent = ({ setUserDetails, userDetails }: Props) => {
   }, [userDetails.businessDetails.user_email]);
 
   useEffect(() => {
-    if (email == userDetails.businessDetails.user_email) {
+    if (email && email == userDetails.businessDetails.user_email) {
       setIsEmailVerified(true);
     }
   }, [email]);
