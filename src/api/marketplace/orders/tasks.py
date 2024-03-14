@@ -527,27 +527,19 @@ def store_order_item_metrics():
             organic_metrics = res.data['organic_metrics']
             non_public_metrics = res.data['non_public_metrics']
 
-            """
-            For all the keys in the public_metrics, organic_metrics and non_public_metrics, create a OrderItemMetric object
-            order_item = order_item
-            metric = key
-            value = value
-            type = 'public' or 'organic' or 'non_public'
-            """
-
             order_item_metrics = []
 
             for key, value in public_metrics.items():
                 order_item_metrics.append(
-                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='public'))
+                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='public_metrics'))
 
             for key, value in organic_metrics.items():
                 order_item_metrics.append(
-                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic'))
+                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic_metrics'))
 
             for key, value in non_public_metrics.items():
                 order_item_metrics.append(
-                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public'))
+                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public_metrics'))
 
             OrderItemMetric.objects.bulk_create(order_item_metrics)
 
