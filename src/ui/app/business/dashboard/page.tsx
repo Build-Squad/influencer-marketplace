@@ -23,6 +23,7 @@ import {
 } from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
+  DISPLAY_DATE_TIME_FORMAT,
   ORDER_ITEM_STATUS,
   ORDER_STATUS,
   TRANSACTION_TYPE,
@@ -36,6 +37,8 @@ import {
   Link,
   Pagination,
   Rating,
+  Tab,
+  Tabs,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -47,14 +50,34 @@ import {
 import dayjs from "dayjs";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
+import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
+import BarChartIcon from "@mui/icons-material/BarChart";
+
+const tabs = [
+  {
+    title: "Orders",
+    route: `/business/dashboard/?tab=orders`,
+    value: 0,
+    key: "orders",
+  },
+  {
+    title: "Order Items",
+    route: `/business/dashboard/?tab=order-items`,
+    value: 1,
+    key: "order-items",
+  },
+];
 export default function BusinessDashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
+  const [orderItems, setOrderItems] = useState<OrderItemType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
@@ -64,7 +87,7 @@ export default function BusinessDashboardPage() {
       ORDER_STATUS.COMPLETED,
       ORDER_STATUS.CANCELLED,
     ],
-    order_by: "-created_at",
+    order_by: "upcoming",
   });
   const [selectedReviewOrder, setSelectedReviewOrder] =
     useState<OrderType | null>(null);
@@ -82,6 +105,14 @@ export default function BusinessDashboardPage() {
     current_page_number: 1,
     current_page_size: 10,
   });
+  const [orderItemsCount, setOrderItemsCount] = React.useState({
+    accepted: 0,
+    scheduled: 0,
+    published: 0,
+    rejected: 0,
+    cancelled: 0,
+  });
+  const [selectedTab, setSelectedTab] = React.useState<number>(0);
 
   const getOrders = async () => {
     try {
@@ -100,6 +131,39 @@ export default function BusinessDashboardPage() {
           accepted: data?.data?.status_counts?.accepted,
           completed: data?.data?.status_counts?.completed,
           pending: data?.data?.status_counts?.pending,
+          rejected: data?.data?.status_counts?.rejected,
+          cancelled: data?.data?.status_counts?.cancelled,
+        });
+        setPagination({
+          ...pagination,
+          total_data_count: data?.pagination?.total_data_count,
+          total_page_count: data?.pagination?.total_page_count,
+        });
+      } else {
+        notification(message ? message : "Something went wrong", "error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getOrderItems = async () => {
+    try {
+      setLoading(true);
+      const { isSuccess, data, message } = await postService(
+        `/orders/order-item/`,
+        {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          ...filters,
+        }
+      );
+      if (isSuccess) {
+        setOrderItems(data?.data?.order_items);
+        setOrderItemsCount({
+          accepted: data?.data?.status_counts?.accepted,
+          scheduled: data?.data?.status_counts?.scheduled,
+          published: data?.data?.status_counts?.published,
           rejected: data?.data?.status_counts?.rejected,
           cancelled: data?.data?.status_counts?.cancelled,
         });
@@ -279,6 +343,148 @@ export default function BusinessDashboardPage() {
       value: 5,
       icon: (
         <RejectedOrders
+          style={{
+            fill: selectedCard === 5 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+  ];
+
+  const orderItemStatusCards = [
+    {
+      label: "All",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [
+            ORDER_ITEM_STATUS.IN_PROGRESS,
+            ORDER_ITEM_STATUS.CANCELLED,
+            ORDER_ITEM_STATUS.REJECTED,
+            ORDER_ITEM_STATUS.ACCEPTED,
+            ORDER_ITEM_STATUS.SCHEDULED,
+            ORDER_ITEM_STATUS.PUBLISHED,
+          ],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(0);
+      },
+      value: 0,
+      icon: (
+        <TotalOrders
+          style={{
+            fill: selectedCard === 0 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Accepted",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_ITEM_STATUS.ACCEPTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(1);
+      },
+      value: 1,
+      icon: (
+        <AcceptedOrders
+          style={{
+            fill: selectedCard === 1 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Scheduled",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_ITEM_STATUS.SCHEDULED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(2);
+      },
+      value: 2,
+      icon: (
+        <ScheduleSendIcon
+          style={{
+            fill: selectedCard === 2 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Published",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_ITEM_STATUS.PUBLISHED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(3);
+      },
+      value: 3,
+      icon: (
+        <OpenInNewIcon
+          style={{
+            fill: selectedCard === 3 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Rejected",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_ITEM_STATUS.REJECTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(4);
+      },
+      value: 4,
+      icon: (
+        <RejectedOrders
+          style={{
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Cancelled",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_ITEM_STATUS.CANCELLED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(5);
+      },
+      value: 5,
+      icon: (
+        <CancelScheduleSendIcon
           style={{
             fill: selectedCard === 5 ? "#fff" : "#19191929",
           }}
@@ -568,12 +774,211 @@ export default function BusinessDashboardPage() {
     },
   ];
 
+  const orderItemColumns = [
+    // Columns for Package name, Price, Order Item Creation Date, Publish Date, Order Code, Published Tweet Link, Status
+    {
+      field: "package__name",
+      headerName: "Service",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography
+            sx={{
+              textAlign: "center",
+              fontSize: "16px",
+              lineHeight: "19px",
+              color: "#000",
+              mt: 1,
+            }}
+          >
+            {params?.row?.package?.name}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "order_id__order_code",
+      headerName: "Order",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography
+            sx={{
+              textAlign: "center",
+              fontSize: "16px",
+              lineHeight: "19px",
+              color: "#000",
+              mt: 1,
+            }}
+          >
+            {params?.row?.order_id?.order_code}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "price",
+      headerName: "Price",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.price} {params?.row?.currency?.symbol}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "publish_date",
+      headerName: "Publish Date & Time",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.publish_date
+              ? dayjs(params?.row?.publish_date).format(
+                  DISPLAY_DATE_TIME_FORMAT
+                )
+              : "Not Published"}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "published_tweet_id",
+      headerName: "Published Post Link",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Link
+            href={`https://x.com/${params?.row?.package?.influencer?.twitter_account?.user_name}/status/${params?.row?.published_tweet_id}`}
+            target="_blank"
+            sx={{
+              textDecoration: "none",
+            }}
+          >
+            {params?.row?.published_tweet_id ? (
+              <Tooltip title="Go To Post" placement="top" arrow>
+                <IconButton>
+                  <OpenInNewIcon color="success" />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Typography
+                sx={{
+                  fontStyle: "italic",
+                }}
+              >
+                Not Published
+              </Typography>
+            )}
+          </Link>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {params?.row?.status === ORDER_ITEM_STATUS.PUBLISHED && (
+              <Link
+                href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}
+                component={NextLink}
+                sx={{
+                  textDecoration: "none",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                <Tooltip title="Order Item Analytics" placement="top" arrow>
+                  <IconButton>
+                    <BarChartIcon color="secondary" />
+                  </IconButton>
+                </Tooltip>
+              </Link>
+            )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return <StatusChip status={params?.row?.status} />;
+      },
+    },
+  ];
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      getOrders();
+      if (selectedTab === 0) {
+        getOrders();
+      }
+      if (selectedTab === 1) {
+        getOrderItems();
+      }
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
+
+  useEffect(() => {
+    if (selectedTab === 1) {
+      setFilters((prev) => ({
+        ...prev,
+        status: [
+          ORDER_ITEM_STATUS.ACCEPTED,
+          ORDER_ITEM_STATUS.PUBLISHED,
+          ORDER_ITEM_STATUS.REJECTED,
+          ORDER_ITEM_STATUS.SCHEDULED,
+          ORDER_ITEM_STATUS.CANCELLED,
+          ORDER_ITEM_STATUS.IN_PROGRESS,
+        ],
+        order_by: "upcoming",
+      }));
+      setSelectedCard(0);
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        status: [
+          ORDER_STATUS.ACCEPTED,
+          ORDER_STATUS.REJECTED,
+          ORDER_STATUS.COMPLETED,
+        ],
+        order_by: "upcoming",
+      }));
+      setSelectedCard(0);
+    }
+  }, [selectedTab]);
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
@@ -582,48 +987,126 @@ export default function BusinessDashboardPage() {
           p: 2,
         }}
       >
-        <Image
-          src={BackIcon}
-          alt={"BackIcon"}
-          height={30}
-          style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
-          onClick={() => {
-            router.back();
-          }}
-        />
+        <Grid container spacing={2}>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexDirection: "row",
+              mb: 2,
+            }}
+          >
+            <Image
+              src={BackIcon}
+              alt={"BackIcon"}
+              height={30}
+              style={{
+                marginTop: "8px",
+                marginBottom: "8px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                router.back();
+              }}
+            />
+            <Tabs
+              value={selectedTab}
+              onChange={(event, newValue) => {
+                setSelectedTab(newValue);
+                router.push(tabs.find((tab) => tab.value === newValue)?.route!);
+              }}
+            >
+              {tabs.map((tab, index) => {
+                return (
+                  <Tab
+                    key={index}
+                    label={tab.title}
+                    value={tab.value}
+                    sx={{
+                      color: selectedTab === tab.value ? "#0099FF" : "#000000",
+                      fontSize: "16px",
+                      lineHeight: "19px",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                    }}
+                  />
+                );
+              })}
+            </Tabs>
+            <Box></Box>
+          </Grid>
+        </Grid>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Grid container spacing={2}>
-              {statusCards.map((card, index) => {
-                return (
-                  <Grid item key={index} xs={12} sm={6} md={4} lg={2}>
-                    <StatusCard
-                      card={card}
-                      selectedCard={selectedCard}
-                      orderCount={orderCount}
-                      count={
-                        card?.value === 0
-                          ? orderCount?.accepted +
-                            orderCount?.completed +
-                            orderCount?.pending +
-                            orderCount?.rejected +
-                            orderCount?.cancelled
-                          : card?.value === 1
-                          ? orderCount?.accepted
-                          : card?.value === 2
-                          ? orderCount?.completed
-                          : card?.value === 3
-                          ? orderCount?.pending
-                          : card?.value === 4
-                          ? orderCount?.rejected
-                          : card?.value === 5
-                          ? orderCount?.cancelled
-                          : 0
-                      }
-                    />
-                  </Grid>
-                );
-              })}
+              {selectedTab === 0 ? (
+                <>
+                  {statusCards.map((card, index) => {
+                    return (
+                      <Grid item key={index} xs={12} sm={6} md={4} lg={2}>
+                        <StatusCard
+                          card={card}
+                          selectedCard={selectedCard}
+                          count={
+                            card?.value === 0
+                              ? orderCount?.accepted +
+                                orderCount?.completed +
+                                orderCount?.pending +
+                                orderCount?.rejected +
+                                orderCount?.cancelled
+                              : card?.value === 1
+                              ? orderCount?.accepted
+                              : card?.value === 2
+                              ? orderCount?.completed
+                              : card?.value === 3
+                              ? orderCount?.pending
+                              : card?.value === 4
+                              ? orderCount?.rejected
+                              : card?.value === 5
+                              ? orderCount?.cancelled
+                              : 0
+                          }
+                        />
+                      </Grid>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  {orderItemStatusCards.map((card, index) => {
+                    return (
+                      <Grid item key={index} xs={12} sm={6} md={2} lg={2}>
+                        <StatusCard
+                          card={card}
+                          selectedCard={selectedCard}
+                          count={
+                            card?.value === 0
+                              ? orderItemsCount?.accepted +
+                                orderItemsCount?.scheduled +
+                                orderItemsCount?.published +
+                                orderItemsCount?.rejected +
+                                orderItemsCount?.cancelled
+                              : card?.value === 1
+                              ? orderItemsCount?.accepted
+                              : card?.value === 2
+                              ? orderItemsCount?.scheduled
+                              : card?.value === 3
+                              ? orderItemsCount?.published
+                              : card?.value === 4
+                              ? orderItemsCount?.rejected
+                              : card?.value === 5
+                              ? orderItemsCount?.cancelled
+                              : 0
+                          }
+                        />
+                      </Grid>
+                    );
+                  })}
+                </>
+              )}
             </Grid>
           </Grid>
           <Grid item xs={12}>
@@ -634,8 +1117,8 @@ export default function BusinessDashboardPage() {
               getRowId={(row) => (row?.id ? row?.id : 0)}
               autoHeight
               loading={loading}
-              rows={orders}
-              columns={columns}
+              rows={selectedTab === 0 ? orders : orderItems}
+              columns={selectedTab === 0 ? columns : orderItemColumns}
               disableRowSelectionOnClick
               disableColumnFilter
               hideFooter
@@ -643,7 +1126,6 @@ export default function BusinessDashboardPage() {
               sx={{
                 backgroundColor: "#fff",
               }}
-              // Sorting
               sortingMode="server"
               onSortModelChange={(model) => {
                 setFilters((prev) => ({
@@ -656,7 +1138,10 @@ export default function BusinessDashboardPage() {
                 }));
               }}
               localeText={{
-                noRowsLabel: "No Orders found",
+                noRowsLabel:
+                  selectedTab === 0
+                    ? "No orders found"
+                    : "No order items found",
               }}
             />
           </Grid>
