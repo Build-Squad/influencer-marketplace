@@ -26,7 +26,7 @@ const WORKING_STEPS = [
 const stepContainerStyle = {
   flex: "1",
   textAlign: "center",
-  maxWidth:"20%"
+  maxWidth: "20%",
 };
 
 export default function GuideContainer({}: Props) {
@@ -42,7 +42,7 @@ export default function GuideContainer({}: Props) {
         How it Works?
       </Typography>
       <Typography variant="subtitle1" sx={{ color: "#505050" }}>
-        Dive into the future of the web with top influencers.
+        Explore Purchase Analyse in seconds.
       </Typography>
       <Box
         sx={{

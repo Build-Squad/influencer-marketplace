@@ -16,6 +16,7 @@ import StatusChip from "@/src/components/shared/statusChip";
 import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import { postService } from "@/src/services/httpServices";
 import {
+  BADGES,
   DISPLAY_DATE_FORMAT,
   DISPLAY_DATE_TIME_FORMAT,
   ORDER_ITEM_STATUS,
@@ -27,6 +28,7 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import {
+  Avatar,
   Badge,
   Box,
   Grid,
@@ -63,6 +65,22 @@ const tabs = [
     key: "order-items",
   },
 ];
+
+const getProfileCompletedStatus: (businessDetails: any) => string = (
+  businessDetails
+) => {
+  if (businessDetails) {
+    let count = 0;
+    if (businessDetails?.isTwitterAccountConnected) count += 5;
+    if (businessDetails?.isWalletConnected) count += 5;
+    count +=
+      Object.values(businessDetails).filter(
+        (value) => value !== "" && value !== null
+      ).length - 7;
+    return `${count} / ${10 + Object.keys(businessDetails).length - 7}`;
+  }
+  return "-";
+};
 
 export default function BusinessDashboardPage() {
   const router = useRouter();
@@ -466,6 +484,24 @@ export default function BusinessDashboardPage() {
     },
   ];
 
+  const getProgressPercentage = (order: OrderType) => {
+    const completionStringArr = getProfileCompletedStatus(
+      order?.buyer_meta_data
+    )
+      .replace(/\s/g, "")
+      .split("/");
+
+    return (
+      (parseInt(completionStringArr[0]) / parseInt(completionStringArr[1])) *
+      100
+    );
+  };
+
+  const getCurrentBadgeIndex = (order: OrderType) => {
+    const per = getProgressPercentage(order);
+    return per <= 25 ? 0 : per <= 50 ? 1 : per <= 75 ? 2 : per <= 100 ? 3 : 0;
+  };
+
   const columns = [
     {
       field: "order_code",
@@ -479,6 +515,7 @@ export default function BusinessDashboardPage() {
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
+        const badge = BADGES[getCurrentBadgeIndex(params?.row)];
         return (
           <Typography
             sx={{
@@ -486,9 +523,30 @@ export default function BusinessDashboardPage() {
               fontSize: "16px",
               lineHeight: "19px",
               color: "#000",
-              mt: 1,
+              display: "flex",
+              alignItems: "center",
+              columnGap: "8px",
             }}
           >
+            <Tooltip
+              title={
+                <React.Fragment>
+                  <Typography variant="body2" fontWeight={"bold"}>
+                    {badge?.name}
+                  </Typography>
+                  <Typography variant="caption">
+                    {badge?.description}
+                  </Typography>
+                </React.Fragment>
+              }
+              arrow
+            >
+              <Image
+                src={badge?.icon}
+                style={{ width: 24, height: 24 }}
+                alt="Business Badge"
+              />
+            </Tooltip>
             <Link
               href={`/business/profile-preview/${params?.row?.buyer?.id}`}
               target="_blank"

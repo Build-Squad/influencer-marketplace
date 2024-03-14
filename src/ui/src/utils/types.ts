@@ -248,6 +248,7 @@ type ReviewType = {
 type OrderType = {
   id?: string;
   buyer?: UserType;
+  buyer_meta_data?: unknown;
   order_item_order_id?: OrderItemType[];
   amount?: number;
   currency?: CurrencyType;
@@ -636,5 +637,3 @@ type Xfluencer = {
     }
   ];
 };
-
-

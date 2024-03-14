@@ -155,10 +155,10 @@ export default function ElevateSection({}: Props) {
     <>
       <Box>
         <Typography variant="h6" sx={{ color: "#9B9B9B" }}>
-          Revolutionize Your Engagement
+          Save Time and Experience Growth
         </Typography>
         <Typography sx={{ fontSize: "40px" }}>
-          Elevate Your Business with Xfluencer
+          Tailored marketing solutions for busy businesses
         </Typography>
         <Box
           sx={{ display: "flex", justifyContent: "center", marginTop: "14px" }}
