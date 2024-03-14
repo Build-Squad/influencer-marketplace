@@ -1,5 +1,5 @@
 export type Xfluencer = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "xfluencer",
   "instructions": [
     {
@@ -425,7 +425,7 @@ export type Xfluencer = {
 };
 
 export const IDL: Xfluencer = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "xfluencer",
   "instructions": [
     {

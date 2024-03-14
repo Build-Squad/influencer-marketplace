@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "xfluencer",
   "instructions": [
     {
@@ -421,8 +421,5 @@
       "name": "BusinessHasInsufficientAmountOfTokens",
       "msg": "Busines Has Insufficient Amount Of Tokens"
     }
-  ],
-  "metadata": {
-    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
-  }
+  ]
 }
