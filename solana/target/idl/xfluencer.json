@@ -11,12 +11,12 @@
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "seller",
+          "name": "influencer",
           "isMut": false,
           "isSigner": false
         },
@@ -31,12 +31,12 @@
           "isSigner": false
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "sellerReceiveTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -85,12 +85,12 @@
       "name": "cancel",
       "accounts": [
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -257,19 +257,19 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "buyerKey",
+            "name": "businessKey",
             "type": "publicKey"
           },
           {
-            "name": "buyerDepositTokenAccount",
+            "name": "businessDepositTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "sellerKey",
+            "name": "influencerKey",
             "type": "publicKey"
           },
           {
-            "name": "sellerReceiveTokenAccount",
+            "name": "influencerReceiveTokenAccount",
             "type": "publicKey"
           },
           {
@@ -421,5 +421,8 @@
       "name": "BusinessHasInsufficientAmountOfTokens",
       "msg": "Busines Has Insufficient Amount Of Tokens"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
+  }
 }

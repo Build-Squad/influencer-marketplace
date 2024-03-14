@@ -18,7 +18,7 @@ pub fn process(ctx: Context<Cancel>, order_code: u64,) -> ProgramResult {
 
     // Transfer token to buyer.
     token::transfer(
-        ctx.accounts.into_transfer_to_buyer_context().with_signer(&[&authority_seeds[..]]),
+        ctx.accounts.into_transfer_to_business_context().with_signer(&[&authority_seeds[..]]),
         ctx.accounts.escrow_account.amount,
     )?;
 

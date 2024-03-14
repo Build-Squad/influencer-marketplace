@@ -11,12 +11,12 @@ export type Xfluencer = {
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "seller",
+          "name": "influencer",
           "isMut": false,
           "isSigner": false
         },
@@ -31,12 +31,12 @@ export type Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "sellerReceiveTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -85,12 +85,12 @@ export type Xfluencer = {
       "name": "cancel",
       "accounts": [
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -257,19 +257,19 @@ export type Xfluencer = {
         "kind": "struct",
         "fields": [
           {
-            "name": "buyerKey",
+            "name": "businessKey",
             "type": "publicKey"
           },
           {
-            "name": "buyerDepositTokenAccount",
+            "name": "businessDepositTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "sellerKey",
+            "name": "influencerKey",
             "type": "publicKey"
           },
           {
-            "name": "sellerReceiveTokenAccount",
+            "name": "influencerReceiveTokenAccount",
             "type": "publicKey"
           },
           {
@@ -437,12 +437,12 @@ export const IDL: Xfluencer = {
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "seller",
+          "name": "influencer",
           "isMut": false,
           "isSigner": false
         },
@@ -457,12 +457,12 @@ export const IDL: Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "sellerReceiveTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -511,12 +511,12 @@ export const IDL: Xfluencer = {
       "name": "cancel",
       "accounts": [
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -683,19 +683,19 @@ export const IDL: Xfluencer = {
         "kind": "struct",
         "fields": [
           {
-            "name": "buyerKey",
+            "name": "businessKey",
             "type": "publicKey"
           },
           {
-            "name": "buyerDepositTokenAccount",
+            "name": "businessDepositTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "sellerKey",
+            "name": "influencerKey",
             "type": "publicKey"
           },
           {
-            "name": "sellerReceiveTokenAccount",
+            "name": "influencerReceiveTokenAccount",
             "type": "publicKey"
           },
           {

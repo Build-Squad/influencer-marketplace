@@ -5,7 +5,6 @@ import { assert } from 'chai';
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
 import * as utils from "./utils";
-import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { Xfluencer } from "../target/types/xfluencer";
 
 import { TOKEN_PROGRAM_ID, createAssociatedTokenAccount, getMint, mintTo } from '@solana/spl-token';
@@ -16,12 +15,13 @@ describe("Testing Escrow for ATA", () => {
   const provider = utils.getAnchorProvider();
 
   const program = anchor.workspace.Xfluencer as Program<Xfluencer>;
-  const nodeWallet: NodeWallet = (program.provider as anchor.AnchorProvider).wallet as NodeWallet;
+
+
 
   // Token & PDA
   let mintA: PublicKey = null; 
   let buyerTokenAccountA = null;
-  let sellerTokenAccountA = null;
+  let influencerTokenAccountA = null;
   let vault_account_pda = null;
   let vault_account_bump = null;
   let vault_authority_pda = null;
@@ -34,7 +34,7 @@ describe("Testing Escrow for ATA", () => {
   // keypairs for testing
   const payer = anchor.web3.Keypair.generate();
   const buyer = nodeWallet.payer;  // set buyer to payer
-  const seller = anchor.web3.Keypair.generate();
+  const influencer = anchor.web3.Keypair.generate();
   const judge = anchor.web3.Keypair.generate();
   const escrowAccount = anchor.web3.Keypair.generate();
   const mintAuthority = anchor.web3.Keypair.generate();
@@ -52,7 +52,7 @@ describe("Testing Escrow for ATA", () => {
     // Airdrop SOL to all accounts
     for (const keypair of [
       buyer,
-      seller,
+      influencer,
       judge,
       escrowAccount,
       mintAuthority,
@@ -68,7 +68,7 @@ describe("Testing Escrow for ATA", () => {
     );
 
     const buyerTokenAmount = 100;
-    const sellerTokenAmount = 200;
+    const influencerTokenAmount = 200;
 
     const mintPk = mintA;
     const owner = buyer.publicKey;
@@ -85,7 +85,7 @@ describe("Testing Escrow for ATA", () => {
       ),
       getMint(provider.connection, mintPk),
     ]);
-/*
+
     await mintTo(
       provider.connection,
       nodeWallet.payer,
@@ -99,15 +99,15 @@ describe("Testing Escrow for ATA", () => {
     buyerTokenAccountA  
         = await utils.createAssociatedTokenAccountWithBalance(mintA, buyer.publicKey, buyerTokenAmount);
 
-    sellerTokenAccountA 
-        = await utils.createAssociatedTokenAccountWithBalance(mintA, seller.publicKey, sellerTokenAmount);*/
+    influencerTokenAccountA 
+        = await utils.createAssociatedTokenAccountWithBalance(mintA, influencer.publicKey, influencerTokenAmount);
 
     // Create and funding ATAs 
     //amountA = await utils.getTokenAccountBalance(provider, buyerTokenAccountA);
     //assert.ok(amountA == buyerTokenAmount * 10**NUMBER_DECIMALS);
 
-    //amountB = await utils.getTokenAccountBalance(provider, sellerTokenAccountA);
-    //assert.ok(amountB == sellerTokenAmount * 10**NUMBER_DECIMALS); 
+    //amountB = await utils.getTokenAccountBalance(provider, influencerTokenAccountA);
+    //assert.ok(amountB == influencerTokenAmount * 10**NUMBER_DECIMALS); 
 
   });
 
@@ -144,11 +144,11 @@ describe("Testing Escrow for ATA", () => {
         {
           initializer: buyer.publicKey, 
           buyer: buyer.publicKey,
-          seller: seller.publicKey,
+          influencer: influencer.publicKey,
           judge: judge.publicKey,
           mint: mintA,        
           buyerDepositTokenAccount: buyerTokenAccountA,
-          sellerReceiveTokenAccount: sellerTokenAccountA,
+          influencerReceiveTokenAccount: influencerTokenAccountA,
           escrowAccount: escrow_account_pda,
           vaultAccount: vault_account_pda,
           systemProgram: anchor.web3.SystemProgram.programId,
@@ -218,11 +218,11 @@ describe("Testing Escrow for ATA", () => {
         {
           initializer: buyer.publicKey, 
           buyer: buyer.publicKey,
-          seller: seller.publicKey,
+          influencer: influencer.publicKey,
           judge: judge.publicKey,
           mint: mintA,        
           buyerDepositTokenAccount: buyerTokenAccountA,
-          sellerReceiveTokenAccount: sellerTokenAccountA,
+          influencerReceiveTokenAccount: influencerTokenAccountA,
           escrowAccount: escrow_account_pda,
           vaultAccount: vault_account_pda,
           systemProgram: anchor.web3.SystemProgram.programId,
