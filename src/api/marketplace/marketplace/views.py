@@ -175,6 +175,7 @@ def manage_categories(hashtags, twitter_account):
 
 def createUser(userData, access_token, role, refresh_token):
     try:
+        is_new_user = False
         existing_user = TwitterAccount.objects.filter(twitter_id=userData.id).first()
 
         # Operations for twitter user account
@@ -238,6 +239,8 @@ def createUser(userData, access_token, role, refresh_token):
                 role=Role.objects.filter(name=role).first(),
             )
             new_user_account.save()
+            if role=="business_owner":
+                is_new_user = True
         else:
             if existing_user_account.role.name != role:
                 return {
@@ -250,7 +253,7 @@ def createUser(userData, access_token, role, refresh_token):
 
         current_user = User.objects.filter(twitter_account=current_twitter_user).first()
         logger.info("User Successfully created/updated")
-        return {"status": "success", "current_user": current_user}
+        return {"status": "success", "current_user": current_user, "is_new_user":is_new_user}
     except Exception as e:
         logger.error("Error creating/updating user account -", e)
         return {
@@ -280,8 +283,10 @@ def createJWT(userData, access_token, role, refresh_token):
         # Redirect influencers to their profile page.
         if role == "influencer":
             redirect_url += f"/profile/{current_user.id}"
-
-        redirect_url += "?authenticationStatus=success"
+        else:
+            redirect_url += "/explore?authenticationStatus=success"
+            if current_user_data["is_new_user"]:
+                redirect_url += f"&message=New user? Head to your profile to earn badges!"
 
         response = redirect(redirect_url)
 
