@@ -340,7 +340,8 @@ class OrderItemMetric(models.Model):
     metric = models.CharField(max_length=100, blank=True, null=True)
     value = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    type = models.CharField(max_length=100, blank=True, null=True)
+    type = models.CharField(max_length=100, blank=True,
+                            null=True, choices=TYPE_CHOICES)
 
     class Meta:
         db_table = "order_item_metric"
