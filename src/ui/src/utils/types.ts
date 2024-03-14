@@ -322,6 +322,22 @@ type ChatDisplayType = {
   message?: OrderChatMessageType;
 };
 
+type OrderItemMetricType = {
+  id: string;
+  order_item: string;
+  metric: string;
+  value: string;
+  created_at: Date | string;
+  type: string;
+};
+
+type OrderItemMetricFilterType = {
+  type?: string[];
+  metric?: string[];
+  gt_created_at?: string | null;
+  lt_created_at?: string | null;
+};
+
 interface SVGIcon
   extends React.FunctionComponent<React.SVGAttributes<HTMLOrSVGElement>> {}
 
