@@ -12,6 +12,7 @@ from .models import (
     OrderItem,
     OrderAttachment,
     OrderItemMetaData,
+    OrderItemMetric,
     OrderMessage,
     OrderMessageAttachment,
     Review,
@@ -483,3 +484,18 @@ class OrderTransactionCreateSerializer(serializers.Serializer):
         )
         
         return transaction
+
+
+class OrderItemMetricFilterSerializer(serializers.Serializer):
+    order_item_id = serializers.UUIDField(required=False)
+    type = serializers.ListField(child=serializers.CharField(), required=False)
+    metric = serializers.ListField(
+        child=serializers.CharField(), required=False)
+    gt_created_at = serializers.DateTimeField(required=False, allow_null=True)
+    lt_created_at = serializers.DateTimeField(required=False, allow_null=True)
+
+
+class OrderItemMetricSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItemMetric
+        fields = '__all__'
