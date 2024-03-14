@@ -17,9 +17,8 @@ import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
 import {
-  getService,
   postService,
-  putService,
+  putService
 } from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
@@ -28,8 +27,12 @@ import {
   ORDER_STATUS,
   TRANSACTION_TYPE,
 } from "@/src/utils/consts";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
 import EditNoteIcon from "@mui/icons-material/EditNote";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import {
   Box,
   Grid,
@@ -52,10 +55,6 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
-import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
-import BarChartIcon from "@mui/icons-material/BarChart";
 
 const tabs = [
   {
