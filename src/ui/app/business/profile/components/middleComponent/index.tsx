@@ -20,9 +20,10 @@ import React, {
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import WalletsTable from "@/src/components/walletsTable";
 import useTwitterAuth from "@/src/hooks/useTwitterAuth";
-import { useAppSelector } from "@/src/hooks/useRedux";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import {
+  deleteService,
   getService,
   postService,
   putService,
@@ -33,6 +34,9 @@ import { UserDetailsType } from "../../type";
 import Info_Profile from "@/public/Info_Profile.png";
 import { ArrowRightAlt, Verified, CheckCircle } from "@mui/icons-material";
 import VerifyEmailModal from "@/src/components/verifyEmailModal";
+import { loginReducer } from "@/src/reducers/userSlice";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const debounce = (fn: Function, ms = 500) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -120,11 +124,40 @@ const ConnectWalletComponent = ({ setUserDetails, userDetails }: Props) => {
   );
 };
 
-const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
-  const pathname = usePathname();
-  const { startTwitterAuthentication, logoutTwitterUser } = useTwitterAuth();
+const ConnectXComponent = () => {
   const user = useAppSelector((state) => state.user?.user);
   const userTwitterDetails = user?.twitter_account;
+  const dispatch = useAppDispatch();
+
+  const updateRedux = async () => {
+    try {
+      const { isSuccess, data } = await getService("account/");
+      if (isSuccess) {
+        dispatch(loginReducer(data?.data));
+      }
+    } catch (error) {
+      console.error("Error during authentication check:", error);
+    }
+  };
+
+  const disconnectTwitterAccount = async () => {
+    try {
+      const { isSuccess, message } = await deleteService(
+        `/account/disconnect-twitter-account/${user?.id}`
+      );
+      if (isSuccess) {
+        updateRedux();
+        notification(message);
+      } else {
+        notification(
+          message ? message : "Something went wrong, try again later",
+          "error"
+        );
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   if (userTwitterDetails) {
     return (
@@ -152,10 +185,7 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
               borderRadius: "20px",
               mt: 2,
             }}
-            onClick={() => {
-              logoutTwitterUser();
-              // window.location.href = `${pathname}?tab=${tabName}`;
-            }}
+            onClick={disconnectTwitterAccount}
           >
             Disconnect
           </Button>
@@ -186,7 +216,9 @@ const ConnectXComponent = ({ tabName }: { tabName?: string }) => {
             borderRadius: "20px",
             mt: 5,
           }}
-          onClick={() => startTwitterAuthentication({ role: "business_owner" })}
+          onClick={() =>
+            (window.location.href = `${BACKEND_URL}auth-twitter-user/business_owner/connect`)
+          }
         >
           Login to X
         </Button>
@@ -614,7 +646,7 @@ const InfoComponent = () => {
 
 const MiddleComponent = ({ setUserDetails, userDetails }: Props) => {
   const searchParams = useSearchParams();
-  const tabName = searchParams.get("tab");
+  const tabName = searchParams.get("tab") ?? "connect_x";
 
   let componentToRender = null;
 
@@ -626,7 +658,7 @@ const MiddleComponent = ({ setUserDetails, userDetails }: Props) => {
       />
     );
   } else if (tabName === "connect_x") {
-    componentToRender = <ConnectXComponent tabName={tabName} />;
+    componentToRender = <ConnectXComponent />;
   } else if (tabName === "details") {
     componentToRender = (
       <DetailsComponent

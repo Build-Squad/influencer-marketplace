@@ -8,6 +8,7 @@ from accounts.tasks import sendEmail
 
 from marketplace.authentication import JWTAuthentication
 from django.db.models import Q
+from rest_framework.exceptions import NotFound
 from marketplace.services import (
     Pagination,
     handleServerException,
@@ -1800,6 +1801,53 @@ class WalletList(APIView):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
+            return handleServerException(e)
+
+class DisconnectTwitterAccount(APIView):
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return None
+
+    authentication_classes = [JWTAuthentication]
+    def delete(self, request, pk):
+        try:
+            # Get the user object
+            user = self.get_object(pk)
+            
+            # If user not found, raise NotFound exception
+            if user is None:
+                raise NotFound("User not found")
+
+            # Get the associated TwitterAccount instance
+            twitter_account = user.twitter_account
+
+            # Set twitter_account field to None
+            user.twitter_account = None
+            user.save()
+
+            # Delete corresponding TwitterAccount entry if it exists
+            if twitter_account:
+                twitter_account.delete()
+
+            # Return success response
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": UserSerializer(user).data,
+                    "message": "Twitter account disconnected successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except NotFound as e:
+            # Return 404 response if user is not found
+            return Response(
+                {"message": str(e)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            # Handle other exceptions
             return handleServerException(e)
 
 

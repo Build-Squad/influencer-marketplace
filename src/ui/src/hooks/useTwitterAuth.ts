@@ -43,7 +43,7 @@ export default function useTwitterAuth() {
     role: string;
   }) => {
     try {
-      window.location.href = `${BACKEND_URL}auth-twitter-user/${role}`;
+      window.location.href = `${BACKEND_URL}auth-twitter-user/${role}/auth`;
     } catch (error) {
       console.error("Error initiating Twitter authentication:", error);
     }

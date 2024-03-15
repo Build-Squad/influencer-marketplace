@@ -26,7 +26,8 @@ from .views import (
     WalletDetail,
     WalletList,
     BusinessAccountMetaDataDetail,
-    WalletNonceCreateView
+    WalletNonceCreateView, 
+    DisconnectTwitterAccount
 )
 
 urlpatterns = [
@@ -39,6 +40,7 @@ urlpatterns = [
 
     path("twitter-account/", TwitterAccountList.as_view(), name="twitter-account-list"),
     path("twitter-account/<uuid:pk>/", TwitterAccountDetail.as_view(), name="twitter-account-detail"),
+    path("disconnect-twitter-account/<uuid:pk>/", DisconnectTwitterAccount.as_view(), name="disconnect-twitter-account"),
 
 
     path("category-master/", CategoryMasterList.as_view(), name="category-master-list"),
