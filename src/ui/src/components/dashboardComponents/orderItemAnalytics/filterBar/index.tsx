@@ -10,6 +10,7 @@ import {
   Autocomplete,
   Badge,
   Box,
+  Button,
   Grid,
   TextField,
   ToggleButton,
@@ -32,6 +33,7 @@ type FilterBarProps = {
     label: string;
     value: string;
   }[];
+  handleShowOrderItemDetails: () => void;
 };
 
 export default function FilterBar({
@@ -40,6 +42,7 @@ export default function FilterBar({
   selectedView,
   setSelectedView,
   metricValues,
+  handleShowOrderItemDetails,
 }: FilterBarProps) {
   const [count, setCount] = React.useState<number>(0);
 
@@ -239,7 +242,25 @@ export default function FilterBar({
             }
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2} lg={5}>
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          md={2}
+          lg={5}
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <Button
+            onClick={() => {
+              handleShowOrderItemDetails();
+            }}
+          >
+            View Order Item Details
+          </Button>
           <ToggleButtonGroup
             value={selectedView}
             exclusive
