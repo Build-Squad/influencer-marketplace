@@ -17,6 +17,7 @@ type InfluencersType = {
   minPrice: number;
   maxPrice: number;
   rating: number;
+  is_bookmarked?: boolean | null;
 };
 
 const formatTwitterFollowers = (followersCount: any) => {
@@ -41,6 +42,7 @@ export default function BookmarksPage() {
     current_page_size: 12,
   });
   const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
   const getPrice = (inf: any, type = "max") => {
     if (type == "max") {
@@ -99,6 +101,7 @@ export default function BookmarksPage() {
             minPrice: getPrice(inf, "min"),
             maxPrice: getPrice(inf, "max"),
             rating: inf.rating || 0,
+            is_bookmarked: inf?.is_bookmarked,
           };
         });
         setPagination({
@@ -128,6 +131,13 @@ export default function BookmarksPage() {
   useEffect(() => {
     getInfluencers();
   }, [pagination.current_page_number]);
+
+  useEffect(() => {
+    if (refresh) {
+      getInfluencers();
+      setRefresh(false);
+    }
+  }, [refresh]);
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
@@ -163,7 +173,13 @@ export default function BookmarksPage() {
               {influencersData && influencersData?.length > 0 ? (
                 <>
                   {influencersData?.map((inf, index) => {
-                    return <InfluencersCards influencer={inf} key={index} />;
+                    return (
+                      <InfluencersCards
+                        influencer={inf}
+                        key={index}
+                        setRefresh={setRefresh}
+                      />
+                    );
                   })}
                 </>
               ) : (
