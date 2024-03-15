@@ -127,7 +127,7 @@ from pyxfluencer.utils import get_local_keypair_pubkey`
 
 Notice, that functions in the library are async so it is necessary to `await` for them.
 
-Follow the example on `test_stand_alone` testing script to either validate an escrow to cancel it or to move it to deliveerd state.
+Follow the example on `test_stand_alone` testing script to either validate an escrow to cancel it or to move it to delivered state.
 
 ```python
 # set path to your json seed file where the keypair of the validator is found.
