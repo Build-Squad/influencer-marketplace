@@ -2,6 +2,7 @@
 
 import BackIcon from "@/public/svg/Back.svg";
 import FilterBar from "@/src/components/dashboardComponents/orderItemAnalytics/filterBar";
+import OrderSummaryDetails from "@/src/components/dashboardComponents/orderSummaryDetails";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import { notification } from "@/src/components/shared/notification";
 import { postService } from "@/src/services/httpServices";
@@ -17,6 +18,8 @@ import PeopleIcon from "@mui/icons-material/People";
 import PublicOff from "@mui/icons-material/PublicOff";
 import {
   Box,
+  Divider,
+  Drawer,
   Grid,
   IconButton,
   Link,
@@ -30,6 +33,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+import { Close } from "@mui/icons-material";
 
 const DynamicResponsiveBarChart = dynamic(
   () =>
@@ -80,15 +84,18 @@ export default function OrderItemAnalyticsPage({
   const [metricValues, setMetricValues] = React.useState<
     { label: string; value: string }[]
   >([]);
+  const [showOrderItemDetails, setShowOrderItemDetails] =
+    React.useState<boolean>(false);
+
+  const handleShowOrderItemDetails = () => {
+    setShowOrderItemDetails(!showOrderItemDetails);
+  };
 
   const formatData = (orderItemMetrics: OrderItemMetricType[]) => {
     let keys: string[] = [];
     let data: BarDatum[] = [];
-    let indexBy = "";
+    let indexBy = "created_at";
     orderItemMetrics.forEach((metric) => {
-      if (indexBy === "") {
-        indexBy = "created_at";
-      }
       const formattedKey =
         ORDER_ITEM_METRIC_TYPE_LABEL[
           metric.metric as keyof typeof ORDER_ITEM_METRIC_TYPE_LABEL
@@ -106,7 +113,7 @@ export default function OrderItemAnalyticsPage({
       } else {
         const newItem = {
           created_at: dayjs(metric.created_at).format(DISPLAY_DATE_TIME_FORMAT),
-          formattedKey: metric.value,
+          [formattedKey]: metric.value,
         };
         data.push(newItem);
       }
@@ -214,6 +221,8 @@ export default function OrderItemAnalyticsPage({
           metric: [],
         });
       },
+      description:
+        "All metrics available for the order item that are provided by X.",
     },
     {
       label: "Organic Metrics",
@@ -233,6 +242,8 @@ export default function OrderItemAnalyticsPage({
           metric: [],
         });
       },
+      description:
+        "Grouping of public and non-public metrics attributed to an organic context (posted and viewed in a regular manner).",
     },
     {
       label: "Public Metrics",
@@ -252,6 +263,8 @@ export default function OrderItemAnalyticsPage({
           metric: [],
         });
       },
+      description:
+        "Metrics that are available for anyone to access on X, such as number of likes and number of Reposts.",
     },
     {
       label: "Non Public Metrics",
@@ -271,6 +284,8 @@ export default function OrderItemAnalyticsPage({
           metric: [],
         });
       },
+      description:
+        "Metrics that are not available for anyone to view on Twitter, such as number of impressions and video view quartiles.",
     },
   ];
 
@@ -341,7 +356,8 @@ export default function OrderItemAnalyticsPage({
                 <StatusCard
                   card={card}
                   selectedCard={selectedMetricType}
-                  count={0}
+                  count={null}
+                  description={card.description}
                 />
               </Grid>
             ))}
@@ -354,6 +370,7 @@ export default function OrderItemAnalyticsPage({
             selectedView={selectedView}
             setSelectedView={setSelectedView}
             metricValues={metricValues}
+            handleShowOrderItemDetails={handleShowOrderItemDetails}
           />
         </Grid>
         <Grid
@@ -375,6 +392,47 @@ export default function OrderItemAnalyticsPage({
           )}
         </Grid>
       </Grid>
+      <Drawer
+        anchor="right"
+        open={showOrderItemDetails}
+        onClose={handleShowOrderItemDetails}
+        sx={{
+          "& .MuiDrawer-paper": {
+            padding: "24px 32px",
+            height: "100%",
+            maxHeight: "100%",
+            overflowY: "auto",
+          },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h6" fontWeight={"bold"}>
+            Order Item Details: {orderItem?.package?.name}
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              columnGap: 2,
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+          >
+            <Tooltip title="Close" placement="top" arrow>
+              <IconButton onClick={() => handleShowOrderItemDetails()}>
+                <Close />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+        <Divider sx={{ mt: 2 }} />
+        <OrderSummaryDetails orderItem={[orderItem]} />
+      </Drawer>
     </Box>
   );
 }
