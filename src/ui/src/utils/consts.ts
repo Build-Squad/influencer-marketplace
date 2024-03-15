@@ -72,6 +72,32 @@ export const LOGIN_STATUS_SUCCESS = "User successfully logged in!";
 export const LOGIN_STATUS_FAILED = "Failed user login. Please try again!";
 export const LOGOUT_SUCCESS = "User successfully logged out!";
 
+export const ORDER_ITEM_METRIC_TYPE = {
+  ORGANIC_METRICS: "organic_metrics",
+  PUBLIC_METRICS: "public_metrics",
+  NON_PUBLIC_METRICS: "non_public_metrics",
+};
+
+export const SERVICE_MASTER_TWITTER_SERVICE_TYPE = {
+  TWEET: "tweet",
+  LIKE_TWEET: "like_tweet",
+  REPLY_TO_TWEET: "reply_to_tweet",
+  QUOTE_TWEET: "quote_tweet",
+  POLL: "poll",
+  RETWEET: "retweet",
+  THREAD: "thread",
+};
+
+export const ORDER_ITEM_METRIC_TYPE_LABEL = {
+  retweet_count: "Repost Count",
+  like_count: "Like Count",
+  reply_count: "Reply Count",
+  quote_count: "Quote Count",
+  bookmark_count: "Bookmark Count",
+  impression_count: "Impression Count",
+  user_profile_clicks: "Profile Clicks",
+};
+
 export const ORDER_STATUS = {
   COMPLETED: "completed",
   PENDING: "pending",

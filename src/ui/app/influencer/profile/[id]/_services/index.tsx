@@ -62,7 +62,10 @@ const Services = ({
         "packages/service",
         {
           page_number: pagination.current_page_number,
-          page_size: pagination.current_page_size,
+          page_size:
+            id === loggedInUser?.id
+              ? pagination.current_page_size
+              : pagination.current_page_size + 1,
           influencer: id,
           status: id === loggedInUser?.id ? type : "published",
         }

@@ -68,6 +68,7 @@ export default function ArrayItem({ formFields, updatevalues, disabled }: ArrayI
                         const value = newValues.join(",");
                         updatevalues(value);
                       }}
+                      disabled={disabled}
                     >
                       <HighlightOffIcon color="error" />
                     </IconButton>
@@ -136,7 +137,9 @@ export default function ArrayItem({ formFields, updatevalues, disabled }: ArrayI
                 setArrayValues([...arrayValues, ""]);
               }}
               disabled={
-                formFields?.label.includes("Poll") && arrayValues?.length >= 4
+                (formFields?.label.includes("Poll") &&
+                  arrayValues?.length >= 4) ||
+                disabled
               }
             >
               <AddCircleOutlineIcon

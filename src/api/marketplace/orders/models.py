@@ -324,3 +324,24 @@ class OnChainTransaction(models.Model):
 
     class Meta:
         db_table = "on_chain_transaction"
+
+
+class OrderItemMetric(models.Model):
+    # Id, OrderItem, Metric, Value, CreatedAt, Type
+    TYPE_CHOICES = (
+        ('organic_metrics', 'organic_metrics'),
+        ('non_public_metrics', 'non_public_metrics'),
+        ('public_metrics', 'public_metrics'),
+    )
+    id = models.UUIDField(
+        primary_key=True, verbose_name='OrderItemMetric', default=uuid.uuid4, editable=False)
+    order_item = models.ForeignKey(
+        OrderItem, related_name='order_item_metric_order_item_id', on_delete=SET_NULL, null=True)
+    metric = models.CharField(max_length=100, blank=True, null=True)
+    value = models.IntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    type = models.CharField(max_length=100, blank=True,
+                            null=True, choices=TYPE_CHOICES)
+
+    class Meta:
+        db_table = "order_item_metric"

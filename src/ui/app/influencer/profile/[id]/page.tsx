@@ -1,9 +1,9 @@
 "use client";
 
-import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import BackIcon from "@/public/svg/Back.svg";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import EmailVerifyModal from "@/src/components/profileComponents/emailVerifyModal";
+import WalletsTable from "@/src/components/profileComponents/walletsTable";
 import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
@@ -13,9 +13,9 @@ import {
   putService,
 } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, EMAIL_PRIVACY_TEXT } from "@/src/utils/consts";
+import { stringToColor } from "@/src/utils/helper";
 import EditIcon from "@mui/icons-material/Edit";
-import NewReleasesIcon from "@mui/icons-material/NewReleases";
-import VerifiedIcon from "@mui/icons-material/Verified";
+import StarIcon from "@mui/icons-material/Star";
 import {
   Avatar,
   Box,
@@ -26,13 +26,7 @@ import {
   Link,
   MenuItem,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -41,10 +35,6 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
-import { stringToColor } from "@/src/utils/helper";
-import WalletsTable from "@/src/components/profileComponents/walletsTable";
-import StarIcon from "@mui/icons-material/Star";
-import HelperButton from "@/src/components/helperButton";
 
 const tabs = [
   {

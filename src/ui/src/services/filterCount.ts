@@ -29,7 +29,11 @@ const filterCount = (
     if (ignoreList.includes(key)) {
       continue;
     }
-    if (filter[key] === "" || filter[key] === undefined) {
+    if (
+      filter[key] === "" ||
+      filter[key] === undefined ||
+      filter[key] === null
+    ) {
       continue;
     }
     if (Array.isArray(filter[key])) {

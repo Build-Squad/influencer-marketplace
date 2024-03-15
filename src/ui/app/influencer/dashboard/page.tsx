@@ -51,6 +51,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+
 const tabs = [
   {
     title: "Orders",
@@ -101,7 +102,7 @@ export default function BusinessDashboardPage() {
       ORDER_STATUS.COMPLETED,
       ORDER_STATUS.CANCELLED,
     ],
-    order_by: "-created_at",
+    order_by: "upcoming",
   });
   const [orderCount, setOrderCount] = React.useState({
     accepted: 0,
@@ -1097,7 +1098,6 @@ export default function BusinessDashboardPage() {
                         <StatusCard
                           card={card}
                           selectedCard={selectedCard}
-                          orderCount={orderCount}
                           count={
                             card?.value === 0
                               ? orderCount?.accepted +
@@ -1130,7 +1130,6 @@ export default function BusinessDashboardPage() {
                         <StatusCard
                           card={card}
                           selectedCard={selectedCard}
-                          orderCount={orderCount}
                           count={
                             card?.value === 0
                               ? orderItemsCount?.accepted +
@@ -1188,7 +1187,10 @@ export default function BusinessDashboardPage() {
                 }));
               }}
               localeText={{
-                noRowsLabel: "No Orders found",
+                noRowsLabel:
+                  selectedTab === 0
+                    ? "No orders found"
+                    : "No order items found",
               }}
             />
           </Grid>

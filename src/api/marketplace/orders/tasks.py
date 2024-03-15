@@ -4,7 +4,7 @@ from accounts.models import TwitterAccount, User, Wallet
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
     create_order_item_tracking, create_order_tracking, create_reminider_notification
-from orders.models import Escrow, OnChainTransaction, Order, OrderItem, OrderItemMetaData
+from orders.models import Escrow, OnChainTransaction, Order, OrderItem, OrderItemMetaData, OrderItemMetric
 
 from tweepy import Client
 
@@ -44,6 +44,7 @@ ACCESS_SECRET = config("ACCESS_SECRET")
 VALIDATOR_KEY_PATH = config("VALIDATOR_KEY_PATH")
 TWEET_LIMIT = 280
 NETWORK = config("NETWORK")
+TWEET_FIELDS = ['public_metrics', 'organic_metrics', 'non_public_metrics']
 
 
 @celery_app.task(base=QueueOnce, once={'graceful': True})
@@ -500,3 +501,48 @@ def validate_order_item(order_item_id):
             check_order_status(pk=order_item.order_id.id)
     except Exception as e:
         raise Exception(str(e))
+
+
+@celery_app.task()
+def store_order_item_metrics():
+    # Get all order items that are in published status and verified and service type is not retweet or like
+    order_items = OrderItem.objects.filter(
+        status='published', is_verified=True, service_master__twitter_service_type__in=['tweet', 'reply_to_tweet', 'quote_tweet', 'poll', 'thread'])
+    for order_item in order_items:
+        # Get the twitter account of the influencer
+        twitter_account = TwitterAccount.objects.get(
+            id=order_item.package.influencer.twitter_account.id)
+        client = Client(bearer_token=twitter_account.access_token,
+                        consumer_key=CONSUMER_KEY,
+                        consumer_secret=CONSUMER_SECRET,
+                        access_token=ACCESS_TOKEN,
+                        access_token_secret=ACCESS_SECRET
+                        )
+        try:
+            res = client.get_tweet(
+                id=order_item.published_tweet_id, user_auth=False, tweet_fields=TWEET_FIELDS)
+
+            # For all the res.data fields, create a OrderItemMetric object
+            public_metrics = res.data['public_metrics']
+            organic_metrics = res.data['organic_metrics']
+            non_public_metrics = res.data['non_public_metrics']
+
+            order_item_metrics = []
+
+            for key, value in public_metrics.items():
+                order_item_metrics.append(
+                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='public_metrics'))
+
+            for key, value in organic_metrics.items():
+                order_item_metrics.append(
+                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic_metrics'))
+
+            for key, value in non_public_metrics.items():
+                order_item_metrics.append(
+                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public_metrics'))
+
+            OrderItemMetric.objects.bulk_create(order_item_metrics)
+
+        except Exception as e:
+            logger.error('Error in getting tweet metrics: %s', str(e))
+            continue

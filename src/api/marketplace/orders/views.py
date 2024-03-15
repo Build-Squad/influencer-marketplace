@@ -19,6 +19,7 @@ from .models import (
     Order,
     OrderItem,
     OrderAttachment,
+    OrderItemMetric,
     OrderMessage,
     Review,
     Transaction,
@@ -27,6 +28,7 @@ from .serializers import (
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
     OrderItemListFilterSerializer,
+    OrderItemMetricSerializer,
     OrderItemReadSerializer,
     OrderListFilterSerializer,
     OrderSerializer,
@@ -39,7 +41,8 @@ from .serializers import (
     OrderMessageListFilterSerializer,
     UserOrderMessagesSerializer,
     OrderTransactionCreateSerializer,
-    UserOrderMessagesSerializer
+    UserOrderMessagesSerializer,
+    OrderItemMetricFilterSerializer
 )
 from rest_framework import status
 from django.db.models import Q
@@ -1382,5 +1385,96 @@ class CancelTweetView(APIView):
                 )
             else:
                 return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class OrderItemMetricDetailView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self, pk):
+        try:
+            return OrderItem.objects.get(pk=pk)
+        except OrderItem.DoesNotExist:
+            return handleNotFound("Order Item")
+
+    @swagger_auto_schema(request_body=OrderItemMetricFilterSerializer)
+    def post(self, request):
+        try:
+            filter_serializer = OrderItemMetricFilterSerializer(
+                data=request.data)
+            filter_serializer.is_valid(raise_exception=True)
+            filters = filter_serializer.validated_data
+
+            user = request.user_account
+            role = request.user_account.role
+
+            order_item = self.get_object(filters["order_item_id"])
+            if role.name == "business_owner":
+                if order_item.order_id.buyer != user:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to view this order item",
+                            "data": None,
+                            "errors": "You are not authorized to view this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            elif role.name == "influencer":
+                if order_item.package.influencer != user:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to view this order item",
+                            "data": None,
+                            "errors": "You are not authorized to view this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            order_item_metrics = OrderItemMetric.objects.filter(
+                order_item=order_item
+            )
+
+            if "type" in filters and filters["type"] is not None and len(filters["type"]) > 0:
+                order_item_metrics = order_item_metrics.filter(
+                    type__in=filters["type"])
+
+            all_metrics = order_item_metrics.values_list(
+                "metric", flat=True).distinct()
+
+            if "metric" in filters and filters["metric"] is not None and len(filters["metric"]) > 0:
+                order_item_metrics = order_item_metrics.filter(
+                    metric__in=filters["metric"]
+                )
+
+            if "gt_created_at" in filters and filters["gt_created_at"] is not None:
+                gt_created_at = filters["gt_created_at"].date()
+                order_item_metrics = order_item_metrics.filter(
+                    created_at__date__gte=gt_created_at)
+
+            if "lt_created_at" in filters and filters["lt_created_at"] is not None:
+                lt_created_at = filters["lt_created_at"].date()
+                order_item_metrics = order_item_metrics.filter(
+                    created_at__date__lte=lt_created_at)
+
+            serializer = OrderItemMetricSerializer(
+                order_item_metrics, many=True)
+            order_item_serializer = OrderItemReadSerializer(order_item)
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": {
+                        "order_item": order_item_serializer.data,
+                        "order_item_metrics": serializer.data,
+                        "all_metrics": all_metrics,
+                    },
+                    "message": "All Order Item Metrics retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         except Exception as e:
             return handleServerException(e)
