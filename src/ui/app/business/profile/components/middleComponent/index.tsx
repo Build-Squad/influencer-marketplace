@@ -51,7 +51,7 @@ type Props = {
   userDetails: UserDetailsType;
 };
 
-const ConnectWalletComponent = ({ setUserDetails, userDetails }: Props) => {
+const ConnectWalletComponent = ({ setUserDetails }: Props) => {
   const [connectWallet, setConnectWallet] = useState<boolean>(false);
   const [walletOpen, setWalletOpen] = useState<boolean>(false);
 
@@ -129,6 +129,10 @@ const ConnectXComponent = () => {
   const userTwitterDetails = user?.twitter_account;
   const dispatch = useAppDispatch();
 
+  useEffect(() => {
+    updateRedux();
+  }, []);
+
   const updateRedux = async () => {
     try {
       const { isSuccess, data } = await getService("account/");
@@ -159,6 +163,13 @@ const ConnectXComponent = () => {
     }
   };
 
+  const isDisconnectDisabled = () => {
+    if (user?.email || user?.wallets?.length) {
+      return false;
+    }
+    return true;
+  };
+
   if (userTwitterDetails) {
     return (
       <Box sx={{ display: "flex", columnGap: "8px" }}>
@@ -186,6 +197,7 @@ const ConnectXComponent = () => {
               mt: 2,
             }}
             onClick={disconnectTwitterAccount}
+            disabled={isDisconnectDisabled()}
           >
             Disconnect
           </Button>
