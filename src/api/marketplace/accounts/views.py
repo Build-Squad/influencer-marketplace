@@ -28,6 +28,7 @@ from packages.models import Package, Service
 from .models import (
     AccountLanguage,
     AccountRegion,
+    Bookmark,
     BusinessAccountMetaData,
     TwitterAccount,
     CategoryMaster,
@@ -44,6 +45,7 @@ from .serializers import (
     AccountRegionSerializer,
     BusinessAccountMetaDataSerializer,
     CreateAccountCategorySerializer,
+    CreateBookmarkSerializer,
     DeleteAccountCategorySerializer,
     OTPAuthenticationSerializer,
     OTPAuthenticationV2Serializer,
@@ -1872,5 +1874,98 @@ class BusinessAccountMetaDataDetail(APIView):
                 )
             else:
                 return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class BookmarkView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        try:
+            bookmarks = Bookmark.objects.filter(user=request.user_account)
+            # Get the twitter_account objects of all the target_users and then paginate that data
+
+            target_twitter_account_ids = User.objects.filter(
+                id__in=[bookmark.target_user.id for bookmark in bookmarks]
+            ).values_list('twitter_account__id', flat=True)
+
+            target_twitter_accounts = TwitterAccount.objects.filter(
+                id__in=target_twitter_account_ids
+            )
+            pagination = Pagination(target_twitter_accounts, request)
+            serializer = TwitterAccountSerializer(
+                pagination.getData(), many=True, context={"request": request})
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Bookmarks retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    @swagger_auto_schema(request_body=CreateBookmarkSerializer)
+    def post(self, request):
+        try:
+            serializer = CreateBookmarkSerializer(data=request.data)
+            if serializer.is_valid():
+                # Check if the bookmark already exists
+                target_user = User.objects.get(id=request.data["target_user"])
+                bookmark = Bookmark.objects.filter(
+                    user=request.user_account, target_user=target_user
+                )
+                if bookmark.exists():
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Bookmark already exists",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    Bookmark.objects.create(
+                        user=request.user_account, target_user=target_user
+                    )
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Bookmark created successfully",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class BookmarkDetailView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def delete(self, request, pk):
+        try:
+            target_user = User.objects.get(id=pk)
+            bookmark = Bookmark.objects.filter(
+                user=request.user_account, target_user=target_user
+            ).first()
+            if bookmark.user != request.user_account:
+                return handleBadRequest("You are not authorized to delete this bookmark")
+            bookmark.delete()
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Bookmark removed successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Bookmark.DoesNotExist:
+            return handleNotFound("Bookmark")
         except Exception as e:
             return handleServerException(e)

@@ -8,6 +8,7 @@ from packages.models import Package, Service
 from .models import (
     AccountLanguage,
     AccountRegion,
+    Bookmark,
     TwitterAccount,
     CategoryMaster,
     AccountCategory,
@@ -368,3 +369,7 @@ class WalletNonceSerializer(serializers.ModelSerializer):
     class Meta:
         model = WalletNonce
         fields = '__all__'
+
+
+class CreateBookmarkSerializer(serializers.Serializer):
+    target_user = serializers.UUIDField()
