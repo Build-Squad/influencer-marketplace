@@ -1097,9 +1097,6 @@ class UserAuth(APIView):
         except Exception as e:
             return handleServerException(e)
 
-
-# An explicit global variable for know if the user if first timer for email authentication
-is_new_user = None
 class OTPAuth(APIView):
     def get_or_create_user(self, email):
         try:
@@ -1111,8 +1108,6 @@ class OTPAuth(APIView):
                 username=email,
             )
             user.save()
-            global is_new_user
-            is_new_user = True
             
             return user
 
@@ -1199,8 +1194,10 @@ class OTPVerification(APIView):
                 is_valid = otp_service.validateOTP(request.data["otp"], user)
                 if is_valid:
                     # If user is logging in for the first time, set email_verified_at to current time
+                    message = "Logged in successfully"
                     if user.email_verified_at is None:
                         user.email_verified_at = timezone.now()
+                        message = "New user? Head to your profile to earn badges!"
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
@@ -1224,11 +1221,7 @@ class OTPVerification(APIView):
                         samesite="None",
                     )
 
-                    message = "Logged in successfully"
-                    global is_new_user
-                    if is_new_user:
-                        message = "New user? Head to your profile to earn badges!"
-                        is_new_user = None
+                    
 
                     response.data = {
                         "isSuccess": True,
