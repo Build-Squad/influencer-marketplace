@@ -5,7 +5,9 @@ from pyxfluencer.utils import get_local_keypair_pubkey
 
 class TestValidator:
 
-    def __init__(self,validator_keypair, business, influencer, order_code, network):
+    def __init__(self,validator_keypair, 
+                 business, influencer, 
+                 order_code, network):
         self.validator_keypair = validator_keypair
         self.business = business
         self.influencer = influencer
@@ -18,7 +20,6 @@ class TestValidator:
                                                      self.influencer, 
                                                      self.order_code, 
                                                      self.network)
-        print(results)
         
     async def test_validate_to_canel_instruction(self):   
         results = await validate_escrow_to_cancel(self.validator_keypair, 
@@ -40,5 +41,9 @@ network="devnet" # start a local validator for localnet i.e. $ solana-test-valid
 
 test_validator = TestValidator(val_auth_keypair, bus, inf, order_code, network)
 
-asyncio.run(test_validator.test_validate_to_canel_instruction())
+async def main():
+    result = await test_validator.test_validate_to_canel_instruction()
+    print(result.json())
+
+asyncio.run(main())
 #asyncio.run(test_validator.test_validate_to_delivered_instruction())

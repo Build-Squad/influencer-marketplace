@@ -1,6 +1,6 @@
 # XFluencer Solana Python Client
 
-This is a static client for XFluencer Solana program generated with anchorpy, containing instructions, accounts and errors for the program.
+This is a static client for XFluencer Solana program generated with anchorpy. This containing all the instructions, accounts and errors of the program.
 
 ## Settings
 
@@ -53,7 +53,9 @@ Once you have change the settings of the setup, create a version of the package 
 
 `python setup.py bdist_wheel`
 
-After changing version number, the package generation the whl package file shoudl be found at `dist/dist/xfluencer_python_client-1.0.0-py3-none-any.whl `
+After changing version number, the package generation the whl package file shoudl be found at `dist/dist/xfluencer_python_client-<version>-py3-none-any.whl `
+
+Replace `version` by tour current version
 
 ## Installation of the Python Package
 
@@ -61,7 +63,9 @@ To use previously package wheel, you have to install it as python requirement.
 
 Install the python package on your environment
 
-`pip install dist/pyxfluencer-1.0.0-py3-none-any.whl`
+`pip install dist/pyxfluencer-<version>-py3-none-any.whl`
+
+Replace `version` by tour current version
 
 ## Testing Installation
 
@@ -102,13 +106,16 @@ CLASSES
 As follows the steps to setup a validator instruction:
 
 1. Install the wheel on your vitual environmet as above installation section
+
 2. Use the right solana network to launch instructions againts e.g. DEVNET
 `solana config set --url devnet`
 
 3. Store your wallet that will work as validation authority. Find the `json` file containing the seed for `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH` wallet. Make sure that this is already funded with at leat 1 SOL on Devnet. 
 
 4. Select the business and influencer addressese for the order  (these must be strings)
+
 5. Select the order code (this must be an integer)
+
 6. On your code import the followings
 
 ```python
@@ -118,9 +125,9 @@ from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered
 from pyxfluencer.utils import get_local_keypair_pubkey`
 ```
 
-Notice, that functions in the library are asynchronouse so it is necessary to `await` for them.
+Notice, that functions in the library are async so it is necessary to `await` for them.
 
-Follow the example on `test_stand_alone` testing script to either validate an escrow to cancel or to delived
+Follow the example on `test_stand_alone` testing script to either validate an escrow to cancel it or to move it to deliveerd state.
 
 ```python
 # set path to your json seed file where the keypair of the validator is found.
