@@ -328,3 +328,18 @@ class WalletNonce(models.Model):
 
     class Meta:
         db_table = "wallet_nonce"
+
+
+class Bookmark(models.Model):
+    id = models.UUIDField(
+        primary_key=True, verbose_name="Bookmark ID", default=uuid.uuid4, editable=False
+    )
+    user = models.ForeignKey(
+        User, related_name="bookmark_user_id", on_delete=SET_NULL, null=True
+    )
+    target_user = models.ForeignKey(
+        User, related_name="bookmark_target_user_id", on_delete=SET_NULL, null=True
+    )
+
+    class Meta:
+        db_table = "bookmark"
