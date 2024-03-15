@@ -812,7 +812,7 @@ class UserDetail(APIView):
     def get_authenticators(self):
         if self.request.method == 'PUT' or self.request.method == 'DELETE':
             return [JWTAuthentication()]
-        return super().get_authenticators()
+        return [JWTAuthenticationOptional()]
 
     def get_object(self, pk):
         try:
@@ -825,7 +825,7 @@ class UserDetail(APIView):
             user = self.get_object(pk)
             if user is None:
                 return handleNotFound("User")
-            serializer = UserSerializer(user)
+            serializer = UserSerializer(user, context={"request": request})
             return Response(
                 {
                     "isSuccess": True,
