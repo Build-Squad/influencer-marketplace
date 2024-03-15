@@ -34,6 +34,16 @@ export const ORDER_ITEM_METRIC_TYPE = {
   NON_PUBLIC_METRICS: "non_public_metrics",
 };
 
+export const SERVICE_MASTER_TWITTER_SERVICE_TYPE = {
+  TWEET: "tweet",
+  LIKE_TWEET: "like_tweet",
+  REPLY_TO_TWEET: "reply_to_tweet",
+  QUOTE_TWEET: "quote_tweet",
+  POLL: "poll",
+  RETWEET: "retweet",
+  THREAD: "thread",
+};
+
 export const ORDER_ITEM_METRIC_TYPE_LABEL = {
   retweet_count: "Repost Count",
   like_count: "Like Count",
