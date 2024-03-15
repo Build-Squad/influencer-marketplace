@@ -172,7 +172,7 @@ export default function BookmarksPage() {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    height: "50vh",
+                    height: "70vh",
                   }}
                 >
                   <Typography variant="h5">No Bookmarks Found</Typography>
