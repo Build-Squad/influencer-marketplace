@@ -23,7 +23,7 @@ import { notification } from "@/src/components/shared/notification";
 type Props = {
   influencer: TopInfluencersType;
   sx?: any;
-  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
+  setRefresh?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ServiceChipsComponent = ({ services }: { services: string[] }) => {

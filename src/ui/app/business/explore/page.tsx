@@ -20,6 +20,7 @@ type InfluencersType = {
   minPrice: number;
   maxPrice: number;
   rating: number;
+  is_bookmarked?: boolean;
 };
 
 type Props = {};
@@ -39,7 +40,7 @@ const formatTwitterFollowers = (followersCount: any) => {
 
 export default function Explore({}: Props) {
   const [influencersData, setInfluencersData] = useState<InfluencersType[]>();
-
+  const [refresh, setRefresh] = useState<boolean>(false);
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
     total_page_count: 0,
@@ -137,6 +138,7 @@ export default function Explore({}: Props) {
           minPrice: getPrice(inf, "min"),
           maxPrice: getPrice(inf, "max"),
           rating: inf.rating || 0,
+          is_bookmarked: inf?.is_bookmarked,
         };
       });
       setPagination({
@@ -159,6 +161,14 @@ export default function Explore({}: Props) {
       current_page_number: page,
     }));
   };
+
+  useEffect(() => {
+    if (refresh) {
+      getInfluencers();
+      setRefresh(false);
+    }
+  }, [refresh]);
+
   return (
     <>
       {/* Filters section */}
@@ -189,7 +199,13 @@ export default function Explore({}: Props) {
           alignItems={"center"}
         >
           {influencersData?.map((inf, index) => {
-            return <InfluencersCards influencer={inf} key={index} />;
+            return (
+              <InfluencersCards
+                influencer={inf}
+                key={index}
+                setRefresh={setRefresh}
+              />
+            );
           })}
         </Grid>
         <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>
