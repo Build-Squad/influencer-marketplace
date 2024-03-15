@@ -55,6 +55,7 @@ type ServiceMasterType = {
   deleted_at: string | null;
   is_duration_based: boolean;
   service_master_meta_data: ServiceMasterMetaDataType[];
+  twitter_service_type: string;
 };
 
 type PackageType = {
