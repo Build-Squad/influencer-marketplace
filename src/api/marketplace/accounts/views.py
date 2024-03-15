@@ -1698,7 +1698,7 @@ class WalletConnect(APIView):
                                 user_id=request.user_account, deleted_at=None)
                             added_wallets.update(is_primary=False)
                         except Wallet.DoesNotExist:
-                            print("No wallets found for this user.")
+                            pass
                         wallet.is_primary = True
                         wallet.save()
                         return Response(

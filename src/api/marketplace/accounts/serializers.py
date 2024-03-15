@@ -243,7 +243,6 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        print(self.context)
         self.fields['twitter_account'] = TwitterAccountSerializer(
             required=False, context=self.context)
         return super(UserSerializer, self).to_representation(instance)
