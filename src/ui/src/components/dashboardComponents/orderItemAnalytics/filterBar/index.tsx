@@ -258,6 +258,11 @@ export default function FilterBar({
             onClick={() => {
               handleShowOrderItemDetails();
             }}
+            variant="outlined"
+            sx={{
+              mr: 1,
+            }}
+            color="primary"
           >
             View Order Item Details
           </Button>
