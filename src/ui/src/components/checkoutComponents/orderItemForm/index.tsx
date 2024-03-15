@@ -187,7 +187,11 @@ export default function OrderItemForm({
    */
 
   useEffect(() => {
-    if (!orderItem?.publish_date && !publishDateUpdated) {
+    if (
+      !orderItem?.publish_date &&
+      !orderItem?.order_item?.publish_date &&
+      !publishDateUpdated
+    ) {
       let defaultDate = dayjs();
       if (defaultDate.hour() < 16) {
         // if current time is before 4 PM
