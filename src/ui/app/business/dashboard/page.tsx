@@ -25,6 +25,7 @@ import {
   DISPLAY_DATE_TIME_FORMAT,
   ORDER_ITEM_STATUS,
   ORDER_STATUS,
+  SERVICE_MASTER_TWITTER_SERVICE_TYPE,
   TRANSACTION_TYPE,
 } from "@/src/utils/consts";
 import BarChartIcon from "@mui/icons-material/BarChart";
@@ -904,24 +905,28 @@ export default function BusinessDashboardPage() {
               alignItems: "center",
             }}
           >
-            {params?.row?.status === ORDER_ITEM_STATUS.PUBLISHED && (
-              <Link
-                href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}
-                component={NextLink}
-                sx={{
-                  textDecoration: "none",
-                  "&:hover": {
-                    textDecoration: "underline",
-                  },
-                }}
-              >
-                <Tooltip title="Order Item Analytics" placement="top" arrow>
-                  <IconButton>
-                    <BarChartIcon color="secondary" />
-                  </IconButton>
-                </Tooltip>
-              </Link>
-            )}
+            {params?.row?.status === ORDER_ITEM_STATUS.PUBLISHED &&
+              params?.row?.service_master?.twitter_service_type !==
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
+              params?.row?.service_master?.twitter_service_type !==
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET && (
+                <Link
+                  href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}
+                  component={NextLink}
+                  sx={{
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  <Tooltip title="Order Item Analytics" placement="top" arrow>
+                    <IconButton>
+                      <BarChartIcon color="secondary" />
+                    </IconButton>
+                  </Tooltip>
+                </Link>
+              )}
           </Box>
         );
       },
@@ -978,6 +983,12 @@ export default function BusinessDashboardPage() {
       setSelectedCard(0);
     }
   }, [selectedTab]);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const _selectedTab = tabs.find((_tab) => _tab.key === tab);
+    if (_selectedTab) setSelectedTab(_selectedTab?.value);
+  }, [searchParams]);
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
