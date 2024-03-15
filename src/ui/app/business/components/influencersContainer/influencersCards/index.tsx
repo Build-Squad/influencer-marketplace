@@ -103,7 +103,7 @@ export default function InfluencersCards({
 
   const handleBookmark = () => {
     if (
-      influencer?.is_bookmarked !== null ||
+      influencer?.is_bookmarked !== null &&
       influencer?.is_bookmarked !== undefined
     ) {
       if (influencer?.is_bookmarked) {
