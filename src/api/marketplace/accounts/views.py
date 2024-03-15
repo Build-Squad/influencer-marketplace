@@ -6,7 +6,7 @@ import secrets
 from django.shortcuts import get_object_or_404
 from accounts.tasks import sendEmail
 
-from marketplace.authentication import JWTAuthentication
+from marketplace.authentication import JWTAuthentication, JWTAuthenticationOptional
 from django.db.models import Q
 from marketplace.services import (
     Pagination,
@@ -159,6 +159,7 @@ class TopInfluencers(APIView):
 
 
 class TwitterAccountList(APIView):
+    authentication_classes = [JWTAuthenticationOptional]
     def get(self, request):
         try:
             languages = request.GET.getlist("languages[]", [])
@@ -327,9 +328,9 @@ class TwitterAccountList(APIView):
 
             twitterAccount = twitterAccount.order_by("-followers_count")
 
-            # Paginate the results
             pagination = Pagination(twitterAccount, request)
-            serializer = TwitterAccountSerializer(pagination.getData(), many=True)
+            serializer = TwitterAccountSerializer(
+                pagination.getData(), many=True, context={"request": request})
             return Response(
                 {
                     "isSuccess": True,

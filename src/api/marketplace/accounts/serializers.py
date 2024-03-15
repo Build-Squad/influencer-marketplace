@@ -113,6 +113,7 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
     service_types = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
+    is_bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = TwitterAccount
@@ -149,6 +150,16 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
         )
         total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
         return total_rating
+
+    def get_is_bookmarked(self, twitter_account):
+        if "request" in self.context and hasattr(self.context["request"], "user_account"):
+            user = self.context["request"].user_account
+            target_user = User.objects.get(twitter_account=twitter_account)
+            bookmark = Bookmark.objects.filter(
+                user_id=user, target_user=target_user)
+            if bookmark:
+                return True
+            return False
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
