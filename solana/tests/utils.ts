@@ -7,7 +7,6 @@ import {
     getMint,
   } from "@solana/spl-token";
 
-import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 
 //import { Program } from "@project-serum/anchor";
 //import { Xfluencer } from "../target/types/xfluencer";

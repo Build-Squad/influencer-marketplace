@@ -1,5 +1,7 @@
 use anchor_lang::{prelude::*, solana_program::entrypoint::ProgramResult};
 
+use ::u128::mul_div_u64;
+
 use crate::CustomError;
 use crate::ValidateEscrowSolana;
 
@@ -7,7 +9,7 @@ pub fn process(
     ctx: Context<ValidateEscrowSolana>,
     target_state: u8,
     percentage_fee: u16,
-) -> Result<()> {
+) -> ProgramResult {
     let current_state = ctx.accounts.escrow_account.status;
     msg!(
         "Validating Escrow From Current ({}) to Target ({}) state",
@@ -23,15 +25,15 @@ pub fn process(
     let delivered_state: u8 = 2;
 
     if current_state == cancel_state {
-        return err!(CustomError::EscrowAlreadyCancel);
+        return err!(CustomError::EscrowAlreadyCancel)?;
     }
 
     if current_state == delivered_state {
-        return err!(CustomError::EscrowAlreadyReleased);
+        return err!(CustomError::EscrowAlreadyReleased)?;
     }
 
     if target_state != cancel_state && target_state != delivered_state {
-        return err!(CustomError::BadTargetStateForEscrow);
+        return err!(CustomError::BadTargetStateForEscrow)?;
     }
 
     ctx.accounts.escrow_account.status = target_state;
@@ -45,7 +47,7 @@ pub fn process(
 
         if percentage_fee > 1000 {
             // 10 %
-            return err!(CustomError::PercentageFeeOutOfrange);
+            return err!(CustomError::PercentageFeeOutOfrange)?;
         }
 
         let escrow_amount: u64 = ctx.accounts.escrow_account.get_lamports();
@@ -54,12 +56,12 @@ pub fn process(
         {
             Some(fees_amount) => {
                 if escrow_amount < fees_amount {
-                    return err!(CustomError::NumericalProblemFoundCalculatingFees);
+                    return err!(CustomError::NumericalProblemFoundCalculatingFees)?;
                 } else {
                     fees_amount
                 }
             }
-            None => return err!(CustomError::NumericalProblemFoundCalculatingFees),
+            None => return err!(CustomError::NumericalProblemFoundCalculatingFees)?,
         };
 
         let from_account = ctx.accounts.escrow_account.to_account_info();

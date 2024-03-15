@@ -194,27 +194,6 @@ export type Xfluencer = {
       ]
     },
     {
-      "name": "cancelEscrowSol",
-      "accounts": [
-        {
-          "name": "business",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -248,6 +227,27 @@ export type Xfluencer = {
           "type": "u16"
         }
       ]
+    },
+    {
+      "name": "cancelEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -620,27 +620,6 @@ export const IDL: Xfluencer = {
       ]
     },
     {
-      "name": "cancelEscrowSol",
-      "accounts": [
-        {
-          "name": "business",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -674,6 +653,27 @@ export const IDL: Xfluencer = {
           "type": "u16"
         }
       ]
+    },
+    {
+      "name": "cancelEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [

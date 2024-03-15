@@ -7,13 +7,24 @@ import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import * as utils from "./utils";
 import { Xfluencer } from "../target/types/xfluencer";
 
-import { TOKEN_PROGRAM_ID, createAssociatedTokenAccount, getMint, mintTo } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, createAssociatedTokenAccount, createMint, getMint, mintTo } from '@solana/spl-token';
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  MINT_SIZE,  
+  createAssociatedTokenAccountIdempotentInstruction,
+  createInitializeMint2Instruction,
+  createMintToInstruction,
+  getAssociatedTokenAddressSync,
+  getMinimumBalanceForRentExemptMint,
+} from "@solana/spl-token";
+
 
 describe("Testing Escrow for ATA", () => {
     
-  const provider = utils.getAnchorProvider();
-
+  const provider = anchor.getProvider()
+  const connection = provider.connection;
   const program = anchor.workspace.Xfluencer as Program<Xfluencer>;
 
 
@@ -33,19 +44,24 @@ describe("Testing Escrow for ATA", () => {
   
   // keypairs for testing
   const payer = anchor.web3.Keypair.generate();
-  const buyer = nodeWallet.payer;  // set buyer to payer
+  const buyer = anchor.web3.Keypair.generate();
   const influencer = anchor.web3.Keypair.generate();
   const judge = anchor.web3.Keypair.generate();
   const escrowAccount = anchor.web3.Keypair.generate();
-  const mintAuthority = anchor.web3.Keypair.generate();
+
+  const mintAuthority = anchor.web3.Keypair.generate(); // this is not known in practise
 
   const NUMBER_DECIMALS = 6;
+
+
+  
   
   it('Initialize program state', async () => {
-    const provider = anchor.getProvider()
+    
     // Airdrop Sol to payer.
     await provider.connection.confirmTransaction(
-      await provider.connection.requestAirdrop(payer.publicKey, 10000000000),
+      await provider.connection.requestAirdrop(payer.publicKey, 
+                                               10 * 10 ** 9),
       "processed"
     );
 
@@ -60,12 +76,44 @@ describe("Testing Escrow for ATA", () => {
       await utils.airdrop(program, keypair, 1);
     }
 
-    
-    mintA = await utils.createNewMint(
-        program.provider,
-        nodeWallet,
-        NUMBER_DECIMALS
-    );
+    mintA = await createMint(      
+      provider.connection,
+      mintAuthority,
+      mintAuthority.publicKey,
+      mintAuthority.publicKey,
+      NUMBER_DECIMALS);
+
+      const buyerTokenAmount = 100;
+      const influencerTokenAmount = 200;
+  
+      
+      const owner = buyer.publicKey;
+  
+
+      const [associatedTokenAcc, mintInfo] = await Promise.all([
+        createAssociatedTokenAccount(
+          provider.connection,
+          payer,
+          mintA,
+          owner
+        ),
+        getMint(provider.connection, mintA),
+      ]);
+
+      console.log("owner",owner);
+
+      await mintTo(
+        provider.connection,
+        payer,
+        mintA,
+        associatedTokenAcc,
+        mintAuthority, // Assumption mint was created by provider.wallet,
+        buyerTokenAmount,
+        []
+      );
+
+    /*
+   
 
     const buyerTokenAmount = 100;
     const influencerTokenAmount = 200;
@@ -73,9 +121,9 @@ describe("Testing Escrow for ATA", () => {
     const mintPk = mintA;
     const owner = buyer.publicKey;
     const balance = buyerTokenAmount;
-
+*/
     
-    //const wallet = provider.wallet as NodeWallet;
+   /*
     const [associatedTokenAcc, mintInfo] = await Promise.all([
       createAssociatedTokenAccount(
         provider.connection,
@@ -94,14 +142,14 @@ describe("Testing Escrow for ATA", () => {
       owner,  // Assumption mint was created by provider.wallet,
       Number(balance), // * 10 ** mintInfo.decimals,
       [buyer]
-    );
-
+    );*/
+/*
     buyerTokenAccountA  
         = await utils.createAssociatedTokenAccountWithBalance(mintA, buyer.publicKey, buyerTokenAmount);
 
     influencerTokenAccountA 
         = await utils.createAssociatedTokenAccountWithBalance(mintA, influencer.publicKey, influencerTokenAmount);
-
+*/
     // Create and funding ATAs 
     //amountA = await utils.getTokenAccountBalance(provider, buyerTokenAccountA);
     //assert.ok(amountA == buyerTokenAmount * 10**NUMBER_DECIMALS);
