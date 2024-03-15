@@ -1,3 +1,4 @@
+from .services import get_twitter_usage
 from marketplace.services import Pagination, handleServerException, handleNotFound
 from rest_framework.response import Response
 from rest_framework import status
@@ -193,5 +194,30 @@ class HowItWorksStepsView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class TwitterUsageView(APIView):
+    def get(self, request):
+        try:
+            usage = get_twitter_usage()
+            if usage:
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": usage,
+                        "message": "Twitter usage data fetched successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Twitter usage data not found",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
         except Exception as e:
             return handleServerException(e)
