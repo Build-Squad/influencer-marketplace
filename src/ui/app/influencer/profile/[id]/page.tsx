@@ -890,7 +890,6 @@ const ProfileLayout = ({
                 </Box>
                 <Box sx={{ p: 2 }}>
                   <Services
-                    setRun={setRun}
                     currentInfluencer={currentUser}
                     id={params.id}
                     wallets={wallets}
