@@ -44,6 +44,7 @@ import Joyride, {
   Step,
 } from "react-joyride";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
 
 const tabs = [
   {
@@ -84,7 +85,6 @@ const ProfileLayout = ({
   const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
 
   // From the BE or anything, fetch if the user is visiting the page for the first time.
-  const [firstTimeUser, SetFirstTimeUser] = React.useState<boolean>(true);
   const [stepIndex, setStepIndex] = React.useState<number>(0);
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState<any>([
@@ -119,7 +119,8 @@ const ProfileLayout = ({
             Connect a Wallet
           </Typography>
           <Typography>
-            Connect your wallet before listing a service to recieve payouts.
+            Connect your wallet (if not already) before listing a service to
+            recieve payouts.
           </Typography>
         </Box>
       ),
@@ -145,13 +146,31 @@ const ProfileLayout = ({
   ]);
 
   useEffect(() => {
-    setRun(true);
+    // Fetch services for the tour, if there are none, open the tour
+    if (params.id == loggedInUser?.id) getServices();
   }, []);
 
-  const handleJoyrideCallback = (data: any) => {
-    const { action, index, origin, status, type } = data;
+  const getServices = async () => {
+    try {
+      const { message, data, isSuccess, errors } = await getService(
+        "packages/service",
+        {
+          influencer: params.id,
+          status: null,
+        }
+      );
+      if (isSuccess) {
+        // Open the tour if there's no service
+        if (!data?.data?.length) {
+          setRun(true);
+        }
+      }
+    } finally {
+    }
+  };
 
-    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
 
     if (index == 2 && !wallets?.length) {
       setRun(false);
@@ -166,12 +185,6 @@ const ProfileLayout = ({
       setRun(false);
     }
   };
-
-  useEffect(() => {
-    if (firstTimeUser && wallets?.length && stepIndex == 2) {
-      setRun(true);
-    }
-  }, [wallets, firstTimeUser]);
 
   useEffect(() => {
     if (params.id) {
@@ -770,6 +783,7 @@ const ProfileLayout = ({
                     display: "flex",
                     columnGap: "4px",
                     alignItems: "flex-top",
+                    justifyContent: "space-between",
                   }}
                 >
                   {tabs.map((item) => (
@@ -777,6 +791,28 @@ const ProfileLayout = ({
                       {item.label}
                     </Typography>
                   ))}
+                  {params.id == loggedInUser?.id ? (
+                    <Box
+                      sx={{
+                        mr: 4,
+                        color: "grey",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        columnGap: "4px",
+                      }}
+                      onClick={() => {
+                        setStepIndex(0);
+                        setRun(true);
+                      }}
+                    >
+                      <DriveEta fontSize="small" />
+                      <Typography sx={{ color: "#C60C30" }}>
+                        Take A Tour!
+                      </Typography>
+                    </Box>
+                  ) : null}
+
                   {/* For dynamic routes pass props like this (In correspondence with Backend) */}
                   {/* <HelperButton
                     step={"services"}
@@ -786,6 +822,7 @@ const ProfileLayout = ({
                 </Box>
                 <Box sx={{ p: 2 }}>
                   <Services
+                    setRun={setRun}
                     currentInfluencer={currentUser}
                     id={params.id}
                     wallets={wallets}
@@ -814,25 +851,23 @@ const ProfileLayout = ({
         }
       />
       <EmailVerifyModal open={emailOpen} setOpen={setEmailOpen} />
-      {firstTimeUser && params?.id === loggedInUser?.id ? (
-        <Joyride
-          callback={handleJoyrideCallback}
-          continuous
-          stepIndex={stepIndex}
-          // disableOverlay
-          run={run}
-          scrollToFirstStep
-          // showProgress
-          steps={steps}
-          spotlightClicks
-          styles={{
-            options: {
-              zIndex: 2,
-            },
-          }}
-          locale={{ last: "Finish" }}
-        />
-      ) : null}
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous
+        stepIndex={stepIndex}
+        // disableOverlay
+        run={run}
+        // scrollToFirstStep
+        // showProgress
+        steps={steps}
+        spotlightClicks
+        styles={{
+          options: {
+            zIndex: 2,
+          },
+        }}
+        locale={{ last: "Finish" }}
+      />
     </Box>
   );
 };

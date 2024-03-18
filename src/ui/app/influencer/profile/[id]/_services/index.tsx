@@ -26,6 +26,7 @@ type ServiceProps = {
   id: string;
   wallets: WalletType[];
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setRun?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const Services = ({
@@ -33,6 +34,7 @@ const Services = ({
   id,
   wallets,
   setOpen,
+  setRun,
 }: ServiceProps) => {
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
@@ -74,6 +76,12 @@ const Services = ({
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+
+        // Open the tour if there's no service and the loggedIn user is the influencer
+        if (!data?.data?.length && id == loggedInUser?.id && setRun) {
+          console.log(data?.data);
+          setRun(true);
+        }
       } else {
         notification(
           message ? message : "Something went wrong, try again later",
