@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import (
     AccountRegionList,
+    BookmarkDetailView,
+    BookmarkView,
     OTPAuth,
     OTPAuthV2,
     OTPVerification,
@@ -82,4 +84,8 @@ urlpatterns = [
 
     path("wallet-create/", WalletNonceCreateView.as_view(),
          name="wallet-nonce-create"),
+
+    path("bookmarks/", BookmarkView.as_view(), name="bookmarks"),
+    path("bookmarks/<uuid:pk>/", BookmarkDetailView.as_view(),
+         name="bookmark-detail"),
 ]

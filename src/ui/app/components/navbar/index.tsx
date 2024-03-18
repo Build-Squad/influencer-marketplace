@@ -35,6 +35,8 @@ import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import NotificationPanel from "@/src/components/notificationPanel";
 import { notification } from "@/src/components/shared/notification";
 import NextLink from "next/link";
+import SavedProfileIcon from "@/public/svg/Saved.svg";
+import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
 
 type NavbarProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -84,6 +86,12 @@ const MENU_ITEMS: {
     route: "/checkout",
     icon: CartIcon,
     disabledIcon: CartDisabledIcon,
+  },
+  Bookmarks: {
+    label: "Bookmarks",
+    route: "/bookmarks",
+    icon: SavedProfileIcon,
+    disabledIcon: SavedProfileDisabledIcon,
   },
   Notifications: {
     label: "Notifications",
@@ -338,6 +346,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
                     "Dashboard",
                     "Messages",
                     "Cart",
+                    "Bookmarks",
                     "Notifications",
                   ]}
                 />

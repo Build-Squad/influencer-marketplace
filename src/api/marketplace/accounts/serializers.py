@@ -8,6 +8,7 @@ from packages.models import Package, Service
 from .models import (
     AccountLanguage,
     AccountRegion,
+    Bookmark,
     TwitterAccount,
     CategoryMaster,
     AccountCategory,
@@ -112,6 +113,7 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
     service_types = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
+    is_bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = TwitterAccount
@@ -148,6 +150,16 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
         )
         total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
         return total_rating
+
+    def get_is_bookmarked(self, twitter_account):
+        if "request" in self.context and hasattr(self.context["request"], "user_account"):
+            user = self.context["request"].user_account
+            target_user = User.objects.get(twitter_account=twitter_account)
+            bookmark = Bookmark.objects.filter(
+                user_id=user, target_user=target_user)
+            if bookmark:
+                return True
+            return False
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -206,7 +218,6 @@ class WalletCompleteSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    twitter_account = TwitterAccountSerializer(required=False)
     role = RoleSerializer(read_only=True)
     account_languages = AccountLanguageSerializer(
         many=True, read_only=True, source="acc_user_account_id"
@@ -230,6 +241,11 @@ class UserSerializer(serializers.ModelSerializer):
             "user_permissions",
             "jwt",
         )
+
+    def to_representation(self, instance):
+        self.fields['twitter_account'] = TwitterAccountSerializer(
+            required=False, context=self.context)
+        return super(UserSerializer, self).to_representation(instance)
 
     def update(self, instance, validated_data):
         # Update User fields
@@ -368,3 +384,7 @@ class WalletNonceSerializer(serializers.ModelSerializer):
     class Meta:
         model = WalletNonce
         fields = '__all__'
+
+
+class CreateBookmarkSerializer(serializers.Serializer):
+    target_user = serializers.UUIDField()

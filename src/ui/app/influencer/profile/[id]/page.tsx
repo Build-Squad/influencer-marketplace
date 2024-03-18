@@ -8,6 +8,7 @@ import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import {
+  deleteService,
   getService,
   postService,
   putService,
@@ -27,6 +28,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -35,6 +37,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect } from "react";
 import Services from "./_services";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
 
 const tabs = [
   {
@@ -208,6 +211,43 @@ const ProfileLayout = ({
     }
   };
 
+  const removeBookmark = async (id: string) => {
+    const { isSuccess, message } = await deleteService(
+      `/account/bookmarks/${id}/`
+    );
+    if (isSuccess) {
+      notification("Bookmark removed successfully", "success");
+      getUserDetails();
+    } else {
+      notification(message, "error");
+    }
+  };
+
+  const addBookmark = async (id: string) => {
+    const { isSuccess, message } = await postService(`/account/bookmarks/`, {
+      target_user: id,
+    });
+    if (isSuccess) {
+      notification("Bookmark added successfully", "success");
+      getUserDetails();
+    } else {
+      notification(message, "error");
+    }
+  };
+
+  const handleBookmark = () => {
+    if (
+      currentUser?.twitter_account?.is_bookmarked !== null &&
+      currentUser?.twitter_account?.is_bookmarked !== undefined
+    ) {
+      if (currentUser?.twitter_account?.is_bookmarked) {
+        removeBookmark(currentUser?.id);
+      } else {
+        addBookmark(currentUser?.id);
+      }
+    }
+  };
+
   const debouncedHandleChange = debounce(handleChange, 1000);
 
   const updatedHandleChange = useCallback((e: any) => {
@@ -360,6 +400,34 @@ const ProfileLayout = ({
                           />
                         </Box>
                       )}
+                      {currentUser?.twitter_account?.is_bookmarked !== null &&
+                        currentUser?.twitter_account?.is_bookmarked !==
+                          undefined && (
+                          <Tooltip
+                            title={
+                              currentUser?.twitter_account?.is_bookmarked
+                                ? "Remove Bookmark"
+                                : "Add Bookmark"
+                            }
+                          >
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.isDefaultPrevented();
+                                e.preventDefault();
+                                handleBookmark();
+                              }}
+                            >
+                              <BookmarkIcon
+                                color={
+                                  currentUser?.twitter_account?.is_bookmarked
+                                    ? "primary"
+                                    : "disabled"
+                                }
+                              />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                     </Box>
                     <Box
                       sx={{

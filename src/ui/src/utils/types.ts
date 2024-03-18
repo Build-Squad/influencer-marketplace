@@ -120,6 +120,7 @@ type TwitterAccountType = {
   joined_at: string | null;
   account_categories?: AccountCategoryType[];
   rating?: number;
+  is_bookmarked?: boolean | null;
 };
 
 type UserType = {

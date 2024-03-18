@@ -8,4 +8,5 @@ export type TopInfluencersType = {
   minPrice: number;
   maxPrice: number;
   rating: number;
+  is_bookmarked?: boolean | null;
 };
