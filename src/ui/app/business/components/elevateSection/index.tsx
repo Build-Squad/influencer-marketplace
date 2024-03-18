@@ -158,7 +158,7 @@ export default function ElevateSection({}: Props) {
           Save Time and Experience Growth
         </Typography>
         <Typography sx={{ fontSize: "40px" }}>
-          Tailored marketing solutions for busy businesses
+          Tailored Marketing Solutions For Businesses
         </Typography>
         <Box
           sx={{ display: "flex", justifyContent: "center", marginTop: "14px" }}

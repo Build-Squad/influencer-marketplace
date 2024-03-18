@@ -29,15 +29,15 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     data2: {
       value: "76 %",
       subtitle:
-        "users say they bought something after a recommendation from X.",
+        "Users say they bought something after a recommendation from X.",
     },
     data3: {
       value: "238 M",
-      subtitle: "monthly active years (mAU)",
+      subtitle: "Monthly active users (MAU)",
     },
     data4: {
       value: "79 %",
-      subtitle: "of users use X as a news site",
+      subtitle: "Of users use X as a news site",
     },
   },
   {
@@ -56,7 +56,7 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     },
     data4: {
       value: "440 M",
-      subtitle: "Total Influencers on X",
+      subtitle: "Total users on X",
     },
   },
 ];
