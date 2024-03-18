@@ -1,7 +1,15 @@
-from tweepy import Client, OAuth2UserHandler
-from decouple import config
 import datetime
+from decouple import config
 from random import randint
+
+from notifications.models import Notification
+
+from .models import User
+
+from tweepy import Client, OAuth2UserHandler
+
+
+FRONT_END_URL = config('FRONT_END_URL')
 
 
 class TwitterAuthenticationService:
@@ -84,3 +92,87 @@ class OTPAuthenticationService:
             return False
         except Exception as e:
             raise e
+
+
+def create_inlfuencer_account_notification(user: User):
+    try:
+        """
+        Create 3 notifications for the influencer:
+        1. Welcome to Xfluencer, we are excited to have you on board! To get started, please complete your profile (Bio, Categories, Email, etc.)
+        2. Start monetizing your influence by adding your Web3 wallet to your account to receive payouts.
+        3. List your services and start earning money by providing services to businesses.
+        """
+        INLFUENCER_PROFILE_SLUG = FRONT_END_URL + \
+            '/influencer/profile' + str(user.id)
+
+        notifications = []
+        notifications.append({
+            'title': 'Welcome to Xfluencer',
+            'message': 'We are excited to have you on board! To get started, please complete your profile (Bio, Categories, Email, etc.)',
+            'slug': INLFUENCER_PROFILE_SLUG,
+            'user_id': user.id
+        })
+        notifications.append({
+            'title': 'Start monetizing your influence',
+            'message': 'Add your Web3 wallet to your account to receive payouts.',
+            'slug': INLFUENCER_PROFILE_SLUG,
+            'user_id': user.id
+        })
+        notifications.append({
+            'title': 'List your services',
+            'message': 'Start earning money by providing services to businesses.',
+            'slug': INLFUENCER_PROFILE_SLUG,
+            'user_id': user.id
+        })
+        Notification.objects.bulk_create(
+            [Notification(**notification) for notification in notifications]
+        )
+    except Exception as e:
+        raise e
+
+
+def create_business_account_notification(user: User):
+    try:
+        """
+        Create 3 notifications for the business:
+        1. Complete Your Profile: Let influencers and other businesses know more about your brand by completing your profile. Add your company details, update your bio, and share your business goals.
+        2. Explore Influencers: Discover influencers who align with your brand values and target audience. Explore their profiles, check out their services, and start building valuable partnerships.
+        3. Purchase Services: Engage with influencers and purchase their services to promote your brand and reach new audiences.
+        """
+        BUSINESS_PROFILE_SLUG = FRONT_END_URL + '/business/profile?tab=wallet'
+        BUSINESS_EXPLORE_SLUG = FRONT_END_URL + '/business/explore'
+
+        notifications = []
+        notifications.append({
+            'title': 'Complete Your Profile',
+            'message': 'Let influencers and other businesses know more about your brand by completing your profile. Add your company details, update your bio, and share your business goals.',
+            'slug': BUSINESS_PROFILE_SLUG,
+            'user_id': user.id
+        })
+        notifications.append({
+            'title': 'Explore Influencers',
+            'message': 'Discover influencers who align with your brand values and target audience. Explore their profiles, check out their services, and start building valuable partnerships.',
+            'slug': BUSINESS_EXPLORE_SLUG,
+            'user_id': user.id
+        })
+        notifications.append({
+            'title': 'Purchase Services',
+            'message': 'Engage with influencers and purchase their services to promote your brand and reach new audiences.',
+            'slug': BUSINESS_EXPLORE_SLUG,
+            'user_id': user.id
+        })
+        Notification.objects.bulk_create(
+            [Notification(**notification) for notification in notifications]
+        )
+    except Exception as e:
+        raise e
+
+
+def create_signup_notification(user: User):
+    try:
+        if user.role.name == 'influencer':
+            create_inlfuencer_account_notification(user=user)
+        elif user.role.name == 'business_owner':
+            create_business_account_notification(user=user)
+    except Exception as e:
+        raise e

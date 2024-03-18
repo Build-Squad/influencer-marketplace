@@ -1021,6 +1021,7 @@ export default function BusinessDashboardPage() {
           ORDER_STATUS.ACCEPTED,
           ORDER_STATUS.REJECTED,
           ORDER_STATUS.COMPLETED,
+          ORDER_STATUS.CANCELLED,
         ],
         order_by: "upcoming",
       }));
