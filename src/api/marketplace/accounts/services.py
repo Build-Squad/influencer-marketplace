@@ -96,36 +96,15 @@ class OTPAuthenticationService:
 
 def create_inlfuencer_account_notification(user: User):
     try:
-        """
-        Create 3 notifications for the influencer:
-        1. Welcome to Xfluencer, we are excited to have you on board! To get started, please complete your profile (Bio, Categories, Email, etc.)
-        2. Start monetizing your influence by adding your Web3 wallet to your account to receive payouts.
-        3. List your services and start earning money by providing services to businesses.
-        """
         INLFUENCER_PROFILE_SLUG = FRONT_END_URL + \
             '/influencer/profile' + str(user.id)
 
-        notifications = []
-        notifications.append({
-            'title': 'Welcome to Xfluencer',
-            'message': 'We are excited to have you on board! To get started, please complete your profile (Bio, Categories, Email, etc.)',
-            'slug': INLFUENCER_PROFILE_SLUG,
-            'user_id': user.id
-        })
-        notifications.append({
-            'title': 'Start monetizing your influence',
-            'message': 'Add your Web3 wallet to your account to receive payouts.',
-            'slug': INLFUENCER_PROFILE_SLUG,
-            'user_id': user.id
-        })
-        notifications.append({
-            'title': 'List your services',
-            'message': 'Start earning money by providing services to businesses.',
-            'slug': INLFUENCER_PROFILE_SLUG,
-            'user_id': user.id
-        })
-        Notification.objects.bulk_create(
-            [Notification(**notification) for notification in notifications]
+        # Club the above 3 notifications in one notification
+        Notification.objects.create(
+            title='Welcome to Xfluencer',
+            message='We are excited to have you on board! To get started, please complete your profile (Bio, Categories, Email, etc.), add your Web3 wallet to your account to receive payouts, and start earning money by listing services for businesses.',
+            slug=INLFUENCER_PROFILE_SLUG,
+            user_id=user
         )
     except Exception as e:
         raise e
@@ -133,12 +112,6 @@ def create_inlfuencer_account_notification(user: User):
 
 def create_business_account_notification(user: User):
     try:
-        """
-        Create 3 notifications for the business:
-        1. Complete Your Profile: Let influencers and other businesses know more about your brand by completing your profile. Add your company details, update your bio, and share your business goals.
-        2. Explore Influencers: Discover influencers who align with your brand values and target audience. Explore their profiles, check out their services, and start building valuable partnerships.
-        3. Purchase Services: Engage with influencers and purchase their services to promote your brand and reach new audiences.
-        """
         BUSINESS_PROFILE_SLUG = FRONT_END_URL + '/business/profile?tab=wallet'
         BUSINESS_EXPLORE_SLUG = FRONT_END_URL + '/business/explore'
 
@@ -150,14 +123,8 @@ def create_business_account_notification(user: User):
             'user_id': user.id
         })
         notifications.append({
-            'title': 'Explore Influencers',
-            'message': 'Discover influencers who align with your brand values and target audience. Explore their profiles, check out their services, and start building valuable partnerships.',
-            'slug': BUSINESS_EXPLORE_SLUG,
-            'user_id': user.id
-        })
-        notifications.append({
-            'title': 'Purchase Services',
-            'message': 'Engage with influencers and purchase their services to promote your brand and reach new audiences.',
+            'title': 'Explore Influencers & Purchase Services',
+            'message': 'Discover influencers who align with your brand values and target audience. Explore their profiles, and purchase their services to promote your brand and reach new audiences',
             'slug': BUSINESS_EXPLORE_SLUG,
             'user_id': user.id
         })
