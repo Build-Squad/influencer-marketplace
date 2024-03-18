@@ -175,11 +175,6 @@ const ProfileLayout = ({
   const handleJoyrideCallback = (data: any) => {
     const { action, index, status, type } = data;
 
-    if (index == 2 && !wallets?.length) {
-      setRun(false);
-      return;
-    }
-
     if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
       // Update state to advance the tour
       setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
