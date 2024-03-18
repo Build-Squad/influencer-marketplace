@@ -1,6 +1,6 @@
 [package]
 name = "xfluencer"
-version = "0.1.0"
+version = "0.2.0"
 description = "Created with Anchor"
 edition = "2021"
 
@@ -21,3 +21,4 @@ anchor-spl = {version = "0.29.0"}
 spl-token = {version = "4.0.0", features = ["no-entrypoint"]}
 bytemuck = "1.14.0"
 u128 = "0.1.0"
+strum = { version = "0.25", features = ["derive"] }

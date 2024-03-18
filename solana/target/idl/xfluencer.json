@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "xfluencer",
   "instructions": [
     {
@@ -11,12 +11,12 @@
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "seller",
+          "name": "influencer",
           "isMut": false,
           "isSigner": false
         },
@@ -31,12 +31,12 @@
           "isSigner": false
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "sellerReceiveTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -85,12 +85,12 @@
       "name": "cancel",
       "accounts": [
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -194,27 +194,6 @@
       ]
     },
     {
-      "name": "cancelEscrowSol",
-      "accounts": [
-        {
-          "name": "business",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -248,6 +227,27 @@
           "type": "u16"
         }
       ]
+    },
+    {
+      "name": "cancelEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -257,19 +257,19 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "buyerKey",
+            "name": "businessKey",
             "type": "publicKey"
           },
           {
-            "name": "buyerDepositTokenAccount",
+            "name": "businessDepositTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "sellerKey",
+            "name": "influencerKey",
             "type": "publicKey"
           },
           {
-            "name": "sellerReceiveTokenAccount",
+            "name": "influencerReceiveTokenAccount",
             "type": "publicKey"
           },
           {
@@ -415,6 +415,11 @@
       "code": 6010,
       "name": "NumericalProblemFoundCalculatingFees",
       "msg": "Numerical Problem Found Calculating Fees"
+    },
+    {
+      "code": 6011,
+      "name": "BusinessHasInsufficientAmountOfTokens",
+      "msg": "Busines Has Insufficient Amount Of Tokens"
     }
   ],
   "metadata": {

@@ -23,5 +23,7 @@ pub enum CustomError {
     #[msg("Percengate Fee Out of Range")]
     PercentageFeeOutOfrange,
     #[msg("Numerical Problem Found Calculating Fees")]
-    NumericalProblemFoundCalculatingFees
+    NumericalProblemFoundCalculatingFees,
+    #[msg("Busines Has Insufficient Amount Of Tokens")]
+    BusinessHasInsufficientAmountOfTokens
 }
