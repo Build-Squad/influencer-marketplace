@@ -58,7 +58,7 @@ export default function Banner({}: Props) {
           style={{ marginBottom: "8px" }}
         />
         <Typography variant="body1">
-          1<sup>st</sup> Influencer marketplace for X
+          1<sup>st</sup> Influencer Marketplace For X
         </Typography>
       </Box>
       <Box

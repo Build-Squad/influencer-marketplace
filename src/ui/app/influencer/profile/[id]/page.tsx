@@ -3,7 +3,6 @@
 import BackIcon from "@/public/svg/Back.svg";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import EmailVerifyModal from "@/src/components/profileComponents/emailVerifyModal";
-import WalletsTable from "@/src/components/profileComponents/walletsTable";
 import { notification } from "@/src/components/shared/notification";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { useAppSelector } from "@/src/hooks/useRedux";
@@ -14,9 +13,7 @@ import {
   putService,
 } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, EMAIL_PRIVACY_TEXT } from "@/src/utils/consts";
-import { stringToColor } from "@/src/utils/helper";
 import EditIcon from "@mui/icons-material/Edit";
-import StarIcon from "@mui/icons-material/Star";
 import {
   Avatar,
   Box,
@@ -35,9 +32,22 @@ import dayjs from "dayjs";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Services from "./_services";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
+import { stringToColor } from "@/src/utils/helper";
+import WalletsTable from "@/src/components/profileComponents/walletsTable";
+import StarIcon from "@mui/icons-material/Star";
+import HelperButton from "@/src/components/helperButton";
+import Joyride, {
+  ACTIONS,
+  CallBackProps,
+  EVENTS,
+  STATUS,
+  Step,
+} from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
 
 const tabs = [
   {
@@ -76,6 +86,108 @@ const ProfileLayout = ({
   const [userRegion, setUserRegion] = React.useState<RegionType>();
   const [editibleBio, setEditibleBio] = React.useState<string>("");
   const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
+
+  // From the BE or anything, fetch if the user is visiting the page for the first time.
+  const [stepIndex, setStepIndex] = React.useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Take a Quick Tour!
+          </Typography>
+          <Typography>
+            This tour will walk you through listing your service as an
+            influencer and claiming your payments upon completion and validation
+            of orders. Simply create and list your service for business owners
+            to view and purchase.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Connect a Wallet
+          </Typography>
+          <Typography>
+            Connect your wallet (if not already) before listing a service to
+            recieve payouts.
+          </Typography>
+        </Box>
+      ),
+      target: ".joyride-create-service-tab",
+      placement: "top",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Click on "Create A Service"
+          </Typography>
+          <Typography>
+            Please list the type of service you wish to publish and select its
+            price and fill in some details. Simply enter the information, and
+            you're all set to go.
+          </Typography>
+        </Box>
+      ),
+      target: ".joyride-create-service-tab",
+      placement: "top",
+    },
+  ]);
+
+  useEffect(() => {
+    // Fetch services for the tour, if there are none, open the tour
+    if (params.id == loggedInUser?.id) getServices();
+  }, []);
+
+  const getServices = async () => {
+    try {
+      const { message, data, isSuccess, errors } = await getService(
+        "packages/service",
+        {
+          influencer: params.id,
+          status: null,
+        }
+      );
+      if (isSuccess) {
+        // Open the tour if there's no service
+        if (!data?.data?.length) {
+          setRun(true);
+        }
+      }
+    } finally {
+    }
+  };
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
+
+    if (index == 2 && !wallets?.length) {
+      setRun(false);
+      return;
+    }
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
+    }
+  };
 
   useEffect(() => {
     if (params.id) {
@@ -739,6 +851,7 @@ const ProfileLayout = ({
                     display: "flex",
                     columnGap: "4px",
                     alignItems: "flex-top",
+                    justifyContent: "space-between",
                   }}
                 >
                   {tabs.map((item) => (
@@ -746,6 +859,28 @@ const ProfileLayout = ({
                       {item.label}
                     </Typography>
                   ))}
+                  {params.id == loggedInUser?.id ? (
+                    <Box
+                      sx={{
+                        mr: 4,
+                        color: "grey",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        columnGap: "4px",
+                      }}
+                      onClick={() => {
+                        setStepIndex(0);
+                        setRun(true);
+                      }}
+                    >
+                      <DriveEta fontSize="small" />
+                      <Typography sx={{ color: "#C60C30" }}>
+                        Take A Tour!
+                      </Typography>
+                    </Box>
+                  ) : null}
+
                   {/* For dynamic routes pass props like this (In correspondence with Backend) */}
                   {/* <HelperButton
                     step={"services"}
@@ -755,6 +890,7 @@ const ProfileLayout = ({
                 </Box>
                 <Box sx={{ p: 2 }}>
                   <Services
+                    setRun={setRun}
                     currentInfluencer={currentUser}
                     id={params.id}
                     wallets={wallets}
@@ -783,6 +919,23 @@ const ProfileLayout = ({
         }
       />
       <EmailVerifyModal open={emailOpen} setOpen={setEmailOpen} />
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous
+        stepIndex={stepIndex}
+        // disableOverlay
+        run={run}
+        // scrollToFirstStep
+        // showProgress
+        steps={steps}
+        spotlightClicks
+        styles={{
+          options: {
+            zIndex: 2,
+          },
+        }}
+        locale={{ last: "Finish" }}
+      />
     </Box>
   );
 };

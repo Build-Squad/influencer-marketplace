@@ -63,27 +63,31 @@ const Footer = () => {
           Contact
         </Typography>
 
-        <Typography sx={{ mt: 2 }}>Follow us on social media</Typography>
+        <Typography>info@xfluencer.io</Typography>
+        <Typography>Follow us on social media</Typography>
 
         <Box sx={{ mb: 2, display: "flex", columnGap: "4px" }}>
-          {[X].map((icon, index) => (
-            <Image
-              key={index}
-              src={icon}
-              height={30}
-              width={30}
-              alt={`Social Icon ${index + 1}`}
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                window.open("https://twitter.com/xfluencermarket", "_blank");
-              }}
-            />
-          ))}
+          <Image
+            src={X}
+            height={30}
+            width={30}
+            alt="XFluencer Instagram"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              window.open("https://twitter.com/xfluencermarket", "_blank");
+            }}
+          />
+          <Image
+            src={LinkedIn}
+            height={30}
+            width={30}
+            alt="XFluencer LinkedIn"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              window.open("https://www.linkedin.com/company/xfluencer/", "_blank");
+            }}
+          />
         </Box>
-
-        {["help@xfluencer.io"].map((link) => (
-          <Typography key={link}>{link}</Typography>
-        ))}
       </Grid>
     </Grid>
   );

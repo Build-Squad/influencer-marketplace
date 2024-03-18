@@ -14,7 +14,7 @@ const WORKING_STEPS = [
   {
     id: "STEP_2",
     imageUrl: require("@/public/svg/Step3.svg"),
-    description: "Choose Service Send Offers",
+    description: "Choose Service & Send Offers",
   },
   {
     id: "STEP_3",
@@ -39,10 +39,10 @@ export default function GuideContainer({}: Props) {
       }}
     >
       <Typography variant="h5" fontWeight="bold">
-        How it Works?
+        How It Works?
       </Typography>
       <Typography variant="subtitle1" sx={{ color: "#505050" }}>
-        Explore Purchase Analyse in seconds.
+        Explore, Purchase, Analyse in seconds
       </Typography>
       <Box
         sx={{

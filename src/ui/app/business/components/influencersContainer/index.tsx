@@ -48,7 +48,7 @@ export default function InfluencersContainer({ topInfluencers }: Props) {
           color: "#505050",
         }}
       >
-        Work with the best.
+        Work with the best
       </Typography>
       <Grid container mt={3} justifyContent="center" alignItems="center">
         <Grid item>
