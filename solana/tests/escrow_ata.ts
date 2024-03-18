@@ -7,11 +7,16 @@ import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import * as utils from "./utils";
 import { Xfluencer } from "../target/types/xfluencer";
 
-import { TOKEN_PROGRAM_ID, createAssociatedTokenAccount, createMint, getMint, mintTo } from '@solana/spl-token';
+import { 
+  TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccount, 
+  createMint, 
+  getMint, 
+  mintTo } from '@solana/spl-token';
+
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
   MINT_SIZE,  
   createAssociatedTokenAccountIdempotentInstruction,
   createInitializeMint2Instruction,
@@ -30,15 +35,16 @@ describe("Testing Escrow for ATA", () => {
 
 
   // Token & PDA
+  let mintInfo = null;
   let mintA: PublicKey = null; 
   let businessTokenAmount = null;
   let influencerTokenAmount = null;
+  let associatedTokenAccForBusiness = null;
+  let associatedTokenAccForInfluencer = null;
   let vault_account_pda = null;
   let vault_account_bump = null;
   let vault_authority_pda = null;
 
-  let amountA = null; 
-  let amountB = null; 
 
   const amount = 1000;  
   
@@ -51,6 +57,7 @@ describe("Testing Escrow for ATA", () => {
 
   const mintAuthority = anchor.web3.Keypair.generate(); // this is not known in practise
 
+  // SPL token information
   const NUMBER_DECIMALS = 6;
 
 
@@ -88,7 +95,8 @@ describe("Testing Escrow for ATA", () => {
   
       
       const owner = business.publicKey;  
-      const [associatedTokenAccForBusiness, mintInfo] = await Promise.all([
+
+      [associatedTokenAccForBusiness, mintInfo] = await Promise.all([
         createAssociatedTokenAccount(
           provider.connection,
           payer,
@@ -117,8 +125,8 @@ describe("Testing Escrow for ATA", () => {
       console.log("Balance:",balanceBusiness);
 
 
-       
-      const [associatedTokenAccForInfluencer, _] = await Promise.all([
+      let _bump = null;
+      [associatedTokenAccForInfluencer, _bump] = await Promise.all([
         createAssociatedTokenAccount(
           provider.connection,
           payer,
@@ -153,27 +161,24 @@ describe("Testing Escrow for ATA", () => {
 
       const orderCode = 123; // uuid uniquely the escrow and the valut
       // Note that this weill be the vault authority
-      const [_escrow_account_pda, _escrow_account_bump] = await PublicKey.findProgramAddress(
+      const [escrowAccountPda, vault_account_bump] = await PublicKey.findProgramAddress(
         [Buffer.from(anchor.utils.bytes.utf8.encode("escrow" + orderCode.toString()))],
         program.programId
       );
-      const escrow_account_pda = _escrow_account_pda;
+     
   
-      const [_vault_account_pda, _vault_account_bump] = await PublicKey.findProgramAddress(
+      const [vaultAccountPda, bump] = await PublicKey.findProgramAddress(
         [Buffer.from(anchor.utils.bytes.utf8.encode("vault" + orderCode.toString()))],
         program.programId
       );
   
-      vault_account_pda = _vault_account_pda;
-      vault_account_bump = _vault_account_bump;
-  
+       
       const options = {
         skipPreflight: true      
       }
-      
-      console.log(escrow_account_pda);
-      console.log(vault_account_pda);
 
+      console.log(associatedTokenAccForBusiness);
+      console.log(associatedTokenAccForInfluencer);
 
       const tx = await program.methods
       .initialize(
@@ -187,10 +192,10 @@ describe("Testing Escrow for ATA", () => {
         influencer: influencer.publicKey,
         validationAuthority: validatorAuthority.publicKey,
         mint: mintA,        
-        businessDepositTokenAccount: businessTokenAmount,
-        influencerReceiveTokenAccount: influencerTokenAmount,
-        escrowAccount: escrow_account_pda,
-        vaultAccount: vault_account_pda,
+        businessDepositTokenAccount: associatedTokenAccForBusiness,
+        influencerReceiveTokenAccount: associatedTokenAccForInfluencer,
+        escrowAccount: escrowAccountPda,
+        vaultAccount: vaultAccountPda,
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
