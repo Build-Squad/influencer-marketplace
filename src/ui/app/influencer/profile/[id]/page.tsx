@@ -39,12 +39,20 @@ import dayjs from "dayjs";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Services from "./_services";
 import { stringToColor } from "@/src/utils/helper";
 import WalletsTable from "@/src/components/profileComponents/walletsTable";
 import StarIcon from "@mui/icons-material/Star";
 import HelperButton from "@/src/components/helperButton";
+import Joyride, {
+  ACTIONS,
+  CallBackProps,
+  EVENTS,
+  STATUS,
+  Step,
+} from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 
 const tabs = [
   {
@@ -83,6 +91,97 @@ const ProfileLayout = ({
   const [userRegion, setUserRegion] = React.useState<RegionType>();
   const [editibleBio, setEditibleBio] = React.useState<string>("");
   const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
+
+  // From the BE or anything, fetch if the user is visiting the page for the first time.
+  const [firstTimeUser, SetFirstTimeUser] = React.useState<boolean>(true);
+  const [stepIndex, setStepIndex] = React.useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Take a Quick Tour!
+          </Typography>
+          <Typography>
+            This tour will walk you through listing your service as an
+            influencer and claiming your payments upon completion and validation
+            of orders. Simply create and list your service for business owners
+            to view and purchase.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Connect a Wallet
+          </Typography>
+          <Typography>
+            Connect your wallet before listing a service to recieve payouts.
+          </Typography>
+        </Box>
+      ),
+      target: ".joyride-create-service-tab",
+      placement: "top",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Click on "Create A Service"
+          </Typography>
+          <Typography>
+            Please list the type of service you wish to publish and select its
+            price and fill in some details. Simply enter the information, and
+            you're all set to go.
+          </Typography>
+        </Box>
+      ),
+      target: ".joyride-create-service-tab",
+      placement: "top",
+    },
+  ]);
+
+  useEffect(() => {
+    setRun(true);
+  }, []);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, origin, status, type } = data;
+    console.log("handleJoyrideCallback === ", data);
+
+    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+
+    if (index == 2 && !wallets?.length) {
+      setRun(false);
+      return;
+    }
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
+    }
+  };
+
+  useEffect(() => {
+    if (firstTimeUser && wallets?.length && stepIndex == 2) {
+      setRun(true);
+    }
+  }, [wallets, firstTimeUser]);
 
   useEffect(() => {
     if (params.id) {
@@ -725,6 +824,25 @@ const ProfileLayout = ({
         }
       />
       <EmailVerifyModal open={emailOpen} setOpen={setEmailOpen} />
+      {firstTimeUser ? (
+        <Joyride
+          callback={handleJoyrideCallback}
+          continuous
+          stepIndex={stepIndex}
+          // disableOverlay
+          run={run}
+          scrollToFirstStep
+          // showProgress
+          steps={steps}
+          spotlightClicks
+          styles={{
+            options: {
+              zIndex: 2,
+            },
+          }}
+          locale={{ last: "Finish" }}
+        />
+      ) : null}
     </Box>
   );
 };
