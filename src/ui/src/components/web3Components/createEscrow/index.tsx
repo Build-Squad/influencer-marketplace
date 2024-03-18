@@ -149,6 +149,7 @@ export default function CreateEscrow({
       onClick={() => {
         createEscrow();
       }}
+      className="joyride-make-payment"
     >
       {localLoading ? (
         <CircularProgress size={24} color="secondary" />

@@ -1,6 +1,5 @@
 "use client";
 
-import Star_Coloured from "@/public/svg/Star_Coloured.svg";
 import BackIcon from "@/public/svg/Back.svg";
 import CategorySelectionModal from "@/src/components/categorySelectionModal";
 import EmailVerifyModal from "@/src/components/profileComponents/emailVerifyModal";
@@ -14,8 +13,6 @@ import {
 } from "@/src/services/httpServices";
 import { DISPLAY_DATE_FORMAT, EMAIL_PRIVACY_TEXT } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
-import NewReleasesIcon from "@mui/icons-material/NewReleases";
-import VerifiedIcon from "@mui/icons-material/Verified";
 import {
   Avatar,
   Box,
@@ -26,13 +23,7 @@ import {
   Link,
   MenuItem,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -159,7 +150,6 @@ const ProfileLayout = ({
 
   const handleJoyrideCallback = (data: any) => {
     const { action, index, origin, status, type } = data;
-    console.log("handleJoyrideCallback === ", data);
 
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
@@ -171,7 +161,7 @@ const ProfileLayout = ({
     if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
       // Update state to advance the tour
       setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
-    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data)) {
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       // Need to set our running state to false, so we can restart if we click start again.
       setRun(false);
     }
@@ -824,7 +814,7 @@ const ProfileLayout = ({
         }
       />
       <EmailVerifyModal open={emailOpen} setOpen={setEmailOpen} />
-      {firstTimeUser ? (
+      {firstTimeUser && params?.id === loggedInUser?.id ? (
         <Joyride
           callback={handleJoyrideCallback}
           continuous
