@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 
 from solders.pubkey import Pubkey
@@ -32,6 +33,30 @@ class EscrowState(Enum):
     CANCEL = 1
     DELIVERED = 2
 
+@dataclass
+class EscrowValidator:
+    validator_authority: Keypair
+    business_address: Pubkey
+    influencer_address: Pubkey
+    order_code: int
+    network: str = "https://api.devnet.solana.com"
+    
+    async def cancel(self):
+        return await validate_escrow(self.validator_authority,
+                                    self.business_address, 
+                                    self.influencer_address, 
+                                    EscrowState.CANCEL, 
+                                    self.order_code,
+                                    self.network)
+    async def deliver(self):
+        return await validate_escrow(self.validator_authority,
+                                     self.business_address, 
+                                     self.influencer_address, 
+                                     EscrowState.DELIVERED, 
+                                     self.order_code, 
+                                     self.network) 
+        
+    
 
 
 async def validate_escrow_to_cancel(validator_authority: Keypair,
@@ -41,11 +66,11 @@ async def validate_escrow_to_cancel(validator_authority: Keypair,
                                     network="https://api.devnet.solana.com"):
     
     return await validate_escrow(validator_authority,
-                          business_address, 
-                          influencer_address, 
-                          EscrowState.CANCEL, 
-                          order_code,
-                          network)    
+                                business_address, 
+                                influencer_address, 
+                                EscrowState.CANCEL, 
+                                order_code,
+                                network)    
 
 
 async def validate_escrow_to_delivered(validator_authority: Keypair,
@@ -55,11 +80,11 @@ async def validate_escrow_to_delivered(validator_authority: Keypair,
                                        network="https://api.devnet.solana.com"):
     
     return await validate_escrow(validator_authority,
-                          business_address, 
-                          influencer_address, 
-                          EscrowState.DELIVERED, 
-                          order_code, 
-                          network)    
+                                 business_address, 
+                                 influencer_address, 
+                                 EscrowState.DELIVERED, 
+                                 order_code, 
+                                 network)    
 
 
 async def validate_escrow(validation_authority: Keypair,
