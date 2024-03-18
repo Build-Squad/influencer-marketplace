@@ -18,7 +18,7 @@ pub fn process(ctx: Context<CreateEscrow>, _vault_account_bump: u8,
     ctx.accounts.escrow_account.business_deposit_token_account = *ctx.accounts.business_deposit_token_account.to_account_info().key;
     ctx.accounts.escrow_account.influencer_key = *ctx.accounts.influencer.key;
     ctx.accounts.escrow_account.influencer_receive_token_account = *ctx.accounts.influencer_receive_token_account.to_account_info().key;
-    ctx.accounts.escrow_account.judge_key = *ctx.accounts.judge.key;
+    ctx.accounts.escrow_account.validation_authority = *ctx.accounts.validation_authority.key;
     ctx.accounts.escrow_account.amount = amount;
     ctx.accounts.escrow_account.order_code = order_code;
     ctx.accounts.escrow_account.status = 0;

@@ -87,7 +87,7 @@ pub struct EscrowAccount {
     pub business_deposit_token_account: Pubkey, // (32)
     pub influencer_key: Pubkey, // (32)
     pub influencer_receive_token_account: Pubkey, // (32)
-    pub judge_key: Pubkey, // (32)
+    pub validation_authority: Pubkey, // (32)
     pub amount: u64, // (8)
     pub order_code: u64, // (8)
     /** status
@@ -133,7 +133,7 @@ pub struct CreateEscrow<'info> {
     /// CHECK: safe
     pub influencer: AccountInfo<'info>, // change name to influencer
     /// CHECK: safe 
-    pub judge: AccountInfo<'info>,  // change name to xfluencer
+    pub validation_authority: AccountInfo<'info>,  // change name to xfluencer
     pub mint: Account<'info, Mint>,
     
     #[account(

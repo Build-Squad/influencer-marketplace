@@ -21,7 +21,7 @@
           "isSigner": false
         },
         {
-          "name": "judge",
+          "name": "validationAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -273,7 +273,7 @@
             "type": "publicKey"
           },
           {
-            "name": "judgeKey",
+            "name": "validationAuthority",
             "type": "publicKey"
           },
           {

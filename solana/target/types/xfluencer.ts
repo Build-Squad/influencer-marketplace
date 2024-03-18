@@ -21,7 +21,7 @@ export type Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "judge",
+          "name": "validationAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -273,7 +273,7 @@ export type Xfluencer = {
             "type": "publicKey"
           },
           {
-            "name": "judgeKey",
+            "name": "validationAuthority",
             "type": "publicKey"
           },
           {
@@ -447,7 +447,7 @@ export const IDL: Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "judge",
+          "name": "validationAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -699,7 +699,7 @@ export const IDL: Xfluencer = {
             "type": "publicKey"
           },
           {
-            "name": "judgeKey",
+            "name": "validationAuthority",
             "type": "publicKey"
           },
           {
