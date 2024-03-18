@@ -5,6 +5,14 @@ use ::u128::mul_div_u64;
 use crate::CustomError;
 use crate::ValidateEscrowSolana;
 
+use strum::FromRepr;
+
+#[derive(FromRepr, Debug, PartialEq)]
+#[repr(u8)]
+enum EscrowState {
+    New = 0, Canceled, Delivered
+}
+
 pub fn process(
     ctx: Context<ValidateEscrowSolana>,
     target_state: u8,
@@ -17,6 +25,7 @@ pub fn process(
         target_state
     );
 
+    // @TODO: Use enumerator instead u8
     // Valid State Transitions
     // 0 -> 1  From New to Cancel
     // 0 -> 2  From New to Delivered
