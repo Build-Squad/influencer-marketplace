@@ -2,7 +2,10 @@
 
 import FilterChip from "@/src/components/shared/filterChip";
 import filterCount from "@/src/services/filterCount";
-import { FORM_DATE_TIME_TZ_FORMAT } from "@/src/utils/consts";
+import {
+  FORM_DATE_TIME_TZ_FORMAT,
+  ISO_DATE_TIME_FORMAT,
+} from "@/src/utils/consts";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
@@ -18,7 +21,11 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DateTimePicker, renderTimeViewClock } from "@mui/x-date-pickers";
+import {
+  DatePicker,
+  DateTimePicker,
+  renderTimeViewClock,
+} from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
@@ -140,7 +147,7 @@ export default function FilterBar({
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2} lg={2}>
-          <DateTimePicker
+          <DatePicker
             slotProps={{
               textField: {
                 fullWidth: true,
@@ -157,13 +164,8 @@ export default function FilterBar({
                 actions: ["clear"],
               },
             }}
-            label="Date Time From"
+            label="Date From"
             value={filters.gt_created_at ? dayjs(filters.gt_created_at) : null}
-            viewRenderers={{
-              hours: renderTimeViewClock,
-              minutes: renderTimeViewClock,
-              seconds: renderTimeViewClock,
-            }}
             formatDensity="spacious"
             onChange={(newValue) => {
               if (!newValue) {
@@ -178,20 +180,18 @@ export default function FilterBar({
                 setFilters((prev) => {
                   return {
                     ...prev,
-                    gt_created_at: dayjs(newValue).format(
-                      FORM_DATE_TIME_TZ_FORMAT
-                    ),
+                    gt_created_at: dayjs(newValue).format(ISO_DATE_TIME_FORMAT),
                   };
                 });
               }
             }}
-            maxDateTime={
+            maxDate={
               filters.lt_created_at ? dayjs(filters.lt_created_at) : dayjs()
             }
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2} lg={2}>
-          <DateTimePicker
+          <DatePicker
             slotProps={{
               textField: {
                 fullWidth: true,
@@ -208,7 +208,7 @@ export default function FilterBar({
                 actions: ["clear"],
               },
             }}
-            label="Date Time To"
+            label="Date To"
             value={filters.lt_created_at ? dayjs(filters.lt_created_at) : null}
             onChange={(newValue) => {
               if (!newValue) {
@@ -223,21 +223,14 @@ export default function FilterBar({
                 setFilters((prev) => {
                   return {
                     ...prev,
-                    lt_created_at: dayjs(newValue).format(
-                      FORM_DATE_TIME_TZ_FORMAT
-                    ),
+                    lt_created_at: dayjs(newValue).format(ISO_DATE_TIME_FORMAT),
                   };
                 });
               }
             }}
-            maxDateTime={dayjs()}
-            viewRenderers={{
-              hours: renderTimeViewClock,
-              minutes: renderTimeViewClock,
-              seconds: renderTimeViewClock,
-            }}
+            maxDate={dayjs()}
             formatDensity="spacious"
-            minDateTime={
+            minDate={
               filters.gt_created_at ? dayjs(filters.gt_created_at) : null
             }
           />
@@ -254,6 +247,23 @@ export default function FilterBar({
             alignItems: "center",
           }}
         >
+          <Button
+            variant="contained"
+            sx={{
+              mr: 1,
+            }}
+            color="secondary"
+            onClick={() => {
+              setFilters({
+                ...filters,
+                metric: [],
+                gt_created_at: undefined,
+                lt_created_at: undefined,
+              });
+            }}
+          >
+            Clear Filters
+          </Button>
           <Button
             onClick={() => {
               handleShowOrderItemDetails();
