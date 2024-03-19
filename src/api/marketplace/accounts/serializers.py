@@ -388,3 +388,7 @@ class WalletNonceSerializer(serializers.ModelSerializer):
 
 class CreateBookmarkSerializer(serializers.Serializer):
     target_user = serializers.UUIDField()
+
+
+class TwitterPromotionSerializer(serializers.Serializer):
+    text = serializers.CharField(max_length=280)
