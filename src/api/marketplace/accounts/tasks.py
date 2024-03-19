@@ -45,7 +45,6 @@ def updateAccessTokens():
             if old_token["refresh_token"]:
                 logger.info(
                     f"Refreshing token for TwitterAccount {twitter_account.id}, {twitter_account.user_name}")
-                logger.info(f"Scope: {TWITTER_SCOPES}")
                 # Use your OAuth2UserHandler to refresh the token
                 try:
                     new_token = oauth2_user_handler.refresh_token(
@@ -55,6 +54,10 @@ def updateAccessTokens():
                     logger.error(
                         f"Error refreshing token for {twitter_account.id}, {twitter_account.user_name}: {e}")
                     continue
+                logger.info(
+                    f"New Access token for {twitter_account.id}, {twitter_account.user_name}: {new_token['access_token']}")
+                logger.info(
+                    f"New Refresh token for {twitter_account.id}, {twitter_account.user_name}: {new_token['refresh_token']}")
 
                 # Update the TwitterAccount model with the new tokens
                 twitter_account.access_token = new_token["access_token"]

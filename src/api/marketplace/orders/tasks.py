@@ -514,7 +514,7 @@ def store_order_item_metrics():
     )
     for order_item in order_items:
         # Calculate the number of days since the order item was published
-        days_since_published = (now - order_item.published_date).days
+        days_since_published = (now - order_item.publish_date).days
 
         # Check if the current day is the 1st, 2nd, 3rd, 7th, 14th, 21st, or 28th day since the order item was published
         if days_since_published in [1, 2, 3, 7, 14, 21, 28]:
