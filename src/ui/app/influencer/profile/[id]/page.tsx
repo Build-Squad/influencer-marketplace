@@ -16,6 +16,7 @@ import {
 import {
   DISPLAY_DATE_FORMAT,
   EMAIL_PRIVACY_TEXT,
+  ROLE_NAME,
   TWITTER_PROMOTION_TEXT,
   XFLUENCER_PROMOTION_TEXT,
 } from "@/src/utils/consts";
@@ -434,7 +435,9 @@ const ProfileLayout = ({
                       )}
                       {currentUser?.twitter_account?.is_bookmarked !== null &&
                         currentUser?.twitter_account?.is_bookmarked !==
-                          undefined && (
+                          undefined &&
+                        loggedInUser?.role?.name ===
+                          ROLE_NAME.BUSINESS_OWNER && (
                           <Tooltip
                             title={
                               currentUser?.twitter_account?.is_bookmarked
