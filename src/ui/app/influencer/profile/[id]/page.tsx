@@ -13,7 +13,12 @@ import {
   postService,
   putService,
 } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, EMAIL_PRIVACY_TEXT } from "@/src/utils/consts";
+import {
+  DISPLAY_DATE_FORMAT,
+  EMAIL_PRIVACY_TEXT,
+  TWITTER_PROMOTION_TEXT,
+  XFLUENCER_PROMOTION_TEXT,
+} from "@/src/utils/consts";
 import { stringToColor } from "@/src/utils/helper";
 import EditIcon from "@mui/icons-material/Edit";
 import StarIcon from "@mui/icons-material/Star";
@@ -22,6 +27,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Grid,
   IconButton,
   Link,
@@ -65,6 +71,9 @@ const ProfileLayout = ({
     id: string;
   };
 }) => {
+  const [twitterPromotionText, setTwitterPromotionText] = React.useState(
+    XFLUENCER_PROMOTION_TEXT
+  );
   const router = useRouter();
   const loggedInUser = useAppSelector((state) => state.user?.user);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
@@ -76,6 +85,8 @@ const ProfileLayout = ({
   const [userRegion, setUserRegion] = React.useState<RegionType>();
   const [editibleBio, setEditibleBio] = React.useState<string>("");
   const [emailOpen, setEmailOpen] = React.useState<boolean>(false);
+  const [promotionLoading, setPromotionLoading] =
+    React.useState<boolean>(false);
 
   useEffect(() => {
     if (params.id) {
@@ -127,6 +138,7 @@ const ProfileLayout = ({
     );
     if (isSuccess) {
       setCurrentUser(data?.data);
+      // TODO: Add the referral link to the twitterPromotionText and set it to the state
     } else {
       notification(message ? message : "Error fetching user details", "error");
     }
@@ -245,6 +257,26 @@ const ProfileLayout = ({
       } else {
         addBookmark(currentUser?.id);
       }
+    }
+  };
+
+  const promoteOnTwitter = async () => {
+    try {
+      setPromotionLoading(true);
+      const { isSuccess, data, message } = await postService(
+        `/account/promote-xfluencer/`,
+        {
+          text: twitterPromotionText,
+        }
+      );
+      if (isSuccess) {
+        notification(message);
+        setCurrentUser(data?.data);
+      } else {
+        notification(message, "error");
+      }
+    } finally {
+      setPromotionLoading(false);
     }
   };
 
@@ -701,6 +733,106 @@ const ProfileLayout = ({
                                 }}
                               />
                             )
+                          )}
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            my: 2,
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                          >
+                            Share About Xfluencer
+                          </Typography>
+                        </Box>
+
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {currentUser?.promoted_tweet_id ? (
+                            <Link
+                              href={`https://x.com/${currentUser?.twitter_account?.user_name}/status/${currentUser?.promoted_tweet_id}`}
+                              target="_blank"
+                              component={NextLink}
+                              sx={{
+                                width: "100%",
+                              }}
+                            >
+                              <Button
+                                variant="outlined"
+                                color="secondary"
+                                sx={{
+                                  background:
+                                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                                  color: "black",
+                                  border: "1px solid black",
+                                  borderRadius: "20px",
+                                }}
+                                fullWidth
+                              >
+                                View Post On X
+                              </Button>
+                            </Link>
+                          ) : (
+                            <>
+                              <TextField
+                                size="small"
+                                fullWidth
+                                multiline
+                                color="secondary"
+                                sx={{
+                                  ".MuiOutlinedInput-notchedOutline": {
+                                    border: "1px solid black",
+                                    borderRadius: "24px",
+                                  },
+                                }}
+                                disabled
+                                value={twitterPromotionText}
+                              />
+                              <Button
+                                variant="outlined"
+                                color="secondary"
+                                sx={{
+                                  my: 2,
+                                  background:
+                                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                                  color: "black",
+                                  border: "1px solid black",
+                                  borderRadius: "20px",
+                                }}
+                                fullWidth
+                                onClick={promoteOnTwitter}
+                                disabled={promotionLoading}
+                              >
+                                {promotionLoading ? (
+                                  <CircularProgress
+                                    size={24}
+                                    color="secondary"
+                                  />
+                                ) : (
+                                  "Post On X"
+                                )}
+                              </Button>
+                              <Typography
+                                sx={{
+                                  fontStyle: "italic",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                {TWITTER_PROMOTION_TEXT}
+                              </Typography>
+                            </>
                           )}
                         </Box>
                       </Box>
