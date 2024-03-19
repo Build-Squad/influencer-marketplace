@@ -14,6 +14,7 @@ from .views import (
     CategoryMasterDetail,
     AccountCategoryList,
     AccountCategoryDetail,
+    TwitterPromotionView,
     UserList,
     UserDetail,
     BankAccountList,
@@ -90,4 +91,7 @@ urlpatterns = [
     path("bookmarks/", BookmarkView.as_view(), name="bookmarks"),
     path("bookmarks/<uuid:pk>/", BookmarkDetailView.as_view(),
          name="bookmark-detail"),
+
+    path("promote-xfluencer/", TwitterPromotionView.as_view(),
+         name="promote-xfluencer"),
 ]

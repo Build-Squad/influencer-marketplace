@@ -39,7 +39,7 @@ export default function Banner({}: Props) {
             sx={{ marginTop: "8px", lineHeight: "60px" }}
           >
             Tweet Smarter, Not Harder
-            <br /> Make money with Targeted Promos!
+            <br /> Make Money with Targeted Promos!
           </Typography>
           {user?.loggedIn ? null : (
             <Button
@@ -69,16 +69,18 @@ export default function Banner({}: Props) {
               marginBottom: "40px",
             }}
           >
-            {["Post", "Repost", "Thread"].map((it, index) => (
-              <Button
-                key={it}
-                color="secondary"
-                variant="outlined"
-                sx={{ borderRadius: "16px", fontSize: "16px", paddingY: "0" }}
-              >
-                {it}
-              </Button>
-            ))}
+            {["Post", "Repost", "Thread", "Poll", "Reply", "Quote", "Like"].map(
+              (it, index) => (
+                <Button
+                  key={it}
+                  color="secondary"
+                  variant="outlined"
+                  sx={{ borderRadius: "16px", fontSize: "16px", paddingY: "0" }}
+                >
+                  {it}
+                </Button>
+              )
+            )}
           </Box>
         </Grid>
         <Grid item xs={12} sm={7} md={7} lg={7} sx={{ position: "relative" }}>

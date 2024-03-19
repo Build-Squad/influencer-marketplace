@@ -154,6 +154,12 @@ export const CHECKOUT_TEXT =
 export const EMAIL_PRIVACY_TEXT =
   "* Your email will not be shared or visible to anyone. It will only be used for communication purposes.";
 
+export const TWITTER_PROMOTION_TEXT =
+  "* Xfluencer will publish this promotion post on your X account. The post will be visible to your followers and the public.";
+
+export const XFLUENCER_PROMOTION_TEXT =
+  "Hi I've just signed up for XFluencer, an incredible platform connecting influencers and businesses like never before. Please find my referral code: ";
+
 export const IDL: Xfluencer = {
   version: "0.1.0",
   name: "xfluencer",

@@ -28,6 +28,19 @@ const styles = {
   },
 };
 
+const socialCards = [
+  {
+    icon: X,
+    alt: "X",
+    url: "https://x.com/xfluencermarket",
+  },
+  {
+    icon: LinkedIn,
+    alt: "LinkedIn",
+    url: "https://www.linkedin.com/company/xfluencer/",
+  },
+];
+
 const Footer = () => {
   return (
     <Grid container justifyContent="space-between" sx={styles.container}>
@@ -62,28 +75,26 @@ const Footer = () => {
         <Typography sx={styles.accountLinks} variant="h6">
           Contact
         </Typography>
+        {["info@xfluencer.io"].map((link) => (
+          <Typography key={link}>{link}</Typography>
+        ))}
+        <Typography>Follow us on social media</Typography>
 
-        <Typography sx={{ mt: 2 }}>Follow us on social media</Typography>
-
-        <Box sx={{ mb: 2, display: "flex", columnGap: "4px" }}>
-          {[X].map((icon, index) => (
+        <Box sx={{ display: "flex", columnGap: "4px" }}>
+          {socialCards.map((card, index) => (
             <Image
               key={index}
-              src={icon}
+              src={card.icon}
               height={30}
               width={30}
               alt={`Social Icon ${index + 1}`}
               style={{ cursor: "pointer" }}
               onClick={() => {
-                window.open("https://twitter.com/xfluencermarket", "_blank");
+                window.open(card.url, "_blank");
               }}
             />
           ))}
         </Box>
-
-        {["help@xfluencer.io"].map((link) => (
-          <Typography key={link}>{link}</Typography>
-        ))}
       </Grid>
     </Grid>
   );

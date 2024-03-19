@@ -14,7 +14,7 @@ const WORKING_STEPS = [
   {
     id: "STEP_2",
     imageUrl: require("@/public/svg/Step3.svg"),
-    description: "Choose Service Send Offers",
+    description: "Choose Service & Send Offers",
   },
   {
     id: "STEP_3",
