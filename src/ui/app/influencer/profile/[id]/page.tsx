@@ -735,106 +735,110 @@ const ProfileLayout = ({
                             )
                           )}
                         </Box>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            alignItems: "center",
-                            my: 2,
-                          }}
-                        >
-                          <Typography
-                            sx={{
-                              fontWeight: "bold",
-                            }}
-                          >
-                            Share About Xfluencer
-                          </Typography>
-                        </Box>
-
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {currentUser?.promoted_tweet_id ? (
-                            <Link
-                              href={`https://x.com/${currentUser?.twitter_account?.user_name}/status/${currentUser?.promoted_tweet_id}`}
-                              target="_blank"
-                              component={NextLink}
+                        {currentUser?.id === loggedInUser?.id && (
+                          <>
+                            <Box
                               sx={{
-                                width: "100%",
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                my: 2,
                               }}
                             >
-                              <Button
-                                variant="outlined"
-                                color="secondary"
-                                sx={{
-                                  background:
-                                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                                  color: "black",
-                                  border: "1px solid black",
-                                  borderRadius: "20px",
-                                }}
-                                fullWidth
-                              >
-                                View Post On X
-                              </Button>
-                            </Link>
-                          ) : (
-                            <>
-                              <TextField
-                                size="small"
-                                fullWidth
-                                multiline
-                                color="secondary"
-                                sx={{
-                                  ".MuiOutlinedInput-notchedOutline": {
-                                    border: "1px solid black",
-                                    borderRadius: "24px",
-                                  },
-                                }}
-                                disabled
-                                value={twitterPromotionText}
-                              />
-                              <Button
-                                variant="outlined"
-                                color="secondary"
-                                sx={{
-                                  my: 2,
-                                  background:
-                                    "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
-                                  color: "black",
-                                  border: "1px solid black",
-                                  borderRadius: "20px",
-                                }}
-                                fullWidth
-                                onClick={promoteOnTwitter}
-                                disabled={promotionLoading}
-                              >
-                                {promotionLoading ? (
-                                  <CircularProgress
-                                    size={24}
-                                    color="secondary"
-                                  />
-                                ) : (
-                                  "Post On X"
-                                )}
-                              </Button>
                               <Typography
                                 sx={{
-                                  fontStyle: "italic",
-                                  fontSize: "12px",
+                                  fontWeight: "bold",
                                 }}
                               >
-                                {TWITTER_PROMOTION_TEXT}
+                                Share About Xfluencer
                               </Typography>
-                            </>
-                          )}
-                        </Box>
+                            </Box>
+
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {currentUser?.promoted_tweet_id ? (
+                                <Link
+                                  href={`https://x.com/${currentUser?.twitter_account?.user_name}/status/${currentUser?.promoted_tweet_id}`}
+                                  target="_blank"
+                                  component={NextLink}
+                                  sx={{
+                                    width: "100%",
+                                  }}
+                                >
+                                  <Button
+                                    variant="outlined"
+                                    color="secondary"
+                                    sx={{
+                                      background:
+                                        "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                                      color: "black",
+                                      border: "1px solid black",
+                                      borderRadius: "20px",
+                                    }}
+                                    fullWidth
+                                  >
+                                    View Post On X
+                                  </Button>
+                                </Link>
+                              ) : (
+                                <>
+                                  <TextField
+                                    size="small"
+                                    fullWidth
+                                    multiline
+                                    color="secondary"
+                                    sx={{
+                                      ".MuiOutlinedInput-notchedOutline": {
+                                        border: "1px solid black",
+                                        borderRadius: "24px",
+                                      },
+                                    }}
+                                    disabled
+                                    value={twitterPromotionText}
+                                  />
+                                  <Button
+                                    variant="outlined"
+                                    color="secondary"
+                                    sx={{
+                                      my: 2,
+                                      background:
+                                        "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",
+                                      color: "black",
+                                      border: "1px solid black",
+                                      borderRadius: "20px",
+                                    }}
+                                    fullWidth
+                                    onClick={promoteOnTwitter}
+                                    disabled={promotionLoading}
+                                  >
+                                    {promotionLoading ? (
+                                      <CircularProgress
+                                        size={24}
+                                        color="secondary"
+                                      />
+                                    ) : (
+                                      "Post On X"
+                                    )}
+                                  </Button>
+                                  <Typography
+                                    sx={{
+                                      fontStyle: "italic",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    {TWITTER_PROMOTION_TEXT}
+                                  </Typography>
+                                </>
+                              )}
+                            </Box>
+                          </>
+                        )}
                       </Box>
                     </Box>
                   </Box>
