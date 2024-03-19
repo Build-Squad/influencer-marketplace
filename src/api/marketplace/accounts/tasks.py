@@ -43,13 +43,17 @@ def updateAccessTokens():
             }
 
             if old_token["refresh_token"]:
+                logger.info(
+                    f"Refreshing token for TwitterAccount {twitter_account.id}, {twitter_account.user_name}")
+                logger.info(f"Scope: {TWITTER_SCOPES}")
                 # Use your OAuth2UserHandler to refresh the token
                 try:
                     new_token = oauth2_user_handler.refresh_token(
                         old_token["refresh_token"]
                     )
                 except Exception as e:
-                    logger.error(f"Error refreshing token: {e}")
+                    logger.error(
+                        f"Error refreshing token for {twitter_account.id}, {twitter_account.user_name}: {e}")
                     continue
 
                 # Update the TwitterAccount model with the new tokens
@@ -57,9 +61,11 @@ def updateAccessTokens():
                 twitter_account.refresh_token = new_token["refresh_token"]
                 twitter_account.save()
 
-                logger.info(f"Updated tokens for TwitterAccount {twitter_account.id}")
+                logger.info(
+                    f"Updated tokens for TwitterAccount {twitter_account.id}, {twitter_account.user_name}")
             else:
-                logger.error(f"Refresh token for {twitter_account.id} not present")
+                logger.error(
+                    f"Refresh token for {twitter_account.id}, {twitter_account.user_name} not present")
     except Exception as e:
         logger.error(f"Error updating tokens: {e}")
 
