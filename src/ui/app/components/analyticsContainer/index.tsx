@@ -33,7 +33,7 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     },
     data3: {
       value: "238 M",
-      subtitle: "Monthly Active Users (mAU)",
+      subtitle: "Monthly Active Users (MAU)",
     },
     data4: {
       value: "79 %",
