@@ -14,6 +14,8 @@ from decouple import config
 
 from celery import shared_task
 
+from celery_once import QueueOnce
+
 logger = logging.getLogger(__name__)
 
 CONSUMER_KEY = config("CONSUMER_KEY")
@@ -22,7 +24,8 @@ ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 VALIDATOR_KEY_PATH = config("VALIDATOR_KEY_PATH")
 
-@celery_app.task()
+
+@celery_app.task(base=QueueOnce, once={'graceful': True})
 def updateAccessTokens():
     try:
         oauth2_user_handler = CustomOAuth2UserHandler(
@@ -41,9 +44,13 @@ def updateAccessTokens():
 
             if old_token["refresh_token"]:
                 # Use your OAuth2UserHandler to refresh the token
-                new_token = oauth2_user_handler.refresh_token(
-                    old_token["refresh_token"]
-                )
+                try:
+                    new_token = oauth2_user_handler.refresh_token(
+                        old_token["refresh_token"]
+                    )
+                except Exception as e:
+                    logger.error(f"Error refreshing token: {e}")
+                    continue
 
                 # Update the TwitterAccount model with the new tokens
                 twitter_account.access_token = new_token["access_token"]
@@ -54,7 +61,7 @@ def updateAccessTokens():
             else:
                 logger.error(f"Refresh token for {twitter_account.id} not present")
     except Exception as e:
-        raise e
+        logger.error(f"Error updating tokens: {e}")
 
 
 @shared_task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 3, 'countdown': 10})
