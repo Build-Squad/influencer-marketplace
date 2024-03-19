@@ -74,7 +74,7 @@ export default function InfluencersContainer({}: Props) {
   return (
     <>
       <Typography variant="h5" fontWeight="bold">
-        Explore by Category
+        Explore By Category
       </Typography>
       <Typography
         variant="subtitle1"
@@ -82,7 +82,7 @@ export default function InfluencersContainer({}: Props) {
           color: "#505050",
         }}
       >
-        Find the right influencers for your needs.
+        Find the right influencers for your needs
       </Typography>
       <Grid container mt={3} justifyContent="center" alignItems="center">
         <Grid item>
