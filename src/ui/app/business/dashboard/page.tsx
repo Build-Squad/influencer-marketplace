@@ -36,6 +36,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import {
   Box,
+  CircularProgress,
   Grid,
   IconButton,
   Link,
@@ -55,6 +56,7 @@ import dayjs from "dayjs";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { closeSnackbar, enqueueSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 
 const tabs = [
@@ -79,6 +81,7 @@ export default function BusinessDashboardPage() {
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItemType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
       ORDER_STATUS.ACCEPTED,
@@ -180,23 +183,40 @@ export default function BusinessDashboardPage() {
     }
   };
 
-  const cancelOrder = async (id: string) => {
-    const { isSuccess, data, message } = await putService(
-      `/orders/cancel-order/${id}/`,
-      {}
-    );
-    if (isSuccess) {
-      notification(
-        "Order cancellation request sent successfully, please wait for confirmation",
-        "success",
-        5000
+  const cancelOrder = async (order: OrderType) => {
+    try {
+      setCancelLoading(true);
+      const action = () => (
+        <>
+          <CircularProgress color="inherit" size={20} />
+        </>
       );
-      getOrders();
-    } else {
-      notification(
-        message ? message : "Something went wrong, couldn't cancel order",
-        "error"
+      const cancellationNotification = enqueueSnackbar(
+        `Cancelling ${order?.order_code}, please wait for confirmation`,
+        {
+          variant: "default",
+          persist: true,
+          action,
+        }
       );
+      const { isSuccess, message } = await putService(
+        `/orders/cancel-order/${order?.id}/`,
+        {}
+      );
+      if (isSuccess) {
+        closeSnackbar(cancellationNotification);
+        notification("Order cancelled successfully", "success");
+        getOrders();
+      } else {
+        closeSnackbar(cancellationNotification);
+        notification(
+          message ? message : "Something went wrong, couldn't cancel order",
+          "error",
+          3000
+        );
+      }
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -674,7 +694,7 @@ export default function BusinessDashboardPage() {
               ).length === 0 && (
                 <ConfirmCancel
                   onConfirm={() => {
-                    cancelOrder(params?.row?.id);
+                    cancelOrder(params?.row);
                   }}
                   deleteElement={
                     <HighlightOffIcon color="secondary" sx={{ mt: 1 }} />

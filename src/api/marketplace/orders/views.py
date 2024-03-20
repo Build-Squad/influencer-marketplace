@@ -685,19 +685,38 @@ class CancelOrderView(APIView):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                     else:
-                        pass
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Order cancellation failed",
+                                "data": None,
+                                "errors": "Order cancellation failed",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
             # Create an on chain transaction
             else:
                 self.create_on_chain_transaction(order)
-            cancel_escrow.apply_async(args=[pk, order_status])
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": None,
-                    "message": "Order cancellation initiated successfully",
-                },
-                status=status.HTTP_200_OK,
-            )
+            res = cancel_escrow(pk, order_status)
+            if res: 
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Order cancelled successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Order cancellation failed",
+                        "data": None,
+                        "errors": "Order cancellation failed",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         except Exception as e:
             return handleServerException(e)
 
