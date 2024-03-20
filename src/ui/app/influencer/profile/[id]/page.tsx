@@ -127,8 +127,8 @@ const ProfileLayout = ({
           </Typography>
         </Box>
       ),
-      target: ".joyride-create-service-tab",
-      placement: "top",
+      target: ".joyride-wallet-table",
+      placement: "right",
     },
     {
       content: (

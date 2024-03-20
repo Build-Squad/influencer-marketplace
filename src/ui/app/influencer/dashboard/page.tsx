@@ -51,6 +51,9 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
 
 const tabs = [
   {
@@ -126,6 +129,129 @@ export default function BusinessDashboardPage() {
   });
   const [selectedTab, setSelectedTab] = React.useState<number>(0);
 
+  // User Guide only for the order's tab for the very first order. And if there are no orders only show the first step
+  const [stepIndex, setStepIndex] = useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Manage your orders here!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            This tour will help you manage your order accurately once you've an
+            order. The options would include editing the orders, claiming the
+            payouts, view your ratings, and many more.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Categorise your orders.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click on the status you wanna view your orders for.
+          </Typography>
+        </Box>
+      ),
+      placement: "bottom",
+      target: ".joyride-tabs",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Customized filters.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Advanced filters for data based on the services, date, order ID, and
+            businesses.
+          </Typography>
+        </Box>
+      ),
+      placement: "bottom",
+      target: ".joyride-dashboard-filters",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Take actions.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Hover the actions to see what it does and click to do the action.
+            Actions include claiming funds, viewing order details and editing
+            them.
+          </Typography>
+        </Box>
+      ),
+      placement: "bottom",
+      target: ".joyride-actions-column",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Review by businesses.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click the stars (if there's any) to see what the businesses have to
+            say about your work.
+          </Typography>
+        </Box>
+      ),
+      placement: "bottom",
+      target: ".joyride-review-column",
+    },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completing your dashboard tour, you're good to go to manage
+            your orders and analyse your performance.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+  ]);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
+    }
+  };
+
   const schedulePost = async (id: string, action: string) => {
     try {
       const { isSuccess, data, message } = await postService(
@@ -146,6 +272,33 @@ export default function BusinessDashboardPage() {
         );
       }
     } finally {
+    }
+  };
+
+  const handleUserInteraction = async () => {
+    try {
+      setLoading(true);
+      const { isSuccess, data, message } = await postService(
+        `orders/order-list/`,
+        {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          status: [
+            ORDER_STATUS.ACCEPTED,
+            ORDER_STATUS.REJECTED,
+            ORDER_STATUS.COMPLETED,
+            ORDER_STATUS.CANCELLED,
+          ],
+          order_by: "upcoming",
+        }
+      );
+      if (isSuccess) {
+        if (data?.data?.orders?.length == 1) {
+          setRun(true);
+        }
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -645,6 +798,7 @@ export default function BusinessDashboardPage() {
               justifyContent: "center",
               alignItems: "center",
             }}
+            className="joyride-actions-column"
           >
             <Tooltip
               title="View Order Details"
@@ -784,6 +938,7 @@ export default function BusinessDashboardPage() {
                   sx={{
                     cursor: "pointer",
                   }}
+                  className="joyride-review-column"
                 >
                   <Rating
                     name="read-only"
@@ -982,6 +1137,10 @@ export default function BusinessDashboardPage() {
   ];
 
   useEffect(() => {
+    handleUserInteraction();
+  }, []);
+
+  useEffect(() => {
     const tab = searchParams.get("tab");
     const _selectedTab = tabs.find((_tab) => _tab.key === tab);
     if (_selectedTab) setSelectedTab(_selectedTab?.value);
@@ -1048,49 +1207,77 @@ export default function BusinessDashboardPage() {
               mb: 2,
             }}
           >
-            <Image
-              src={BackIcon}
-              alt={"BackIcon"}
-              height={30}
-              style={{
-                marginTop: "8px",
-                marginBottom: "8px",
+            <Box sx={{ flex: 1 }}>
+              <Image
+                src={BackIcon}
+                alt={"BackIcon"}
+                height={30}
+                style={{
+                  marginTop: "8px",
+                  marginBottom: "8px",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  router.back();
+                }}
+              />
+            </Box>
+
+            <Box sx={{ display: "flex", justifyContent: "center", flex: 2 }}>
+              <Tabs
+                value={selectedTab}
+                onChange={(event, newValue) => {
+                  setSelectedTab(newValue);
+                  router.push(
+                    tabs.find((tab) => tab.value === newValue)?.route!
+                  );
+                }}
+              >
+                {tabs.map((tab, index) => {
+                  return (
+                    <Tab
+                      key={index}
+                      label={tab.title}
+                      value={tab.value}
+                      sx={{
+                        color:
+                          selectedTab === tab.value ? "#0099FF" : "#000000",
+                        fontSize: "16px",
+                        lineHeight: "19px",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                      }}
+                    />
+                  );
+                })}
+              </Tabs>
+            </Box>
+
+            <Box
+              sx={{
+                flex: 1,
+                mr: 4,
+                color: "grey",
                 cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                columnGap: "4px",
+                visibility: selectedTab == 0 ? "visible" : "hidden",
               }}
               onClick={() => {
-                router.back();
-              }}
-            />
-            <Tabs
-              value={selectedTab}
-              onChange={(event, newValue) => {
-                setSelectedTab(newValue);
-                router.push(tabs.find((tab) => tab.value === newValue)?.route!);
+                setStepIndex(0);
+                setRun(true);
               }}
             >
-              {tabs.map((tab, index) => {
-                return (
-                  <Tab
-                    key={index}
-                    label={tab.title}
-                    value={tab.value}
-                    sx={{
-                      color: selectedTab === tab.value ? "#0099FF" : "#000000",
-                      fontSize: "16px",
-                      lineHeight: "19px",
-                      fontWeight: "bold",
-                      textTransform: "none",
-                    }}
-                  />
-                );
-              })}
-            </Tabs>
-            <Box></Box>
+              <DriveEta fontSize="small" />
+              <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+            </Box>
           </Grid>
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} className="joyride-tabs">
               {selectedTab === 0 ? (
                 <>
                   {statusCards.map((card, index) => {
@@ -1229,6 +1416,24 @@ export default function BusinessDashboardPage() {
           setOpen={setOpenReviewModal}
           readonly={true}
         />
+        {selectedTab == 0 ? (
+          <Joyride
+            callback={handleJoyrideCallback}
+            continuous
+            stepIndex={stepIndex}
+            run={run}
+            scrollToFirstStep
+            showSkipButton
+            steps={steps}
+            spotlightClicks
+            styles={{
+              options: {
+                zIndex: 2,
+              },
+            }}
+            locale={{ last: "Finish" }}
+          />
+        ) : null}
       </Box>
     </RouteProtection>
   );
