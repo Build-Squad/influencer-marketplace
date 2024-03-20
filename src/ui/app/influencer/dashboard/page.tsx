@@ -294,6 +294,7 @@ export default function BusinessDashboardPage() {
       );
       if (isSuccess) {
         if (data?.data?.orders?.length == 1) {
+          setStepIndex(0);
           setRun(true);
         }
       }
