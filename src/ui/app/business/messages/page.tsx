@@ -39,7 +39,7 @@ export default function BusinessMessages() {
     ],
   });
 
-  // User Guide for the vwey first order
+  // User Guide for the very first order
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState<any>([
@@ -88,7 +88,7 @@ export default function BusinessMessages() {
             Influencer's List.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Click on the influncer to chat with them and
+            Click on the influencer to chat with them and
             have a discussion about the order.
           </Typography>
         </Box>
