@@ -1,15 +1,16 @@
+import { getService, putService } from "@/src/services/httpServices";
+import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import { Box, Button, FormLabel, Grid, Link, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import React, { useEffect, useState } from "react";
-import CustomModal from "../../shared/customModal";
-import { getService, putService } from "@/src/services/httpServices";
-import { notification } from "../../shared/notification";
-import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
-import { Grid, Typography, Box, FormLabel, Button, Link } from "@mui/material";
 import dayjs from "dayjs";
-import OrderItemForm from "../../checkoutComponents/orderItemForm";
-import StatusChip from "../../shared/statusChip";
 import NextLink from "next/link";
+import React, { useEffect, useState } from "react";
+import OrderItemForm from "../../checkoutComponents/orderItemForm";
+import CustomModal from "../../shared/customModal";
+import { notification } from "../../shared/notification";
+import StatusChip from "../../shared/statusChip";
+import OrderSummaryDetails from "../orderSummaryDetails";
 
 type UpdateOrderProps = {
   order_id: string;
@@ -46,6 +47,23 @@ export default function UpdateOrder({
   const validateMetaDataValues = () => {
     let isValid = true;
     order?.order_item_order_id?.forEach((orderItem) => {
+      if (!orderItem?.publish_date) {
+        notification("Please select a publish date", "error", 3000);
+        isValid = false;
+      }
+      if (orderItem?.publish_date) {
+        // Make sure that publish_date is atleast 30 minutes from now that is if current time is 12:00 then publish_date should be atleast 12:30
+        const publishDate = dayjs(orderItem?.publish_date);
+        const _30MinutesLater = dayjs().add(30, "minutes");
+        if (publishDate.isBefore(_30MinutesLater)) {
+          notification(
+            "Please select a publish date atleast 30 minutes from now",
+            "error",
+            3000
+          );
+          isValid = false;
+        }
+      }
       orderItem?.order_item_meta_data?.forEach((metaData) => {
         if (metaData.regex && metaData?.value) {
           const regex = new RegExp(metaData.regex);
@@ -204,7 +222,7 @@ export default function UpdateOrder({
                 my: 2,
               }}
             >
-              Edit Order Details: {order?.order_code}
+              Order Details: {order?.order_code}
             </Typography>
             {order && (
               <Box
@@ -255,55 +273,68 @@ export default function UpdateOrder({
                 </Grid>
               </Box>
             )}
-            {order?.order_item_order_id?.map(
-              (orderItem: any, index: number) => {
-                return (
-                  <OrderItemForm
-                    key={index}
-                    orderItem={{
-                      order_item: orderItem,
-                      index: index,
-                    }}
-                    index={index}
-                    disableDelete={true}
-                    updateFunction={updateOrderItemMetaData}
-                    sx={{
-                      my: 2,
-                    }}
-                    updateOrderItemPublishDate={updatePublishDate}
-                  />
-                );
-              }
-            )}
-            <Grid item xs={12}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  alignItems: "center",
-                }}
-              >
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  sx={{
-                    p: 1,
-                    mt: 1,
-                    borderRadius: 8,
-                    minWidth: 100,
-                  }}
-                  onClick={() => {
-                    if (!validateMetaDataValues()) {
-                      return;
-                    }
-                    updateOrder();
-                  }}
-                  disabled={loading}
-                >
-                  {loading ? "Saving..." : "Save"}
-                </Button>
+            {order?.status === ORDER_STATUS.ACCEPTED ? (
+              <>
+                {order?.order_item_order_id?.map(
+                  (orderItem: any, index: number) => {
+                    return (
+                      <OrderItemForm
+                        key={index}
+                        orderItem={{
+                          order_item: orderItem,
+                          index: index,
+                        }}
+                        index={index}
+                        disableDelete={true}
+                        updateFunction={updateOrderItemMetaData}
+                        sx={{
+                          my: 2,
+                        }}
+                        updateOrderItemPublishDate={updatePublishDate}
+                      />
+                    );
+                  }
+                )}
+              </>
+            ) : (
+              <Box>
+                <OrderSummaryDetails
+                  orderItem={order?.order_item_order_id}
+                  orderStatus={order?.status}
+                />
               </Box>
-            </Grid>
+            )}
+            {order?.status === ORDER_STATUS.ACCEPTED && (
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{
+                      p: 1,
+                      mt: 1,
+                      borderRadius: 8,
+                      minWidth: 100,
+                    }}
+                    onClick={() => {
+                      if (!validateMetaDataValues()) {
+                        return;
+                      }
+                      updateOrder();
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? "Saving..." : "Save"}
+                  </Button>
+                </Box>
+              </Grid>
+            )}
           </Grid>
           <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
         </Grid>
