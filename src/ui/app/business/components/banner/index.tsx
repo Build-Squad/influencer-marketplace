@@ -34,7 +34,8 @@ export default function Banner({}: Props) {
       sx={{
         border: "1px solid #000",
         borderTop: "none",
-        backgroundImage: "url(/Business_Landing_page.png)",
+        backgroundImage:
+          "url('https://xfluencer.s3.eu-west-2.amazonaws.com/static/banner_image_business.png')",
         backgroundSize: "cover",
         display: "flex",
         alignItems: "center",
@@ -161,7 +162,7 @@ export default function Banner({}: Props) {
             mt: 2,
           }}
         >
-          {["Post", "Thread", "Like", "Reply", "Quote a Post"].map(
+          {["Post", "Repost", "Thread", "Poll", "Reply", "Quote", "Like"].map(
             (it: string, ind: number) => {
               return (
                 <Button

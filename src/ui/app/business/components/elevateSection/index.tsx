@@ -1,6 +1,6 @@
 "use client";
 import { Box, Button, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { CheckCircle } from "@mui/icons-material";
 import Article3_Business from "@/public/svg/Article3_Business.svg";
@@ -15,6 +15,28 @@ const TABS = [
 ];
 
 const FirstTabComponent = () => {
+  const [articleImage, setArticleImage] = useState(
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/influencer_article_discover_influencers.png"
+  );
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const images = [
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/influencer_article_discover_influencers.png",
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/influencer_article_discover_influencers2.png",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 2000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    setArticleImage(images[currentIndex]);
+  }, [currentIndex]);
+
   return (
     <>
       <Box sx={{ flex: 1, textAlign: "left" }}>
@@ -51,11 +73,11 @@ const FirstTabComponent = () => {
       </Box>
       <Box sx={{ flex: 1 }}>
         <Image
-          src={Article1_Business}
+          src={articleImage}
           alt=""
-          height={100}
-          width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          width={"952"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Box>
     </>
@@ -93,9 +115,13 @@ const SecondTabComponent = () => {
       </Box>
       <Box sx={{ flex: 1 }}>
         <Image
-          src={Article2_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/collaboration_management.png"
+          }
+          width={"952"}
+          height={"500"}
           alt=""
-          style={{ marginLeft: "8px", width: "100%", height: "50%" }}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Box>
     </>
@@ -133,11 +159,13 @@ const ThirdTabComponent = () => {
       </Box>
       <Box sx={{ flex: 1 }}>
         <Image
-          src={Article3_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graphs_analytics.png"
+          }
           alt=""
-          height={100}
-          width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          width={"952"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Box>
     </>

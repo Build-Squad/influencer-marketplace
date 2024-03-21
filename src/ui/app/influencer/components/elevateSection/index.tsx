@@ -8,7 +8,7 @@ import Article2_Business from "@/public/svg/Article2_Influencer.svg";
 import Article1_Business from "@/public/svg/Article1_Influencer.svg";
 type Props = {};
 
-const TABS = ["Customize Services", "Trustless Payouts", "Escrow System"];
+const TABS = ["Customize Services", "Trustless Payouts", "Scheduling"];
 
 const FirstTabComponent = () => {
   return (
@@ -45,11 +45,13 @@ const FirstTabComponent = () => {
       </Box>
       <Box sx={{ flex: 1 }}>
         <Image
-          src={Article1_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/customize_services.png"
+          }
           alt=""
-          height={100}
-          width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          width={"952"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Box>
     </>
@@ -79,17 +81,24 @@ const SecondTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            By leveraging blockchain technology, we create a trustless
-            environment that prioritizes the security of both influencers and
-            businesses.
+            Leveraging blockchain technology and specifically Solana blockchain
+            - known for its high performance and scalability, utilizing Proof of
+            History (PoH) to timestamp transactions efficiently. Solana boasts
+            remarkable speed and efficiency, processing transactions at a
+            significantly faster rate and with lower fees compared to
+            competitors like Ethereum.
           </Typography>
         </Box>
       </Box>
       <Box sx={{ flex: 1 }}>
         <Image
-          src={Article2_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/blockchain.png"
+          }
           alt=""
-          style={{ marginLeft: "8px", width: "100%", height: "50%" }}
+          width={"952"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Box>
     </>
@@ -101,17 +110,17 @@ const ThirdTabComponent = () => {
     <>
       <Box sx={{ flex: 1, textAlign: "left" }}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Escrow System Integrations
+          Experience Automated Scheduling
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Experience ultimate security with our escrow integrations, ensuring
-            successful payments through smart contracts on the Solana
-            blockchain. Enjoy a streamlined process for transactions, offering
-            unmatched security and reliability for all parties involved.
+            Discover the remarkable convenience of scheduling services
+            effortlessly with a single click. Simply navigate to an order item,
+            review the designated publish time and date, then click the publish
+            button to automatically schedule the service for you.
           </Typography>
         </Box>
 
@@ -120,8 +129,8 @@ const ThirdTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            In case of any need for refunds, our system facilitates a seamless
-            process through smart contracts on the Solana blockchain.
+            With this intuitive feature, managing service schedules has never
+            been easier.
           </Typography>
         </Box>
       </Box>
@@ -131,7 +140,7 @@ const ThirdTabComponent = () => {
           alt=""
           height={100}
           width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Box>
     </>
