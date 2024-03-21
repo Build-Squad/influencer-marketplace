@@ -48,7 +48,7 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
               color: "#676767",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              whiteSpace: "wrap",
             }}
           >
             {meta_data?.value ? meta_data?.value : "N/A"}
@@ -275,10 +275,19 @@ const OrderSummaryDetails = ({
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box sx={{ my: 2 }}>
       {orderItem.map((eachOrderItem: any, index: number) => {
         return (
-          <>
+          <Box
+            sx={{
+              borderRadius: 4,
+              backgroundColor: "#ffffff",
+              boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+              width: "100%",
+              p: 2,
+              my: 2,
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
@@ -370,7 +379,7 @@ const OrderSummaryDetails = ({
                 </Button>
               </DialogActions>
             </Dialog>
-          </>
+          </Box>
         );
       })}
     </Box>
