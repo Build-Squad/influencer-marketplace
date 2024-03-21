@@ -47,7 +47,6 @@ NETWORK = config("NETWORK")
 TWEET_FIELDS = ['public_metrics', 'organic_metrics', 'non_public_metrics']
 
 
-@celery_app.task(base=QueueOnce, once={'graceful': True})
 def cancel_escrow(order_id: str, status: str):
     try:
         # Get order and corresponding escrow
@@ -89,8 +88,11 @@ def cancel_escrow(order_id: str, status: str):
         escrow.status = "cancelled"
         escrow.save()
 
+        return True
+
     except Exception as e:
-        raise Exception('Error in cancelling escrow', str(e))
+        logger.error('Error in cancelling escrow: %s', str(e))
+        return False
 
 
 @celery_app.task(base=QueueOnce, once={'graceful': True})

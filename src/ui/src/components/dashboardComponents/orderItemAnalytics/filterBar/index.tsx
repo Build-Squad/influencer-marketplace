@@ -261,6 +261,7 @@ export default function FilterBar({
                 lt_created_at: undefined,
               });
             }}
+            disabled={!count}
           >
             Clear Filters
           </Button>
