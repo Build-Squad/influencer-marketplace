@@ -1,5 +1,5 @@
 "use client";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import React, { useState } from "react";
 import Image from "next/image";
 import { CheckCircle } from "@mui/icons-material";
@@ -8,12 +8,12 @@ import Article2_Business from "@/public/svg/Article2_Influencer.svg";
 import Article1_Business from "@/public/svg/Article1_Influencer.svg";
 type Props = {};
 
-const TABS = ["Customize Services", "Trustless Payouts", "Escrow System"];
+const TABS = ["Customize Services", "Trustless Payouts", "Scheduling"];
 
 const FirstTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Set prices, tailor services, personalize offerings.
         </Typography>
@@ -42,16 +42,18 @@ const FirstTabComponent = () => {
             this service, you position yourself as a valuable asset.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={Article1_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/customize_services.png"
+          }
           alt=""
-          height={100}
-          width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          width={"500"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -59,7 +61,7 @@ const FirstTabComponent = () => {
 const SecondTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Enjoy Trustless Payouts And Enhanced Security
         </Typography>
@@ -79,19 +81,26 @@ const SecondTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            By leveraging blockchain technology, we create a trustless
-            environment that prioritizes the security of both influencers and
-            businesses.
+            Leveraging blockchain technology and specifically Solana blockchain
+            - known for its high performance and scalability, utilizing Proof of
+            History (PoH) to timestamp transactions efficiently. Solana boasts
+            remarkable speed and efficiency, processing transactions at a
+            significantly faster rate and with lower fees compared to
+            competitors like Ethereum.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={Article2_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/blockchain.png"
+          }
           alt=""
-          style={{ marginLeft: "8px", width: "100%", height: "50%" }}
+          width={"952"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -99,19 +108,19 @@ const SecondTabComponent = () => {
 const ThirdTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Escrow System Integrations
+          Experience Automated Scheduling
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Experience ultimate security with our escrow integrations, ensuring
-            successful payments through smart contracts on the Solana
-            blockchain. Enjoy a streamlined process for transactions, offering
-            unmatched security and reliability for all parties involved.
+            Discover the remarkable convenience of scheduling services
+            effortlessly with a single click. Simply navigate to an order item,
+            review the designated publish time and date, then click the publish
+            button to automatically schedule the service for you.
           </Typography>
         </Box>
 
@@ -120,20 +129,20 @@ const ThirdTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            In case of any need for refunds, our system facilitates a seamless
-            process through smart contracts on the Solana blockchain.
+            With this intuitive feature, managing service schedules has never
+            been easier.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
           src={Article3_Business}
           alt=""
           height={100}
           width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -205,22 +214,22 @@ export default function ElevateSection({}: Props) {
           </Box>
         </Box>
       </Box>
-      <Box
+      <Grid
+        container
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
         sx={{
+          padding: "46px 54px",
           mt: 3,
           borderRadius: "16px",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "46px 54px",
-          alignItems: "center",
-          columnGap: "40px",
         }}
       >
         {selectedTab == 0 ? <FirstTabComponent /> : null}
         {selectedTab == 1 ? <SecondTabComponent /> : null}
         {selectedTab == 2 ? <ThirdTabComponent /> : null}
-      </Box>
+      </Grid>
     </>
   );
 }
