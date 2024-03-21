@@ -444,7 +444,7 @@ export default function Orders() {
             <OpenInFull fontSize="medium" sx={{ cursor: "pointer" }} />
           </Box>
           <Divider />
-          <Box sx={{ padding: "20px 40px" }}>
+          <Box sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight={"bold"}>
               Order Summary
             </Typography>
