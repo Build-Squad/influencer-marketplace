@@ -11,7 +11,7 @@ type Props = {};
 
 const CARDS_PER_GROUP = 4;
 
-export default function InfluencersContainer({}: Props) {
+export default function CategoryExplore({}: Props) {
   const [allCategoryMasters, setAllCategoryMasters] = React.useState<
     CategoriesType[]
   >([]);

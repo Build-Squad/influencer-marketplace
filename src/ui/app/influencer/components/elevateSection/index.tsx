@@ -1,5 +1,5 @@
 "use client";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import React, { useState } from "react";
 import Image from "next/image";
 import { CheckCircle } from "@mui/icons-material";
@@ -13,7 +13,7 @@ const TABS = ["Customize Services", "Trustless Payouts", "Scheduling"];
 const FirstTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Set prices, tailor services, personalize offerings.
         </Typography>
@@ -42,18 +42,18 @@ const FirstTabComponent = () => {
             this service, you position yourself as a valuable asset.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
             "https://xfluencer.s3.eu-west-2.amazonaws.com/static/customize_services.png"
           }
           alt=""
-          width={"952"}
+          width={"500"}
           height={"500"}
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -61,7 +61,7 @@ const FirstTabComponent = () => {
 const SecondTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Enjoy Trustless Payouts And Enhanced Security
         </Typography>
@@ -89,8 +89,8 @@ const SecondTabComponent = () => {
             competitors like Ethereum.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
             "https://xfluencer.s3.eu-west-2.amazonaws.com/static/blockchain.png"
@@ -100,7 +100,7 @@ const SecondTabComponent = () => {
           height={"500"}
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -108,7 +108,7 @@ const SecondTabComponent = () => {
 const ThirdTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Experience Automated Scheduling
         </Typography>
@@ -133,8 +133,8 @@ const ThirdTabComponent = () => {
             been easier.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
           src={Article3_Business}
           alt=""
@@ -142,7 +142,7 @@ const ThirdTabComponent = () => {
           width={100}
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -214,22 +214,22 @@ export default function ElevateSection({}: Props) {
           </Box>
         </Box>
       </Box>
-      <Box
+      <Grid
+        container
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
         sx={{
+          padding: "46px 54px",
           mt: 3,
           borderRadius: "16px",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "46px 54px",
-          alignItems: "center",
-          columnGap: "40px",
         }}
       >
         {selectedTab == 0 ? <FirstTabComponent /> : null}
         {selectedTab == 1 ? <SecondTabComponent /> : null}
         {selectedTab == 2 ? <ThirdTabComponent /> : null}
-      </Box>
+      </Grid>
     </>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { CheckCircle } from "@mui/icons-material";
@@ -16,12 +16,12 @@ const TABS = [
 
 const FirstTabComponent = () => {
   const [articleImage, setArticleImage] = useState(
-    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/influencer_article_discover_influencers.png"
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png"
   );
   const [currentIndex, setCurrentIndex] = useState(0);
   const images = [
-    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/influencer_article_discover_influencers.png",
-    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/influencer_article_discover_influencers2.png",
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png",
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards3.png",
   ];
 
   useEffect(() => {
@@ -39,7 +39,7 @@ const FirstTabComponent = () => {
 
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Search the top influencers:
         </Typography>
@@ -70,8 +70,8 @@ const FirstTabComponent = () => {
             with a proven track record on X.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
           src={articleImage}
           alt=""
@@ -79,7 +79,7 @@ const FirstTabComponent = () => {
           height={"500"}
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -87,7 +87,7 @@ const FirstTabComponent = () => {
 const SecondTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Manage your dashboard
         </Typography>
@@ -112,8 +112,8 @@ const SecondTabComponent = () => {
             collaborations seamlessly from initiation to completion.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
             "https://xfluencer.s3.eu-west-2.amazonaws.com/static/collaboration_management.png"
@@ -123,7 +123,7 @@ const SecondTabComponent = () => {
           alt=""
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -131,7 +131,7 @@ const SecondTabComponent = () => {
 const ThirdTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
           Analyse your orders
         </Typography>
@@ -156,8 +156,8 @@ const ThirdTabComponent = () => {
             impactful results.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
             "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graphs_analytics.png"
@@ -167,7 +167,7 @@ const ThirdTabComponent = () => {
           height={"500"}
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -239,22 +239,22 @@ export default function ElevateSection({}: Props) {
           </Box>
         </Box>
       </Box>
-      <Box
+      <Grid
+        container
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
         sx={{
+          padding: "46px 54px",
           mt: 3,
           borderRadius: "16px",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "46px 54px",
-          alignItems: "center",
-          columnGap: "40px",
         }}
       >
         {selectedTab == 0 ? <FirstTabComponent /> : null}
         {selectedTab == 1 ? <SecondTabComponent /> : null}
         {selectedTab == 2 ? <ThirdTabComponent /> : null}
-      </Box>
+      </Grid>
     </>
   );
 }
