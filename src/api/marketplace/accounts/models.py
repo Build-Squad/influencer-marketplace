@@ -85,6 +85,7 @@ class User(AbstractUser):
         choices=LOGIN_METHOD_CHOICES, max_length=25, blank=True, null=True
     )
     ordering = ("email",)
+    promoted_tweet_id = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         db_table = "user"

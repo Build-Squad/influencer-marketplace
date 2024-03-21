@@ -19,6 +19,8 @@ import StarIcon from "@mui/icons-material/Star";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import { deleteService, postService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import { useAppSelector } from "@/src/hooks/useRedux";
+import { ROLE_NAME } from "@/src/utils/consts";
 
 type Props = {
   influencer: TopInfluencersType;
@@ -73,6 +75,7 @@ export default function InfluencersCards({
   sx = {},
   setRefresh,
 }: Props) {
+  const user = useAppSelector((state) => state.user)?.user;
   const removeBookmark = async (id: string) => {
     const { isSuccess, message } = await deleteService(
       `/account/bookmarks/${id}/`
@@ -221,7 +224,8 @@ export default function InfluencersCards({
                 </Box>
               )}
               {influencer?.is_bookmarked !== null &&
-                influencer?.is_bookmarked !== undefined && (
+                influencer?.is_bookmarked !== undefined &&
+                user?.role?.name === ROLE_NAME.BUSINESS_OWNER && (
                   <Tooltip
                     title={
                       influencer?.is_bookmarked

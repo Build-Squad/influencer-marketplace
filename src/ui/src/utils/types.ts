@@ -143,6 +143,7 @@ type UserType = {
     user_account: string;
   };
   login_method: string;
+  promoted_tweet_id?: string | null;
 };
 
 type ServiceCheckOutType = {
