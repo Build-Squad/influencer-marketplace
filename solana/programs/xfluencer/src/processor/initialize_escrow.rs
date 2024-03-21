@@ -20,10 +20,12 @@ pub fn process(ctx: Context<CreateEscrow>, _vault_account_bump: u8,
     ctx.accounts.escrow_account.influencer_receive_token_account = *ctx.accounts.influencer_receive_token_account.to_account_info().key;
     ctx.accounts.escrow_account.validation_authority = *ctx.accounts.validation_authority.key;
     ctx.accounts.escrow_account.amount = amount;
-    ctx.accounts.escrow_account.order_code = order_code;
-    ctx.accounts.escrow_account.status = 0;
+    ctx.accounts.escrow_account.order_code = order_code;    
     ctx.accounts.escrow_account.delivery_time = clock.unix_timestamp;
+    ctx.accounts.escrow_account.status = 0;
      
+    msg!("Amount of Tokens to store in SPL Escrow: {}", amount);
+
     let escrow_seed: String = format!("{}{}", "escrow".to_string(), order_code.to_string());
     let escrow_pda_seed: &[u8] = escrow_seed.as_bytes();
 

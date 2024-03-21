@@ -82,6 +82,42 @@ export type Xfluencer = {
       ]
     },
     {
+      "name": "claim",
+      "accounts": [
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "influencerDepositTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "cancel",
       "accounts": [
         {
@@ -420,6 +456,21 @@ export type Xfluencer = {
       "code": 6011,
       "name": "BusinessHasInsufficientAmountOfTokens",
       "msg": "Busines Has Insufficient Amount Of Tokens"
+    },
+    {
+      "code": 6012,
+      "name": "MissmatchBusinessTokenAccount",
+      "msg": "Missmatch Business Token Account"
+    },
+    {
+      "code": 6013,
+      "name": "MissmatchInfluencerTokenAccount",
+      "msg": "Missmatch Influencer Token Account"
+    },
+    {
+      "code": 6014,
+      "name": "MissmatchOrderCode",
+      "msg": "Missmatch Order Code"
     }
   ]
 };
@@ -508,6 +559,42 @@ export const IDL: Xfluencer = {
       ]
     },
     {
+      "name": "claim",
+      "accounts": [
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "influencerDepositTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "cancel",
       "accounts": [
         {
@@ -846,6 +933,21 @@ export const IDL: Xfluencer = {
       "code": 6011,
       "name": "BusinessHasInsufficientAmountOfTokens",
       "msg": "Busines Has Insufficient Amount Of Tokens"
+    },
+    {
+      "code": 6012,
+      "name": "MissmatchBusinessTokenAccount",
+      "msg": "Missmatch Business Token Account"
+    },
+    {
+      "code": 6013,
+      "name": "MissmatchInfluencerTokenAccount",
+      "msg": "Missmatch Influencer Token Account"
+    },
+    {
+      "code": 6014,
+      "name": "MissmatchOrderCode",
+      "msg": "Missmatch Order Code"
     }
   ]
 };

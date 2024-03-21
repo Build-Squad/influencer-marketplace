@@ -33,7 +33,6 @@ describe("Testing Escrow for ATA", () => {
   const program = anchor.workspace.Xfluencer as Program<Xfluencer>;
 
 
-
   // Token & PDA
   let mintInfo = null;
   let mintA: PublicKey = null; 
@@ -41,12 +40,13 @@ describe("Testing Escrow for ATA", () => {
   let influencerTokenAmount = null;
   let associatedTokenAccForBusiness = null;
   let associatedTokenAccForInfluencer = null;
+
   let vault_account_pda = null;
   let vault_account_bump = null;
   let vault_authority_pda = null;
 
 
-  const amount = 1000;  
+  
   
   // keypairs for testing
   const payer = anchor.web3.Keypair.generate();
@@ -60,7 +60,8 @@ describe("Testing Escrow for ATA", () => {
   // SPL token information
   const NUMBER_DECIMALS = 6;
 
-
+  // Amount of tokens with decimals
+  const amount = 10 * 10 ** NUMBER_DECIMALS; // 10 tokens
   
   
   it('Initialize Program State', async () => {
@@ -68,7 +69,7 @@ describe("Testing Escrow for ATA", () => {
     // Airdrop Sol to payer.
     await provider.connection.confirmTransaction(
       await provider.connection.requestAirdrop(payer.publicKey, 
-                                               10 * 10 ** 9),
+                                               10 * 10 ** 9), // 10 SOL
       "processed"
     );
 
@@ -159,15 +160,16 @@ describe("Testing Escrow for ATA", () => {
 
     it("Create Escrow using ATA", async () => {
 
-      const orderCode = 123; // uuid uniquely the escrow and the valut
-      // Note that this weill be the vault authority
+      const orderCode = 123; // uuid uniquely the escrow and the vault
+
+      // Note that this will be the vault authority
       const [escrowAccountPda, vault_account_bump] = await PublicKey.findProgramAddress(
         [Buffer.from(anchor.utils.bytes.utf8.encode("escrow" + orderCode.toString()))],
         program.programId
       );
      
   
-      const [vaultAccountPda, bump] = await PublicKey.findProgramAddress(
+      const [vaultAccountPda, vault_account_pda_bump] = await PublicKey.findProgramAddress(
         [Buffer.from(anchor.utils.bytes.utf8.encode("vault" + orderCode.toString()))],
         program.programId
       );
@@ -177,8 +179,8 @@ describe("Testing Escrow for ATA", () => {
         skipPreflight: true      
       }
 
-      console.log(associatedTokenAccForBusiness);
-      console.log(associatedTokenAccForInfluencer);
+      //console.log(associatedTokenAccForBusiness);
+      //console.log(associatedTokenAccForInfluencer);
 
       const tx = await program.methods
       .initialize(
@@ -202,8 +204,31 @@ describe("Testing Escrow for ATA", () => {
       })
       .signers([business])
       .rpc(options);
+
+
+      // Fetching escrow account   
+      try {
+        
+        const info = await connection.getTokenAccountBalance(vaultAccountPda);
+        if (info.value.uiAmount == null) throw new Error('No balance found');
+        console.log('Balance (using Solana-Web3.js): ', info.value.uiAmount);
+           
+        assert.ok(info.value.decimals == NUMBER_DECIMALS);
+        assert.ok(Number(info.value.amount) == amount);
+        assert.ok(info.value.uiAmount == amount / 10 ** NUMBER_DECIMALS);
+      }
+      catch(error) {   
+        console.log(error)
+      }
+
   
     });
+
+     
+
+
+/// escrow and cancel
+
 
 
 });

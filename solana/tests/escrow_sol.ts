@@ -72,7 +72,36 @@ describe("Testing Escrow for SOL", () => {
   });
 
 
-  it('Create Escrow for SOL, Validate Cancel to Business, and Claim Cancel By Business', async () => {
+  it('Create Escrow for SOL, and Claim Cancel By Business Fail', async () => {
+
+    const orderCode = 10;
+
+    const provider = anchor.getProvider()
+
+    const buyerPublicKey = anchor.AnchorProvider.local().wallet.publicKey;
+    let account_data = await provider.connection.getBalanceAndContext(buyerPublicKey);
+    const initial_funds = account_data.value;
+    console.log("Initial Funds from the Buyer", initial_funds)
+
+    //const toWallet: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    const [escrowPDA] = await anchor.web3.PublicKey.findProgramAddress([
+        utf8.encode('escrow'),
+        buyerPublicKey.toBuffer(), 
+        influencerPublicKey.toBuffer(),
+        Buffer.from(anchor.utils.bytes.utf8.encode(orderCode.toString()))
+      ],
+      program.programId
+    );
+    
+
+    const options = {
+      skipPreflight: true      
+    }
+
+  });
+
+
+  it('Create Escrow for SOL, Validate for Cancellation, and Claim Cancel By Business', async () => {
 
     const orderCode = 2;
 
@@ -168,7 +197,7 @@ describe("Testing Escrow for SOL", () => {
   });
 
 
-  it('Create Escrow for SOL, Validate Delivered for Business and Claim By Influencer', async () => {
+  it('Create Escrow for SOL, Validate to Delivered, and Claim By Influencer', async () => {
 
     const orderCode = 3; // any integer is fine as order code
 
