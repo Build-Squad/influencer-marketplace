@@ -11,7 +11,7 @@ type Props = {};
 
 const CARDS_PER_GROUP = 4;
 
-export default function InfluencersContainer({}: Props) {
+export default function CategoryExplore({}: Props) {
   const [allCategoryMasters, setAllCategoryMasters] = React.useState<
     CategoriesType[]
   >([]);
@@ -82,7 +82,7 @@ export default function InfluencersContainer({}: Props) {
           color: "#505050",
         }}
       >
-        Find the right influencers for your needs
+        Find The Right Influencers For Your Needs
       </Typography>
       <Grid container mt={3} justifyContent="center" alignItems="center">
         <Grid item>

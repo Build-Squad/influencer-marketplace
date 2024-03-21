@@ -13,11 +13,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ExploreFilterInitialValues } from "@/app/business/explore/validation";
 
-type Props = {
-  category: CategoriesType;
-};
-
-export default function CategoryExploreCards({ category }: Props) {
+export default function CategoryExploreCards({ category }: any) {
   const router = useRouter();
   const handleClick = (category: CategoriesType) => {
     localStorage.setItem(
@@ -37,7 +33,7 @@ export default function CategoryExploreCards({ category }: Props) {
           textAlign: "start",
         }}
       >
-        <CardMedia sx={{ height: 140 }} image={category?.coverImage} />
+        <CardMedia sx={{ height: 140 }} image={category?.image} />
         <CardContent
           onClick={() => {
             handleClick(category);
