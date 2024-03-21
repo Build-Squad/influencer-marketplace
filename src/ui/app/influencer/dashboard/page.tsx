@@ -678,29 +678,6 @@ export default function BusinessDashboardPage() {
                 </IconButton>
               </Badge>
             </Tooltip>
-            {params?.row?.status === ORDER_STATUS.ACCEPTED && (
-              <Tooltip
-                title="Go To Order"
-                placement="top"
-                arrow
-                disableInteractive
-              >
-                <Link
-                  href={`/influencer/edit-order/${params?.row?.id}`}
-                  component={NextLink}
-                  sx={{
-                    textDecoration: "none",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  <IconButton>
-                    <OpenInNewIcon color="secondary" />
-                  </IconButton>
-                </Link>
-              </Tooltip>
-            )}
             {params?.row?.status === ORDER_STATUS.COMPLETED &&
               params?.row?.transactions.filter(
                 (transaction: TransactionType) =>
