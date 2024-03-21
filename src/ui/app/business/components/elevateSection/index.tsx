@@ -21,7 +21,7 @@ const FirstTabComponent = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const images = [
     "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png",
-    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards3.png",
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards5.png",
   ];
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const SecondTabComponent = () => {
       <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
-            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/collaboration_management.png"
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/collab3.png"
           }
           width={"952"}
           height={"500"}
@@ -160,7 +160,7 @@ const ThirdTabComponent = () => {
       <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
-            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graphs_analytics.png"
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graph.png"
           }
           alt=""
           width={"952"}
