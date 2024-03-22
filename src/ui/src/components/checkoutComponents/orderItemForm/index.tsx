@@ -372,17 +372,29 @@ export default function OrderItemForm({
               {(orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED ||
                 orderItem?.order_item?.status ===
                   ORDER_ITEM_STATUS.CANCELLED) &&
-                // Publish date is in the future
                 dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
-                  <Tooltip title="Schedule Post" placement="top" arrow>
-                    <IconButton
-                      onClick={() => {
-                        updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
-                      }}
-                    >
-                      <ScheduleSendIcon color="warning" />
-                    </IconButton>
-                  </Tooltip>
+                  <>
+                    {console.log(orderItem?.order_item)}
+                    {orderItem?.order_item?.approved ? (
+                      <Tooltip title="Schedule Post" placement="top" arrow>
+                        <IconButton
+                          onClick={() => {
+                            updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
+                          }}
+                        >
+                          <ScheduleSendIcon color="warning" />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      // Required approval from business
+                      <Chip
+                        label="Approval Pending"
+                        color="warning"
+                        disabled={true}
+                        sx={{ fontWeight: "bold" }}
+                      />
+                    )}
+                  </>
                 )}
               {orderItem?.order_item?.status === ORDER_ITEM_STATUS.SCHEDULED &&
                 dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
@@ -398,6 +410,22 @@ export default function OrderItemForm({
                 )}
             </Box>
           )}
+          {user?.role?.name === ROLE_NAME.BUSINESS_OWNER &&
+            !orderItem?.order_item?.approved && (
+              // Action to approve the post
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{
+                  borderRadius: 7,
+                }}
+                onClick={() => {
+                  updateStatus(ORDER_ITEM_STATUS.ACCEPTED);
+                }}
+              >
+                Approve
+              </Button>
+            )}
         </Box>
       </Box>
       <Divider
