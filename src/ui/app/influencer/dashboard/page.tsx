@@ -654,11 +654,13 @@ export default function BusinessDashboardPage() {
             >
               <Badge
                 badgeContent={
-                  params?.row?.order_item_order_id?.filter(
-                    (orderItem: OrderItemType) =>
-                      orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED &&
-                      dayjs(orderItem?.publish_date) > dayjs()
-                  )?.length
+                  params?.row?.status === ORDER_STATUS.ACCEPTED
+                    ? params?.row?.order_item_order_id?.filter(
+                        (orderItem: OrderItemType) =>
+                          orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+                          dayjs(orderItem?.publish_date) > dayjs()
+                      )?.length
+                    : 0
                 }
                 color="secondary"
                 overlap="circular"
@@ -963,6 +965,10 @@ export default function BusinessDashboardPage() {
     const _selectedTab = tabs.find((_tab) => _tab.key === tab);
     if (_selectedTab) setSelectedTab(_selectedTab?.value);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!open) getOrders();
+  }, [open]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

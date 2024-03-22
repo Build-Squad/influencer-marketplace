@@ -981,6 +981,10 @@ export default function BusinessDashboardPage() {
   }, [selectedTab]);
 
   useEffect(() => {
+    if (!open) getOrders();
+  }, [open]);
+
+  useEffect(() => {
     const tab = searchParams.get("tab");
     const _selectedTab = tabs.find((_tab) => _tab.key === tab);
     if (_selectedTab) setSelectedTab(_selectedTab?.value);
