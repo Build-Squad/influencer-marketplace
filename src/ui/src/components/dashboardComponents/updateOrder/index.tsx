@@ -1,5 +1,9 @@
 import { getService, putService } from "@/src/services/httpServices";
-import { DISPLAY_DATE_FORMAT, ORDER_STATUS } from "@/src/utils/consts";
+import {
+  DISPLAY_DATE_FORMAT,
+  ORDER_STATUS,
+  ROLE_NAME,
+} from "@/src/utils/consts";
 import { Box, Button, FormLabel, Grid, Link, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -11,6 +15,7 @@ import CustomModal from "../../shared/customModal";
 import { notification } from "../../shared/notification";
 import StatusChip from "../../shared/statusChip";
 import OrderSummaryDetails from "../orderSummaryDetails";
+import { useAppSelector } from "@/src/hooks/useRedux";
 
 type UpdateOrderProps = {
   order_id: string;
@@ -23,6 +28,7 @@ export default function UpdateOrder({
   open,
   setOpen,
 }: UpdateOrderProps) {
+  const user = useAppSelector((state) => state.user.user);
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState<OrderType | null>(null);
   const [influencer, setInfluencer] = useState<UserType | null>(null);
@@ -273,7 +279,9 @@ export default function UpdateOrder({
                 </Grid>
               </Box>
             )}
-            {order?.status === ORDER_STATUS.ACCEPTED ? (
+            {order?.status === ORDER_STATUS.ACCEPTED ||
+            (order?.status === ORDER_STATUS.PENDING &&
+              user?.role?.name === ROLE_NAME.BUSINESS_OWNER) ? (
               <>
                 {order?.order_item_order_id?.map(
                   (orderItem: any, index: number) => {
@@ -304,37 +312,39 @@ export default function UpdateOrder({
                 />
               </Box>
             )}
-            {order?.status === ORDER_STATUS.ACCEPTED && (
-              <Grid item xs={12}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{
-                      p: 1,
-                      mt: 1,
-                      borderRadius: 8,
-                      minWidth: 100,
-                    }}
-                    onClick={() => {
-                      if (!validateMetaDataValues()) {
-                        return;
-                      }
-                      updateOrder();
-                    }}
-                    disabled={loading}
-                  >
-                    {loading ? "Saving..." : "Save"}
-                  </Button>
-                </Box>
-              </Grid>
-            )}
+            {order?.status === ORDER_STATUS.ACCEPTED ||
+              (order?.status === ORDER_STATUS.PENDING &&
+                user?.role?.name === ROLE_NAME.BUSINESS_OWNER && (
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        sx={{
+                          p: 1,
+                          mt: 1,
+                          borderRadius: 8,
+                          minWidth: 100,
+                        }}
+                        onClick={() => {
+                          if (!validateMetaDataValues()) {
+                            return;
+                          }
+                          updateOrder();
+                        }}
+                        disabled={loading}
+                      >
+                        {loading ? "Saving..." : "Save"}
+                      </Button>
+                    </Box>
+                  </Grid>
+                ))}
           </Grid>
           <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
         </Grid>
