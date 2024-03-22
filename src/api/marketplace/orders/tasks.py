@@ -344,6 +344,9 @@ def schedule_tweet(order_item_id):
         if order_item.status not in ['accepted', 'cancelled']:
             raise Exception('Order item is not in accepted / cancelled status')
 
+        if not order_item.approved:
+            raise Exception('Order item is not approved by the business')
+
         # Get the publish_date
         publish_date = order_item.publish_date
 

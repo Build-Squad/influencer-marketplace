@@ -205,11 +205,29 @@ def create_order_item_status_update_message(order_item, updated_by):
         return False
 
 
+def update_order_item_approval_status(order_item: OrderItem):
+
+    # Create a notification for the buyer
+    buyer = order_item.order_id.buyer
+    influencer = order_item.package.influencer
+
+    message = f'Your order item {order_item.package.name} has been updated by {influencer.username}, please review the changes for scheduling.'
+    title = 'Order Item Updated'
+    Notification.objects.create(
+        user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
+    order_item.approved = False
+    order_item.save()
+
 def create_order_item_publish_date_update_message(order_item, updated_by):
     try:
         order = order_item.order_id
         buyer = order.buyer
         influencer = order_item.package.influencer
+
+        if updated_by == influencer.id:
+            update_order_item_approval_status(order_item)
+
         sender_id = buyer if updated_by == buyer.id else influencer
         receiver_id = influencer if updated_by == buyer.id else buyer
         message = f'Publish date for {order_item.package.name} has been updated.'
@@ -228,6 +246,10 @@ def create_order_item_meta_data_field_update_message(order_item_meta_data, updat
         order = order_item.order_id
         buyer = order.buyer
         influencer = order_item.package.influencer
+
+        if updated_by == influencer.id:
+            update_order_item_approval_status(order_item)
+
         sender_id = buyer if updated_by == buyer.id else influencer
         receiver_id = influencer if updated_by == buyer.id else buyer
         message = f'{order_item_meta_data.label} for {order_item.package.name} has been updated from {old_value} to {order_item_meta_data.value}.'
