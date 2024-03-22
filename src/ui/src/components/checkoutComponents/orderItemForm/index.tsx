@@ -10,6 +10,7 @@ import { deleteService, postService } from "@/src/services/httpServices";
 import {
   FORM_DATE_TIME_TZ_FORMAT,
   ORDER_ITEM_STATUS,
+  ROLE_NAME,
 } from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -88,6 +89,24 @@ const GetOrderItemBadge = ({
           />
         </Box>
       );
+    case ORDER_ITEM_STATUS.REJECTED:
+      return (
+        <Chip
+          label="Rejected"
+          color="error"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
+    case ORDER_ITEM_STATUS.ACCEPTED:
+      return (
+        <Chip
+          label="Accepted"
+          color="success"
+          disabled={true}
+          sx={{ fontWeight: "bold" }}
+        />
+      );
     default:
       return null;
   }
@@ -101,11 +120,8 @@ export default function OrderItemForm({
   updateFunction,
   updateOrderItemPublishDate,
 }: OrderItemFormProps) {
-  let disabled = false;
+  const [disabled, setDisabled] = useState(false);
   const user = useAppSelector((state) => state.user?.user);
-  if (user?.role?.name == "influencer") {
-    disabled = orderItem?.order_item?.status != ORDER_ITEM_STATUS.ACCEPTED;
-  }
   const [publishDateUpdated, setPublishDateUpdated] = useState(false);
 
   const dispatch = useAppDispatch();
@@ -166,6 +182,66 @@ export default function OrderItemForm({
     } finally {
     }
   };
+
+  useEffect(() => {
+    if (orderItem?.service_id && user) {
+      setDisabled(false);
+    } else if (!orderItem?.service_id && orderItem?.order_item && user) {
+      let order_item: OrderItemType = orderItem?.order_item;
+      switch (order_item?.status) {
+        case ORDER_ITEM_STATUS.CANCELLED:
+          // If the order item is cancelled, enable the form for influencers all the time but for businesses only if publish_date is in the past
+          if (
+            user?.role?.name === ROLE_NAME.BUSINESS_OWNER &&
+            dayjs(order_item?.publish_date) > dayjs()
+          ) {
+            setDisabled(true);
+          } else {
+            setDisabled(false);
+          }
+          break;
+        case ORDER_ITEM_STATUS.PUBLISHED:
+          // If the order item is published, disable the form for both influencers and businesses
+          setDisabled(true);
+          break;
+        case ORDER_ITEM_STATUS.SCHEDULED:
+          // If order item is scheduled disable the form for both influencers and businesses unless the publish_date is in the past
+          if (dayjs(order_item?.publish_date) > dayjs()) {
+            setDisabled(true);
+          } else {
+            setDisabled(false);
+          }
+          break;
+        case ORDER_ITEM_STATUS.REJECTED:
+          // Disable the form for both influencers and businesses if the order item is rejected
+          setDisabled(true);
+          break;
+        case ORDER_ITEM_STATUS.ACCEPTED:
+          // If the order item is accepted, enable the form for influencers all the time but for businesses only if publish_date is in the past
+          if (
+            user?.role?.name === ROLE_NAME.BUSINESS_OWNER &&
+            dayjs(order_item?.publish_date) > dayjs()
+          ) {
+            setDisabled(true);
+          } else {
+            setDisabled(false);
+          }
+          break;
+        case ORDER_ITEM_STATUS.IN_PROGRESS:
+          // If the order item is in progress, disable the form for both influencers and businesses
+          if (user?.role?.name === ROLE_NAME.BUSINESS_OWNER) {
+            setDisabled(false);
+          } else {
+            setDisabled(true);
+          }
+          break;
+        default:
+          setDisabled(false);
+      }
+    } else {
+      setDisabled(false);
+    }
+  }, [orderItem?.order_item, user]);
 
   /**
    * React useEffect hook that updates the publish date of an order item or a specific index.
@@ -258,7 +334,6 @@ export default function OrderItemForm({
             eachOrderItem={orderItem?.order_item}
           />
         )}
-
         {!disableDelete && (
           <ConfirmDelete
             title="this order item"
@@ -281,31 +356,35 @@ export default function OrderItemForm({
             }
           />
         )}
-        {orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED &&
-          // Publish date is in the future
-          dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
-            <Tooltip title="Schedule Post" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
-                }}
-              >
-                <ScheduleSendIcon color="warning" />
-              </IconButton>
-            </Tooltip>
-          )}
-        {orderItem?.order_item?.status === ORDER_ITEM_STATUS.SCHEDULED &&
-          dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
-            <Tooltip title="Cancel Post" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  updateStatus(ORDER_ITEM_STATUS.CANCELLED);
-                }}
-              >
-                <CancelScheduleSendIcon color="error" />
-              </IconButton>
-            </Tooltip>
-          )}
+        {!disabled && user?.role?.name === ROLE_NAME.INFLUENCER && (
+          <>
+            {orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+              // Publish date is in the future
+              dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
+                <Tooltip title="Schedule Post" placement="top" arrow>
+                  <IconButton
+                    onClick={() => {
+                      updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
+                    }}
+                  >
+                    <ScheduleSendIcon color="warning" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            {orderItem?.order_item?.status === ORDER_ITEM_STATUS.SCHEDULED &&
+              dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
+                <Tooltip title="Cancel Post" placement="top" arrow>
+                  <IconButton
+                    onClick={() => {
+                      updateStatus(ORDER_ITEM_STATUS.CANCELLED);
+                    }}
+                  >
+                    <CancelScheduleSendIcon color="error" />
+                  </IconButton>
+                </Tooltip>
+              )}
+          </>
+        )}
       </Box>
       <Divider
         sx={{
