@@ -9,6 +9,7 @@ from .views import (
     LanguageDetailView,
     RegionListView,
     TwitterUsageView,
+    ConfigurationView,
 )
 
 urlpatterns = [
@@ -21,4 +22,5 @@ urlpatterns = [
     path("regions-master/", RegionListView.as_view()),
     path("how-it-works-steps/", HowItWorksStepsView.as_view()),
     path("twitter-usage/", TwitterUsageView.as_view(), name="twitter-usage"),
+    path("configuration/", ConfigurationView.as_view()),
 ]
