@@ -339,10 +339,12 @@ export default function OrderItemForm({
             alignItems: "center",
           }}
         >
-          <GetOrderItemBadge
-            orderStatus={orderItem?.order_item?.status}
-            eachOrderItem={orderItem?.order_item}
-          />
+          {!orderItem?.service_id && (
+            <GetOrderItemBadge
+              orderStatus={orderItem?.order_item?.status}
+              eachOrderItem={orderItem?.order_item}
+            />
+          )}
           {!disableDelete && (
             <ConfirmDelete
               title="this order item"
@@ -367,7 +369,9 @@ export default function OrderItemForm({
           )}
           {user?.role?.name === ROLE_NAME.INFLUENCER && (
             <Box sx={{ mx: 1 }}>
-              {orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+              {(orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+                orderItem?.order_item?.status ===
+                  ORDER_ITEM_STATUS.CANCELLED) &&
                 // Publish date is in the future
                 dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
                   <Tooltip title="Schedule Post" placement="top" arrow>

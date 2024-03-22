@@ -341,8 +341,8 @@ def schedule_tweet(order_item_id):
 
     try:
         # Ensure that the order item is in accepted status
-        if order_item.status != 'accepted':
-            raise Exception('Order item is not in accepted status')
+        if order_item.status not in ['accepted', 'cancelled']:
+            raise Exception('Order item is not in accepted / cancelled status')
 
         # Get the publish_date
         publish_date = order_item.publish_date
@@ -358,6 +358,7 @@ def schedule_tweet(order_item_id):
         celery_task = twitter_task.apply_async(
             args=[order_item_id], countdown=delay_until_publish)
         if celery_task:
+            old_status = order_item.status
             order_item.celery_task_id = celery_task.id
             order_item.status = 'scheduled'
             order_item.save()
@@ -366,7 +367,7 @@ def schedule_tweet(order_item_id):
 
             # Send notification to business
             create_notification_for_order_item(
-                order_item=order_item, old_status='accepted', new_status='scheduled')
+                order_item=order_item, old_status=old_status, new_status='scheduled')
 
             create_order_item_status_update_message(
                 order_item=order_item, updated_by=order_item.package.influencer)
