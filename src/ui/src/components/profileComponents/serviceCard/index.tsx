@@ -174,7 +174,7 @@ export default function ServiceCard({
                     <DraftsIcon sx={{ color: "grey" }} />
                   </Tooltip>
                 ) : (
-                  <Tooltip title="Published">
+                  <Tooltip title="Listed">
                     <CheckCircleIcon sx={{ color: "success.main" }} />
                   </Tooltip>
                 )}

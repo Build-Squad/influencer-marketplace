@@ -106,3 +106,21 @@ class HowItWorksStep(models.Model):
 
     def __str__(self):
         return self.step
+
+
+class Configuration(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="Configuration",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    key = models.CharField(max_length=100, unique=True)
+    value = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "configuration"
+
+    def __str__(self):
+        return self.key
