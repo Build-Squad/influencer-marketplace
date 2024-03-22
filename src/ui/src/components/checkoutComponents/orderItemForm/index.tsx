@@ -6,7 +6,11 @@ import {
   updateFieldValues,
   updatePublishDate,
 } from "@/src/reducers/cartSlice";
-import { deleteService, postService } from "@/src/services/httpServices";
+import {
+  deleteService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
 import {
   FORM_DATE_TIME_TZ_FORMAT,
   ORDER_ITEM_STATUS,
@@ -185,6 +189,23 @@ export default function OrderItemForm({
         );
       }
     } finally {
+    }
+  };
+
+  const approveOrderItem = async () => {
+    const { isSuccess, message } = await putService(
+      `/orders/approve-ordder-item/${orderItem?.order_item?.id}/`,
+      {
+        approved: true,
+      }
+    );
+    if (isSuccess) {
+      notification("Order Item approved successfully!", "success");
+      if (getOrderDetails) {
+        getOrderDetails();
+      }
+    } else {
+      notification(message, "error", 3000);
     }
   };
 
@@ -414,13 +435,14 @@ export default function OrderItemForm({
             !orderItem?.order_item?.approved && (
               // Action to approve the post
               <Button
-                variant="contained"
-                color="primary"
+                variant="outlined"
+                color="success"
                 sx={{
-                  borderRadius: 7,
+                  borderRadius: 8,
+                  mx: 1,
                 }}
                 onClick={() => {
-                  updateStatus(ORDER_ITEM_STATUS.ACCEPTED);
+                  approveOrderItem();
                 }}
               >
                 Approve
