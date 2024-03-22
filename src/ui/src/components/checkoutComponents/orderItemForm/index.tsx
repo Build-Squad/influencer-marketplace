@@ -49,6 +49,7 @@ type OrderItemFormProps = {
     orderItemId: string,
     publishDate: string
   ) => Promise<void>;
+  getOrderDetails?: () => Promise<void>;
 };
 
 const GetOrderItemBadge = ({
@@ -119,6 +120,7 @@ export default function OrderItemForm({
   sx,
   updateFunction,
   updateOrderItemPublishDate,
+  getOrderDetails,
 }: OrderItemFormProps) {
   const [disabled, setDisabled] = useState(false);
   const user = useAppSelector((state) => state.user?.user);
@@ -172,6 +174,9 @@ export default function OrderItemForm({
       });
       if (isSuccess) {
         notification(message);
+        if (getOrderDetails) {
+          getOrderDetails();
+        }
         // Once any item is published or cancelled, update the orders data
       } else {
         notification(
@@ -328,63 +333,68 @@ export default function OrderItemForm({
         >
           {`${index + 1}. ${orderItem?.order_item?.package?.name}`}
         </Typography>
-        {disabled && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <GetOrderItemBadge
             orderStatus={orderItem?.order_item?.status}
             eachOrderItem={orderItem?.order_item}
           />
-        )}
-        {!disableDelete && (
-          <ConfirmDelete
-            title="this order item"
-            onConfirm={() => {
-              deleteOrderItem();
-            }}
-            loading={loading}
-            hide={true}
-            deleteElement={
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{
-                  borderRadius: 7,
-                }}
-                startIcon={<DeleteIcon />}
-              >
-                Delete
-              </Button>
-            }
-          />
-        )}
-        {!disabled && user?.role?.name === ROLE_NAME.INFLUENCER && (
-          <>
-            {orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED &&
-              // Publish date is in the future
-              dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
-                <Tooltip title="Schedule Post" placement="top" arrow>
-                  <IconButton
-                    onClick={() => {
-                      updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
-                    }}
-                  >
-                    <ScheduleSendIcon color="warning" />
-                  </IconButton>
-                </Tooltip>
-              )}
-            {orderItem?.order_item?.status === ORDER_ITEM_STATUS.SCHEDULED &&
-              dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
-                <Tooltip title="Cancel Post" placement="top" arrow>
-                  <IconButton
-                    onClick={() => {
-                      updateStatus(ORDER_ITEM_STATUS.CANCELLED);
-                    }}
-                  >
-                    <CancelScheduleSendIcon color="error" />
-                  </IconButton>
-                </Tooltip>
-              )}
-          </>
-        )}
+          {!disableDelete && (
+            <ConfirmDelete
+              title="this order item"
+              onConfirm={() => {
+                deleteOrderItem();
+              }}
+              loading={loading}
+              hide={true}
+              deleteElement={
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  sx={{
+                    borderRadius: 7,
+                  }}
+                  startIcon={<DeleteIcon />}
+                >
+                  Delete
+                </Button>
+              }
+            />
+          )}
+          {user?.role?.name === ROLE_NAME.INFLUENCER && (
+            <Box sx={{ mx: 1 }}>
+              {orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+                // Publish date is in the future
+                dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
+                  <Tooltip title="Schedule Post" placement="top" arrow>
+                    <IconButton
+                      onClick={() => {
+                        updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
+                      }}
+                    >
+                      <ScheduleSendIcon color="warning" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              {orderItem?.order_item?.status === ORDER_ITEM_STATUS.SCHEDULED &&
+                dayjs(orderItem?.order_item?.publish_date) > dayjs() && (
+                  <Tooltip title="Cancel Post" placement="top" arrow>
+                    <IconButton
+                      onClick={() => {
+                        updateStatus(ORDER_ITEM_STATUS.CANCELLED);
+                      }}
+                    >
+                      <CancelScheduleSendIcon color="error" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+            </Box>
+          )}
+        </Box>
       </Box>
       <Divider
         sx={{

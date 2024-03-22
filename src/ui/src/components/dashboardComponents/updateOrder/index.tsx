@@ -299,6 +299,7 @@ export default function UpdateOrder({
                           my: 2,
                         }}
                         updateOrderItemPublishDate={updatePublishDate}
+                        getOrderDetails={getOrderDetails}
                       />
                     );
                   }
@@ -312,39 +313,39 @@ export default function UpdateOrder({
                 />
               </Box>
             )}
-            {order?.status === ORDER_STATUS.ACCEPTED ||
+            {(order?.status === ORDER_STATUS.ACCEPTED ||
               (order?.status === ORDER_STATUS.PENDING &&
-                user?.role?.name === ROLE_NAME.BUSINESS_OWNER && (
-                  <Grid item xs={12}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        sx={{
-                          p: 1,
-                          mt: 1,
-                          borderRadius: 8,
-                          minWidth: 100,
-                        }}
-                        onClick={() => {
-                          if (!validateMetaDataValues()) {
-                            return;
-                          }
-                          updateOrder();
-                        }}
-                        disabled={loading}
-                      >
-                        {loading ? "Saving..." : "Save"}
-                      </Button>
-                    </Box>
-                  </Grid>
-                ))}
+                user?.role?.name === ROLE_NAME.BUSINESS_OWNER)) && (
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{
+                      p: 1,
+                      mt: 1,
+                      borderRadius: 8,
+                      minWidth: 100,
+                    }}
+                    onClick={() => {
+                      if (!validateMetaDataValues()) {
+                        return;
+                      }
+                      updateOrder();
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? "Saving..." : "Save"}
+                  </Button>
+                </Box>
+              </Grid>
+            )}
           </Grid>
           <Grid item xs={0} md={1.5} lg={1.5} sm={0}></Grid>
         </Grid>
