@@ -69,13 +69,13 @@ export default function Referrals({}: Props) {
         >
           <Grid item xs={6} sm={6} md={6} lg={6}>
             <Typography variant="h4" fontWeight={"bold"}>
-              24
+              0
             </Typography>
             <Typography>Total Referrals</Typography>
           </Grid>
           <Grid item xs={6} sm={6} md={6} lg={6}>
             <Typography variant="h4" fontWeight={"bold"}>
-              120 SOL
+              0 Tokens
             </Typography>
             <Typography>Total Earnings</Typography>
           </Grid>
@@ -108,43 +108,6 @@ export default function Referrals({}: Props) {
               </Typography>
             </Box>
           </Grid>
-        </Grid>
-
-        {/* Section for influencer's you've (current user) referred */}
-        <Grid
-          container
-          sx={{
-            mt: 3,
-            p: 3,
-            boxShadow: "0px 4px 31px 0px #00000014",
-            borderRadius: "24px",
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold">
-            My Referrals
-          </Typography>
-          <TableContainer sx={{ mt: 2 }}>
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Influencer</TableCell>
-                  <TableCell>Date of Joining</TableCell>
-                  <TableCell>Rewards</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                    @loremipsumdolor
-                  </TableCell>
-                  <TableCell>25, sept 2023</TableCell>
-                  <TableCell>10 $</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
         </Grid>
       </Grid>
 
@@ -235,57 +198,6 @@ export default function Referrals({}: Props) {
               </Box>
             </Box>
           </Grid>
-        </Grid>
-
-        {/* The section by influencer who referred you (Current User) */}
-        <Grid
-          item
-          xs={12}
-          sm={12}
-          md={12}
-          lg={12}
-          sx={{
-            mt: 3,
-            p: 3,
-            boxShadow: "0px 4px 31px 0px #00000014",
-            borderRadius: "24px",
-          }}
-        >
-          <Typography variant="h6" sx={{ color: "grey" }}>
-            You will receive a 0.5% from the transaction fees from your initial
-            5 orders as an Xfluencer.
-          </Typography>
-          <TableContainer sx={{ mt: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Order Id</TableCell>
-                  <TableCell align="left">Reward</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell>#JHBA-12bGHVBJ-67HN</TableCell>
-                  <TableCell align="left">First</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Typography
-            variant="body1"
-            fontWeight={"bold"}
-            sx={{
-              mt: 5,
-              pl: 2,
-              width: "100%",
-              pt: 2,
-              borderTop: "1px solid black",
-            }}
-          >
-            4 rewards left
-          </Typography>
         </Grid>
       </Grid>
     </Grid>
