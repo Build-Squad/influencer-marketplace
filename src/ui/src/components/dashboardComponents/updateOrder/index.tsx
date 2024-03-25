@@ -183,10 +183,10 @@ export default function UpdateOrder({
   };
 
   useEffect(() => {
-    if (order_id) {
+    if (order_id && open) {
       getOrderDetails();
     }
-  }, [order_id]);
+  }, [order_id, open]);
 
   return (
     <CustomModal
