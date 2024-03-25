@@ -1,6 +1,6 @@
 from accounts.models import Wallet
 from orders.tasks import cancel_escrow, cancel_tweet, schedule_tweet
-from orders.services import create_notification_for_order, create_order_item_tracking, create_order_tracking
+from orders.services import create_notification_for_order, create_order_item_approval_notification, create_order_item_tracking, create_order_tracking
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -610,6 +610,8 @@ class ApproveOrderItemView(APIView):
                 approved = serializer.validated_data.get("approved")
                 order_item.approved = approved
                 order_item.save()
+                
+                create_order_item_approval_notification(order_item)
 
             return Response(
                 {
