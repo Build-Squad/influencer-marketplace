@@ -7,8 +7,8 @@ from django.utils import timezone
 
 FRONT_END_URL = config('FRONT_END_URL')
 ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
-BUSINESS_DASHBOARD_URL = FRONT_END_URL + 'business/dashboard'
-INFLUENCER_DASHBOARD_URL = FRONT_END_URL + 'influencer/dashboard'
+BUSINESS_DASHBOARD_URL = FRONT_END_URL + '/business/dashboard/?tab=orders'
+INFLUENCER_DASHBOARD_URL = FRONT_END_URL + '/influencer/dashboard/?tab=orders'
 
 
 logger = logging.getLogger(__name__)
@@ -204,6 +204,19 @@ def create_order_item_status_update_message(order_item, updated_by):
             "Error creating order item status update message: ", str(e))
         return False
 
+def create_order_item_approval_notification(order_item):
+    try:
+        buyer = order_item.order_id.buyer
+        influencer = order_item.package.influencer
+
+        message = f'Order Item: {order_item.package.name} has been approved by {buyer.username}, please review the changes for scheduling.'
+        title = 'Order Item Approved'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
+    except Exception as e:
+        logger.error(
+            "Error creating order item approval notification: ", str(e))
+        return False
 
 def update_order_item_approval_status(order_item: OrderItem):
 
