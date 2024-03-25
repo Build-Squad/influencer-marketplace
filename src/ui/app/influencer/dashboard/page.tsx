@@ -915,8 +915,24 @@ export default function BusinessDashboardPage() {
               alignItems: "center",
             }}
           >
-            {(params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
-              params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) &&
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row?.order_id);
+                  setOpen(true);
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </Tooltip>
+            {params?.row?.approved &&
+              (params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+                params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) &&
               // Publish date is in the future
               dayjs(params?.row?.publish_date) > dayjs() && (
                 <Tooltip title="Schedule Post" placement="top" arrow>
