@@ -432,7 +432,10 @@ export default function OrderItemForm({
             </Box>
           )}
           {user?.role?.name === ROLE_NAME.BUSINESS_OWNER &&
-            !orderItem?.order_item?.approved && (
+            !orderItem?.order_item?.approved &&
+            (orderItem?.order_item?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+              orderItem?.order_item?.status ===
+                ORDER_ITEM_STATUS.CANCELLED) && (
               // Action to approve the post
               <Button
                 variant="outlined"
