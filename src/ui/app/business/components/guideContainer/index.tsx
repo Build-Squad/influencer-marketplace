@@ -9,33 +9,24 @@ const WORKING_STEPS = [
   {
     id: "STEP_1",
     imageUrl: require("@/public/svg/Step1.svg"),
-    description: "Explore Influencers",
+    description: "Explore & Pick Influencers",
   },
   {
     id: "STEP_2",
-    imageUrl: require("@/public/svg/Step2.svg"),
-    description: "Choose Services and Provide Content",
+    imageUrl: require("@/public/svg/Step3.svg"),
+    description: "Choose Service & Send Offers",
   },
   {
     id: "STEP_3",
-    imageUrl: require("@/public/svg/Step3.svg"),
-    description: "Influencer accepts your order",
-  },
-  {
-    id: "STEP_4",
-    imageUrl: require("@/public/svg/Step4.svg"),
-    description: "Communicate Seamlessly with the influencer",
-  },
-  {
-    id: "STEP_5",
     imageUrl: require("@/public/svg/Step5.svg"),
-    description: "Watch your Content Succeed!",
+    description: "Watch your Business Grow",
   },
 ];
 
 const stepContainerStyle = {
   flex: "1",
   textAlign: "center",
+  maxWidth: "20%",
 };
 
 export default function GuideContainer({}: Props) {
@@ -51,16 +42,16 @@ export default function GuideContainer({}: Props) {
         How it Works?
       </Typography>
       <Typography variant="subtitle1" sx={{ color: "#505050" }}>
-        Dive into the future of the web with top influencers.
+        Explore, Purchase, Analyse in seconds.
       </Typography>
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "space-around",
           padding: "64px 72px",
           paddingBottom: "0px",
           flexWrap: "wrap",
-          columnGap:"10px"
+          columnGap: "10px",
         }}
       >
         {WORKING_STEPS.map((step) => (

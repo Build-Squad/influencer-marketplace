@@ -16,6 +16,7 @@ layout = borsh.CStruct("amount" / borsh.U64, "order_code" / borsh.U64)
 
 
 class CreateEscrowAccounts(typing.TypedDict):
+    validation_authority: Pubkey
     escrow: Pubkey
     from_: Pubkey
     to: Pubkey
@@ -28,6 +29,9 @@ def create_escrow(
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> Instruction:
     keys: list[AccountMeta] = [
+        AccountMeta(
+            pubkey=accounts["validation_authority"], is_signer=False, is_writable=True
+        ),
         AccountMeta(pubkey=accounts["escrow"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["from_"], is_signer=True, is_writable=True),
         AccountMeta(pubkey=accounts["to"], is_signer=False, is_writable=True),

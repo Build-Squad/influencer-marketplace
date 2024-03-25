@@ -1,6 +1,8 @@
 "use client";
 
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
+import Phantom_Logo from "@/public/svg/Phantom_Logo.svg";
+import Solflare_Logo from "@/public/svg/Solflare_Logo.svg";
 import { useAppDispatch } from "@/src/hooks/useRedux";
 import { loginReducer } from "@/src/reducers/userSlice";
 import { postService } from "@/src/services/httpServices";
@@ -9,6 +11,7 @@ import {
   Button,
   Divider,
   Grid,
+  Link,
   TextField,
   Typography,
 } from "@mui/material";
@@ -18,6 +21,8 @@ import Image from "next/image";
 import React from "react";
 import CustomModal from "../../shared/customModal";
 import { notification } from "../../shared/notification";
+import NextLink from "next/link";
+import OpenInNew from "@mui/icons-material/OpenInNew";
 
 const SOLANA_ADDRESS_REGEX = "^[1-9A-HJ-NP-Za-km-z]{32,44}";
 
@@ -37,6 +42,19 @@ type WalletConnectModalProps = {
   connect?: boolean;
   onlyAddress?: boolean;
 };
+
+const eampleWallets = [
+  {
+    name: "Phantom",
+    link: "https://phantom.app/",
+    image: Phantom_Logo,
+  },
+  {
+    name: "Solflare",
+    link: "https://solflare.com/",
+    image: Solflare_Logo,
+  },
+];
 
 export default function WalletConnectModal({
   open,
@@ -64,7 +82,7 @@ export default function WalletConnectModal({
       if (!connect) {
         dispatch(loginReducer(data?.data));
       }
-      notification(message);
+      notification(message, "success", 3000);
       setOpen(false);
     } else {
       notification(
@@ -158,10 +176,77 @@ export default function WalletConnectModal({
                 }}
               />
             ) : (
-              <Typography variant="subtitle1" sx={{ textAlign: "center" }}>
-                {` No Solana Wallets Found, please install a wallet first (Eg:
-                Phantom, Solflare, etc.)`}
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: "grey",
+                    textAlign: "center",
+                  }}
+                >
+                  {
+                    "Install a Solana Wallet to connect with the app and sign the message"
+                  }
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flexDirection: "row",
+                  }}
+                >
+                  {eampleWallets.map((wallet, index) => (
+                    <Link
+                      href={wallet.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      key={index}
+                      component={NextLink}
+                      sx={{
+                        textDecoration: "none",
+                      }}
+                    >
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        sx={{
+                          m: 1,
+                          borderRadius: 8,
+                          "& .MuiButton-root": {
+                            borderRadius: 8,
+                            color: "#ffffff",
+                          },
+                        }}
+                        startIcon={
+                          <Image
+                            src={wallet.image}
+                            alt={wallet.name}
+                            height={20}
+                          />
+                        }
+                        endIcon={
+                          <OpenInNew
+                            sx={{
+                              color: "grey",
+                            }}
+                          />
+                        }
+                        key={index}
+                      >
+                        {`Install ${wallet.name}`}
+                      </Button>
+                    </Link>
+                  ))}
+                </Box>
+              </Box>
             )}
           </Box>
         </Grid>

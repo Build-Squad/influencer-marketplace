@@ -9,9 +9,9 @@ type TransactionIconProps = {
 
 export default function TransactionIcon({ transaction }: TransactionIconProps) {
   const labels = {
-    [TRANSACTION_TYPE.INITIATE_ESCROW]: "Offer TXN",
-    [TRANSACTION_TYPE.CANCEL_ESCROW]: "Refund TXN",
-    [TRANSACTION_TYPE.CLAIM_ESCROW]: "Payment TXN",
+    [TRANSACTION_TYPE.INITIATE_ESCROW]: "Offer TX",
+    [TRANSACTION_TYPE.CANCEL_ESCROW]: "Refund TX",
+    [TRANSACTION_TYPE.CLAIM_ESCROW]: "Payment TX",
   };
 
   return (

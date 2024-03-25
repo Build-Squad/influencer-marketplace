@@ -20,19 +20,13 @@ import {
   Clear,
   LinkedIn,
   Language,
-  KeyboardBackspace,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/src/hooks/useRedux";
-import BasicBadge from "@/public/svg/BasicBadge.svg";
-import SilverBadge from "@/public/svg/SilverBadge.svg";
-import BronzeBadge from "@/public/svg/BronzeBadge.svg";
-import GoldBadge from "@/public/svg/GoldBadge.svg";
-import BlurredBasicBadge from "@/public/svg/Blurred_Basic.svg";
-import BlurredSilverBadge from "@/public/svg/Blurred_Silver.svg";
-import BlurredBronzeBadge from "@/public/svg/Blurred_Bronze.svg";
-import BlurredGoldBadge from "@/public/svg/Blurred_Gold.svg";
 import Image from "next/image";
+import NotFound from "@/public/svg/not_found.svg";
+import { stringToColor } from "@/src/utils/helper";
+import { BADGES } from "@/src/utils/consts";
 
 type Props = {
   params: {
@@ -47,42 +41,12 @@ const styles = {
     justifyContent: "space-between",
     textAlign: "right",
   },
+  notAddedStyles: {
+    fontWeight: "normal",
+    color: "grey",
+    fontSize: "14px",
+  },
 };
-
-const BADGES = [
-  {
-    id: "BASIC",
-    icon: BasicBadge,
-    blurredIcon: BlurredBasicBadge,
-    name: "Startup Shell  (0-25 %)",
-    description:
-      "The basic form of the turtle, symbolizing the starting point for businesses on the platform.",
-  },
-  {
-    id: "BRONZE",
-    icon: BronzeBadge,
-    blurredIcon: BlurredSilverBadge,
-    name: "Branded Banditurtle  (25-50 %)",
-    description:
-      "With the addition of a headband, the turtle is embracing its identity, marking the first steps towards recognition.",
-  },
-  {
-    id: "SILVER",
-    icon: SilverBadge,
-    blurredIcon: BlurredBronzeBadge,
-    name: "Badge-Adorned Warrior  (50-75 %)",
-    description:
-      "Now sporting a chest badge in addition to the headband, this turtle is showcasing its achievements and additional profile details.",
-  },
-  {
-    id: "GOLD",
-    icon: GoldBadge,
-    blurredIcon: BlurredGoldBadge,
-    name: "Swordmaster Tycoon  (75-100 %)",
-    description:
-      "The ultimate evolution with two swords, a headband, and a chest badge, signifying the business's complete mastery and excellence on the platform.",
-  },
-];
 
 const getProfileCompletedStatus: (businessDetails: any) => string = (
   businessDetails
@@ -94,8 +58,8 @@ const getProfileCompletedStatus: (businessDetails: any) => string = (
     count +=
       Object.values(businessDetails).filter(
         (value) => value !== "" && value !== null
-      ).length - 5;
-    return `${count} / ${10 + Object.keys(businessDetails).length - 5}`;
+      ).length - 7;
+    return `${count} / ${10 + Object.keys(businessDetails).length - 7}`;
   }
   return "-";
 };
@@ -123,6 +87,10 @@ export default function BusinessProfilePreview({ params }: Props) {
   const router = useRouter();
 
   useEffect(() => {
+    getAccount();
+  }, []);
+
+  useEffect(() => {
     const percentage = getProgressPercentage();
     if (percentage === 100) {
       setIsProfileComplete(true);
@@ -148,9 +116,7 @@ export default function BusinessProfilePreview({ params }: Props) {
       {
         page_number: 1,
         page_size: 5,
-        collaborationIds: collaborationIds.length
-          ? collaborationIds
-          : ["nil"],
+        collaborationIds: collaborationIds.length ? collaborationIds : ["nil"],
       }
     );
     if (isSuccess) {
@@ -209,9 +175,6 @@ export default function BusinessProfilePreview({ params }: Props) {
     return per <= 25 ? 0 : per <= 50 ? 1 : per <= 75 ? 2 : per <= 100 ? 3 : 0;
   };
 
-  useEffect(() => {
-    getAccount();
-  }, []);
   return (
     <Box sx={{ backgroundColor: "#FAFAFA" }}>
       <Image
@@ -230,6 +193,7 @@ export default function BusinessProfilePreview({ params }: Props) {
           display: "flex",
           height: "100%",
           justifyContent: "space-between",
+          flexWrap: "wrap",
         }}
       >
         <Box
@@ -250,32 +214,59 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Avatar
               alt={businessDetails?.business_name}
               src={businessDetails?.business_name}
-              sx={{ width: 138, height: 138 }}
+              sx={{
+                width: 138,
+                height: 138,
+                bgcolor: stringToColor(user?.username ?? ""),
+              }}
             />
             <Typography variant="h6" fontWeight={"bold"} sx={{ mt: 2 }}>
-              {businessDetails?.business_name}
+              {!businessDetails?.business_name ||
+              businessDetails?.business_name == "" ? (
+                <i style={styles.notAddedStyles}>-</i>
+              ) : (
+                businessDetails?.business_name
+              )}
             </Typography>
             <Typography variant="subtitle1" sx={{ mt: 2, display: "flex" }}>
               <LocationOn />
-              {businessDetails?.headquarters}
+              {!businessDetails?.headquarters ||
+              businessDetails?.headquarters == "" ? (
+                <i style={styles.notAddedStyles}>Location Not Added</i>
+              ) : (
+                businessDetails?.headquarters
+              )}
             </Typography>
           </Box>
           <Box sx={{ ...styles.flexStyles, mt: 2 }}>
             <Typography variant="subtitle1">Founded In </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.founded}
+              {!businessDetails?.founded || businessDetails?.founded == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.founded
+              )}
             </Typography>
           </Box>
           <Box sx={styles.flexStyles}>
             <Typography variant="subtitle1">Headquarters </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.headquarters}
+              {!businessDetails?.headquarters ||
+              businessDetails?.headquarters == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.headquarters
+              )}
             </Typography>
           </Box>
           <Box sx={styles.flexStyles}>
             <Typography variant="subtitle1">Industry </Typography>
             <Typography variant="subtitle1" fontWeight={"bold"}>
-              {businessDetails?.industry}
+              {!businessDetails?.industry || businessDetails?.industry == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.industry
+              )}
             </Typography>
           </Box>
           <Box sx={{ mt: 3 }}>
@@ -288,35 +279,58 @@ export default function BusinessProfilePreview({ params }: Props) {
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Email />
-              {businessDetails?.user_email}
+              {!businessDetails?.user_email ||
+              businessDetails?.user_email == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.user_email
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <LocalPhone />
-              {businessDetails?.phone}
+              {!businessDetails?.phone || businessDetails?.phone == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.phone
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Language />
-              {businessDetails?.website}
+              {!businessDetails?.website || businessDetails?.website == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.website
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <Clear />
-              {businessDetails?.twitter_account}
+              {!businessDetails?.twitter_account ||
+              businessDetails?.twitter_account == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.twitter_account
+              )}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}
             >
               <LinkedIn />
-              {businessDetails?.linked_in}
+              {!businessDetails?.linked_in ||
+              businessDetails?.linked_in == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.linked_in
+              )}
             </Typography>
           </Box>
         </Box>
@@ -334,7 +348,13 @@ export default function BusinessProfilePreview({ params }: Props) {
             }}
           >
             <Typography fontWeight="bold">About</Typography>
-            <Typography>{businessDetails?.bio}</Typography>
+            <Typography>
+              {!businessDetails?.bio || businessDetails?.bio == "" ? (
+                <i style={styles.notAddedStyles}>Not Added</i>
+              ) : (
+                businessDetails?.bio
+              )}
+            </Typography>
           </Box>
           <Box sx={{ padding: "16px" }}>
             <Typography fontWeight="bold">Collaborators</Typography>
@@ -345,13 +365,32 @@ export default function BusinessProfilePreview({ params }: Props) {
               justifyContent={"flex-start"}
               alignItems={"center"}
             >
-              {collaborations.map((inf, index) => (
-                <InfluencersCards
-                  influencer={inf}
-                  key={index}
-                  sx={{ minWidth: "320px" }}
-                />
-              ))}
+              {!!collaborations.length ? (
+                collaborations.map((inf, index) => (
+                  <InfluencersCards
+                    influencer={inf}
+                    key={index}
+                    sx={{ minWidth: "320px" }}
+                  />
+                ))
+              ) : (
+                <Box
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                  sx={{ width: "100%", mt: 4 }}
+                  flexDirection={"column"}
+                >
+                  <Image
+                    src={NotFound}
+                    alt="NotFound"
+                    style={{ height: "auto", width: "50%", minWidth: "200px" }}
+                  />
+                  <Typography sx={{ fontStyle: "italic" }}>
+                    No Collaborations Found!
+                  </Typography>
+                </Box>
+              )}
             </Grid>
           </Box>
         </Box>

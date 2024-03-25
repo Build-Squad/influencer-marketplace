@@ -8,6 +8,7 @@ from packages.models import Package, Service
 from .models import (
     AccountLanguage,
     AccountRegion,
+    Bookmark,
     TwitterAccount,
     CategoryMaster,
     AccountCategory,
@@ -27,6 +28,8 @@ from django.db.models import Avg
 
 class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
     influencer_ids = serializers.SerializerMethodField(read_only=True)
+    is_twitter_connected = serializers.SerializerMethodField(read_only=True)
+    is_wallet_connected = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = BusinessAccountMetaData
@@ -47,6 +50,19 @@ class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
             influencer_ids.update(influencers)
 
         return list(influencer_ids)
+
+    def get_is_twitter_connected(self, business_meta_data):
+        userAccount = business_meta_data.user_account
+        if userAccount.twitter_account:
+            return True
+        return False
+
+
+    def get_is_wallet_connected(self, business_meta_data):
+        user_wallet = Wallet.objects.filter(user_id = business_meta_data.user_account)
+        if(user_wallet):
+            return True
+        return False
 
 
 class CategoryMasterSerializer(serializers.ModelSerializer):
@@ -97,6 +113,7 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
     service_types = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
+    is_bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = TwitterAccount
@@ -113,7 +130,12 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
 
         # Extract service types and prices
         service_data = [
-            {"serviceType": service.service_master.name, "price": service.price, "currencySymbol": service.currency.symbol}
+            {
+                "serviceType": service.service_master.name,
+                "price": service.price,
+                "currencySymbol": service.currency.symbol,
+                "packageStatus": Package.objects.filter(service_package_id=service)[0].status
+            }
             for service in services
         ]
 
@@ -128,6 +150,16 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
         )
         total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
         return total_rating
+
+    def get_is_bookmarked(self, twitter_account):
+        if "request" in self.context and hasattr(self.context["request"], "user_account"):
+            user = self.context["request"].user_account
+            target_user = User.objects.get(twitter_account=twitter_account)
+            bookmark = Bookmark.objects.filter(
+                user_id=user, target_user=target_user)
+            if bookmark:
+                return True
+            return False
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -186,7 +218,6 @@ class WalletCompleteSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    twitter_account = TwitterAccountSerializer(required=False)
     role = RoleSerializer(read_only=True)
     account_languages = AccountLanguageSerializer(
         many=True, read_only=True, source="acc_user_account_id"
@@ -210,6 +241,11 @@ class UserSerializer(serializers.ModelSerializer):
             "user_permissions",
             "jwt",
         )
+
+    def to_representation(self, instance):
+        self.fields['twitter_account'] = TwitterAccountSerializer(
+            required=False, context=self.context)
+        return super(UserSerializer, self).to_representation(instance)
 
     def update(self, instance, validated_data):
         # Update User fields
@@ -270,6 +306,17 @@ class OTPAuthenticationSerializer(serializers.Serializer):
 class OTPVerificationSerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
     email = serializers.EmailField()
+
+
+class OTPAuthenticationV2Serializer(serializers.Serializer):
+    email = serializers.EmailField()
+    username = serializers.CharField(max_length=100)
+
+
+class OTPVerificationV2Serializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    email = serializers.EmailField()
+    username = serializers.CharField(max_length=100)
 
 
 class EmailVerificationSerializer(serializers.Serializer):
@@ -337,3 +384,11 @@ class WalletNonceSerializer(serializers.ModelSerializer):
     class Meta:
         model = WalletNonce
         fields = '__all__'
+
+
+class CreateBookmarkSerializer(serializers.Serializer):
+    target_user = serializers.UUIDField()
+
+
+class TwitterPromotionSerializer(serializers.Serializer):
+    text = serializers.CharField(max_length=280)

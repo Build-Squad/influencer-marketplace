@@ -13,6 +13,9 @@ COPY ./requirements.txt /api/
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
+COPY ./pyxfluencer-1.0.1-py3-none-any.whl /api/
+RUN pip install pyxfluencer-1.0.1-py3-none-any.whl
+
 # copy project
 COPY . /api
 

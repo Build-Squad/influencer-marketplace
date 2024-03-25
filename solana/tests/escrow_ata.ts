@@ -5,23 +5,34 @@ import { assert } from 'chai';
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
 import * as utils from "./utils";
-import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { Xfluencer } from "../target/types/xfluencer";
 
-import { TOKEN_PROGRAM_ID, createAssociatedTokenAccount, getMint, mintTo } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, createAssociatedTokenAccount, createMint, getMint, mintTo } from '@solana/spl-token';
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  MINT_SIZE,  
+  createAssociatedTokenAccountIdempotentInstruction,
+  createInitializeMint2Instruction,
+  createMintToInstruction,
+  getAssociatedTokenAddressSync,
+  getMinimumBalanceForRentExemptMint,
+} from "@solana/spl-token";
+
 
 describe("Testing Escrow for ATA", () => {
     
-  const provider = utils.getAnchorProvider();
-
+  const provider = anchor.getProvider()
+  const connection = provider.connection;
   const program = anchor.workspace.Xfluencer as Program<Xfluencer>;
-  const nodeWallet: NodeWallet = (program.provider as anchor.AnchorProvider).wallet as NodeWallet;
+
+
 
   // Token & PDA
   let mintA: PublicKey = null; 
   let buyerTokenAccountA = null;
-  let sellerTokenAccountA = null;
+  let influencerTokenAccountA = null;
   let vault_account_pda = null;
   let vault_account_bump = null;
   let vault_authority_pda = null;
@@ -33,26 +44,31 @@ describe("Testing Escrow for ATA", () => {
   
   // keypairs for testing
   const payer = anchor.web3.Keypair.generate();
-  const buyer = nodeWallet.payer;  // set buyer to payer
-  const seller = anchor.web3.Keypair.generate();
+  const buyer = anchor.web3.Keypair.generate();
+  const influencer = anchor.web3.Keypair.generate();
   const judge = anchor.web3.Keypair.generate();
   const escrowAccount = anchor.web3.Keypair.generate();
-  const mintAuthority = anchor.web3.Keypair.generate();
+
+  const mintAuthority = anchor.web3.Keypair.generate(); // this is not known in practise
 
   const NUMBER_DECIMALS = 6;
+
+
+  
   
   it('Initialize program state', async () => {
-    const provider = anchor.getProvider()
+    
     // Airdrop Sol to payer.
     await provider.connection.confirmTransaction(
-      await provider.connection.requestAirdrop(payer.publicKey, 10000000000),
+      await provider.connection.requestAirdrop(payer.publicKey, 
+                                               10 * 10 ** 9),
       "processed"
     );
 
     // Airdrop SOL to all accounts
     for (const keypair of [
       buyer,
-      seller,
+      influencer,
       judge,
       escrowAccount,
       mintAuthority,
@@ -60,22 +76,54 @@ describe("Testing Escrow for ATA", () => {
       await utils.airdrop(program, keypair, 1);
     }
 
-    
-    mintA = await utils.createNewMint(
-        program.provider,
-        nodeWallet,
-        NUMBER_DECIMALS
-    );
+    mintA = await createMint(      
+      provider.connection,
+      mintAuthority,
+      mintAuthority.publicKey,
+      mintAuthority.publicKey,
+      NUMBER_DECIMALS);
+
+      const buyerTokenAmount = 100;
+      const influencerTokenAmount = 200;
+  
+      
+      const owner = buyer.publicKey;
+  
+
+      const [associatedTokenAcc, mintInfo] = await Promise.all([
+        createAssociatedTokenAccount(
+          provider.connection,
+          payer,
+          mintA,
+          owner
+        ),
+        getMint(provider.connection, mintA),
+      ]);
+
+      console.log("owner",owner);
+
+      await mintTo(
+        provider.connection,
+        payer,
+        mintA,
+        associatedTokenAcc,
+        mintAuthority, // Assumption mint was created by provider.wallet,
+        buyerTokenAmount,
+        []
+      );
+
+    /*
+   
 
     const buyerTokenAmount = 100;
-    const sellerTokenAmount = 200;
+    const influencerTokenAmount = 200;
 
     const mintPk = mintA;
     const owner = buyer.publicKey;
     const balance = buyerTokenAmount;
-
+*/
     
-    //const wallet = provider.wallet as NodeWallet;
+   /*
     const [associatedTokenAcc, mintInfo] = await Promise.all([
       createAssociatedTokenAccount(
         provider.connection,
@@ -85,7 +133,7 @@ describe("Testing Escrow for ATA", () => {
       ),
       getMint(provider.connection, mintPk),
     ]);
-/*
+
     await mintTo(
       provider.connection,
       nodeWallet.payer,
@@ -94,20 +142,20 @@ describe("Testing Escrow for ATA", () => {
       owner,  // Assumption mint was created by provider.wallet,
       Number(balance), // * 10 ** mintInfo.decimals,
       [buyer]
-    );
-
+    );*/
+/*
     buyerTokenAccountA  
         = await utils.createAssociatedTokenAccountWithBalance(mintA, buyer.publicKey, buyerTokenAmount);
 
-    sellerTokenAccountA 
-        = await utils.createAssociatedTokenAccountWithBalance(mintA, seller.publicKey, sellerTokenAmount);*/
-
+    influencerTokenAccountA 
+        = await utils.createAssociatedTokenAccountWithBalance(mintA, influencer.publicKey, influencerTokenAmount);
+*/
     // Create and funding ATAs 
     //amountA = await utils.getTokenAccountBalance(provider, buyerTokenAccountA);
     //assert.ok(amountA == buyerTokenAmount * 10**NUMBER_DECIMALS);
 
-    //amountB = await utils.getTokenAccountBalance(provider, sellerTokenAccountA);
-    //assert.ok(amountB == sellerTokenAmount * 10**NUMBER_DECIMALS); 
+    //amountB = await utils.getTokenAccountBalance(provider, influencerTokenAccountA);
+    //assert.ok(amountB == influencerTokenAmount * 10**NUMBER_DECIMALS); 
 
   });
 
@@ -144,11 +192,11 @@ describe("Testing Escrow for ATA", () => {
         {
           initializer: buyer.publicKey, 
           buyer: buyer.publicKey,
-          seller: seller.publicKey,
+          influencer: influencer.publicKey,
           judge: judge.publicKey,
           mint: mintA,        
           buyerDepositTokenAccount: buyerTokenAccountA,
-          sellerReceiveTokenAccount: sellerTokenAccountA,
+          influencerReceiveTokenAccount: influencerTokenAccountA,
           escrowAccount: escrow_account_pda,
           vaultAccount: vault_account_pda,
           systemProgram: anchor.web3.SystemProgram.programId,
@@ -218,11 +266,11 @@ describe("Testing Escrow for ATA", () => {
         {
           initializer: buyer.publicKey, 
           buyer: buyer.publicKey,
-          seller: seller.publicKey,
+          influencer: influencer.publicKey,
           judge: judge.publicKey,
           mint: mintA,        
           buyerDepositTokenAccount: buyerTokenAccountA,
-          sellerReceiveTokenAccount: sellerTokenAccountA,
+          influencerReceiveTokenAccount: influencerTokenAccountA,
           escrowAccount: escrow_account_pda,
           vaultAccount: vault_account_pda,
           systemProgram: anchor.web3.SystemProgram.programId,

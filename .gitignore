@@ -55,11 +55,17 @@ solana-client/node_modules/*
 solana-client/.next*
 solana/docker-target*
 solana-python/build*
-solana-python/src/*egg*
+solana-python/*egg*
+solana-python/venv/
+*pyc
 
 # celery-beat
 src/api/celerybeat-schedule
 
-
+#idea
 src/ui/.idea
 src/api/marketplace/.idea
+
+#secret
+# src/api/marketplace/secret/
+src/api/marketplace/dump.rdb

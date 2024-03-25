@@ -30,6 +30,7 @@ const Home: NextPage = (props) => {
 
   const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`
   const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`
+
   const amount = 10 ** 9 // 0.1 SOL (10^9 lamports == 1 SOL)
   const LAMPORTS = amount;
   const ORDER_CODE = 12345 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR

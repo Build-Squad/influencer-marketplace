@@ -1,5 +1,5 @@
 from accounts.models import Wallet
-from orders.tasks import cancel_tweet, schedule_tweet
+from orders.tasks import cancel_escrow, cancel_tweet, schedule_tweet
 from orders.services import create_notification_for_order, create_order_item_tracking, create_order_tracking
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
@@ -14,9 +14,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .models import (
+    Escrow,
+    OnChainTransaction,
     Order,
     OrderItem,
     OrderAttachment,
+    OrderItemMetric,
     OrderMessage,
     Review,
     Transaction,
@@ -24,6 +27,9 @@ from .models import (
 from .serializers import (
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
+    OrderItemListFilterSerializer,
+    OrderItemMetricSerializer,
+    OrderItemReadSerializer,
     OrderListFilterSerializer,
     OrderSerializer,
     OrderItemSerializer,
@@ -35,11 +41,18 @@ from .serializers import (
     OrderMessageListFilterSerializer,
     UserOrderMessagesSerializer,
     OrderTransactionCreateSerializer,
-    UserOrderMessagesSerializer
+    UserOrderMessagesSerializer,
+    OrderItemMetricFilterSerializer
 )
 from rest_framework import status
 from django.db.models import Q
 from django.utils import timezone
+from django.db.models import F, ExpressionWrapper, DateTimeField, Case, When, BooleanField
+from django.db.models.functions import Now
+from django.db.models import Min
+
+
+
 
 
 # ORDER API-Endpoint
@@ -103,6 +116,7 @@ class OrderListView(APIView):
             pending = orders.filter(status="pending").count()
             completed = orders.filter(status="completed").count()
             rejected = orders.filter(status="rejected").count()
+            cancelled = orders.filter(status="cancelled").count()
 
             return Response(
                 {
@@ -112,6 +126,7 @@ class OrderListView(APIView):
                         "pending": pending,
                         "completed": completed,
                         "rejected": rejected,
+                        "cancelled": cancelled,
                     },
                     "message": "All Order Count retrieved successfully",
                 },
@@ -149,9 +164,6 @@ class OrderListView(APIView):
             if "buyers" in filters:
                 orders = orders.filter(buyer__in=filters["buyers"])
 
-            if "status" in filters:
-                orders = orders.filter(status__in=filters["status"])
-
             if "service_masters" in filters:
                 orders = orders.filter(
                     order_item_order_id__service_master__in=filters["service_masters"]
@@ -188,16 +200,52 @@ class OrderListView(APIView):
                     | Q(order_code__icontains=filters["search"])
                 )
 
-            if "order_by" in filters:
+            if "order_by" in filters and filters["order_by"] == "upcoming":
+                # Order by the publish date of the order items
+                # Should sort the publish_date closest to the current date first wrt the order
+                orders = orders.annotate(
+                    min_publish_date=Min('order_item_order_id__publish_date'),
+                    time_difference=ExpressionWrapper(
+                        F('min_publish_date') - Now(), output_field=DateTimeField()
+                    ),
+                    is_future=Case(
+                        When(min_publish_date__gte=Now(), then=True),
+                        default=False,
+                        output_field=BooleanField(),
+                    )
+                ).order_by(
+                    '-is_future',
+                    Case(
+                        When(is_future=True, then=F('time_difference')),
+                        When(is_future=False, then=F('time_difference') * -1),
+                        output_field=DateTimeField(),
+                    )
+                )
+            elif "order_by" in filters:
                 orders = orders.order_by(filters["order_by"])
+
+            status_counts = {
+                "accepted": orders.filter(status="accepted").count(),
+                "pending": orders.filter(status="pending").count(),
+                "completed": orders.filter(status="completed").count(),
+                "rejected": orders.filter(status="rejected").count(),
+                "cancelled": orders.filter(status="cancelled").count(),
+            }
+
+            if "status" in filters:
+                orders = orders.filter(status__in=filters["status"])
 
             pagination = Pagination(orders, request)
             serializer = OrderSerializer(pagination.getData(), context={
                                          "request": request}, many=True)
+            combined_data = {
+                "orders": serializer.data,
+                "status_counts": status_counts,
+            }
             return Response(
                 {
                     "isSuccess": True,
-                    "data": serializer.data,
+                    "data": combined_data,
                     "message": "All Order retrieved successfully",
                     "pagination": pagination.getPageInfo(),
                 },
@@ -431,6 +479,28 @@ class UpdateOrderStatus(APIView):
         except Order.DoesNotExist:
             return None
 
+    def create_escrow(self, order, inlfuencer_id, business_id):
+        influencer_wallet = Wallet.objects.get(
+            user_id=inlfuencer_id, is_primary=True)
+        business_wallet = Wallet.objects.get(
+            user_id=business_id, is_primary=True)
+        Escrow.objects.create(
+            order=order,
+            business_wallet=business_wallet,
+            influencer_wallet=influencer_wallet,
+        )
+
+    def create_transaction(self, order, address, status, user, transaction_type):
+        Transaction.objects.create(
+            order=order,
+            transaction_address=address,
+            status=status,
+            transaction_initiated_by=self.request.user_account,
+            wallet=Wallet.objects.get(
+                user_id=user, is_primary=True),
+            transaction_type=transaction_type
+        )
+
     @swagger_auto_schema(request_body=OrderSerializer)
     def put(self, request, pk):
         try:
@@ -447,16 +517,12 @@ class UpdateOrderStatus(APIView):
                 old_status = order.status
                 if status_data["status"] == "pending":
                     if request.data.get("address"):
+                        # Create an Escrow Object
+                        self.create_escrow(order, order.order_item_order_id.all()[
+                                           0].package.influencer.id, order.buyer.id)
                         # Create a transaction for the order
-                        Transaction.objects.create(
-                            order=order,
-                            transaction_address=request.data.get("address"),
-                            status="success",
-                            transaction_initiated_by=request.user_account,
-                            wallet=Wallet.objects.get(
-                                user_id=request.user_account, is_primary=True),
-                            transaction_type="initiate_escrow"
-                        )
+                        self.create_transaction(
+                            order, request.data.get("address"), "success", request.user_account, "initiate_escrow")
                     else:
                         return Response(
                             {
@@ -495,6 +561,165 @@ class UpdateOrderStatus(APIView):
             return handleServerException(e)
 
 
+class CancelOrderView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_escrow(self, order):
+        escrow = Escrow.objects.get(order=order)
+        if escrow is None:
+            return handleNotFound("Escrow")
+        return escrow
+
+    def create_on_chain_transaction(self, order):
+        # Get the escrow
+        escrow = self.get_escrow(order=order)
+        # Create an on chain transaction
+        OnChainTransaction.objects.create(
+            escrow=escrow,
+            transaction_type="cancel_escrow",
+        )
+
+    def get_object(self, pk):
+        try:
+            return Order.objects.get(pk=pk, deleted_at=None)
+        except Order.DoesNotExist:
+            return None
+
+    def put(self, request, pk):
+        try:
+            order = self.get_object(pk)
+            if order is None:
+                return handleNotFound("Order")
+            # Get all order items
+            order_items = OrderItem.objects.filter(order_id=order.id)
+
+            # Check that the logged in user is authorized to cancel the order
+            if request.user_account.role.name == "business_owner":
+                if order.buyer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            elif request.user_account.role.name == "influencer":
+                if order_items[0].package.influencer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            # if influencer is cancelling the order, then check if the order is in pending state
+            if request.user_account.role.name == "influencer":
+                if order.status != "pending":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is already " + order.status,
+                            "data": None,
+                            "errors": "Order is already " + order.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # if business owner is cancelling the order, then check if the order is in accepted or pending state
+            if request.user_account.role.name == "business_owner":
+                if order.status not in ["accepted", "pending"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order is already " + order.status,
+                            "data": None,
+                            "errors": "Order is already " + order.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # If any order item is published or scheduled, then the order cannot be cancelled
+            for order_item in order_items:
+                if order_item.status in ["published", "scheduled"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order cannot be cancelled as it has already been published or scheduled",
+                            "data": None,
+                            "errors": "Order cannot be cancelled as it has already been published or scheduled",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            order_status = "cancelled" if request.user_account.id == order.buyer.id else "rejected"
+            # See if an on chain transaction is already created
+            escrow = self.get_escrow(order)
+            on_chain_transaction = OnChainTransaction.objects.filter(
+                escrow=escrow, transaction_type="cancel_escrow"
+            ).first()
+            if on_chain_transaction:
+                if on_chain_transaction.is_confirmed:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order has already been cancelled",
+                            "data": None,
+                            "errors": "Order has already been cancelled",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                else:
+                    if not on_chain_transaction.err:
+                        action = "cancellation" if request.user_account.id == order.buyer.id else "rejection"
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Order " + action + " is in progress, please wait",
+                                "data": None,
+                                "errors": "Order " + action + " is in progress, please wait",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    else:
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Order cancellation failed",
+                                "data": None,
+                                "errors": "Order cancellation failed",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+            # Create an on chain transaction
+            else:
+                self.create_on_chain_transaction(order)
+            res = cancel_escrow(pk, order_status)
+            if res: 
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Order cancelled successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Order cancellation failed",
+                        "data": None,
+                        "errors": "Order cancellation failed",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except Exception as e:
+            return handleServerException(e)
+
 class TransactionCreateView(APIView):
     authentication_classes = [JWTAuthentication]
 
@@ -522,11 +747,13 @@ class TransactionCreateView(APIView):
 # ORDER-Item API-Endpoint
 # List-Create-API
 class OrderItemList(APIView):
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         try:
             orderItems = OrderItem.objects.all()
             pagination = Pagination(orderItems, request)
-            serializer = OrderItemSerializer(pagination.getData(), many=True)
+            serializer = OrderItemReadSerializer(
+                pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -539,22 +766,113 @@ class OrderItemList(APIView):
         except Exception as e:
             return handleServerException(e)
 
-    @swagger_auto_schema(request_body=OrderItemSerializer)
+    @swagger_auto_schema(request_body=OrderItemListFilterSerializer)
     def post(self, request):
         try:
-            serializer = OrderItemSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "isSuccess": True,
-                        "data": OrderItemSerializer(serializer.instance).data,
-                        "message": "Order Item created successfully",
-                    },
-                    status=status.HTTP_201_CREATED,
+            filter_serializer = OrderItemListFilterSerializer(
+                data=request.data)
+            filter_serializer.is_valid(raise_exception=True)
+            filters = filter_serializer.validated_data
+
+            user = request.user_account
+            role = request.user_account.role
+            if role.name == "business_owner":
+                orderItems = OrderItem.objects.filter(
+                    Q(order_id__buyer=user), deleted_at=None
+                ).distinct()
+            elif role.name == "influencer":
+                # For all the order items, there will be a package in it and the package willl have influencer id
+                orderItems = OrderItem.objects.filter(
+                    Q(package__influencer=user), deleted_at=None
+                ).distinct()
+
+            if "service_masters" in filters:
+                orderItems = orderItems.filter(
+                    service_master__in=filters["service_masters"]
                 )
-            else:
-                return handleBadRequest(serializer.errors)
+
+            if "gt_created_at" in filters:
+                gt_created_at = filters["gt_created_at"].date()
+                orderItems = orderItems.filter(
+                    created_at__date__gte=gt_created_at)
+
+            if "lt_created_at" in filters:
+                lt_created_at = filters["lt_created_at"].date()
+                orderItems = orderItems.filter(
+                    created_at__date__lte=lt_created_at)
+
+            if "lt_rating" in filters:
+                orderItems = orderItems.filter(
+                    review__rating__lt=filters["lt_rating"])
+
+            if "gt_rating" in filters:
+                orderItems = orderItems.filter(
+                    review__rating__gt=filters["gt_rating"])
+
+            if "search" in filters:
+                orderItems = orderItems.filter(
+                    Q(order_id__buyer__first_name__icontains=filters["search"])
+                    | Q(order_id__buyer__last_name__icontains=filters["search"])
+                    | Q(package__influencer__first_name__icontains=filters["search"])
+                    | Q(package__influencer__last_name__icontains=filters["search"])
+                    | Q(order_id__order_code__icontains=filters["search"])
+                )
+
+            if "buyers" in filters:
+                orderItems = orderItems.filter(
+                    order_id__buyer__in=filters["buyers"])
+
+            if "order_by" in filters and filters["order_by"] == "upcoming":
+                orderItems = orderItems.annotate(
+                    time_difference=ExpressionWrapper(
+                        F('publish_date') - Now(), output_field=DateTimeField()
+                    ),
+                    is_future=Case(
+                        When(publish_date__gte=Now(), then=True),
+                        default=False,
+                        output_field=BooleanField(),
+                    )
+                ).order_by(
+                    '-is_future',
+                    Case(
+                        When(is_future=True, then=F('time_difference')),
+                        When(is_future=False, then=F('time_difference') * -1),
+                        output_field=DateTimeField(),
+                    )
+                )
+            elif "order_by" in filters:
+                orderItems = orderItems.order_by(filters["order_by"])
+
+            # Attach the total count of each status
+            status_counts = {
+                "accepted": orderItems.filter(status="accepted").count(),
+                "published": orderItems.filter(status="published").count(),
+                "cancelled": orderItems.filter(status="cancelled").count(),
+                "scheduled": orderItems.filter(status="scheduled").count(),
+                "rejected": orderItems.filter(status="rejected").count(),
+            }
+
+            if "status" in filters:
+                orderItems = orderItems.filter(status__in=filters["status"])
+
+            pagination = Pagination(orderItems, request)
+            serializer = OrderItemReadSerializer(
+                pagination.getData(), context={"request": request}, many=True)
+
+            combined_data = {
+                "order_items": serializer.data,
+                "status_counts": status_counts,
+            }
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": combined_data,
+                    "message": "All Order Items retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             return handleServerException(e)
 
@@ -1086,5 +1404,96 @@ class CancelTweetView(APIView):
                 )
             else:
                 return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class OrderItemMetricDetailView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self, pk):
+        try:
+            return OrderItem.objects.get(pk=pk)
+        except OrderItem.DoesNotExist:
+            return handleNotFound("Order Item")
+
+    @swagger_auto_schema(request_body=OrderItemMetricFilterSerializer)
+    def post(self, request):
+        try:
+            filter_serializer = OrderItemMetricFilterSerializer(
+                data=request.data)
+            filter_serializer.is_valid(raise_exception=True)
+            filters = filter_serializer.validated_data
+
+            user = request.user_account
+            role = request.user_account.role
+
+            order_item = self.get_object(filters["order_item_id"])
+            if role.name == "business_owner":
+                if order_item.order_id.buyer != user:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to view this order item",
+                            "data": None,
+                            "errors": "You are not authorized to view this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            elif role.name == "influencer":
+                if order_item.package.influencer != user:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to view this order item",
+                            "data": None,
+                            "errors": "You are not authorized to view this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            order_item_metrics = OrderItemMetric.objects.filter(
+                order_item=order_item
+            )
+
+            if "type" in filters and filters["type"] is not None and len(filters["type"]) > 0:
+                order_item_metrics = order_item_metrics.filter(
+                    type__in=filters["type"])
+
+            all_metrics = order_item_metrics.values_list(
+                "metric", flat=True).distinct()
+
+            if "metric" in filters and filters["metric"] is not None and len(filters["metric"]) > 0:
+                order_item_metrics = order_item_metrics.filter(
+                    metric__in=filters["metric"]
+                )
+
+            if "gt_created_at" in filters and filters["gt_created_at"] is not None:
+                gt_created_at = filters["gt_created_at"].date()
+                order_item_metrics = order_item_metrics.filter(
+                    created_at__date__gte=gt_created_at)
+
+            if "lt_created_at" in filters and filters["lt_created_at"] is not None:
+                lt_created_at = filters["lt_created_at"].date()
+                order_item_metrics = order_item_metrics.filter(
+                    created_at__date__lte=lt_created_at)
+
+            serializer = OrderItemMetricSerializer(
+                order_item_metrics, many=True)
+            order_item_serializer = OrderItemReadSerializer(order_item)
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": {
+                        "order_item": order_item_serializer.data,
+                        "order_item_metrics": serializer.data,
+                        "all_metrics": all_metrics,
+                    },
+                    "message": "All Order Item Metrics retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         except Exception as e:
             return handleServerException(e)

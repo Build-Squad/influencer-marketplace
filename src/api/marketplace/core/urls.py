@@ -4,9 +4,12 @@ from .views import (
     CountryDetailView,
     CurrencyListView,
     CurrencyDetailView,
+    HowItWorksStepsView,
     LanguageListView,
     LanguageDetailView,
     RegionListView,
+    TwitterUsageView,
+    ConfigurationView,
 )
 
 urlpatterns = [
@@ -17,4 +20,7 @@ urlpatterns = [
     path("language-master/", LanguageListView.as_view()),
     path("language-master/<str:pk>/", LanguageDetailView.as_view()),
     path("regions-master/", RegionListView.as_view()),
+    path("how-it-works-steps/", HowItWorksStepsView.as_view()),
+    path("twitter-usage/", TwitterUsageView.as_view(), name="twitter-usage"),
+    path("configuration/", ConfigurationView.as_view()),
 ]

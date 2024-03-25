@@ -55,6 +55,7 @@ type ServiceMasterType = {
   deleted_at: string | null;
   is_duration_based: boolean;
   service_master_meta_data: ServiceMasterMetaDataType[];
+  twitter_service_type: string;
 };
 
 type PackageType = {
@@ -119,6 +120,7 @@ type TwitterAccountType = {
   joined_at: string | null;
   account_categories?: AccountCategoryType[];
   rating?: number;
+  is_bookmarked?: boolean | null;
 };
 
 type UserType = {
@@ -141,6 +143,7 @@ type UserType = {
     user_account: string;
   };
   login_method: string;
+  promoted_tweet_id?: string | null;
 };
 
 type ServiceCheckOutType = {
@@ -218,7 +221,7 @@ type OrderItemType = {
   created_at: Date | string;
   platform_fee: string;
   platform_price: string;
-  order_id?: string;
+  order_id?: OrderType;
   order_item_meta_data: OrderItemMetaDataType[];
   publish_date?: string;
   published_tweet_id?: string;
@@ -248,6 +251,7 @@ type ReviewType = {
 type OrderType = {
   id?: string;
   buyer?: UserType;
+  buyer_meta_data?: unknown;
   order_item_order_id?: OrderItemType[];
   amount?: number;
   currency?: CurrencyType;
@@ -303,6 +307,7 @@ type MessageType = {
   order_id: string;
   is_read: boolean;
   isMe?: boolean;
+  is_system_message?: boolean;
 };
 
 type OrderChatMessageType = {
@@ -319,6 +324,22 @@ type ChatDisplayType = {
   username?: string;
   profile_image_url?: string | null;
   message?: OrderChatMessageType;
+};
+
+type OrderItemMetricType = {
+  id: string;
+  order_item: string;
+  metric: string;
+  value: string;
+  created_at: Date | string;
+  type: string;
+};
+
+type OrderItemMetricFilterType = {
+  type?: string[];
+  metric?: string[];
+  gt_created_at?: string | null;
+  lt_created_at?: string | null;
 };
 
 interface SVGIcon
@@ -635,5 +656,3 @@ type Xfluencer = {
     }
   ];
 };
-
-

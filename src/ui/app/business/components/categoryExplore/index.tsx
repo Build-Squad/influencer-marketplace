@@ -11,7 +11,7 @@ type Props = {};
 
 const CARDS_PER_GROUP = 4;
 
-export default function InfluencersContainer({}: Props) {
+export default function CategoryExplore({}: Props) {
   const [allCategoryMasters, setAllCategoryMasters] = React.useState<
     CategoriesType[]
   >([]);
@@ -22,6 +22,7 @@ export default function InfluencersContainer({}: Props) {
       {
         page_size: 8,
         page_number: 1,
+        show_on_main: true,
       }
     );
     if (isSuccess) {
@@ -73,7 +74,7 @@ export default function InfluencersContainer({}: Props) {
   return (
     <>
       <Typography variant="h5" fontWeight="bold">
-        Explore by Category
+        Explore By Category
       </Typography>
       <Typography
         variant="subtitle1"
@@ -81,7 +82,7 @@ export default function InfluencersContainer({}: Props) {
           color: "#505050",
         }}
       >
-        Dive into the future of the web with top influencers
+        Find The Right Influencers For Your Needs
       </Typography>
       <Grid container mt={3} justifyContent="center" alignItems="center">
         <Grid item>

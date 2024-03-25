@@ -26,13 +26,10 @@ export default function ClaimEscrow({
   order,
 }: CreateEscrowProps) {
   const [localLoading, setLocalLoading] = useState(false);
-  const connection = new Connection(
-    `https://rpc.ironforge.network/devnet?apiKey=${process.env.NEXT_PUBLIC_RPC_KEY}`,
-    {
-      commitment: "confirmed",
-      confirmTransactionInitialTimeout: 30000,
-    }
-  );
+  const connection = new Connection(`https://api.devnet.solana.com`, {
+    commitment: "confirmed",
+    confirmTransactionInitialTimeout: 30000,
+  });
   const wallet = useAnchorWallet();
 
   const program = getAnchorProgram(connection);
@@ -75,11 +72,17 @@ export default function ClaimEscrow({
         // Get influencer wallet address
         const buyer_pk = new PublicKey(order?.buyer_wallet?.wallet_address_id);
 
-        // breakpoint
-
         // Check if wallet is connected
         if (!connection || !publicKey) {
           notification("Please connect your wallet first", "error");
+          return;
+        }
+
+        // Check that the correct wallet is connected
+        if (
+          publicKey?.toBase58() !== order?.influencer_wallet?.wallet_address_id
+        ) {
+          notification("Please connect the correct wallet", "error");
           return;
         }
 

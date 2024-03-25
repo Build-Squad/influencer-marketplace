@@ -1,8 +1,6 @@
 "use client";
 import React, { Fragment } from "react";
-import Influencer_Banner from "@/public/svg/Influencer_Banner.svg";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
-import Arrow from "@/public/svg/Arrow.svg";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import Image from "next/image";
 import { ArrowCircleRightOutlined } from "@mui/icons-material";
@@ -38,9 +36,8 @@ export default function Banner({}: Props) {
             fontWeight={"bold"}
             sx={{ marginTop: "8px", lineHeight: "60px" }}
           >
-            Connect, Create, Thrive:
-            <br /> Amplify Your X Influence with Business Collaborations!
-            <Image src={Arrow} height={24} width={70} alt={"Coloured Star"} />
+            Tweet Smarter, Not Harder
+            <br /> Make Money with Targeted Promos!
           </Typography>
           {user?.loggedIn ? null : (
             <Button
@@ -70,26 +67,38 @@ export default function Banner({}: Props) {
               marginBottom: "40px",
             }}
           >
-            {["Post", "Repost", "Thread"].map((it, index) => (
-              <Button
-                key={it}
-                color="secondary"
-                variant="outlined"
-                sx={{ borderRadius: "16px", fontSize: "16px", paddingY: "0" }}
-              >
-                {it}
-              </Button>
-            ))}
-            <Typography variant="subtitle1" fontWeight={"Bold"}>
-              + Much More
-            </Typography>
+            {["Post", "Repost", "Thread", "Poll", "Reply", "Quote", "Like"].map(
+              (it, index) => (
+                <Button
+                  key={it}
+                  color="secondary"
+                  variant="outlined"
+                  sx={{ borderRadius: "16px", fontSize: "16px", paddingY: "0" }}
+                >
+                  {it}
+                </Button>
+              )
+            )}
           </Box>
         </Grid>
-        <Grid item xs={12} sm={7} md={7} lg={7} sx={{ position: "relative" }}>
+        <Grid
+          item
+          xs={12}
+          sm={7}
+          md={7}
+          lg={7}
+          sx={{ position: "relative" }}
+          justifyContent={"center"}
+          display="flex"
+        >
           <Image
-            src={Influencer_Banner}
-            fill
-            style={{ width: "100%" }}
+            src={
+              "https://xfluencer.s3.eu-west-2.amazonaws.com/static/bannerimage_influencer.png"
+            }
+            width={"650"}
+            height={"0"}
+            objectFit="cover"
+            style={{ height: "100%" }}
             alt={"Influencer Banner"}
           />
         </Grid>

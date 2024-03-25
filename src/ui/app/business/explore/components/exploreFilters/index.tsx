@@ -1,6 +1,6 @@
 import FiltersComponent from "@/src/components/shared/filtersComponent";
 import { FilterList } from "@mui/icons-material";
-import { Box, Grid, Switch, Typography } from "@mui/material";
+import { Box, Grid, Rating, Typography } from "@mui/material";
 import React from "react";
 
 export default function ExploreFilters({ formik }: any) {
@@ -31,7 +31,7 @@ export default function ExploreFilters({ formik }: any) {
               <FiltersComponent
                 formik={formik}
                 type={"PRICE"}
-                data={{ name: "lowerPriceLimit", label: "Min. Price($)" }}
+                data={{ name: "lowerPriceLimit", label: "Min. Sol" }}
               />
             </Grid>
             <span style={{ marginTop: "24px", marginLeft: "8px" }}>-</span>
@@ -39,7 +39,7 @@ export default function ExploreFilters({ formik }: any) {
               <FiltersComponent
                 formik={formik}
                 type={"PRICE"}
-                data={{ name: "upperPriceLimit", label: "Max. Price($)" }}
+                data={{ name: "upperPriceLimit", label: "Max. Sol" }}
               />
             </Grid>
             <Grid item xs={3} sm={3} md={1.2} lg={1}>
@@ -66,14 +66,14 @@ export default function ExploreFilters({ formik }: any) {
               sx={{
                 display: "flex",
                 alignItems: "center",
+                mt: 1,
               }}
             >
-              <Typography>X-Verified</Typography>
-              <Switch
-                color="secondary"
-                checked={formik.values.isVerified}
-                onChange={(e: any) => {
-                  formik.setFieldValue("isVerified", e.target.checked);
+              <Rating
+                name="simple-controlled"
+                value={formik.values.rating}
+                onChange={(event, newvalue) => {
+                  formik.setFieldValue("rating", newvalue);
                 }}
               />
             </Grid>

@@ -20,4 +20,10 @@ pub enum CustomError {
     BadEscrowState,
     #[msg("Missmatch Authority")]
     MissmatchAuthority,
+    #[msg("Percengate Fee Out of Range")]
+    PercentageFeeOutOfrange,
+    #[msg("Numerical Problem Found Calculating Fees")]
+    NumericalProblemFoundCalculatingFees,
+    #[msg("Busines Has Insufficient Amount Of Tokens")]
+    BusinessHasInsufficientAmountOfTokens
 }

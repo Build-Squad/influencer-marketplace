@@ -8,6 +8,7 @@ import {
   Chip,
   Link,
   Tooltip,
+  IconButton,
 } from "@mui/material";
 import React from "react";
 import { TopInfluencersType } from "../types";
@@ -15,10 +16,16 @@ import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { stringToColor } from "@/src/utils/helper";
 import StarIcon from "@mui/icons-material/Star";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import { deleteService, postService } from "@/src/services/httpServices";
+import { notification } from "@/src/components/shared/notification";
+import { useAppSelector } from "@/src/hooks/useRedux";
+import { ROLE_NAME } from "@/src/utils/consts";
 
 type Props = {
   influencer: TopInfluencersType;
   sx?: any;
+  setRefresh?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ServiceChipsComponent = ({ services }: { services: string[] }) => {
@@ -63,8 +70,53 @@ const ServiceChipsComponent = ({ services }: { services: string[] }) => {
   }
 };
 
-export default function InfluencersCards({ influencer, sx = {} }: Props) {
-  const router = useRouter();
+export default function InfluencersCards({
+  influencer,
+  sx = {},
+  setRefresh,
+}: Props) {
+  const user = useAppSelector((state) => state.user)?.user;
+  const removeBookmark = async (id: string) => {
+    const { isSuccess, message } = await deleteService(
+      `/account/bookmarks/${id}/`
+    );
+    if (isSuccess) {
+      notification("Bookmark removed successfully", "success");
+      if (setRefresh) {
+        setRefresh((prev) => !prev);
+      }
+    } else {
+      notification(message, "error");
+    }
+  };
+
+  const addBookmark = async (id: string) => {
+    const { isSuccess, message } = await postService(`/account/bookmarks/`, {
+      target_user: id,
+    });
+    if (isSuccess) {
+      notification("Bookmark added successfully", "success");
+      if (setRefresh) {
+        setRefresh((prev) => !prev);
+      }
+    } else {
+      notification(message, "error");
+    }
+  };
+
+  const handleBookmark = () => {
+    if (
+      influencer?.is_bookmarked !== null &&
+      influencer?.is_bookmarked !== undefined
+    ) {
+      if (influencer?.is_bookmarked) {
+        removeBookmark(influencer?.id);
+      } else {
+        addBookmark(influencer?.id);
+      }
+    }
+  };
+
   return (
     <Grid
       item
@@ -171,6 +223,32 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
                   <StarIcon sx={{ color: "#FFC107", fontSize: "18px" }} />
                 </Box>
               )}
+              {influencer?.is_bookmarked !== null &&
+                influencer?.is_bookmarked !== undefined &&
+                user?.role?.name === ROLE_NAME.BUSINESS_OWNER && (
+                  <Tooltip
+                    title={
+                      influencer?.is_bookmarked
+                        ? "Remove Bookmark"
+                        : "Add Bookmark"
+                    }
+                  >
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.isDefaultPrevented();
+                        e.preventDefault();
+                        handleBookmark();
+                      }}
+                    >
+                      <BookmarkIcon
+                        color={
+                          influencer?.is_bookmarked ? "primary" : "disabled"
+                        }
+                      />
+                    </IconButton>
+                  </Tooltip>
+                )}
             </Box>
             <Box
               sx={{
@@ -185,7 +263,13 @@ export default function InfluencersCards({ influencer, sx = {} }: Props) {
               <Typography variant="subtitle1" fontWeight={"bold"}>
                 Services:
               </Typography>
-              <ServiceChipsComponent services={influencer?.services} />
+              {influencer?.services && influencer?.services.length > 0 ? (
+                <ServiceChipsComponent services={influencer?.services} />
+              ) : (
+                <Typography variant="subtitle1" fontWeight={"light"}>
+                  No services
+                </Typography>
+              )}
             </Box>
 
             <Box

@@ -1,5 +1,5 @@
 export type Xfluencer = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "xfluencer",
   "instructions": [
     {
@@ -11,12 +11,12 @@ export type Xfluencer = {
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "seller",
+          "name": "influencer",
           "isMut": false,
           "isSigner": false
         },
@@ -31,12 +31,12 @@ export type Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "sellerReceiveTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -85,12 +85,12 @@ export type Xfluencer = {
       "name": "cancel",
       "accounts": [
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -194,74 +194,6 @@ export type Xfluencer = {
       ]
     },
     {
-      "name": "cancelEscrowSol",
-      "accounts": [
-        {
-          "name": "business",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -289,8 +221,33 @@ export type Xfluencer = {
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
+    },
+    {
+      "name": "cancelEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -300,19 +257,19 @@ export type Xfluencer = {
         "kind": "struct",
         "fields": [
           {
-            "name": "buyerKey",
+            "name": "businessKey",
             "type": "publicKey"
           },
           {
-            "name": "buyerDepositTokenAccount",
+            "name": "businessDepositTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "sellerKey",
+            "name": "influencerKey",
             "type": "publicKey"
           },
           {
-            "name": "sellerReceiveTokenAccount",
+            "name": "influencerReceiveTokenAccount",
             "type": "publicKey"
           },
           {
@@ -379,22 +336,28 @@ export type Xfluencer = {
           }
         ]
       }
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "feesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
-          }
-        ]
-      }
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -442,12 +405,27 @@ export type Xfluencer = {
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
+    },
+    {
+      "code": 6011,
+      "name": "BusinessHasInsufficientAmountOfTokens",
+      "msg": "Busines Has Insufficient Amount Of Tokens"
     }
   ]
 };
 
 export const IDL: Xfluencer = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "xfluencer",
   "instructions": [
     {
@@ -459,12 +437,12 @@ export const IDL: Xfluencer = {
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "seller",
+          "name": "influencer",
           "isMut": false,
           "isSigner": false
         },
@@ -479,12 +457,12 @@ export const IDL: Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "sellerReceiveTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -533,12 +511,12 @@ export const IDL: Xfluencer = {
       "name": "cancel",
       "accounts": [
         {
-          "name": "buyer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "businessDepositTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -642,74 +620,6 @@ export const IDL: Xfluencer = {
       ]
     },
     {
-      "name": "cancelEscrowSol",
-      "accounts": [
-        {
-          "name": "business",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -737,8 +647,33 @@ export const IDL: Xfluencer = {
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
+    },
+    {
+      "name": "cancelEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -748,19 +683,19 @@ export const IDL: Xfluencer = {
         "kind": "struct",
         "fields": [
           {
-            "name": "buyerKey",
+            "name": "businessKey",
             "type": "publicKey"
           },
           {
-            "name": "buyerDepositTokenAccount",
+            "name": "businessDepositTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "sellerKey",
+            "name": "influencerKey",
             "type": "publicKey"
           },
           {
-            "name": "sellerReceiveTokenAccount",
+            "name": "influencerReceiveTokenAccount",
             "type": "publicKey"
           },
           {
@@ -827,22 +762,28 @@ export const IDL: Xfluencer = {
           }
         ]
       }
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "feesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
-          }
-        ]
-      }
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -890,6 +831,21 @@ export const IDL: Xfluencer = {
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
+    },
+    {
+      "code": 6011,
+      "name": "BusinessHasInsufficientAmountOfTokens",
+      "msg": "Busines Has Insufficient Amount Of Tokens"
     }
   ]
 };

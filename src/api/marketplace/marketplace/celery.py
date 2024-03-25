@@ -34,5 +34,9 @@ app.conf.beat_schedule = {
     "schedule-reminder-notification": {
         "task": "orders.tasks.schedule_reminder_notification",
         "schedule": crontab(minute="*/10"),
+    },
+    "generate-metrics": {
+        "task": "orders.tasks.store_order_item_metrics",
+        "schedule": crontab(minute="0", hour="0"),
     }
 }
