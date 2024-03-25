@@ -16,6 +16,7 @@ import { LAMPORTS_PER_SOL } from "@/src/utils/consts";
 type CreateEscrowProps = {
   loading: boolean;
   updateStatus: (address: string) => Promise<void>;
+  setLoading: (loading: boolean) => void;
 };
 
 const programId = new PublicKey(idl.metadata.address);
@@ -23,6 +24,7 @@ const programId = new PublicKey(idl.metadata.address);
 export default function CreateEscrow({
   loading,
   updateStatus,
+  setLoading,
 }: CreateEscrowProps) {
   const cart = useAppSelector((state) => state.cart);
   const [localLoading, setLocalLoading] = useState(false);
@@ -41,6 +43,7 @@ export default function CreateEscrow({
   const createEscrow = async () => {
     try {
       setLocalLoading(true);
+      setLoading(true);
       if (cart?.order_number && cart?.influencer_wallet) {
         // Get influencer wallet address
         const influencer_pk = new PublicKey(
@@ -57,11 +60,9 @@ export default function CreateEscrow({
         console.log("Influencer PK", influencer_pk.toString());
         console.log("Order Number", cart?.order_number);
 
-
         const validationAuthorityPk = new PublicKey(
           process.env.NEXT_PUBLIC_VALIDATION_KEY!
         );
-
 
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
@@ -127,6 +128,7 @@ export default function CreateEscrow({
       }
     } finally {
       setLocalLoading(false);
+      setLoading(false);
     }
   };
 

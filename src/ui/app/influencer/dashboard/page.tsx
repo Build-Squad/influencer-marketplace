@@ -803,11 +803,15 @@ export default function BusinessDashboardPage() {
             >
               <Badge
                 badgeContent={
-                  params?.row?.order_item_order_id?.filter(
-                    (orderItem: OrderItemType) =>
-                      orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED &&
-                      dayjs(orderItem?.publish_date) > dayjs()
-                  )?.length
+                  params?.row?.status === ORDER_STATUS.ACCEPTED
+                    ? params?.row?.order_item_order_id?.filter(
+                        (orderItem: OrderItemType) =>
+                          (orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+                            orderItem?.status ===
+                              ORDER_ITEM_STATUS.CANCELLED) &&
+                          dayjs(orderItem?.publish_date) > dayjs()
+                      )?.length
+                    : 0
                 }
                 color="secondary"
                 overlap="circular"
@@ -827,29 +831,6 @@ export default function BusinessDashboardPage() {
                 </IconButton>
               </Badge>
             </Tooltip>
-            {params?.row?.status === ORDER_STATUS.ACCEPTED && (
-              <Tooltip
-                title="Go To Order"
-                placement="top"
-                arrow
-                disableInteractive
-              >
-                <Link
-                  href={`/influencer/edit-order/${params?.row?.id}`}
-                  component={NextLink}
-                  sx={{
-                    textDecoration: "none",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  <IconButton>
-                    <OpenInNewIcon color="secondary" />
-                  </IconButton>
-                </Link>
-              </Tooltip>
-            )}
             {params?.row?.status === ORDER_STATUS.COMPLETED &&
               params?.row?.transactions.filter(
                 (transaction: TransactionType) =>
@@ -1084,7 +1065,24 @@ export default function BusinessDashboardPage() {
               alignItems: "center",
             }}
           >
-            {params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row?.order_id);
+                  setOpen(true);
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </Tooltip>
+            {params?.row?.approved &&
+              (params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+                params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) &&
               // Publish date is in the future
               dayjs(params?.row?.publish_date) > dayjs() && (
                 <Tooltip title="Schedule Post" placement="top" arrow>
@@ -1139,7 +1137,12 @@ export default function BusinessDashboardPage() {
     const tab = searchParams.get("tab");
     const _selectedTab = tabs.find((_tab) => _tab.key === tab);
     if (_selectedTab) setSelectedTab(_selectedTab?.value);
+    else router.push(tabs[0]?.route!);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!open) getOrders();
+  }, [open]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
