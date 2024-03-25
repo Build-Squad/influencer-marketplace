@@ -167,7 +167,7 @@ export default function BusinessDashboardPage() {
           </Typography>
         </Box>
       ),
-      placement: "bottom",
+      placement: "top",
       target: ".joyride-tabs",
     },
     {
@@ -182,7 +182,7 @@ export default function BusinessDashboardPage() {
           </Typography>
         </Box>
       ),
-      placement: "bottom",
+      placement: "top",
       target: ".joyride-dashboard-filters",
     },
     {
@@ -198,7 +198,7 @@ export default function BusinessDashboardPage() {
           </Typography>
         </Box>
       ),
-      placement: "bottom",
+      placement: "top",
       target: ".joyride-actions-column",
     },
     {
@@ -213,7 +213,7 @@ export default function BusinessDashboardPage() {
           </Typography>
         </Box>
       ),
-      placement: "bottom",
+      placement: "top",
       target: ".joyride-review-column",
     },
     {
