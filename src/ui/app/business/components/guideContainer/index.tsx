@@ -42,7 +42,7 @@ export default function GuideContainer({}: Props) {
         How it Works?
       </Typography>
       <Typography variant="subtitle1" sx={{ color: "#505050" }}>
-        Explore Purchase Analyse in seconds.
+        Explore, Purchase, Analyse in seconds.
       </Typography>
       <Box
         sx={{

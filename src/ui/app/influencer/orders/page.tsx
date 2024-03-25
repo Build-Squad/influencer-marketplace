@@ -11,6 +11,7 @@ import OrderSummaryTable from "@/src/components/dashboardComponents/orderSummary
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogTitle,
@@ -31,6 +32,7 @@ import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import { useRouter } from "next/navigation";
+import { closeSnackbar, enqueueSnackbar } from "notistack";
 
 export default function Orders() {
   const router = useRouter();
@@ -258,17 +260,34 @@ export default function Orders() {
         selectedAction.status == "Accept" ? "accepted" : "rejected";
       setActionLoading(true);
       if (status === "rejected") {
+        handleClose();
+        const action = () => (
+          <>
+            <CircularProgress color="inherit" size={20} />
+          </>
+        );
+        const cancellationNotification = enqueueSnackbar(
+          `Declining order request, please wait for confirmation`,
+          {
+            variant: "default",
+            persist: true,
+            action,
+          }
+        );
         const { isSuccess, data, message } = await putService(
           `/orders/cancel-order/${selectedAction.orderId}/`,
           {}
         );
         if (isSuccess) {
+          closeSnackbar(cancellationNotification);
+          getOrders();
           notification(
-            "Order decline request sent successfully, please wait for confirmation",
+            "Order request was declined successfully",
             "success",
-            5000
+            3000
           );
         } else {
+          closeSnackbar(cancellationNotification);
           notification(
             message ? message : "Something went wrong, couldn't cancel order",
             "error"
@@ -295,10 +314,10 @@ export default function Orders() {
             "error"
           );
         }
+        handleClose();
       }
       setActionLoading(false);
     }
-    handleClose();
   };
 
   const handleClickOpen = () => {

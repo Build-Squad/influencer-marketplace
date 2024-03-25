@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Currency, Country, HowItWorksRoute, HowItWorksStep, LanguageMaster, RegionMaster
+from .models import Configuration, Currency, Country, HowItWorksRoute, HowItWorksStep, LanguageMaster, RegionMaster
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -48,4 +48,10 @@ class HowItWorksRouteSerializer(serializers.ModelSerializer):
 class HowItWorksStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = HowItWorksStep
+        fields = "__all__"
+
+
+class ConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Configuration
         fields = "__all__"

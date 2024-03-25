@@ -1,8 +1,6 @@
 "use client";
 import React, { Fragment } from "react";
-import Influencer_Banner from "@/public/svg/Influencer_Banner.svg";
 import Star_Coloured from "@/public/svg/Star_Coloured.svg";
-import Arrow from "@/public/svg/Arrow.svg";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import Image from "next/image";
 import { ArrowCircleRightOutlined } from "@mui/icons-material";
@@ -83,11 +81,24 @@ export default function Banner({}: Props) {
             )}
           </Box>
         </Grid>
-        <Grid item xs={12} sm={7} md={7} lg={7} sx={{ position: "relative" }}>
+        <Grid
+          item
+          xs={12}
+          sm={7}
+          md={7}
+          lg={7}
+          sx={{ position: "relative" }}
+          justifyContent={"center"}
+          display="flex"
+        >
           <Image
-            src={Influencer_Banner}
-            fill
-            style={{ width: "100%" }}
+            src={
+              "https://xfluencer.s3.eu-west-2.amazonaws.com/static/bannerimage_influencer.png"
+            }
+            width={"650"}
+            height={"0"}
+            objectFit="cover"
+            style={{ height: "100%" }}
             alt={"Influencer Banner"}
           />
         </Grid>

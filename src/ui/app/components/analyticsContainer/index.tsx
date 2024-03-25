@@ -24,12 +24,12 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     role: "business",
     data1: {
       value: "69 %",
-      subtitle: "Consumer trust influencer",
+      subtitle: "Consumers trust influencer",
     },
     data2: {
       value: "76 %",
       subtitle:
-        "Users say they bought something after a recommendation from X.",
+        "Users say they bought something after a recommendation from X",
     },
     data3: {
       value: "238 M",
