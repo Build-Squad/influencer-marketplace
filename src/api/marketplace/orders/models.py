@@ -107,6 +107,7 @@ class OrderItem(models.Model):
     celery_task_id = models.CharField(
         max_length=100, blank=True, null=True)
     is_verified = models.BooleanField(default=False, blank=True, null=True)
+    approved = models.BooleanField(default=True, blank=True, null=True)
 
     class Meta:
         db_table = "order_item"

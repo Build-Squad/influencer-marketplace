@@ -207,6 +207,7 @@ const Services = ({
                       borderRadius: "16px",
                       boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
                     }}
+                    className="joyride-create-service-tab"
                     onClick={() => {
                       if (wallets.length > 0) {
                         setSelectedService(null);
