@@ -12,14 +12,17 @@ import ChatIcon from "@mui/icons-material/Chat";
 import { Box, Grid, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import * as relativeTime from "dayjs/plugin/relativeTime";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 
 const relativeTime1: any = relativeTime;
 dayjs.extend(relativeTime1);
 
 export default function BusinessMessages() {
+  const router = useRouter();
   const user = useAppSelector((state) => state.user)?.user;
   const [orderChats, setOrderChats] = React.useState<OrderChatType[]>([]);
+  const searchParams = useSearchParams();
   const [totalUnreadMessages, setTotalUnreadMessages] = React.useState(0);
   const [selectedOrderChat, setSelectedOrderChat] =
     React.useState<OrderChatType | null>(null);
@@ -29,6 +32,7 @@ export default function BusinessMessages() {
       ORDER_STATUS.REJECTED,
       ORDER_STATUS.PENDING,
       ORDER_STATUS.COMPLETED,
+      ORDER_STATUS.CANCELLED,
     ],
   });
 
@@ -42,8 +46,20 @@ export default function BusinessMessages() {
     if (isSuccess) {
       setOrderChats(data?.data?.orders);
       setTotalUnreadMessages(data?.data?.total_unread_messages_count);
-    } 
+    }
   };
+
+  useEffect(() => {
+    if (orderChats?.length > 0) {
+      const selectedOrderChatId = searchParams.get("order_chat_id");
+      if (selectedOrderChatId) {
+        const _selectedOrderChat = orderChats.find(
+          (orderChat) => orderChat.order.id === selectedOrderChatId
+        );
+        if (_selectedOrderChat) setSelectedOrderChat(_selectedOrderChat);
+      }
+    }
+  }, [searchParams, orderChats]);
 
   useEffect(() => {
     getAllChats();
@@ -130,7 +146,9 @@ export default function BusinessMessages() {
                       key={orderChat?.order?.id}
                       orderChat={orderChat}
                       chatDisplayDetails={chatDisplayDetails}
-                      setSelectedOrderChat={setSelectedOrderChat}
+                      handleOrderChat={(id: string) => {
+                        router.push(`/business/messages?order_chat_id=${id}`);
+                      }}
                     />
                   );
                 })}
