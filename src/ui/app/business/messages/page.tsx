@@ -111,7 +111,7 @@ export default function BusinessMessages() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your messages tour, you're good to go and chat
+            You've completed your messages tour, you're good to go and chat
             with your influencer.
           </Typography>
         </Box>

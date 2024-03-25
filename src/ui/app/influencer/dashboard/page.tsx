@@ -230,7 +230,7 @@ export default function BusinessDashboardPage() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your dashboard tour, you're good to go to manage
+            You've completed your dashboard tour, you're good to go to manage
             your orders and analyse your performance.
           </Typography>
         </Box>

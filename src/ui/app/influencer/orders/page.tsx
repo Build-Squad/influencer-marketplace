@@ -145,7 +145,7 @@ export default function Orders() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your order requests tour, you're good to go and
+            You've completed your order requests tour, you're good to go and
             accept or decline the order request.
           </Typography>
         </Box>

@@ -118,7 +118,7 @@ export default function CheckoutPage() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your checkout tour, you're good to go and create
+            You've completed your checkout tour, you're good to go and create
             an order request.
           </Typography>
         </Box>

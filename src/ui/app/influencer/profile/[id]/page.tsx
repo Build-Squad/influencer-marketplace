@@ -172,7 +172,7 @@ const ProfileLayout = ({
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your services tour, you're good to go and list a
+            You've completed your services tour, you're good to go and list a
             service and start earning.
           </Typography>
         </Box>
