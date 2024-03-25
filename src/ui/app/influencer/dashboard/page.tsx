@@ -657,7 +657,9 @@ export default function BusinessDashboardPage() {
                   params?.row?.status === ORDER_STATUS.ACCEPTED
                     ? params?.row?.order_item_order_id?.filter(
                         (orderItem: OrderItemType) =>
-                          orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+                          (orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+                            orderItem?.status ===
+                              ORDER_ITEM_STATUS.CANCELLED) &&
                           dayjs(orderItem?.publish_date) > dayjs()
                       )?.length
                     : 0
