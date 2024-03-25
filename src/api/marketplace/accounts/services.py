@@ -104,7 +104,7 @@ def create_inlfuencer_account_notification(user: User):
             title='Welcome to Xfluencer',
             message='We are excited to have you on board! To get started, please complete your profile (Bio, Categories, Email, etc.), add your Web3 wallet to your account to receive payouts, and start earning money by listing services for businesses.',
             slug=INLFUENCER_PROFILE_SLUG,
-            user_id=user
+            user=user
         )
     except Exception as e:
         raise e
