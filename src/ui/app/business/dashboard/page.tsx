@@ -55,6 +55,8 @@ import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { closeSnackbar, enqueueSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const tabs = [
   {
@@ -215,6 +217,21 @@ export default function BusinessDashboardPage() {
       }
     } finally {
       setCancelLoading(false);
+    }
+  };
+
+  const approveOrderItem = async (id: string) => {
+    const { isSuccess, message } = await putService(
+      `/orders/approve-ordder-item/${id}/`,
+      {
+        approved: true,
+      }
+    );
+    if (isSuccess) {
+      notification("Order Item approved successfully!", "success");
+      getOrderItems();
+    } else {
+      notification(message, "error", 3000);
     }
   };
 
@@ -899,6 +916,21 @@ export default function BusinessDashboardPage() {
               alignItems: "center",
             }}
           >
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row?.order_id);
+                  setOpen(true);
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </Tooltip>
             {params?.row?.status === ORDER_ITEM_STATUS.PUBLISHED &&
               params?.row?.service_master?.twitter_service_type !==
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
@@ -921,6 +953,23 @@ export default function BusinessDashboardPage() {
                   </Tooltip>
                 </Link>
               )}
+            {(params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+              params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) && (
+              // Action to approve the post
+              <>
+                {!params?.row?.approved && (
+                  <Tooltip title="Approve Order Item" placement="top" arrow>
+                    <IconButton
+                      onClick={() => {
+                        approveOrderItem(params?.row?.id);
+                      }}
+                    >
+                      <CheckCircleOutlineOutlinedIcon color="success" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </>
+            )}
           </Box>
         );
       },
