@@ -5,6 +5,7 @@ from rest_framework import serializers
 from core.serializers import LanguageMasterSerializer, RegionMasterSerializer
 from orders.models import Order, OrderItem, Review
 from packages.models import Package, Service
+from referrals.serializers import UserReferralsSerializer
 from .models import (
     AccountLanguage,
     AccountRegion,
@@ -227,6 +228,7 @@ class UserSerializer(serializers.ModelSerializer):
     region = AccountRegionSerializer(
         read_only=True, source="region_user_account"
     )
+    referral = UserReferralsSerializer(read_only=True, source="user_referral_account")
 
     class Meta:
         model = User

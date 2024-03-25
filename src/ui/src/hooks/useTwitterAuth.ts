@@ -39,11 +39,13 @@ export default function useTwitterAuth() {
   // Function to initiate X user authentication
   const startTwitterAuthentication = async ({
     role = "",
+    referral_code = "",
   }: {
     role: string;
+    referral_code?: string;
   }) => {
     try {
-      window.location.href = `${BACKEND_URL}auth-twitter-user/${role}/auth`;
+      window.location.href = `${BACKEND_URL}auth-twitter-user/${role}/auth/?referral_code=${referral_code}`;
     } catch (error) {
       console.error("Error initiating Twitter authentication:", error);
     }

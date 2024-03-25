@@ -1,6 +1,15 @@
 "use client";
 import Image from "next/image";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  Input,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import XfluencerLogo from "@/public/XfluencerLogo_Icon.png";
 import LoginOptions from "./components/loginOptions";
@@ -10,6 +19,9 @@ import WalletConnectModal from "@/src/components/web3Components/walletConnectMod
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import EmailLoginModal from "@/src/components/emailLoginModal";
+import { getService } from "@/src/services/httpServices";
+import { Send } from "@mui/icons-material";
+import { notification } from "@/src/components/shared/notification";
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -20,6 +32,9 @@ const Login: React.FC = () => {
   const [loginAs, setLoginAs] = useState(role ?? "Business");
   const [walletOpen, setWalletOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [isReferralCodeValid, setIsReferralCodeValid] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const user = useAppSelector((state) => state.user);
 
   const {
@@ -32,7 +47,7 @@ const Login: React.FC = () => {
     if (isTwitterUserLoggedIn) {
       const redirectRoute =
         user?.user?.role?.name == "business_owner"
-          ? "/business/explore"
+          ? "/business"
           : "/influencer";
       router.push(redirectRoute);
     }
@@ -65,7 +80,27 @@ const Login: React.FC = () => {
   const handleConnectX = () => {
     startTwitterAuthentication({
       role: loginAs == "Business" ? "business_owner" : "influencer",
+      referral_code: isReferralCodeValid ? referralCode : "",
     });
+  };
+
+  const checkReferralCode = async () => {
+    try {
+      const { isSuccess, data } = await getService(
+        `referrals/check-referral-validity/?referral_code=${referralCode}`
+      );
+      if (isSuccess) {
+        notification("Referral Code is Valid");
+        setIsReferralCodeValid(true);
+      } else {
+        notification("Invalid Referral Code", "error");
+        setIsReferralCodeValid(false);
+      }
+      setIsUserTyping(false);
+    } catch (error) {
+      console.error("Error during referal code checking:", error);
+      setIsReferralCodeValid(false);
+    }
   };
 
   return (
@@ -89,12 +124,10 @@ const Login: React.FC = () => {
           <Typography variant="h5" fontWeight="bold" sx={{ mt: 1 }}>
             Sign in to XFluencer as a {loginAs}
           </Typography>
-          <Typography
-            variant="subtitle2"
-            sx={{ color: "#0089EA", textTransform: "none", cursor: "pointer" }}
-            onClick={handleLoginAsToggle}
-          >
-            Login as {loginAs === "Business" ? "Influencer" : "Business"}?
+          <Typography variant="caption" sx={{ lineHeight: "2px" }}>
+            {loginAs == "Business"
+              ? "Discover a world of opportunity on our marketplace, where you can connect with top influencers on X to elevate your brand's presence. Browse through a variety of services, from tweets to retweets and more, all priced in Solana – the trusted cryptocurrency for secure transactions."
+              : "Monetize your X influence with our marketplace. Set your rates in Solana and showcase your services to businesses eager to connect with you. Link your X account to get started!"}
           </Typography>
         </Box>
 
@@ -114,14 +147,68 @@ const Login: React.FC = () => {
         <LoginAccordion
           title="Connect with Socials"
           subtitle={
-            loginAs == "Influencer" ? "Sign in with your X" : "Sign in with your email or socials"
+            loginAs == "Influencer"
+              ? "Sign in with your X"
+              : "Sign in with your email or socials"
           }
           defaultExpanded={loginAs === "Influencer"}
         >
-          <Grid container spacing={2}>
+          <Grid
+            container
+            spacing={2}
+            justifyContent={
+              loginAs === "Influencer" ? "space-between" : "flex-start"
+            }
+          >
             <Grid item>
               <LoginOptions label="Connect with X" onClick={handleConnectX} />
+              {isReferralCodeValid &&
+              !isUserTyping &&
+              loginAs === "Influencer" ? (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "green", ml: 1, mt: 0.5 }}
+                  component={"div"}
+                >
+                  Hurray!!! Referral Code {referralCode} Applied.
+                </Typography>
+              ) : null}
             </Grid>
+            {loginAs === "Influencer" ? (
+              <Grid item xs={5} md={5} lg={5} sm={5} sx={{ float: "right" }}>
+                <Input
+                  type="text"
+                  color="secondary"
+                  sx={{
+                    ".MuiInputBase-root": {
+                      borderRadius: "24px",
+                    },
+                  }}
+                  placeholder="Enter Referral Code"
+                  size="small"
+                  fullWidth
+                  value={referralCode}
+                  onChange={(e) => {
+                    setReferralCode(e.target.value);
+                    setIsUserTyping(true);
+                  }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={checkReferralCode}
+                      >
+                        <Send />
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+                <Typography variant="caption" sx={{ color: "grey" }}>
+                  *Only for first time users
+                </Typography>
+              </Grid>
+            ) : null}
+
             {loginAs === "Business" ? (
               <Grid item>
                 <LoginOptions
@@ -132,6 +219,19 @@ const Login: React.FC = () => {
             ) : null}
           </Grid>
         </LoginAccordion>
+        <Typography
+          variant="subtitle2"
+          sx={{
+            color: "#0089EA",
+            textTransform: "none",
+            cursor: "pointer",
+            mt: 3,
+            textAlign: "end",
+          }}
+          onClick={handleLoginAsToggle}
+        >
+          Login as {loginAs === "Business" ? "Influencer" : "Business"}?
+        </Typography>
       </Box>
 
       {/* Wallet Model */}

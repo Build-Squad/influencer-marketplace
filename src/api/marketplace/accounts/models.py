@@ -81,6 +81,7 @@ class User(AbstractUser):
         blank=True,
     )
     jwt = models.CharField(max_length=255, blank=True, null=True)
+    referral_code = models.CharField(max_length=16, unique=True, blank=True, null=True)
     login_method = models.CharField(
         choices=LOGIN_METHOD_CHOICES, max_length=25, blank=True, null=True
     )

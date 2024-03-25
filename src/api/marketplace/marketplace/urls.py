@@ -43,8 +43,9 @@ urlpatterns = [
     path("core/", include('core.urls'), name='core'),
     path("orders/", include('orders.urls')),
     path("account/", include('accounts.urls')),
+    path("referrals/", include('referrals.urls')),
     path("notifications/", include('notifications.urls')),
-    path("auth-twitter-user/<str:role>/<str:requestType>", views.authTwitterUser, name="auth-twitter-user"),
+    path("auth-twitter-user/<str:role>/<str:requestType>/", views.authTwitterUser, name="auth-twitter-user"),
     path(
         "twitter-login-callback/",
         views.twitterLoginCallback,
