@@ -1082,6 +1082,7 @@ const ProfileLayout = ({
         // disableOverlay
         run={run}
         // scrollToFirstStep
+        showSkipButton
         // showProgress
         steps={steps}
         spotlightClicks
