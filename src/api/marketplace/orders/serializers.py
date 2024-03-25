@@ -199,6 +199,9 @@ class OrderItemSerializer(serializers.Serializer):
     publish_date = serializers.DateTimeField(required=False)
 
 
+class ApproveOrderItemSerializer(serializers.Serializer):
+    approved = serializers.BooleanField(required=True)
+
 class CreateOrderSerializer(serializers.Serializer):
     order_items = serializers.ListField(child=OrderItemSerializer())
 

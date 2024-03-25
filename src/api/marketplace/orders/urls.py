@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    ApproveOrderItemView,
     CancelOrderView,
     CancelTweetView,
     OrderItemMetricDetailView,
@@ -54,4 +55,6 @@ urlpatterns = [
 
     path("order-item-metrics/", OrderItemMetricDetailView.as_view(),
          name="order-item-metrics"),
+    path("approve-ordder-item/<uuid:pk>/",
+         ApproveOrderItemView.as_view(),      name="approve-order-item"),
 ]

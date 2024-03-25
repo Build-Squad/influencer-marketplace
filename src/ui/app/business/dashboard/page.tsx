@@ -7,19 +7,16 @@ import PendingOrders from "@/public/svg/pendingOrders.svg?icon";
 import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
 import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
-import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
+import UpdateOrder from "@/src/components/dashboardComponents/updateOrder";
 import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
-import {
-  postService,
-  putService
-} from "@/src/services/httpServices";
+import { postService, putService } from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
   DISPLAY_DATE_TIME_FORMAT,
@@ -58,6 +55,8 @@ import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { closeSnackbar, enqueueSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const tabs = [
   {
@@ -82,6 +81,7 @@ export default function BusinessDashboardPage() {
   const [orderItems, setOrderItems] = useState<OrderItemType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [open, setOpen] = useState(false);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
       ORDER_STATUS.ACCEPTED,
@@ -217,6 +217,21 @@ export default function BusinessDashboardPage() {
       }
     } finally {
       setCancelLoading(false);
+    }
+  };
+
+  const approveOrderItem = async (id: string) => {
+    const { isSuccess, message } = await putService(
+      `/orders/approve-ordder-item/${id}/`,
+      {
+        approved: true,
+      }
+    );
+    if (isSuccess) {
+      notification("Order Item approved successfully!", "success");
+      getOrderItems();
+    } else {
+      notification(message, "error", 3000);
     }
   };
 
@@ -646,36 +661,12 @@ export default function BusinessDashboardPage() {
               <IconButton
                 onClick={() => {
                   setSelectedOrder(params?.row);
+                  setOpen(true);
                 }}
               >
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
-            <>
-              {params?.row?.status === ORDER_STATUS.PENDING && (
-                <Tooltip
-                  title="Go To Order"
-                  placement="top"
-                  arrow
-                  disableInteractive
-                >
-                  <Link
-                    href={`/business/order/${params?.row?.id}`}
-                    component={NextLink}
-                    sx={{
-                      textDecoration: "none",
-                      "&:hover": {
-                        textDecoration: "underline",
-                      },
-                    }}
-                  >
-                    <IconButton>
-                      <OpenInNewIcon color="secondary" />
-                    </IconButton>
-                  </Link>
-                </Tooltip>
-              )}
-            </>
             {(params?.row?.status === ORDER_STATUS.REJECTED ||
               params?.row?.status === ORDER_STATUS.CANCELLED) &&
               params?.row?.transactions.filter(
@@ -925,6 +916,21 @@ export default function BusinessDashboardPage() {
               alignItems: "center",
             }}
           >
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row?.order_id);
+                  setOpen(true);
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </Tooltip>
             {params?.row?.status === ORDER_ITEM_STATUS.PUBLISHED &&
               params?.row?.service_master?.twitter_service_type !==
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
@@ -947,6 +953,23 @@ export default function BusinessDashboardPage() {
                   </Tooltip>
                 </Link>
               )}
+            {(params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+              params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) && (
+              // Action to approve the post
+              <>
+                {!params?.row?.approved && (
+                  <Tooltip title="Approve Order Item" placement="top" arrow>
+                    <IconButton
+                      onClick={() => {
+                        approveOrderItem(params?.row?.id);
+                      }}
+                    >
+                      <CheckCircleOutlineOutlinedIcon color="success" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </>
+            )}
           </Box>
         );
       },
@@ -1007,9 +1030,14 @@ export default function BusinessDashboardPage() {
   }, [selectedTab]);
 
   useEffect(() => {
+    if (!open) getOrders();
+  }, [open]);
+
+  useEffect(() => {
     const tab = searchParams.get("tab");
     const _selectedTab = tabs.find((_tab) => _tab.key === tab);
     if (_selectedTab) setSelectedTab(_selectedTab?.value);
+    else router.push(tabs[0]?.route!);
   }, [searchParams]);
 
   return (
@@ -1200,11 +1228,10 @@ export default function BusinessDashboardPage() {
             </Box>
           </Grid>
         </Grid>
-        <OrderDetails
-          order={selectedOrder}
-          onClose={() => {
-            setSelectedOrder(null);
-          }}
+        <UpdateOrder
+          order_id={selectedOrder?.id!}
+          open={open}
+          setOpen={setOpen}
         />
         <ReviewModal
           reviewOrder={selectedReviewOrder}

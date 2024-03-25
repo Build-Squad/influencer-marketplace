@@ -417,7 +417,7 @@ export default function CheckoutPage() {
                       </Button>
                     }
                   />
-                  <CreateEscrow loading={loading} updateStatus={updateStatus} />
+                  <CreateEscrow setLoading={setLoading} loading={loading} updateStatus={updateStatus} />
                 </Box>
               </Box>
             </Grid>
