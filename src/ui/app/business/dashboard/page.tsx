@@ -59,7 +59,7 @@ import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import { DriveEta } from "@mui/icons-material";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import MessageIcon from "@mui/icons-material/Message";
 
 const tabs = [
   {
@@ -828,6 +828,22 @@ export default function BusinessDashboardPage() {
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
+            <Link
+              href={`/business/messages?order_chat_id=${params?.row?.id}`}
+              component={NextLink}
+              sx={{
+                textDecoration: "none",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              <Tooltip title="Go to Order Chat" placement="top" arrow>
+                <IconButton>
+                  <MessageIcon />
+                </IconButton>
+              </Tooltip>
+            </Link>
             {(params?.row?.status === ORDER_STATUS.REJECTED ||
               params?.row?.status === ORDER_STATUS.CANCELLED) &&
               params?.row?.transactions.filter(

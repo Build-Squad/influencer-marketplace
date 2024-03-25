@@ -8,15 +8,13 @@ import { stringToColor } from "@/src/utils/helper";
 
 type OrderChatCardType = {
   orderChat: OrderChatType;
-  setSelectedOrderChat: React.Dispatch<
-    React.SetStateAction<OrderChatType | null>
-  >;
+  handleOrderChat(id: string): void;
   chatDisplayDetails: ChatDisplayType;
 };
 
 export default function OrderChatCard({
   orderChat,
-  setSelectedOrderChat,
+  handleOrderChat,
   chatDisplayDetails,
 }: OrderChatCardType) {
   return (
@@ -31,7 +29,7 @@ export default function OrderChatCard({
           p: 1,
         }}
         onClick={() => {
-          setSelectedOrderChat(orderChat);
+          handleOrderChat(orderChat?.order?.id!);
         }}
       >
         <Box

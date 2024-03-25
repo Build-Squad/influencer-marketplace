@@ -12,12 +12,12 @@ import ChatIcon from "@mui/icons-material/Chat";
 import { Box, Grid, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import * as relativeTime from "dayjs/plugin/relativeTime";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import { DriveEta } from "@mui/icons-material";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import BackIcon from "@/public/svg/Back.svg";
 
 const relativeTime1: any = relativeTime;
@@ -25,6 +25,7 @@ dayjs.extend(relativeTime1);
 
 export default function BusinessMessages() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const user = useAppSelector((state) => state.user)?.user;
   const [orderChats, setOrderChats] = React.useState<OrderChatType[]>([]);
   const [totalUnreadMessages, setTotalUnreadMessages] = React.useState(0);
@@ -36,6 +37,7 @@ export default function BusinessMessages() {
       ORDER_STATUS.REJECTED,
       ORDER_STATUS.PENDING,
       ORDER_STATUS.COMPLETED,
+      ORDER_STATUS.CANCELLED,
     ],
   });
 
@@ -181,6 +183,18 @@ export default function BusinessMessages() {
     return () => clearInterval(intervalId);
   }, [filters]);
 
+  useEffect(() => {
+    if (orderChats?.length > 0) {
+      const selectedOrderChatId = searchParams.get("order_chat_id");
+      if (selectedOrderChatId) {
+        const _selectedOrderChat = orderChats.find(
+          (orderChat) => orderChat.order.id === selectedOrderChatId
+        );
+        if (_selectedOrderChat) setSelectedOrderChat(_selectedOrderChat);
+      }
+    }
+  }, [searchParams, orderChats]);
+
   return (
     <RouteProtection logged_in={true} influencer={true}>
       <Grid container spacing={2}>
@@ -278,7 +292,9 @@ export default function BusinessMessages() {
                       key={orderChat?.order?.id}
                       orderChat={orderChat}
                       chatDisplayDetails={chatDisplayDetails}
-                      setSelectedOrderChat={setSelectedOrderChat}
+                      handleOrderChat={(id: string) => {
+                        router.push(`/influencer/messages?order_chat_id=${id}`);
+                      }}
                     />
                   );
                 })}

@@ -29,6 +29,10 @@ const STATUS_OPTIONS = [
     label: "Rejected",
     value: ORDER_STATUS.REJECTED,
   },
+  {
+    label: "Cancelled",
+    value: ORDER_STATUS.CANCELLED,
+  },
 ];
 
 export default function OrderChatFilterBar({
