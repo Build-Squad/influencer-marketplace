@@ -147,8 +147,8 @@ export default function BusinessDashboardPage() {
             Manage your orders here!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            This tour will help you manage your order accurately once you've an
-            order. The options would include editing the orders, claiming the
+            This tour will help you manage your order accurately once you have
+            an order. The options would include editing the orders, claiming the
             payouts, view your ratings, and many more.
           </Typography>
         </Box>
@@ -177,7 +177,7 @@ export default function BusinessDashboardPage() {
             Customized filters.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Advanced filters for data based on the services, date, order ID, and
+            Advanced filters for orders based on the services, date, order ID, and
             businesses.
           </Typography>
         </Box>
@@ -283,17 +283,11 @@ export default function BusinessDashboardPage() {
         {
           page_number: pagination.current_page_number,
           page_size: pagination.current_page_size,
-          status: [
-            ORDER_STATUS.ACCEPTED,
-            ORDER_STATUS.REJECTED,
-            ORDER_STATUS.COMPLETED,
-            ORDER_STATUS.CANCELLED,
-          ],
           order_by: "upcoming",
         }
       );
       if (isSuccess) {
-        if (data?.data?.orders?.length == 1) {
+        if (data?.pagination?.total_data_count == 1) {
           setStepIndex(0);
           setRun(true);
         }
@@ -1264,7 +1258,10 @@ export default function BusinessDashboardPage() {
                 alignItems: "center",
                 justifyContent: "flex-end",
                 columnGap: "4px",
-                visibility: selectedTab == 0 ? "visible" : "hidden",
+                visibility:
+                  selectedTab == 0 && pagination.total_data_count > 0
+                    ? "visible"
+                    : "hidden",
               }}
               onClick={() => {
                 setStepIndex(0);

@@ -82,6 +82,7 @@ export default function BusinessDashboardPage() {
   const [orderItems, setOrderItems] = useState<OrderItemType[]>([]);
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [hasAnOrder, setHasAnOrder] = useState(false);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
       ORDER_STATUS.ACCEPTED,
@@ -137,7 +138,7 @@ export default function BusinessDashboardPage() {
           <Typography sx={{ mt: 1 }}>
             This tour will help you manage your order accurately once you've
             placed an order. The options would include editing your orders,
-            cencelling your orders, view the transactions, giving ratings and
+            cancelling your orders, view the transactions, giving ratings and
             many more.
           </Typography>
         </Box>
@@ -166,8 +167,8 @@ export default function BusinessDashboardPage() {
             Customized filters.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Advanced filters for data based on the services, date, order ID, and
-            influencers.
+            Advanced filters for orders based on the services, date, order ID,
+            and influencers.
           </Typography>
         </Box>
       ),
@@ -218,8 +219,8 @@ export default function BusinessDashboardPage() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your dashboard tour, you're good to go to manage
-            your orders and analyse them.
+            You've completing your dashboard tour, you're now good to go to
+            manage your orders and analyse them.
           </Typography>
         </Box>
       ),
@@ -259,9 +260,13 @@ export default function BusinessDashboardPage() {
         }
       );
       if (isSuccess) {
-        if (data?.data?.orders?.length == 1) {
+        // If the total number of order is exactly one for a business
+        if (data?.pagination?.total_data_count == 1) {
           setStepIndex(0);
           setRun(true);
+        }
+        if (data?.pagination?.total_data_count > 0) {
+          setHasAnOrder(true);
         }
       }
     } finally {
@@ -1245,7 +1250,8 @@ export default function BusinessDashboardPage() {
                 alignItems: "center",
                 justifyContent: "flex-end",
                 columnGap: "4px",
-                visibility: selectedTab == 0 ? "visible" : "hidden",
+                visibility:
+                  selectedTab == 0 && hasAnOrder ? "visible" : "hidden",
               }}
               onClick={() => {
                 setStepIndex(0);

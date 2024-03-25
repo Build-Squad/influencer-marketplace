@@ -42,6 +42,7 @@ export default function BusinessMessages() {
   // User Guide for the very first order
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
+  const [hasAMessage, setHasAMessage] = useState(false);
   const [steps, setSteps] = useState<any>([
     {
       content: (
@@ -74,7 +75,7 @@ export default function BusinessMessages() {
           </Typography>
           <Typography sx={{ mt: 1 }}>
             Advanced filters for chats based on the services, order ID, and
-            status of orders.
+            status of order.
           </Typography>
         </Box>
       ),
@@ -135,19 +136,16 @@ export default function BusinessMessages() {
   const handleUserInteraction = async () => {
     const { isSuccess, message, data } = await postService(
       "/orders/user-order-messages/",
-      {
-        status: [
-          ORDER_STATUS.ACCEPTED,
-          ORDER_STATUS.REJECTED,
-          ORDER_STATUS.PENDING,
-          ORDER_STATUS.COMPLETED,
-        ],
-      }
+      {}
     );
     if (isSuccess) {
+      // Fetching all user-message and if there's exactly 1 object, show the user guide
       if (data?.data?.orders?.length == 1) {
         setStepIndex(0);
         setRun(true);
+      }
+      if (data?.data?.orders?.length > 0) {
+        setHasAMessage(true);
       }
     }
   };
@@ -230,6 +228,7 @@ export default function BusinessMessages() {
                 alignItems: "center",
                 justifyContent: "flex-end",
                 columnGap: "4px",
+                visibility: hasAMessage ? "visible" : "hidden",
               }}
               onClick={() => {
                 setStepIndex(0);

@@ -117,10 +117,10 @@ const ProfileLayout = ({
             Take a Quick Tour!
           </Typography>
           <Typography>
-            This tour will walk you through listing your service as an
-            influencer and claiming your payments upon completion and validation
-            of orders. Simply create and list your service for business owners
-            to view and purchase.
+            This tour will walk you through the listing of your service and
+            claiming your payments upon completion and validation of orders.
+            Simply create and list your service for business owners and
+            let the magic happen.
           </Typography>
         </Box>
       ),
@@ -149,7 +149,7 @@ const ProfileLayout = ({
             Click on "Create A Service"
           </Typography>
           <Typography>
-            Please list the type of service you wish to publish and select its
+            Please list the type of service you wish to publish, select its
             price and fill in some details. Simply enter the information, and
             you're all set to go.
           </Typography>
@@ -158,10 +158,33 @@ const ProfileLayout = ({
       target: ".joyride-create-service-tab",
       placement: "top",
     },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completing your services tour, you're good to go and list a
+            service and start earning.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
   ]);
 
   useEffect(() => {
-    // Fetch services for the tour, if there are none, open the tour
+    // Fetch services for the tour,
+    // if there are none, open the tour
     if (params.id == loggedInUser?.id) getServices();
   }, []);
 
@@ -176,7 +199,7 @@ const ProfileLayout = ({
       );
       if (isSuccess) {
         // Open the tour if there's no service
-        if (!data?.data?.length) {
+        if (!data?.pagination?.total_data_count) {
           setRun(true);
         }
       }

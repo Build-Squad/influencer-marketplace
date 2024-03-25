@@ -78,8 +78,8 @@ export default function Orders() {
             Order's request dashboard.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            This tour will guide you through the order's request page where you
-            can view the orders and accept/decline based on your preference.
+            This tour will guide you through the order requests where you can
+            view the orders and accept/decline based on your preference.
           </Typography>
         </Box>
       ),
@@ -93,7 +93,7 @@ export default function Orders() {
             Select orders.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Click on the order to view details about it on the right hand
+            Click on the order row to view details about it on the right hand
             drawer.
           </Typography>
         </Box>
@@ -110,7 +110,7 @@ export default function Orders() {
           <Typography sx={{ mt: 1 }}>
             Please have a close look at the details of each order item including
             the content, publish time and the amount it's offering. You can also
-            visit the business profile by clicking on the hyderlink.
+            visit the business profile by clicking on the hyperlink.
           </Typography>
         </Box>
       ),
@@ -124,8 +124,7 @@ export default function Orders() {
             Accept/Decline Orders.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Have a look at the order and accept or decline based on your
-            pereference.
+            Accept or decline the order based on your pereference.
           </Typography>
         </Box>
       ),
@@ -146,8 +145,8 @@ export default function Orders() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your orders request tour, you're good to go and
-            accept or decline the request.
+            You've completing your order requests tour, you're good to go and
+            accept or decline the order request.
           </Typography>
         </Box>
       ),
@@ -181,6 +180,7 @@ export default function Orders() {
         }
       );
       if (isSuccess) {
+        // Open the user guide if there's only 1 order request.
         if (data?.pagination?.total_data_count == 1) {
           setStepIndex(0);
           setRun(true);
@@ -478,7 +478,7 @@ export default function Orders() {
                 router.back();
               }}
             />
-            {pagination.total_data_count == 1 ? (
+            {pagination.total_data_count > 0 ? (
               <Box
                 sx={{
                   color: "grey",

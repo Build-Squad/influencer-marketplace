@@ -36,7 +36,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
 
   // User Guide
-  const [isFirstOrder, setIsFirstOrder] = useState<boolean>(false);
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState<any>([
@@ -105,6 +104,28 @@ export default function CheckoutPage() {
       placement: "left",
       target: ".joyride-make-payment",
     },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completing your checkout tour, you're good to go and create
+            an order request.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
   ]);
 
   useEffect(() => {
@@ -122,7 +143,8 @@ export default function CheckoutPage() {
           totalOrders += value;
         });
         if (!totalOrders) {
-          setIsFirstOrder(true);
+          // When it's the first time user is creating an order,
+          // based on the number of order's he has in history we default the user guide opening.
           setRun(true);
         }
       }
@@ -374,7 +396,7 @@ export default function CheckoutPage() {
           }}
         >
           <DriveEta fontSize="small" />
-          <Typography sx={{color:'#C60C30'}}>Take A Tour!</Typography>
+          <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
         </Box>
       </Box>
       {cart?.orderItems?.length === 0 ? (
@@ -558,26 +580,24 @@ export default function CheckoutPage() {
               </Box>
             </Grid>
           </Grid>
-          {isFirstOrder ? (
-            <Joyride
-              callback={handleJoyrideCallback}
-              continuous
-              stepIndex={stepIndex}
-              // disableOverlay
-              run={run}
-              scrollToFirstStep
-              // showProgress
-              showSkipButton
-              steps={steps}
-              spotlightClicks
-              styles={{
-                options: {
-                  zIndex: 2,
-                },
-              }}
-              locale={{ last: "Finish" }}
-            />
-          ) : null}
+          <Joyride
+            callback={handleJoyrideCallback}
+            continuous
+            stepIndex={stepIndex}
+            // disableOverlay
+            run={run}
+            scrollToFirstStep
+            // showProgress
+            showSkipButton
+            steps={steps}
+            spotlightClicks
+            styles={{
+              options: {
+                zIndex: 2,
+              },
+            }}
+            locale={{ last: "Finish" }}
+          />
         </LocalizationProvider>
       )}
     </RouteProtection>

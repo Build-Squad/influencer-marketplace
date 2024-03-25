@@ -42,6 +42,7 @@ export default function BusinessMessages() {
   // User Guide for the very first order
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
+  const [hasAMessage, setHasAMessage] = useState(false);
   const [steps, setSteps] = useState<any>([
     {
       content: (
@@ -88,8 +89,8 @@ export default function BusinessMessages() {
             Influencer's List.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Click on the influencer to chat with them and
-            have a discussion about the order.
+            Click on the influencer to chat with them and have a discussion
+            about the order.
           </Typography>
         </Box>
       ),
@@ -110,8 +111,8 @@ export default function BusinessMessages() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completing your messages tour, you're good to go and chat with
-            your influencers.
+            You've completing your messages tour, you're good to go and chat
+            with your influencer.
           </Typography>
         </Box>
       ),
@@ -135,19 +136,16 @@ export default function BusinessMessages() {
   const handleUserInteraction = async () => {
     const { isSuccess, message, data } = await postService(
       "/orders/user-order-messages/",
-      {
-        status: [
-          ORDER_STATUS.ACCEPTED,
-          ORDER_STATUS.REJECTED,
-          ORDER_STATUS.PENDING,
-          ORDER_STATUS.COMPLETED,
-        ],
-      }
+      {}
     );
     if (isSuccess) {
+      // Fetching all user-message and if there's exactly 1 object, show the user guide
       if (data?.data?.orders?.length == 1) {
         setStepIndex(0);
         setRun(true);
+      }
+      if (data?.data?.orders?.length > 0) {
+        setHasAMessage(true);
       }
     }
   };
@@ -252,6 +250,7 @@ export default function BusinessMessages() {
                 alignItems: "center",
                 justifyContent: "flex-end",
                 columnGap: "4px",
+                visibility: hasAMessage ? "visible" : "hidden",
               }}
               onClick={() => {
                 setStepIndex(0);
