@@ -20,7 +20,7 @@ export default function OrderChatCard({
   chatDisplayDetails,
 }: OrderChatCardType) {
   return (
-    <Box>
+    <Box className="joyride-user-chats">
       <Box
         sx={{
           display: "flex",

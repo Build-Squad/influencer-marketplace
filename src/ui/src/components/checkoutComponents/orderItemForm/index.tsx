@@ -338,6 +338,7 @@ export default function OrderItemForm({
         p: 2,
         ...sx,
       }}
+      className={"joyride-order-item-form"}
     >
       <Box
         sx={{
