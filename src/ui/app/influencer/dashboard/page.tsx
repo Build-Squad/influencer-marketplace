@@ -51,6 +51,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import MessageIcon from "@mui/icons-material/Message";
 
 const tabs = [
   {
@@ -682,6 +683,22 @@ export default function BusinessDashboardPage() {
                 </IconButton>
               </Badge>
             </Tooltip>
+            <Link
+              href={`/influencer/messages?order_chat_id=${params?.row?.id}`}
+              component={NextLink}
+              sx={{
+                textDecoration: "none",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              <Tooltip title="Go to Order Chat" placement="top" arrow>
+                <IconButton>
+                  <MessageIcon />
+                </IconButton>
+              </Tooltip>
+            </Link>
             {params?.row?.status === ORDER_STATUS.COMPLETED &&
               params?.row?.transactions.filter(
                 (transaction: TransactionType) =>
