@@ -48,12 +48,26 @@ const CreateUpdateService = ({
   setOpen,
   setRefreshPage,
 }: CreateUpdateServiceProps) => {
-  const PLATFORM_FEE = process.env.NEXT_PUBLIC_PLATFORM_FEE
-    ? Number(process.env.NEXT_PUBLIC_PLATFORM_FEE)
-    : 5;
+  const [defaultPlatformFees, setDefaultPlatformFees] = React.useState<
+    number | null
+  >(0);
+  const [platform_fees, setPlatformFees] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [defaultCurrency, setDefaultCurrency] =
     React.useState<CurrencyType | null>(null);
+
+  const getPlatformFees = async () => {
+    try {
+      const { data, isSuccess } = await getService("/core/configuration/", {
+        key: "platform_fees",
+      });
+      if (isSuccess) {
+        setDefaultPlatformFees(data?.data[0]?.value || 0);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const getDefaultCurrency = async () => {
     try {
@@ -82,8 +96,8 @@ const CreateUpdateService = ({
           publish_date: values.publish_date,
         },
         status: values.status,
-        platform_fees: PLATFORM_FEE,
-        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(4),
+        platform_fees: platform_fees,
+        platform_price: (values.price * (1 + platform_fees / 100)).toFixed(4),
       };
       const { message, data, errors, isSuccess } = await putService(
         `/packages/service/${serviceItem?.id}/`,
@@ -120,8 +134,8 @@ const CreateUpdateService = ({
           publish_date: values.publish_date,
         },
         status: values.status,
-        platform_fees: PLATFORM_FEE,
-        platform_price: (values.price * (1 + PLATFORM_FEE / 100)).toFixed(4),
+        platform_fees: platform_fees,
+        platform_price: (values.price * (1 + platform_fees / 100)).toFixed(4),
       };
       const { message, isSuccess } = await postService(
         "/packages/service/",
@@ -160,6 +174,7 @@ const CreateUpdateService = ({
   React.useEffect(() => {
     if (open) {
       getDefaultCurrency();
+      getPlatformFees();
     }
   }, [open]);
 
@@ -177,12 +192,14 @@ const CreateUpdateService = ({
       formik.setFieldValue("statusObject", selectedOption);
       formik.setFieldValue("description", serviceItem?.package?.description);
       formik.setFieldValue("name", serviceItem?.package?.name);
+      setPlatformFees(Number(serviceItem?.platform_fees));
     } else {
       formik.resetForm();
       formik.setFieldValue("currency", defaultCurrency?.id);
       formik.setFieldValue("currencyObject", defaultCurrency);
+      setPlatformFees(Number(defaultPlatformFees));
     }
-  }, [serviceItem, open, defaultCurrency]);
+  }, [serviceItem, open, defaultCurrency, defaultPlatformFees]);
 
   return (
     <CustomModal
@@ -497,11 +514,12 @@ const CreateUpdateService = ({
                     }}
                   >
                     <Typography variant="body1">
-                      Platform Fee ({PLATFORM_FEE}%)
+                      Platform Fee ({platform_fees}%)
                     </Typography>
                     <Typography variant="body1">
-                      {((formik.values.price * PLATFORM_FEE) / 100).toFixed(4) +
-                        " "}{" "}
+                      {((formik.values.price * platform_fees) / 100).toFixed(
+                        4
+                      ) + " "}{" "}
                       {formik?.values?.currencyObject?.symbol}
                     </Typography>
                   </Box>
@@ -522,9 +540,10 @@ const CreateUpdateService = ({
                   >
                     <Typography variant="body1">Listing Price</Typography>
                     <Typography variant="body1">
-                      {(formik.values.price * (1 + PLATFORM_FEE / 100)).toFixed(
-                        2
-                      ) + " "}
+                      {(
+                        formik.values.price *
+                        (1 + platform_fees / 100)
+                      ).toFixed(2) + " "}
                       {formik.values.currencyObject?.symbol}
                     </Typography>
                   </Box>

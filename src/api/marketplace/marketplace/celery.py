@@ -37,6 +37,6 @@ app.conf.beat_schedule = {
     },
     "generate-metrics": {
         "task": "orders.tasks.store_order_item_metrics",
-        "schedule": crontab(minute="0", hour="*/12"),
+        "schedule": crontab(minute="0", hour="0"),
     }
 }

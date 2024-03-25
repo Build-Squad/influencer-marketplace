@@ -18,6 +18,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import PublicOff from "@mui/icons-material/PublicOff";
 import {
   Box,
+  CircularProgress,
   Divider,
   Drawer,
   Grid,
@@ -34,6 +35,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { Close } from "@mui/icons-material";
+import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 
 const DynamicResponsiveBarChart = dynamic(
   () =>
@@ -80,7 +82,7 @@ export default function OrderItemAnalyticsPage({
     lt_created_at: null,
     metric: [],
   });
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(true);
   const [metricValues, setMetricValues] = React.useState<
     { label: string; value: string }[]
   >([]);
@@ -163,7 +165,6 @@ export default function OrderItemAnalyticsPage({
 
   const getOrderItemMetrics = async () => {
     try {
-      setLoading(true);
       const { isSuccess, data, message } = await postService(
         `/orders/order-item-metrics/`,
         {
@@ -381,14 +382,61 @@ export default function OrderItemAnalyticsPage({
             m: 2,
           }}
         >
-          {selectedView === "bar" ? (
-            <DynamicResponsiveBarChart
-              keys={keys}
-              data={data}
-              indexBy={indexBy}
-            />
+          {loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "80%",
+                flexDirection: "column",
+                backgroundColor: "rgba(255, 255, 255, 0.5)",
+              }}
+            >
+              <CircularProgress />
+            </Box>
           ) : (
-            <DynamicLineChart data={lineData} />
+            <>
+              {data?.length > 0 || lineData?.length > 0 ? (
+                <>
+                  {selectedView === "bar" ? (
+                    <DynamicResponsiveBarChart
+                      keys={keys}
+                      data={data}
+                      indexBy={indexBy}
+                    />
+                  ) : (
+                    <DynamicLineChart data={lineData} />
+                  )}
+                </>
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "80%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <TroubleshootIcon
+                    sx={{
+                      fontSize: "100px",
+                      color: "#e0e0e0",
+                      display: "block",
+                    }}
+                  />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontStyle: "italic",
+                    }}
+                  >
+                    No metrics available
+                  </Typography>
+                </Box>
+              )}
+            </>
           )}
         </Grid>
       </Grid>

@@ -25,7 +25,9 @@ pub mod xfluencer {
     
     use super::*;
 
-    //// ATA
+    /////////////////////////////////////
+    //// ESCROW IX'S USING SPL TOKEN'S //
+    /////////////////////////////////////
     pub fn initialize(
         ctx: Context<CreateEscrow>,
         _vault_account_bump: u8,
@@ -35,12 +37,17 @@ pub mod xfluencer {
         processor::initialize_escrow::process(ctx,_vault_account_bump, amount, order_code)
     }
 
+    pub fn claim(ctx: Context<Claim>) -> ProgramResult {
+        Ok(())
+    }
+
     pub fn cancel(ctx: Context<Cancel>, order_code: u64) -> ProgramResult {
                processor::cancel::process(ctx, order_code)
     }
 
     /////////////////////////////
-    //// SOL
+    //// ESCROW IX'S USING SOL //
+    /////////////////////////////
     pub fn create_escrow(ctx: Context<CreateEscrowSolana>, amount: u64, order_code: u64) -> ProgramResult {
         processor::create_escrow_solana::process(ctx, amount, order_code)
     }
@@ -87,7 +94,7 @@ pub struct EscrowAccount {
     pub business_deposit_token_account: Pubkey, // (32)
     pub influencer_key: Pubkey, // (32)
     pub influencer_receive_token_account: Pubkey, // (32)
-    pub judge_key: Pubkey, // (32)
+    pub validation_authority: Pubkey, // (32)
     pub amount: u64, // (8)
     pub order_code: u64, // (8)
     /** status
@@ -133,7 +140,7 @@ pub struct CreateEscrow<'info> {
     /// CHECK: safe
     pub influencer: AccountInfo<'info>, // change name to influencer
     /// CHECK: safe 
-    pub judge: AccountInfo<'info>,  // change name to xfluencer
+    pub validation_authority: AccountInfo<'info>,  // change name to xfluencer
     pub mint: Account<'info, Mint>,
     
     #[account(
@@ -172,6 +179,34 @@ pub struct CreateEscrow<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
+#[derive(Accounts)]
+#[instruction(order_code: u64)]
+pub struct Claim<'info> {
+    /// CHECK: safe
+    #[account(mut, signer)]
+    pub influencer: AccountInfo<'info>,
+    /// CHECK: safe
+    #[account(mut)]
+    pub influencer_deposit_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub vault_account: Account<'info, TokenAccount>,
+    /// CHECK: safe
+    pub vault_authority: AccountInfo<'info>,
+    #[account(
+        mut,
+        constraint = escrow_account.influencer_key == *influencer.key @CustomError::MissmatchInfluencer,
+        constraint = escrow_account.influencer_receive_token_account 
+            == *influencer_deposit_token_account.to_account_info().key @CustomError::MissmatchBusinessTokenAccount,
+        constraint = escrow_account.order_code == order_code @CustomError::MissmatchOrderCode,
+        constraint = escrow_account.status == 2 @CustomError::BadEscrowState,
+        close = influencer
+    )]
+    pub escrow_account: Account<'info, EscrowAccount>,
+    /// CHECK: safe
+    pub token_program: AccountInfo<'info>,
+
+}
+
 
 #[derive(Accounts)]
 #[instruction(order_code: u64)]
@@ -187,10 +222,11 @@ pub struct Cancel<'info> {
     pub vault_authority: AccountInfo<'info>,
     #[account(
         mut,
-        constraint = escrow_account.business_key == *business.key,
-        constraint = escrow_account.business_deposit_token_account == *business_deposit_token_account.to_account_info().key,
-        constraint = escrow_account.order_code == order_code,
-        constraint = escrow_account.status == 0,
+        constraint = escrow_account.business_key == *business.key @CustomError::MissmatchBusiness,
+        constraint = escrow_account.business_deposit_token_account 
+                == *business_deposit_token_account.to_account_info().key @CustomError::MissmatchBusinessTokenAccount,
+        constraint = escrow_account.order_code == order_code @CustomError::MissmatchOrderCode,
+        constraint = escrow_account.status == 1 @CustomError::BadEscrowState,
         close = business
     )]
     pub escrow_account: Account<'info, EscrowAccount>,
@@ -288,6 +324,38 @@ pub struct ValidateEscrowSolana<'info> {
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
 }
+
+
+#[derive(Accounts)]
+#[instruction()]
+pub struct ValidateDeliveryPayedWithSplToken<'info> {
+    #[account(mut)]
+    pub validation_authority: Signer<'info>,
+    /// CHECK: safe
+    #[account(mut)]
+    pub influencer: AccountInfo<'info>,
+    /// CHECK:
+    #[account(mut)]
+    pub business: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction()]
+pub struct ValidateCancellationPayedWithSplToken<'info> {
+    #[account(mut)]
+    pub validation_authority: Signer<'info>,
+    /// CHECK: safe
+    #[account(mut)]
+    pub influencer: AccountInfo<'info>,
+    /// CHECK:
+    #[account(mut)]
+    pub business: AccountInfo<'info>,
+}
+
+
+
+
+
 
 #[event]
 pub struct EscrowAccountSolanaCreated {

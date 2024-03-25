@@ -4,7 +4,7 @@ from http.client import HTTPResponse
 import secrets
 
 from django.shortcuts import get_object_or_404
-from accounts.tasks import sendEmail
+from accounts.tasks import promote_xfluencer, sendEmail
 
 from marketplace.authentication import JWTAuthentication, JWTAuthenticationOptional
 from django.db.models import Q
@@ -55,6 +55,7 @@ from .serializers import (
     TwitterAccountSerializer,
     CategoryMasterSerializer,
     AccountCategorySerializer,
+    TwitterPromotionSerializer,
     UserCreateSerializer,
     UserSerializer,
     BankAccountSerializer,
@@ -2009,5 +2010,66 @@ class BookmarkDetailView(APIView):
             )
         except Bookmark.DoesNotExist:
             return handleNotFound("Bookmark")
+        except Exception as e:
+            return handleServerException(e)
+
+
+class TwitterPromotionView(APIView):
+
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=TwitterPromotionSerializer)
+    def post(self, request):
+        try:
+            # check if the user is an influencer
+            if request.user_account.role.name != "influencer":
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Only influencers can share their referral link",
+                        "errors": "Only influencers can share their referral link",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            # check if already a promotion exists
+            if request.user_account.promoted_tweet_id:
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "You have already shared your referral link on X",
+                        "errors": "You have already shared your referral link on X",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            serializer = TwitterPromotionSerializer(data=request.data)
+            if serializer.is_valid():
+                promoted_tweet_id = promote_xfluencer(
+                    user=request.user_account, text=request.data["text"])
+                if promoted_tweet_id is None:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Publication failed on X, please try again later",
+                            "errors": "Publication failed on X, please try again later",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    user = User.objects.get(id=request.user_account.id)
+                    user.promoted_tweet_id = promoted_tweet_id
+                    user.save()
+                    return Response(
+                        {
+                            "isSuccess": True,
+                            "data": UserSerializer(user).data,
+                            "message": "Post was successfully published on X",
+                        },
+                        status=status.HTTP_201_CREATED,
+                    )
+            else:
+                return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)

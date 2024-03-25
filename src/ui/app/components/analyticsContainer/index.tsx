@@ -24,16 +24,16 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     role: "business",
     data1: {
       value: "69 %",
-      subtitle: "Consumer trust influencer",
+      subtitle: "Consumers trust influencer",
     },
     data2: {
       value: "76 %",
       subtitle:
-        "Users say they bought something after a recommendation from X.",
+        "Users say they bought something after a recommendation from X",
     },
     data3: {
       value: "238 M",
-      subtitle: "Monthly active users (MAU)",
+      subtitle: "Monthly Active Users (MAU)",
     },
     data4: {
       value: "79 %",
@@ -48,7 +48,7 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     },
     data2: {
       value: "70.2",
-      subtitle: "Average number of post per week",
+      subtitle: "Average number of posts per week",
     },
     data3: {
       value: "$ 214",
@@ -56,7 +56,7 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     },
     data4: {
       value: "440 M",
-      subtitle: "Total users on X",
+      subtitle: "Total Users on X",
     },
   },
 ];

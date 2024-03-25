@@ -25,5 +25,12 @@ pub enum CustomError {
     #[msg("Numerical Problem Found Calculating Fees")]
     NumericalProblemFoundCalculatingFees,
     #[msg("Busines Has Insufficient Amount Of Tokens")]
-    BusinessHasInsufficientAmountOfTokens
+    BusinessHasInsufficientAmountOfTokens,
+    #[msg("Missmatch Business Token Account")]
+    MissmatchBusinessTokenAccount,
+    #[msg("Missmatch Influencer Token Account")]
+    MissmatchInfluencerTokenAccount,
+    #[msg("Missmatch Order Code")]
+    MissmatchOrderCode,
+
 }

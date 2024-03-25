@@ -1,9 +1,9 @@
 # Influencer Marketplace
 
 ### Description
-A marketplace for influencers and businesses to connect and collaborate. The marketplace will allow influencers to create a profile and list their services. Businesses will be able to search for influencers based on their services and contact them for collaborations.
+A marketplace that aims to directly connect creators & influencers with businesses, brands and agencies. Influencers would be able to connect with their online profile and list services such as posts, reposts etc. Businesses will be able to explore and pick influencers based on their listed services, and, send offers for collaborations.
 
-The payments will be handled by the marketplace. Businesses will pay the marketplace and the marketplace will pay the influencers. The marketplace will take a percentage of the payment as a fee.
+The marketplace is end-to-end, from listing to posting and payouts everything is taken care of by the marketplace in a decentralized and trustless way (using smart contracts to build a customized escrow mechanism).
 
 The transactions will be carried out using cryptocurrencies.
 

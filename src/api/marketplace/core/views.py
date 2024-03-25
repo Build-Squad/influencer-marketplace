@@ -3,9 +3,10 @@ from marketplace.services import Pagination, handleServerException, handleNotFou
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Country, Currency, HowItWorksStep, LanguageMaster, RegionMaster
+from .models import Configuration, Country, Currency, HowItWorksStep, LanguageMaster, RegionMaster
 from django.db.models import Q
 from .serializers import (
+    ConfigurationSerializer,
     CountrySerializer,
     CurrencySerializer,
     HowItWorksStepSerializer,
@@ -219,5 +220,26 @@ class TwitterUsageView(APIView):
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class ConfigurationView(APIView):
+    # A get request with a key filter from request params
+    def get(self, request):
+        try:
+            configurations = Configuration.objects.all()
+            if request.GET.get("key"):
+                configurations = configurations.filter(
+                    key=request.GET.get("key"))
+            serializer = ConfigurationSerializer(configurations, many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Configuration fetched successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             return handleServerException(e)

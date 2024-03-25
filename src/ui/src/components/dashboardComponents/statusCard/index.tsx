@@ -35,6 +35,7 @@ export default function StatusCard({
         boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
         backgroundColor: selectedCard === card?.value ? "#000" : "#fff",
         minHeight: count !== null ? "180px" : "",
+        maxHeight: count !== null ? "180px" : "",
       }}
       onClick={card.onClick}
     >

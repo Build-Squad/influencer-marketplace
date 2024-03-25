@@ -47,7 +47,6 @@ NETWORK = config("NETWORK")
 TWEET_FIELDS = ['public_metrics', 'organic_metrics', 'non_public_metrics']
 
 
-@celery_app.task(base=QueueOnce, once={'graceful': True})
 def cancel_escrow(order_id: str, status: str):
     try:
         # Get order and corresponding escrow
@@ -89,8 +88,11 @@ def cancel_escrow(order_id: str, status: str):
         escrow.status = "cancelled"
         escrow.save()
 
+        return True
+
     except Exception as e:
-        raise Exception('Error in cancelling escrow', str(e))
+        logger.error('Error in cancelling escrow: %s', str(e))
+        return False
 
 
 @celery_app.task(base=QueueOnce, once={'graceful': True})
@@ -505,44 +507,53 @@ def validate_order_item(order_item_id):
 
 @celery_app.task()
 def store_order_item_metrics():
+    # Get the current date
+    now = timezone.now()
     # Get all order items that are in published status and verified and service type is not retweet or like
     order_items = OrderItem.objects.filter(
-        status='published', is_verified=True, service_master__twitter_service_type__in=['tweet', 'reply_to_tweet', 'quote_tweet', 'poll', 'thread'])
+        status='published', 
+        service_master__twitter_service_type__in=['tweet', 'reply_to_tweet', 'quote_tweet', 'poll', 'thread']
+    )
     for order_item in order_items:
-        # Get the twitter account of the influencer
-        twitter_account = TwitterAccount.objects.get(
-            id=order_item.package.influencer.twitter_account.id)
-        client = Client(bearer_token=twitter_account.access_token,
-                        consumer_key=CONSUMER_KEY,
-                        consumer_secret=CONSUMER_SECRET,
-                        access_token=ACCESS_TOKEN,
-                        access_token_secret=ACCESS_SECRET
-                        )
-        try:
-            res = client.get_tweet(
-                id=order_item.published_tweet_id, user_auth=False, tweet_fields=TWEET_FIELDS)
+        # Calculate the number of days since the order item was published
+        days_since_published = (now - order_item.publish_date).days
 
-            # For all the res.data fields, create a OrderItemMetric object
-            public_metrics = res.data['public_metrics']
-            organic_metrics = res.data['organic_metrics']
-            non_public_metrics = res.data['non_public_metrics']
+        # Check if the current day is the 1st, 2nd, 3rd, 7th, 14th, 21st, or 28th day since the order item was published
+        if days_since_published in [1, 2, 3, 7, 14, 21, 28]:
+            # Get the twitter account of the influencer
+            twitter_account = TwitterAccount.objects.get(
+                id=order_item.package.influencer.twitter_account.id)
+            client = Client(bearer_token=twitter_account.access_token,
+                            consumer_key=CONSUMER_KEY,
+                            consumer_secret=CONSUMER_SECRET,
+                            access_token=ACCESS_TOKEN,
+                            access_token_secret=ACCESS_SECRET
+                            )
+            try:
+                res = client.get_tweet(
+                    id=order_item.published_tweet_id, user_auth=False, tweet_fields=TWEET_FIELDS)
 
-            order_item_metrics = []
+                # For all the res.data fields, create a OrderItemMetric object
+                public_metrics = res.data['public_metrics']
+                organic_metrics = res.data['organic_metrics']
+                non_public_metrics = res.data['non_public_metrics']
 
-            for key, value in public_metrics.items():
-                order_item_metrics.append(
-                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='public_metrics'))
+                order_item_metrics = []
 
-            for key, value in organic_metrics.items():
-                order_item_metrics.append(
-                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic_metrics'))
+                for key, value in public_metrics.items():
+                    order_item_metrics.append(
+                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='public_metrics'))
 
-            for key, value in non_public_metrics.items():
-                order_item_metrics.append(
-                    OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public_metrics'))
+                for key, value in organic_metrics.items():
+                    order_item_metrics.append(
+                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic_metrics'))
 
-            OrderItemMetric.objects.bulk_create(order_item_metrics)
+                for key, value in non_public_metrics.items():
+                    order_item_metrics.append(
+                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public_metrics'))
 
-        except Exception as e:
-            logger.error('Error in getting tweet metrics: %s', str(e))
-            continue
+                OrderItemMetric.objects.bulk_create(order_item_metrics)
+
+            except Exception as e:
+                logger.error('Error in getting tweet metrics: %s', str(e))
+                continue

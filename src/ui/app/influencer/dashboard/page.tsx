@@ -381,7 +381,7 @@ export default function BusinessDashboardPage() {
 
   const statusCards = [
     {
-      label: "Total Orders",
+      label: "All",
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
@@ -408,7 +408,7 @@ export default function BusinessDashboardPage() {
       ),
     },
     {
-      label: "Accepted Orders",
+      label: "Accepted",
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
@@ -430,7 +430,7 @@ export default function BusinessDashboardPage() {
       ),
     },
     {
-      label: "Completed Orders",
+      label: "Completed",
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
@@ -452,7 +452,7 @@ export default function BusinessDashboardPage() {
       ),
     },
     {
-      label: "Rejected Orders",
+      label: "Rejected",
       onClick: () => {
         setFilters((prev) => ({
           ...prev,
@@ -474,7 +474,7 @@ export default function BusinessDashboardPage() {
       ),
     },
     {
-      label: "Cancelled Orders",
+      label: "Cancelled",
       onClick: () => {
         setFilters((prev) => ({
           ...prev,

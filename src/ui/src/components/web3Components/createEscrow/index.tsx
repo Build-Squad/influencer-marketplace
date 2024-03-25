@@ -26,13 +26,10 @@ export default function CreateEscrow({
 }: CreateEscrowProps) {
   const cart = useAppSelector((state) => state.cart);
   const [localLoading, setLocalLoading] = useState(false);
-  const connection = new Connection(
-    `https://rpc.ironforge.network/devnet?apiKey=${process.env.NEXT_PUBLIC_RPC_KEY}`,
-    {
-      commitment: "confirmed",
-      confirmTransactionInitialTimeout: 30000,
-    }
-  );
+  const connection = new Connection(`https://api.devnet.solana.com`, {
+    commitment: "confirmed",
+    confirmTransactionInitialTimeout: 30000,
+  });
   const wallet = useAnchorWallet();
 
   const program = getAnchorProgram(connection);
