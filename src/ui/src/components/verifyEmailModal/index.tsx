@@ -235,7 +235,7 @@ export default function VerifyEmailModal({
                 fullWidth
                 onClick={verifyOTP}
               >
-                Login
+                Submit
               </Button>
               <Typography
                 variant="subtitle2"
