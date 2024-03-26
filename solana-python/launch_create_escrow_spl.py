@@ -39,7 +39,7 @@ async def main():
     mint = "usdc_mint_address"
     type_of_asset = "usdc"
     
-    ### verify ata accounts
+    # verify ata accounts
     
     print(f"Network: {network}")
     print(f"Program ID: {PROGRAM_ID}")
@@ -62,17 +62,14 @@ async def main():
     business_ata = configuration["business"][ata_selector]
     influencer_ata = configuration["influencer"][ata_selector]
     
-    
-    #assert str(validation_authority_pk) == configuration["platform"]   
-    #assert str(business_pk) == configuration["business"]["pubkey"]
-    #assert str(business_ata) == configuration["business"]["usdc_ata"]
-    #assert str(influencer_pk) == configuration["influencer"]["pubkey"]
-    #assert str(influencer_ata) == configuration["influencer"]["usdc_ata"]
+    # check configuration matches local keypairs
+    assert str(validation_authority_pk) == configuration["platform"]   
+    assert str(business_pk) == configuration["business"]["pubkey"]
+    assert str(business_ata) == configuration["business"]["usdc_ata"]
+    assert str(influencer_pk) == configuration["influencer"]["pubkey"]
+    assert str(influencer_ata) == configuration["influencer"]["usdc_ata"]
 
-    
-
-
-    #### find pdas
+    # find pdas for create escrow with spl 
     order_code = configuration["order_code"]
     
     SEEDS = [b"vault", 
@@ -92,12 +89,10 @@ async def main():
 
     escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
         
-
     mint_pk = Pubkey.from_string(configuration["spl_tokens"][mint])
     business_deposit_token_account_pk = Pubkey.from_string(business_ata)
     influencer_deposit_token_account_pk = Pubkey.from_string(influencer_ata)
 
-   
 
     accounts = {
         "initializer": business_pk,
@@ -117,7 +112,6 @@ async def main():
 
     ix = initialize(args, accounts, program_id=PROGRAM_ID)
            
-    #print(ix)
     signers = [business]    
 
     sign_status = await sign_and_send_transaction(ix, signers, opts, network)
