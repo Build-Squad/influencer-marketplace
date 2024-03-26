@@ -4,20 +4,17 @@ This is a static client for XFluencer Solana program generated with anchorpy. Th
 
 ## Settings
 
-A configuration file `config.json` file is included in this clinet used as example on the test launcher scripts for the different types of instructions: escrow creation, validation and claim amounts. 
+Configuration file `config.json` contains public keys of wallets and program ids for testing purposes. This is used by launcher scripts to test the program instructions, i.e. escrow creation, validation and claim amounts. 
 
-The config file also contains arguments used as instructions, with public keys for business, influencer and platform validator. 
+You can change this configuration as needed on public keys/keypairs for business, influencer and platform validator. 
 
-Change the order code as required. At any point, there will exist a unique escrow triple on-change defined by the triplet: (busines pubkey, influencer pubkey, order code).
+As constraint, there will be a unique tupble of data for the program on-change defined by the triplet (busines pubkey, influencer pubkey, order code)
 
-Program Id's are specified here, depending on the network choosen.
+Program Id's are also specified here, depending on the network that has been choosen for deployment.
 
 Change this accounts accordantly depending on your testing requirements.
 
-
 ## Transaction Script Launchers
-
-You will find CLI scripts ilustrating how the client and instructions should be used and formed respectively.
 
 To test a specific launcher from CLI, 
 
@@ -41,11 +38,12 @@ Launch example script:
 
 You will get an output from the script with Ok or Error, depending on the settings
 
+In this folder there are other test launchers for cancel, create and validate.
+
 
 ## Deploying the Python Client
 
 Release the python client in form of python wheel. This allows to work from the API independently to the code changes happened in this repository.
-
 
 Enter in `setup.py` to change the version number, that will be the wheel version to release. 
 
@@ -122,7 +120,7 @@ As follows the steps to setup a validator instruction:
 import asyncio
 
 from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered
-from pyxfluencer.utils import get_local_keypair_pubkey`
+from pyxfluencer.utils import get_local_keypair_pubkey
 ```
 
 Notice, that functions in the library are async so it is necessary to `await` for them.

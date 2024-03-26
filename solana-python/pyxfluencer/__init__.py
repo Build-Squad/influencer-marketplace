@@ -9,11 +9,21 @@ from .instructions import validate_escrow_sol
 from .utils import sign_and_send_transaction
 from .program_id import PROGRAM_ID
 
-xfluencer_solana_python_client_version="1.0.2"
+xfluencer_solana_python_client_version="1.1.0"
+
+###################
+# Version: 1.1.0
+# Bump: Minor
+# Updated: 25.03.2024
+###################
+# Issues
+# - Support and launcher script to initialize escrow for SPL 
+# - Checker configured ATA addresses on initialization and amount 
+#
 ###################
 # Version: 1.0.2
 # Bump: Patch
-# Updated: 6.03.2024
+# Updated: 06.03.2024
 ###################
 # Issues
 # -Return signature status upon validation
@@ -22,7 +32,7 @@ xfluencer_solana_python_client_version="1.0.2"
 ###################
 # Version: 1.0.1 
 # Bump: Patch
-# Updated: 5.03.2024
+# Updated: 05.03.2024
 ###################
 # Issues 
 # -Fix bug on setup.py about including requirements
