@@ -29,9 +29,10 @@ async def main():
     business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     
-    assert str(validation_authority_pk) == configuration["platform"]   
-    assert str(business_pk) == configuration["business"]
-    assert str(influencer_pk) == configuration["influencer"]
+    assert str(validation_authority_pk) == configuration["platform"]  
+     
+    assert str(business_pk) == configuration["business"]["pubkey"]
+    assert str(influencer_pk) == configuration["influencer"]["pubkey"]
 
     amount = configuration["lamports"]
     order_code = configuration["order_code"]
