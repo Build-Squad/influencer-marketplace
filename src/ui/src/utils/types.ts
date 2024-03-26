@@ -146,6 +146,20 @@ type UserType = {
   promoted_tweet_id?: string | null;
 };
 
+type RewardPointType = {
+  id: string;
+  points: number;
+  reward_configuration: string;
+  user_account: string;
+};
+
+type UserReferralsType = {
+  id: string;
+  referred_by: UserType;
+  user_account: UserType;
+  referred_by_reward_point: RewardPointType;
+};
+
 type ServiceCheckOutType = {
   serviceItem: ServiceType;
   quantity: number;

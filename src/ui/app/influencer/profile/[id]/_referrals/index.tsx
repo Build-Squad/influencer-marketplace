@@ -10,22 +10,46 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import dayjs from "dayjs";
+import { DISPLAY_DATE_FORMAT } from "@/src/utils/consts";
+import NoData from "@/public/no_data.jpg";
+import Image from "next/image";
 
 type Props = {};
 
 const REFERAL_GUIDE = [
   "Share your unique referral link to an influential individual in the Xfluencer community.",
-  "Your referral joins Xfluencer and establishes their services on the platform.",
-  "Upon the successful sale of their first service to a business, you earn a 1% commission from the platform fee levied on the purchasing business.",
-  "Additionally, your referral receives a 0.5% share of the transaction fees for their initial five orders as an Xfluencer, in addition to their listed service price.",
+  "Your referral joins Xfluencer they'll be receiving the rewards and you as well.",
+  "The rewards will be based on the number of followers the new user has in the following manner - ",
 ];
 
 export default function Referrals({}: Props) {
   const [referralLink, setReferralLink] = React.useState<string>("");
+  const [userReferrals, setUserReferrals] =
+    React.useState<UserReferralsType[]>();
 
   React.useEffect(() => {
     getUserReferralLink();
+    getUserReferrals();
   }, []);
+
+  const getUserReferrals = async () => {
+    const { isSuccess, message, data } = await getService(
+      `/reward/user-referrals/`,
+      {
+        page_size: 15,
+        page_number: 1,
+      }
+    );
+    if (isSuccess) {
+      setUserReferrals(data?.data);
+    } else {
+      notification(
+        message ? message : "Error fetching user referrals",
+        "error"
+      );
+    }
+  };
 
   const getUserReferralLink = async () => {
     const { isSuccess, message, data } = await getService(
@@ -50,6 +74,14 @@ export default function Referrals({}: Props) {
       .catch((err) => console.error("Failed to copy:", err));
   };
 
+  const getTotalEarnings = () => {
+    if (userReferrals) {
+      return userReferrals.reduce((acc, curr) => {
+        return acc + curr?.referred_by_reward_point?.points;
+      }, 0);
+    } else return 0;
+  };
+
   return (
     <Grid
       container
@@ -69,13 +101,13 @@ export default function Referrals({}: Props) {
         >
           <Grid item xs={6} sm={6} md={6} lg={6}>
             <Typography variant="h4" fontWeight={"bold"}>
-              0
+              {userReferrals ? userReferrals.length : 0}
             </Typography>
             <Typography>Total Referrals</Typography>
           </Grid>
           <Grid item xs={6} sm={6} md={6} lg={6}>
             <Typography variant="h4" fontWeight={"bold"}>
-              0 Tokens
+              {getTotalEarnings()} Tokens
             </Typography>
             <Typography>Total Earnings</Typography>
           </Grid>
@@ -123,24 +155,65 @@ export default function Referrals({}: Props) {
             My Referrals
           </Typography>
           <TableContainer sx={{ mt: 2 }}>
-            <Table sx={{ minWidth: 650 }}>
+            <Table sx={{ minWidth: 400 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Influencer</TableCell>
                   <TableCell>Date of Joining</TableCell>
-                  <TableCell>Rewards</TableCell>
+                  <TableCell>Rewards Points</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                    @loremipsumdolor
-                  </TableCell>
-                  <TableCell>25, sept 2023</TableCell>
-                  <TableCell>10 $</TableCell>
-                </TableRow>
+                {!userReferrals?.length ? (
+                  <TableRow
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                    }}
+                  >
+                    <TableCell colSpan={3}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          alignItems:'center'
+                        }}
+                      >
+                        <Image
+                          src={NoData}
+                          alt="no referrals"
+                          style={{ height: "60%", maxWidth: "60%" }}
+                        />
+                        <Typography variant="body2" sx={{fontStyle:"italic"}}>
+                          No referral points. Start referring influencers to earn points.
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  userReferrals.map((referral) => {
+                    return (
+                      <TableRow
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                        }}
+                      >
+                        <TableCell component="th" scope="row">
+                          @{referral?.user_account?.username}
+                        </TableCell>
+                        <TableCell>
+                          {dayjs(referral?.user_account?.date_joined).format(
+                            DISPLAY_DATE_FORMAT
+                          )}
+                        </TableCell>
+
+                        <TableCell>
+                          {referral?.referred_by_reward_point?.points}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -178,6 +251,7 @@ export default function Referrals({}: Props) {
 
             <Box
               sx={{
+                mt: 2,
                 py: 3,
                 pl: 2,
                 pr: 1,
@@ -215,6 +289,13 @@ export default function Referrals({}: Props) {
                   </Box>
                 );
               })}
+              <ul>
+                <li>Upto 100 followers - 100 points</li>
+                <li>1000 followers - 200points,</li>
+                <li>10000 followers - 500 points</li>
+                <li>100000 followers - 1000 points,</li>
+                <li>1000000 followers - 10000 points.</li>
+              </ul>
               <Box>
                 <Typography
                   variant="caption"

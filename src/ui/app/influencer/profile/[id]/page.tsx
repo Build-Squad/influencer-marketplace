@@ -194,9 +194,10 @@ const ProfileLayout = ({
     // Fetch services for the tour,
     // if there are none, open the tour
     if (params.id == loggedInUser?.id) getServices();
-  }, []);
+  }, [loggedInUser, params]);
 
   const getServices = async () => {
+    console.log("getServices getting called")
     try {
       const { message, data, isSuccess, errors } = await getService(
         "packages/service",

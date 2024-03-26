@@ -5,8 +5,11 @@ from decouple import config
 from rest_framework.response import Response
 from rest_framework import status
 from marketplace.services import (
+    Pagination,
     handleServerException,
 )
+from reward.models import UserReferrals
+from reward.serializers import UserReferralsSerializer
 
 
 class ReferralLink(APIView):
@@ -60,5 +63,35 @@ class ReferralValidity(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+        except Exception as e:
+            return handleServerException(e)
+        
+class UserReferralsListView(APIView):
+
+    def get_user_referrals(self, pk):
+        try:
+            return UserReferrals.objects.filter(referred_by=pk)
+        except Exception as e:
+            return handleServerException(e)
+
+
+    authentication_classes = [JWTAuthentication]
+    def get(self, request):
+        try:
+            user_referrals  = self.get_user_referrals(pk=request.user_account.id)
+            
+            # Paginate the results
+            pagination = Pagination(user_referrals, request)
+            serializer = UserReferralsSerializer(pagination.getData(), many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "User Referrals retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+            
         except Exception as e:
             return handleServerException(e)
