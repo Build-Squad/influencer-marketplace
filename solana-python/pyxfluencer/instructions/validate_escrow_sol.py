@@ -8,9 +8,10 @@ from ..program_id import PROGRAM_ID
 
 class ValidateEscrowSolArgs(typing.TypedDict):
     target_state: int
+    percentage_fee: int
 
 
-layout = borsh.CStruct("target_state" / borsh.U8)
+layout = borsh.CStruct("target_state" / borsh.U8, "percentage_fee" / borsh.U16)
 
 
 class ValidateEscrowSolAccounts(typing.TypedDict):
@@ -42,6 +43,7 @@ def validate_escrow_sol(
     encoded_args = layout.build(
         {
             "target_state": args["target_state"],
+            "percentage_fee": args["percentage_fee"],
         }
     )
     data = identifier + encoded_args
