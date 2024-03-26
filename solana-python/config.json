@@ -22,9 +22,9 @@
     "platform": "EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH",
     "amount":{
         "lamports":10000000,
-        "usdc": 100
+        "usdc": 1000000
     },
-    "order_code": 1244,
+    "order_code": 1235,
     "program_id":{
         "localnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
         "devnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
