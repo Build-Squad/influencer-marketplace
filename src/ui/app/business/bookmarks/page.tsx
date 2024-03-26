@@ -6,6 +6,7 @@ import InfluencersCards from "../components/influencersContainer/influencersCard
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
+import BookmarkAddOutlinedIcon from "@mui/icons-material/BookmarkAddOutlined";
 
 type InfluencersType = {
   id: string;
@@ -189,9 +190,18 @@ export default function BookmarksPage() {
                     justifyContent: "center",
                     alignItems: "center",
                     height: "70vh",
+                    flexDirection: "column",
                   }}
                 >
-                  <Typography variant="h5">No Bookmarks Found</Typography>
+                  <BookmarkAddOutlinedIcon sx={{ fontSize: 150 }} />
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Bookmark Influencers to see them here
+                  </Typography>
                 </Box>
               )}
             </>

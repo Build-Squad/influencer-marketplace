@@ -55,29 +55,31 @@ export default function MessageChip({ message }: MessageChipType) {
         ) : (
           <Box></Box>
         )}
-        <Typography
-          variant="caption"
-          sx={{
-            color: "grey",
-            mr: 1,
-          }}
-        >
-          {dayjs(message.created_at).format(DISPLAY_DATE_TIME_FORMAT)}
-        </Typography>
-        {message?.isMe && (
-          <>
-            {message?.status === MESSAGE_STATUS.READ ? (
-              <DoneAllIcon
-                sx={{
-                  color: "grey",
-                  fontSize: 16,
-                }}
-              />
-            ) : (
-              <DoneIcon sx={{ color: "grey", fontSize: 16 }} />
-            )}
-          </>
-        )}
+        <Box>
+          <Typography
+            variant="caption"
+            sx={{
+              color: "grey",
+              mr: 1,
+            }}
+          >
+            {dayjs(message.created_at).format(DISPLAY_DATE_TIME_FORMAT)}
+          </Typography>
+          {message?.isMe && (
+            <>
+              {message?.status === MESSAGE_STATUS.READ ? (
+                <DoneAllIcon
+                  sx={{
+                    color: "grey",
+                    fontSize: 16,
+                  }}
+                />
+              ) : (
+                <DoneIcon sx={{ color: "grey", fontSize: 16 }} />
+              )}
+            </>
+          )}
+        </Box>
       </Box>
     </Box>
   );

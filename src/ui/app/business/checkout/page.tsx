@@ -12,6 +12,7 @@ import BackIcon from "@/public/svg/Back.svg";
 import Image from "next/image";
 import {
   deleteService,
+  getService,
   postService,
   putService,
 } from "@/src/services/httpServices";
@@ -21,8 +22,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
 
 export default function CheckoutPage() {
   const dispatch = useAppDispatch();
@@ -31,6 +35,134 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  // User Guide
+  const [stepIndex, setStepIndex] = useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Place your order successfully!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            This tour will help you place your selected services order
+            accurately. Please ensure you follow each step without skipping any.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Fill in the details.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Enter the details and select the time to publish your service.
+          </Typography>
+        </Box>
+      ),
+      placement: "right",
+      target: ".joyride-order-item-form",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Save your order.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click on save to proceed with the payment.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-order-save-button",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Make Payment
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Once you've saved your order, click on "Make Offer" and pay via your
+            wallet.
+          </Typography>
+        </Box>
+      ),
+      placement: "left",
+      target: ".joyride-make-payment",
+    },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completed your checkout tour, you're good to go and create
+            an order request.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+  ]);
+
+  useEffect(() => {
+    getOrders();
+  }, []);
+
+  const getOrders = async () => {
+    try {
+      const { isSuccess, data, message } = await getService(
+        `orders/order-list/`
+      );
+      if (isSuccess) {
+        let totalOrders = 0;
+        Object.values(data?.data).map((value: any) => {
+          totalOrders += value;
+        });
+        if (!totalOrders) {
+          // When it's the first time user is creating an order,
+          // based on the number of order's he has in history we default the user guide opening.
+          setRun(true);
+        }
+      }
+    } finally {
+    }
+  };
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
+    }
+  };
   if (!user) {
     notification("You need to login first", "error");
     router.push("/");
@@ -233,15 +365,40 @@ export default function CheckoutPage() {
 
   return (
     <RouteProtection logged_in={true} business_owner={true}>
-      <Image
-        src={BackIcon}
-        alt={"BackIcon"}
-        height={30}
-        style={{ marginTop: "16px", marginLeft: "32px", cursor: "pointer" }}
-        onClick={() => {
-          router.back();
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
         }}
-      />
+      >
+        <Image
+          src={BackIcon}
+          alt={"BackIcon"}
+          height={30}
+          style={{ marginTop: "16px", marginLeft: "32px", cursor: "pointer" }}
+          onClick={() => {
+            router.back();
+          }}
+        />
+        <Box
+          sx={{
+            mr: 4,
+            color: "grey",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            columnGap: "4px",
+          }}
+          onClick={() => {
+            setStepIndex(0);
+            setRun(true);
+          }}
+        >
+          <DriveEta fontSize="small" />
+          <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+        </Box>
+      </Box>
       {cart?.orderItems?.length === 0 ? (
         <Box
           sx={{
@@ -314,6 +471,7 @@ export default function CheckoutPage() {
                       onSave();
                     }}
                     disabled={loading}
+                    className={"joyride-order-save-button"}
                   >
                     {loading ? "Saving..." : "Save"}
                   </Button>
@@ -417,11 +575,29 @@ export default function CheckoutPage() {
                       </Button>
                     }
                   />
-                  <CreateEscrow loading={loading} updateStatus={updateStatus} />
+                  <CreateEscrow setLoading={setLoading} loading={loading} updateStatus={updateStatus} />
                 </Box>
               </Box>
             </Grid>
           </Grid>
+          <Joyride
+            callback={handleJoyrideCallback}
+            continuous
+            stepIndex={stepIndex}
+            // disableOverlay
+            run={run}
+            scrollToFirstStep
+            // showProgress
+            showSkipButton
+            steps={steps}
+            spotlightClicks
+            styles={{
+              options: {
+                zIndex: 2,
+              },
+            }}
+            locale={{ last: "Finish" }}
+          />
         </LocalizationProvider>
       )}
     </RouteProtection>

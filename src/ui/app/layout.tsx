@@ -44,7 +44,7 @@ export default function RootLayout({
           autoHideDuration={2000}
           anchorOrigin={{
             vertical: "top",
-            horizontal: "right",
+            horizontal: "center",
           }}
           preventDuplicate
         >
