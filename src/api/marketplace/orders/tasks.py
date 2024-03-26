@@ -338,7 +338,7 @@ def twitter_task(order_item_id):
 
             # Create a order item tracking for the order item
             create_order_item_tracking(
-                order_item=order_item, status=order_item.status)
+                order_item=order_item, status='failed')
 
             create_notification_for_order_item(
                 order_item=order_item, old_status='scheduled', new_status='failed')
