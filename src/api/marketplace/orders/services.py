@@ -8,6 +8,8 @@ from django.utils import timezone
 FRONT_END_URL = config('FRONT_END_URL')
 ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
 BUSINESS_DASHBOARD_URL = FRONT_END_URL + '/business/dashboard/?tab=orders'
+BUSINESS_ORDER_ITEM_DASHBOARD_URL = FRONT_END_URL + \
+    '/business/dashboard/?tab=order-items'
 INFLUENCER_DASHBOARD_URL = FRONT_END_URL + '/influencer/dashboard/?tab=orders'
 
 
@@ -170,14 +172,14 @@ def create_post_verification_failed_notification(order_item):
     influencer = order_item.package.influencer
 
     message = 'Your order item ' + order_item.package.name + 'from order ' + order.order_code + \
-        ' has failed verification by Xfluencer. Please review the order.'
+        ' has failed verification by Xfluencer. Please review the order item.'
     title = 'Order Item Verification Failed'
     notifications = []
     notifications.append({
         'user_id': buyer.id,
         'message': message,
         'title': title,
-        'slug': BUSINESS_DASHBOARD_URL
+        'slug': BUSINESS_ORDER_ITEM_DASHBOARD_URL
     })
     notifications.append({
         'user_id': influencer.id,
