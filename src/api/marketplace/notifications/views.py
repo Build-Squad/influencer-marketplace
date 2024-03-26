@@ -1,3 +1,4 @@
+from orders.models import OrderMessage
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import Pagination, handleNotFound
 from notifications.serializers import NotificationSerializer
@@ -27,6 +28,10 @@ class NotificationListView(APIView):
       if is_read is not None:
         notifications = notifications.filter(is_read=is_read)
 
+      unread_message_count = OrderMessage.objects.filter(
+          receiver_id=user, status__in=['delivered', 'sent']).count()
+
+
       # Paginate the notifications
       pagination = Pagination(notifications, request)
       serializer = NotificationSerializer(pagination.getData(), many=True)
@@ -37,6 +42,7 @@ class NotificationListView(APIView):
               "data": {
                   "notifications": serializer.data,
                   "unread_count": unread_count,
+                  "unread_message_count": unread_message_count,
               },
               "message": "All Notifications retrieved successfully",
               "pagination": pagination.getPageInfo(),

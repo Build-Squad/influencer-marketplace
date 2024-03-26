@@ -9,7 +9,7 @@ import { useAppSelector } from "@/src/hooks/useRedux";
 import { postService } from "@/src/services/httpServices";
 import { ORDER_STATUS } from "@/src/utils/consts";
 import ChatIcon from "@mui/icons-material/Chat";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, CircularProgress, Grid, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import * as relativeTime from "dayjs/plugin/relativeTime";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -27,6 +27,7 @@ export default function BusinessMessages() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useAppSelector((state) => state.user)?.user;
+  const [loading, setLoading] = React.useState(false);
   const [orderChats, setOrderChats] = React.useState<OrderChatType[]>([]);
   const [totalUnreadMessages, setTotalUnreadMessages] = React.useState(0);
   const [selectedOrderChat, setSelectedOrderChat] =
@@ -113,8 +114,8 @@ export default function BusinessMessages() {
             Congratulations!!!
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            You've completed your messages tour, you're good to go and chat
-            with the business.
+            You've completed your messages tour, you're good to go and chat with
+            the business.
           </Typography>
         </Box>
       ),
@@ -153,17 +154,22 @@ export default function BusinessMessages() {
   };
 
   const getAllChats = async () => {
-    const { isSuccess, message, data } = await postService(
-      "/orders/user-order-messages/",
-      {
-        ...filters,
+    try {
+      setLoading(true);
+      const { isSuccess, message, data } = await postService(
+        "/orders/user-order-messages/",
+        {
+          ...filters,
+        }
+      );
+      if (isSuccess) {
+        setOrderChats(data?.data?.orders);
+        setTotalUnreadMessages(data?.data?.total_unread_messages_count);
+      } else {
+        notification(message ? message : "Something went wrong", "error");
       }
-    );
-    if (isSuccess) {
-      setOrderChats(data?.data?.orders);
-      setTotalUnreadMessages(data?.data?.total_unread_messages_count);
-    } else {
-      notification(message ? message : "Something went wrong", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -255,14 +261,23 @@ export default function BusinessMessages() {
           </Box>
           <Box sx={{ p: 2, pt: 0 }}>
             <OrderChatFilterBar filters={filters} setFilters={setFilters} />
-            <Typography
-              variant="h6"
+            <Box
               sx={{
-                fontStyle: "italic",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              {orderChats?.length} Orders
-            </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontStyle: "italic",
+                }}
+              >
+                {orderChats?.length} Orders
+              </Typography>
+              {loading && <CircularProgress size={20} />}
+            </Box>
             {orderChats?.length > 0 ? (
               <>
                 {orderChats?.map((orderChat) => {
@@ -300,17 +315,34 @@ export default function BusinessMessages() {
                 })}
               </>
             ) : (
-              <Typography
-                variant="h6"
-                sx={{
-                  fontStyle: "italic",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                No Orders
-              </Typography>
+              <>
+                {loading ? (
+                  <Box
+                    sx={{
+                      // In the center of this component
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "50vh",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontStyle: "italic",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    No Orders
+                  </Typography>
+                )}
+              </>
             )}
           </Box>
         </Grid>

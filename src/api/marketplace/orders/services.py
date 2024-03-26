@@ -8,6 +8,8 @@ from django.utils import timezone
 FRONT_END_URL = config('FRONT_END_URL')
 ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
 BUSINESS_DASHBOARD_URL = FRONT_END_URL + '/business/dashboard/?tab=orders'
+BUSINESS_ORDER_ITEM_DASHBOARD_URL = FRONT_END_URL + \
+    '/business/dashboard/?tab=order-items'
 INFLUENCER_DASHBOARD_URL = FRONT_END_URL + '/influencer/dashboard/?tab=orders'
 
 
@@ -111,7 +113,7 @@ def create_notification_for_order_item(order_item, old_status, new_status):
 
     if old_status == 'accepted' and new_status == 'scheduled':
         # Case 1
-        message = 'Your order item ' + order_item.package.name + \
+        message = 'Your order item ' + order_item.package.name + ' from order ' + order.order_code + \
             ' has been scheduled by ' + influencer.username
         title = 'Order Item Scheduled'
         Notification.objects.create(
@@ -120,7 +122,7 @@ def create_notification_for_order_item(order_item, old_status, new_status):
     elif old_status == 'scheduled' and new_status == 'published':
 
         # Case 2
-        message = 'Your order item ' + order_item.package.name + \
+        message = 'Your order item ' + order_item.package.name + ' from order ' + order.order_code + \
             ' has been published by ' + influencer.username
         title = 'Order Item Published'
         Notification.objects.create(
@@ -135,12 +137,58 @@ def create_notification_for_order_item(order_item, old_status, new_status):
 
     elif old_status == 'scheduled' and new_status == 'cancelled':
         # Case 3
-        message = 'Your order item ' + order_item.package.name + \
+        message = 'Your order item ' + order_item.package.name + ' from order ' + order.order_code + \
             ' has been cancelled by ' + influencer.username
         title = 'Order Item Cancelled'
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
 
+    elif old_status == 'scheduled' and new_status == 'failed':
+        # Case 3
+        message = 'Your order item ' + order_item.package.name + 'from order ' + order.order_code + \
+            ' has failed to publish by Xfluencer. Please review the order item and try again.'
+        title = 'Order Item Failed'
+        notifications = []
+        notifications.append({
+            'user_id': buyer.id,
+            'message': message,
+            'title': title,
+            'slug': BUSINESS_DASHBOARD_URL
+        })
+        notifications.append({
+            'user_id': influencer.id,
+            'message': message,
+            'title': title,
+            'slug': INFLUENCER_DASHBOARD_URL
+        })
+        Notification.objects.bulk_create(
+            [Notification(**notification) for notification in notifications])
+
+
+def create_post_verification_failed_notification(order_item):
+    # Get the order
+    order = order_item.order_id
+    buyer = order.buyer
+    influencer = order_item.package.influencer
+
+    message = 'Your order item ' + order_item.package.name + 'from order ' + order.order_code + \
+        ' has failed verification by Xfluencer. Please review the order item.'
+    title = 'Order Item Verification Failed'
+    notifications = []
+    notifications.append({
+        'user_id': buyer.id,
+        'message': message,
+        'title': title,
+        'slug': BUSINESS_ORDER_ITEM_DASHBOARD_URL
+    })
+    notifications.append({
+        'user_id': influencer.id,
+        'message': message,
+        'title': title,
+        'slug': INFLUENCER_DASHBOARD_URL
+    })
+    Notification.objects.bulk_create(
+        [Notification(**notification) for notification in notifications])
 
 def create_order_tracking(order, status):
     """
@@ -179,7 +227,7 @@ def create_reminider_notification(order_item):
             current_time = timezone.now()
             time_left = order_item.publish_date - current_time
             minutes_left = int(time_left.total_seconds() / 60)
-            message = 'You have an order item ' + order_item.package.name + \
+            message = 'You have an order item ' + order_item.package.name + ' from order ' + order_item.order_id.order_code + \
                 ' due for publishing in ' + str(minutes_left) + ' minutes'
             title = 'Order Item Reminder'
             Notification.objects.create(
@@ -271,4 +319,18 @@ def create_order_item_meta_data_field_update_message(order_item_meta_data, updat
     except Exception as e:
         logger.error(
             "Error creating order item meta data field update message: ", str(e))
+        return False
+
+def create_manual_verification_notification(order_item):
+    try:
+        buyer = order_item.order_id.buyer
+        influencer = order_item.package.influencer
+
+        message = f'Order Item: {order_item.package.name} has been manually verified by {buyer.username}.'
+        title = 'Order Item Manually Verified'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
+    except Exception as e:
+        logger.error(
+            "Error creating manual verification notification: ", str(e))
         return False

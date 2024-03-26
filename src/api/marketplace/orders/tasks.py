@@ -1,11 +1,11 @@
 import asyncio
 import logging
 from accounts.models import TwitterAccount, User, Wallet
+from core.models import Configuration
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
-    create_order_item_tracking, create_order_tracking, create_reminider_notification
+    create_order_item_tracking, create_order_tracking, create_post_verification_failed_notification, create_reminider_notification
 from orders.models import Escrow, OnChainTransaction, Order, OrderItem, OrderItemMetaData, OrderItemMetric
-
 from tweepy import Client
 
 from decouple import config
@@ -121,6 +121,7 @@ def confirm_escrow(order_id: str):
     except Exception as e:
         raise Exception('Error in confirming escrow', str(e))
 
+logger = logging.getLogger(__name__)
 
 def check_order_status(pk):
     try:
@@ -158,7 +159,7 @@ def tweet(text, client):
         tweet_id = res.data['id']
         return tweet_id
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in publishing tweet: %s', str(e))
 
 
 def like_tweet(tweet_id, client):
@@ -166,7 +167,7 @@ def like_tweet(tweet_id, client):
         res = client.like(tweet_id=tweet_id, user_auth=False)
         return tweet_id if res.data['liked'] else None
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in liking tweet: %s', str(e))
 
 
 def reply_to_tweet(text, in_reply_to_tweet_id, client):
@@ -175,7 +176,7 @@ def reply_to_tweet(text, in_reply_to_tweet_id, client):
             text=text, in_reply_to_tweet_id=in_reply_to_tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in replying to tweet: %s', str(e))
 
 
 def quote_tweet(text, tweet_id, client):
@@ -184,7 +185,7 @@ def quote_tweet(text, tweet_id, client):
             text=text, quote_tweet_id=tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in quoting tweet: %s', str(e))
 
 
 def poll(text, poll_options, poll_duration_minutes, client):
@@ -194,7 +195,7 @@ def poll(text, poll_options, poll_duration_minutes, client):
                                   user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in creating poll: %s', str(e))
 
 
 def retweet(tweet_id, client):
@@ -202,7 +203,7 @@ def retweet(tweet_id, client):
         res = client.retweet(tweet_id=tweet_id, user_auth=False)
         return res.data['rest_id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in retweeting tweet: %s', str(e))
 
 
 def thread(text, client):
@@ -228,7 +229,7 @@ def thread(text, client):
                     f"Tweet is longer than {TWEET_LIMIT} characters")
         return published_tweet_id
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in creating thread: %s', str(e))
 
 
 @shared_task
@@ -306,31 +307,44 @@ def twitter_task(order_item_id):
         elif service_type == 'thread':
             res = thread(text=text, client=client)
 
-        order_item.published_tweet_id = res
-        order_item.status = 'published'
-        order_item.save()
+        if res:
+            order_item.published_tweet_id = res
+            order_item.status = 'published'
+            order_item.save()
 
-        # Call the validate_order_item task to run 2 minutes after now
-        validate_order_item.apply_async(
-            args=[order_item.id], countdown=120)
+            # Get the countfown time for the validate_order_item task
+            COUNTDOWN_TIME_FOR_VALIDATION = int(Configuration.objects.get(
+                key='countdown_time_for_validation').value)
 
-        # Create a order item tracking for the order item
-        create_order_item_tracking(order_item=order_item, status=order_item.status)
+            # Call the validate_order_item task to run 2 minutes after now
+            validate_order_item.apply_async(
+                args=[order_item.id], countdown=COUNTDOWN_TIME_FOR_VALIDATION)
 
-        # Check if the order is completed
-        check_order_status(pk=order_item.order_id.id)
+            # Create a order item tracking for the order item
+            create_order_item_tracking(
+                order_item=order_item, status=order_item.status)
 
-        # Create notification for order item
-        create_notification_for_order_item(
-            order_item=order_item, old_status='scheduled', new_status='published')
-        create_order_item_status_update_message(
-            order_item=order_item, updated_by=order_item.package.influencer)
+            # Check if the order is completed
+            check_order_status(pk=order_item.order_id.id)
+
+            # Create notification for order item
+            create_notification_for_order_item(
+                order_item=order_item, old_status='scheduled', new_status='published')
+            create_order_item_status_update_message(
+                order_item=order_item, updated_by=order_item.package.influencer)
+        else:
+            order_item.status = 'cancelled'
+            order_item.save()
+
+            # Create a order item tracking for the order item
+            create_order_item_tracking(
+                order_item=order_item, status='failed')
+
+            create_notification_for_order_item(
+                order_item=order_item, old_status='scheduled', new_status='failed')
 
     except Exception as e:
-        raise Exception(str(e))
-
-    return True
-
+        logger.error('Error in twitter task: %s', str(e))
 
 def schedule_tweet(order_item_id):
     try:
@@ -455,7 +469,7 @@ def is_post_published(order_item_id) -> bool:
         res = client.get_tweet(
             id=order_item.published_tweet_id, user_auth=False)
 
-        return True if str(res.data['id']) == str(order_item.published_tweet_id) else False
+        return str(res.data.get('id', '')) == str(order_item.published_tweet_id)
     except Exception as e:
         logger.error('Error in checking if post is published: %s', str(e))
         return False
@@ -505,6 +519,10 @@ def validate_order_item(order_item_id):
             order_item.is_verified = True
             order_item.save()
             check_order_status(pk=order_item.order_id.id)
+        else:
+            order_item.is_verified = False
+            order_item.save()
+            create_post_verification_failed_notification(order_item=order_item)
     except Exception as e:
         raise Exception(str(e))
 
