@@ -113,6 +113,7 @@ export default function WalletsTable({
         p: 2,
         maxWidth: "100%",
       }}
+      className="joyride-wallet-table"
     >
       <Grid container spacing={2}>
         <Grid

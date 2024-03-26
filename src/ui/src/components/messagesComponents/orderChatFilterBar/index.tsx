@@ -29,6 +29,10 @@ const STATUS_OPTIONS = [
     label: "Rejected",
     value: ORDER_STATUS.REJECTED,
   },
+  {
+    label: "Cancelled",
+    value: ORDER_STATUS.CANCELLED,
+  },
 ];
 
 export default function OrderChatFilterBar({
@@ -36,7 +40,7 @@ export default function OrderChatFilterBar({
   setFilters,
 }: OrderChatFilterBarType) {
   return (
-    <Box sx={{ my: 1 }}>
+    <Box sx={{ my: 1 }} className="joyride-message-filters">
       <TextField
         size="small"
         color="secondary"

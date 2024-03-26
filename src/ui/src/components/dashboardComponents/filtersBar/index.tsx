@@ -36,6 +36,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
         sx={{
           p: 2,
         }}
+        className="joyride-dashboard-filters"
       >
         <Grid
           item

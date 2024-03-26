@@ -1,1 +1,4 @@
-solana program close 6mTwD92ynqwDZxjg2ydhAjeX5w7bcsfM7jQUDeHpGM9G
+#!/bin/bash
+# Close solana program FOREVER!!
+#PROGRAM_ID="7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
+solana program close $PROGRAM_ID

@@ -226,6 +226,9 @@ type OrderItemType = {
   publish_date?: string;
   published_tweet_id?: string;
   status?: string;
+  approved?: boolean;
+  is_verified?: boolean;
+  allow_manual_approval?: boolean;
 };
 
 type TransactionType = {

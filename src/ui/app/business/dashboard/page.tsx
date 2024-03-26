@@ -7,19 +7,16 @@ import PendingOrders from "@/public/svg/pendingOrders.svg?icon";
 import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
 import TotalOrders from "@/public/svg/totalOrders.svg?icon";
 import FilterBar from "@/src/components/dashboardComponents/filtersBar";
-import OrderDetails from "@/src/components/dashboardComponents/orderDetails";
 import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
+import UpdateOrder from "@/src/components/dashboardComponents/updateOrder";
 import { ConfirmCancel } from "@/src/components/shared/confirmCancel";
 import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
-import {
-  postService,
-  putService
-} from "@/src/services/httpServices";
+import { postService, putService } from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
   DISPLAY_DATE_TIME_FORMAT,
@@ -36,6 +33,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import {
   Box,
+  Button,
   CircularProgress,
   Grid,
   IconButton,
@@ -58,6 +56,15 @@ import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { closeSnackbar, enqueueSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import MessageIcon from "@mui/icons-material/Message";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import RuleOutlinedIcon from "@mui/icons-material/RuleOutlined";
+import ManualVerifyModal from "@/src/components/dashboardComponents/manualVerifyModal";
 
 const tabs = [
   {
@@ -80,8 +87,12 @@ export default function BusinessDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItemType[]>([]);
+  const [openVerifyModal, setOpenVerifyModal] = useState(false);
+  const [selectedOrderItemId, setSelectedOrderItemId] = useState<string>("");
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [hasAnOrder, setHasAnOrder] = useState(false);
+  const [open, setOpen] = useState(false);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
       ORDER_STATUS.ACCEPTED,
@@ -116,6 +127,162 @@ export default function BusinessDashboardPage() {
     cancelled: 0,
   });
   const [selectedTab, setSelectedTab] = React.useState<number>(0);
+
+  // User Guide only for the order's tab for the very first order. And if there are no orders only show the first step
+  const [stepIndex, setStepIndex] = useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Manage your orders here!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            This tour will help you manage your order accurately once you've
+            placed an order. The options would include editing your orders,
+            cancelling your orders, view the transactions, giving ratings and
+            many more.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Categorise your orders.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click on the status you wanna view your orders for.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-tabs",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Customized filters.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Advanced filters for orders based on the services, date, order ID,
+            and influencers.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-dashboard-filters",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Take actions.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Hover the actions to see what it does and click to do the action.
+            Actions include viewing order details, editing your order,
+            cancelling the order and many more.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-actions-column",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Give reviews.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click here to give reviews to the orders.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-review-column",
+    },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completed your dashboard tour, you're now good to go to
+            manage your orders and analyse them.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+  ]);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
+    }
+  };
+
+  const handleUserInteraction = async () => {
+    try {
+      setLoading(true);
+      const { isSuccess, data, message } = await postService(
+        `orders/order-list/`,
+        {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          status: [
+            ORDER_STATUS.ACCEPTED,
+            ORDER_STATUS.REJECTED,
+            ORDER_STATUS.PENDING,
+            ORDER_STATUS.COMPLETED,
+            ORDER_STATUS.CANCELLED,
+          ],
+          order_by: "upcoming",
+        }
+      );
+      if (isSuccess) {
+        // If the total number of order is exactly one for a business
+        if (data?.pagination?.total_data_count == 1) {
+          setStepIndex(0);
+          setRun(true);
+        }
+        if (data?.pagination?.total_data_count > 0) {
+          setHasAnOrder(true);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getOrders = async () => {
     try {
@@ -217,6 +384,21 @@ export default function BusinessDashboardPage() {
       }
     } finally {
       setCancelLoading(false);
+    }
+  };
+
+  const approveOrderItem = async (id: string) => {
+    const { isSuccess, message } = await putService(
+      `/orders/approve-ordder-item/${id}/`,
+      {
+        approved: true,
+      }
+    );
+    if (isSuccess) {
+      notification("Order Item approved successfully!", "success");
+      getOrderItems();
+    } else {
+      notification(message, "error", 3000);
     }
   };
 
@@ -636,6 +818,7 @@ export default function BusinessDashboardPage() {
               justifyContent: "center",
               alignItems: "center",
             }}
+            className="joyride-actions-column"
           >
             <Tooltip
               title="View Order Details"
@@ -646,36 +829,28 @@ export default function BusinessDashboardPage() {
               <IconButton
                 onClick={() => {
                   setSelectedOrder(params?.row);
+                  setOpen(true);
                 }}
               >
                 <EditNoteIcon />
               </IconButton>
             </Tooltip>
-            <>
-              {params?.row?.status === ORDER_STATUS.PENDING && (
-                <Tooltip
-                  title="Go To Order"
-                  placement="top"
-                  arrow
-                  disableInteractive
-                >
-                  <Link
-                    href={`/business/order/${params?.row?.id}`}
-                    component={NextLink}
-                    sx={{
-                      textDecoration: "none",
-                      "&:hover": {
-                        textDecoration: "underline",
-                      },
-                    }}
-                  >
-                    <IconButton>
-                      <OpenInNewIcon color="secondary" />
-                    </IconButton>
-                  </Link>
-                </Tooltip>
-              )}
-            </>
+            <Link
+              href={`/business/messages?order_chat_id=${params?.row?.id}`}
+              component={NextLink}
+              sx={{
+                textDecoration: "none",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              <Tooltip title="Go to Order Chat" placement="top" arrow>
+                <IconButton>
+                  <MessageIcon />
+                </IconButton>
+              </Tooltip>
+            </Link>
             {(params?.row?.status === ORDER_STATUS.REJECTED ||
               params?.row?.status === ORDER_STATUS.CANCELLED) &&
               params?.row?.transactions.filter(
@@ -775,6 +950,7 @@ export default function BusinessDashboardPage() {
                   sx={{
                     cursor: "pointer",
                   }}
+                  className="joyride-review-column"
                 >
                   <Rating
                     name="read-only"
@@ -925,11 +1101,27 @@ export default function BusinessDashboardPage() {
               alignItems: "center",
             }}
           >
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row?.order_id);
+                  setOpen(true);
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </Tooltip>
             {params?.row?.status === ORDER_ITEM_STATUS.PUBLISHED &&
               params?.row?.service_master?.twitter_service_type !==
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
               params?.row?.service_master?.twitter_service_type !==
-                SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET && (
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET &&
+              params?.row?.is_verified && (
                 <Link
                   href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}
                   component={NextLink}
@@ -947,6 +1139,23 @@ export default function BusinessDashboardPage() {
                   </Tooltip>
                 </Link>
               )}
+            {(params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+              params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) && (
+              // Action to approve the post
+              <>
+                {!params?.row?.approved && (
+                  <Tooltip title="Approve Order Item" placement="top" arrow>
+                    <IconButton
+                      onClick={() => {
+                        approveOrderItem(params?.row?.id);
+                      }}
+                    >
+                      <CheckCircleOutlineOutlinedIcon color="success" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </>
+            )}
           </Box>
         );
       },
@@ -961,7 +1170,54 @@ export default function BusinessDashboardPage() {
         return <StatusChip status={params?.row?.status} />;
       },
     },
+    {
+      field: "is_verified",
+      headerName: "Verification Status",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.is_verified ? (
+              <CheckCircleIcon color="success" />
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  columnGap: "4px",
+                }}
+              >
+                {params?.row?.allow_manual_approval ? (
+                  <Tooltip title="Manually Verify">
+                    <Button
+                      size="small"
+                      color="primary"
+                      variant="contained"
+                      endIcon={<RuleOutlinedIcon />}
+                      onClick={() => {
+                        setSelectedOrderItemId(params?.row?.id);
+                        setOpenVerifyModal(true);
+                      }}
+                    >
+                      Verify
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <CancelIcon color="error" />
+                )}
+              </Box>
+            )}
+          </Typography>
+        );
+      },
+    },
   ];
+
+  useEffect(() => {
+    handleUserInteraction();
+  }, []);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -1007,9 +1263,18 @@ export default function BusinessDashboardPage() {
   }, [selectedTab]);
 
   useEffect(() => {
+    if (!open) getOrders();
+  }, [open]);
+
+  useEffect(() => {
+    if (!openVerifyModal) getOrderItems();
+  }, [openVerifyModal]);
+
+  useEffect(() => {
     const tab = searchParams.get("tab");
     const _selectedTab = tabs.find((_tab) => _tab.key === tab);
     if (_selectedTab) setSelectedTab(_selectedTab?.value);
+    else router.push(tabs[0]?.route!);
   }, [searchParams]);
 
   return (
@@ -1031,49 +1296,78 @@ export default function BusinessDashboardPage() {
               mb: 2,
             }}
           >
-            <Image
-              src={BackIcon}
-              alt={"BackIcon"}
-              height={30}
-              style={{
-                marginTop: "8px",
-                marginBottom: "8px",
+            <Box sx={{ flex: 1 }}>
+              <Image
+                src={BackIcon}
+                alt={"BackIcon"}
+                height={30}
+                style={{
+                  marginTop: "8px",
+                  marginBottom: "8px",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  router.back();
+                }}
+              />
+            </Box>
+
+            <Box sx={{ display: "flex", justifyContent: "center", flex: 2 }}>
+              <Tabs
+                value={selectedTab}
+                onChange={(event, newValue) => {
+                  setSelectedTab(newValue);
+                  router.push(
+                    tabs.find((tab) => tab.value === newValue)?.route!
+                  );
+                }}
+              >
+                {tabs.map((tab, index) => {
+                  return (
+                    <Tab
+                      key={index}
+                      label={tab.title}
+                      value={tab.value}
+                      sx={{
+                        color:
+                          selectedTab === tab.value ? "#0099FF" : "#000000",
+                        fontSize: "16px",
+                        lineHeight: "19px",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                      }}
+                    />
+                  );
+                })}
+              </Tabs>
+            </Box>
+
+            <Box
+              sx={{
+                flex: 1,
+                mr: 4,
+                color: "grey",
                 cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                columnGap: "4px",
+                visibility:
+                  selectedTab == 0 && hasAnOrder ? "visible" : "hidden",
               }}
               onClick={() => {
-                router.back();
-              }}
-            />
-            <Tabs
-              value={selectedTab}
-              onChange={(event, newValue) => {
-                setSelectedTab(newValue);
-                router.push(tabs.find((tab) => tab.value === newValue)?.route!);
+                setStepIndex(0);
+                setRun(true);
               }}
             >
-              {tabs.map((tab, index) => {
-                return (
-                  <Tab
-                    key={index}
-                    label={tab.title}
-                    value={tab.value}
-                    sx={{
-                      color: selectedTab === tab.value ? "#0099FF" : "#000000",
-                      fontSize: "16px",
-                      lineHeight: "19px",
-                      fontWeight: "bold",
-                      textTransform: "none",
-                    }}
-                  />
-                );
-              })}
-            </Tabs>
-            <Box></Box>
+              <DriveEta fontSize="small" />
+              <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+            </Box>
           </Grid>
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} className="joyride-tabs">
               {selectedTab === 0 ? (
                 <>
                   {statusCards.map((card, index) => {
@@ -1200,11 +1494,10 @@ export default function BusinessDashboardPage() {
             </Box>
           </Grid>
         </Grid>
-        <OrderDetails
-          order={selectedOrder}
-          onClose={() => {
-            setSelectedOrder(null);
-          }}
+        <UpdateOrder
+          order_id={selectedOrder?.id!}
+          open={open}
+          setOpen={setOpen}
         />
         <ReviewModal
           reviewOrder={selectedReviewOrder}
@@ -1213,6 +1506,29 @@ export default function BusinessDashboardPage() {
           readonly={false}
           updateState={getOrders}
         />
+        <ManualVerifyModal
+          open={openVerifyModal}
+          setOpen={setOpenVerifyModal}
+          orderItemId={selectedOrderItemId}
+        />
+        {selectedTab == 0 ? (
+          <Joyride
+            callback={handleJoyrideCallback}
+            continuous
+            stepIndex={stepIndex}
+            run={run}
+            scrollToFirstStep
+            showSkipButton
+            steps={steps}
+            spotlightClicks
+            styles={{
+              options: {
+                zIndex: 2,
+              },
+            }}
+            locale={{ last: "Finish" }}
+          />
+        ) : null}
       </Box>
     </RouteProtection>
   );

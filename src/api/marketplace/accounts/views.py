@@ -1290,9 +1290,9 @@ class OTPAuthV2(APIView):
                     user.save()
 
                     sendEmail.delay(
-                        "OTP for login to Xfluencer",
+                        "OTP for email verification",
                         "Your OTP is " + str(otp),
-                        "loginEmail.html",
+                        "verifyEmail.html",
                         {"otp": otp, "target": config("FRONT_END_URL")},
                         [request.data["email"]],
                     )

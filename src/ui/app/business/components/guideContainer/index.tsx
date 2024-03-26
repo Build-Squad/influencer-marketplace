@@ -39,7 +39,7 @@ export default function GuideContainer({}: Props) {
       }}
     >
       <Typography variant="h5" fontWeight="bold">
-        How it Works?
+        How It Works?
       </Typography>
       <Typography variant="subtitle1" sx={{ color: "#505050" }}>
         Explore, Purchase, Analyse in seconds.

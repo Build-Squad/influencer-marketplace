@@ -9,16 +9,25 @@ import { useAppSelector } from "@/src/hooks/useRedux";
 import { postService } from "@/src/services/httpServices";
 import { ORDER_STATUS } from "@/src/utils/consts";
 import ChatIcon from "@mui/icons-material/Chat";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, CircularProgress, Grid, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import * as relativeTime from "dayjs/plugin/relativeTime";
-import React, { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
+import Image from "next/image";
+import BackIcon from "@/public/svg/Back.svg";
 
 const relativeTime1: any = relativeTime;
 dayjs.extend(relativeTime1);
 
 export default function BusinessMessages() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const user = useAppSelector((state) => state.user)?.user;
+  const [loading, setLoading] = React.useState(false);
   const [orderChats, setOrderChats] = React.useState<OrderChatType[]>([]);
   const [totalUnreadMessages, setTotalUnreadMessages] = React.useState(0);
   const [selectedOrderChat, setSelectedOrderChat] =
@@ -29,23 +38,144 @@ export default function BusinessMessages() {
       ORDER_STATUS.REJECTED,
       ORDER_STATUS.PENDING,
       ORDER_STATUS.COMPLETED,
+      ORDER_STATUS.CANCELLED,
     ],
   });
 
-  const getAllChats = async () => {
-    const { isSuccess, message, data } = await postService(
-      "/orders/user-order-messages/",
-      {
-        ...filters,
-      }
-    );
-    if (isSuccess) {
-      setOrderChats(data?.data?.orders);
-      setTotalUnreadMessages(data?.data?.total_unread_messages_count);
-    } else {
-      notification(message ? message : "Something went wrong", "error");
+  // User Guide for the very first order
+  const [stepIndex, setStepIndex] = useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [hasAMessage, setHasAMessage] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Chat with businesses.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            This tour will guide you through the chatting room where you can
+            message the business owner and have a short discussion about the
+            order they've placed.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Customized filters.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Advanced filters for chats based on the services, order ID, and
+            status of order.
+          </Typography>
+        </Box>
+      ),
+      placement: "right",
+      target: ".joyride-message-filters",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Businesses List.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click on the business to chat with them and have a discussion about
+            the order.
+          </Typography>
+        </Box>
+      ),
+      placement: "right",
+      target: ".joyride-user-chats",
+    },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completed your messages tour, you're good to go and chat with
+            the business.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+  ]);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
     }
   };
+
+  const handleUserInteraction = async () => {
+    const { isSuccess, message, data } = await postService(
+      "/orders/user-order-messages/",
+      {}
+    );
+    if (isSuccess) {
+      // Fetching all user-message and if there's exactly 1 object, show the user guide
+      if (data?.data?.orders?.length == 1) {
+        setStepIndex(0);
+        setRun(true);
+      }
+      if (data?.data?.orders?.length > 0) {
+        setHasAMessage(true);
+      }
+    }
+  };
+
+  const getAllChats = async () => {
+    try {
+      setLoading(true);
+      const { isSuccess, message, data } = await postService(
+        "/orders/user-order-messages/",
+        {
+          ...filters,
+        }
+      );
+      if (isSuccess) {
+        setOrderChats(data?.data?.orders);
+        setTotalUnreadMessages(data?.data?.total_unread_messages_count);
+      } else {
+        notification(message ? message : "Something went wrong", "error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleUserInteraction();
+  }, []);
 
   useEffect(() => {
     getAllChats();
@@ -58,6 +188,18 @@ export default function BusinessMessages() {
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
   }, [filters]);
+
+  useEffect(() => {
+    if (orderChats?.length > 0) {
+      const selectedOrderChatId = searchParams.get("order_chat_id");
+      if (selectedOrderChatId) {
+        const _selectedOrderChat = orderChats.find(
+          (orderChat) => orderChat.order.id === selectedOrderChatId
+        );
+        if (_selectedOrderChat) setSelectedOrderChat(_selectedOrderChat);
+      }
+    }
+  }, [searchParams, orderChats]);
 
   return (
     <RouteProtection logged_in={true} influencer={true}>
@@ -76,16 +218,66 @@ export default function BusinessMessages() {
             mb: 2,
           }}
         >
-          <Box sx={{ p: 2 }}>
-            <OrderChatFilterBar filters={filters} setFilters={setFilters} />
-            <Typography
-              variant="h6"
+          <Box
+            sx={{
+              px: 2,
+              pt: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              src={BackIcon}
+              alt={"BackIcon"}
+              height={30}
+              style={{
+                marginTop: "8px",
+                marginBottom: "8px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                router.back();
+              }}
+            />
+            <Box
               sx={{
-                fontStyle: "italic",
+                color: "grey",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                columnGap: "4px",
+                visibility: hasAMessage ? "visible" : "hidden",
+              }}
+              onClick={() => {
+                setStepIndex(0);
+                setRun(true);
               }}
             >
-              {orderChats?.length} Orders
-            </Typography>
+              <DriveEta fontSize="small" />
+              <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ p: 2, pt: 0 }}>
+            <OrderChatFilterBar filters={filters} setFilters={setFilters} />
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontStyle: "italic",
+                }}
+              >
+                {orderChats?.length} Orders
+              </Typography>
+              {loading && <CircularProgress size={20} />}
+            </Box>
             {orderChats?.length > 0 ? (
               <>
                 {orderChats?.map((orderChat) => {
@@ -115,23 +307,42 @@ export default function BusinessMessages() {
                       key={orderChat?.order?.id}
                       orderChat={orderChat}
                       chatDisplayDetails={chatDisplayDetails}
-                      setSelectedOrderChat={setSelectedOrderChat}
+                      handleOrderChat={(id: string) => {
+                        router.push(`/influencer/messages?order_chat_id=${id}`);
+                      }}
                     />
                   );
                 })}
               </>
             ) : (
-              <Typography
-                variant="h6"
-                sx={{
-                  fontStyle: "italic",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                No Orders
-              </Typography>
+              <>
+                {loading ? (
+                  <Box
+                    sx={{
+                      // In the center of this component
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "50vh",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontStyle: "italic",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    No Orders
+                  </Typography>
+                )}
+              </>
             )}
           </Box>
         </Grid>
@@ -176,6 +387,22 @@ export default function BusinessMessages() {
           )}
         </Grid>
       </Grid>
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous
+        stepIndex={stepIndex}
+        run={run}
+        scrollToFirstStep
+        showSkipButton
+        steps={steps}
+        spotlightClicks
+        styles={{
+          options: {
+            zIndex: 2,
+          },
+        }}
+        locale={{ last: "Finish" }}
+      />
     </RouteProtection>
   );
 }

@@ -1,6 +1,6 @@
 from accounts.models import Wallet
-from orders.tasks import cancel_escrow, cancel_tweet, schedule_tweet
-from orders.services import create_notification_for_order, create_order_item_tracking, create_order_tracking
+from orders.tasks import cancel_escrow, cancel_tweet, check_order_status, schedule_tweet
+from orders.services import create_manual_verification_notification, create_notification_for_order, create_order_item_approval_notification, create_order_item_tracking, create_order_tracking
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -25,8 +25,10 @@ from .models import (
     Transaction,
 )
 from .serializers import (
+    ApproveOrderItemSerializer,
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
+    ManualVerifyOrderItemSerializer,
     OrderItemListFilterSerializer,
     OrderItemMetricSerializer,
     OrderItemReadSerializer,
@@ -561,6 +563,68 @@ class UpdateOrderStatus(APIView):
             return handleServerException(e)
 
 
+class ApproveOrderItemView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self, pk):
+        try:
+            return OrderItem.objects.get(pk=pk, deleted_at=None)
+        except OrderItem.DoesNotExist:
+            return None
+
+    @swagger_auto_schema(request_body=ApproveOrderItemSerializer)
+    def put(self, request, pk):
+        try:
+            order_item = self.get_object(pk)
+            if order_item is None:
+                return handleNotFound("Order Item")
+
+            # Check that the logged in user is the buyer of the order
+            if request.user_account.role.name != "business_owner" or order_item.order_id.buyer.id != request.user_account.id:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "You are not authorized to approve this order item",
+                        "data": None,
+                        "errors": "You are not authorized to approve this order item",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Also check that the order_item is in accepted or cancelled state
+            if order_item.status not in ["accepted", "cancelled"]:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Order item is already " + order_item.status,
+                        "data": None,
+                        "errors": "Order item is already " + order_item.status,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Get the data from serializer
+            serializer = ApproveOrderItemSerializer(
+                instance=order_item, data=request.data, partial=True
+            )
+            if serializer.is_valid():
+                approved = serializer.validated_data.get("approved")
+                order_item.approved = approved
+                order_item.save()
+                
+                create_order_item_approval_notification(order_item)
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Order Item updated successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
 class CancelOrderView(APIView):
     authentication_classes = [JWTAuthentication]
 
@@ -699,6 +763,8 @@ class CancelOrderView(APIView):
                 self.create_on_chain_transaction(order)
             res = cancel_escrow(pk, order_status)
             if res: 
+                # Cancel all order items
+                order_items.update(status=order_status)
                 return Response(
                     {
                         "isSuccess": True,
@@ -890,7 +956,7 @@ class OrderItemDetail(APIView):
             orderItem = self.get_object(pk)
             if orderItem is None:
                 return handleNotFound("Order Item")
-            serializer = OrderItemSerializer(orderItem)
+            serializer = OrderItemReadSerializer(orderItem)
             return Response(
                 {
                     "isSuccess": True,
@@ -1495,5 +1561,69 @@ class OrderItemMetricDetailView(APIView):
                 status=status.HTTP_200_OK,
             )
 
+        except Exception as e:
+            return handleServerException(e)
+
+
+class ManualVerifyOrderItemView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=ManualVerifyOrderItemSerializer)
+    def put(self, request, pk):
+        try:
+            order_item = OrderItem.objects.get(pk=pk)
+            if order_item is None:
+                return handleNotFound("Order Item")
+
+            # Check that the logged in user is the buyer of the order
+            if request.user_account.role.name != "business_owner" or order_item.order_id.buyer.id != request.user_account.id:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "You are not authorized to verify this order item",
+                        "data": None,
+                        "errors": "You are not authorized to verify this order item",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Also check that the order_item is in accepted or cancelled state
+            if order_item.status not in ["published"]:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Order item is already " + order_item.status,
+                        "data": None,
+                        "errors": "Order item is already " + order_item.status,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Get the data from serializer
+            serializer = ManualVerifyOrderItemSerializer(
+                instance=order_item, data=request.data, partial=True
+            )
+            if serializer.is_valid():
+                order_item.is_verified = True
+                if serializer.validated_data.get("published_post_link"):
+                    published_link = serializer.validated_data.get(
+                        "published_post_link")
+                    tweet_id = published_link.split('/')[-1]
+                    order_item.published_tweet_id = tweet_id
+                order_item.save()
+
+                create_manual_verification_notification(order_item)
+
+                check_order_status(pk=order_item.order_id.id)
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Order Item verified successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)

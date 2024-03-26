@@ -123,7 +123,7 @@ def handleServerException(e):
     return Response({
         'isSuccess': False,
         'data': None,
-        'message': 'Internal Server Error',
+        'message': error,
         'errors': error,
     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -138,7 +138,7 @@ def handleBadRequest(e):
     return Response({
         'isSuccess': False,
         'data': None,
-        'message': 'Bad Request',
+        'message': error,
         'errors': error,
     }, status=status.HTTP_400_BAD_REQUEST)
 

@@ -38,10 +38,10 @@ export default function GuideContainer({}: Props) {
       }}
     >
       <Typography variant="h5" fontWeight="bold">
-        How it Works?
+        How It Works?
       </Typography>
       <Typography variant="subtitle1" sx={{ color: "#505050" }}>
-        List your services and start earning right away.
+        List your services and start earning right away
       </Typography>
       <Box
         sx={{
