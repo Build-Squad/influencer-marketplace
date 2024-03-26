@@ -36,6 +36,25 @@ class RewardConfig(models.Model):
 
     def __str__(self):
         return f"{self.count} number of {self.type} of master type {self.reward_type.name}"
+    
+class RewardPoints(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="User Referral ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    user_account = models.ForeignKey(
+        User,
+        related_name="reward_point_user_account",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    points=models.IntegerField(blank=True, null=True)
+    reward_configuration=models.ForeignKey(RewardConfig, related_name="reward_point_reward_config",on_delete=SET_NULL, null=True, blank=True)
+    class Meta:
+        db_table = "reward_points"
 
 class UserReferrals(models.Model):
     id = models.UUIDField(
@@ -44,14 +63,23 @@ class UserReferrals(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    user_account = models.OneToOneField(
+    user_account = models.ForeignKey(
         User,
         related_name="referral_user_account",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
-    referred_by = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='referred_by_account')
+    referred_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='referred_by_account')
+
+    # The one who's referral code was used
+    referred_by_reward_point = models.ForeignKey(
+        RewardPoints,
+        related_name="user_referral_reward_point",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         db_table = "user_referrals"

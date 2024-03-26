@@ -19,7 +19,7 @@ import logging
 import hashlib
 from requests_oauthlib import OAuth2Session
 import json
-from reward.models import UserReferrals
+from reward.models import RewardConfig, RewardPoints, UserReferrals
 
 logger = logging.getLogger(__name__)
 
@@ -216,6 +216,52 @@ def manage_categories(hashtags, twitter_account):
             )
             new_account_category.save()
 
+def manage_referrals(referral_code, new_user_account, current_twitter_user):
+    # Get user account based on referral_code
+    try:
+        referred_by = User.objects.get(referral_code=referral_code)
+        if referred_by:
+            # Who referred whom
+            
+            # Based on current_twitter_user.followers_count fetch which reward config the person falls in and give them points
+            reward_config = RewardConfig.objects.filter(
+                reward_type__name="referrals",
+                count__gte=current_twitter_user.followers_count
+            )
+            if reward_config is None:
+                reward_config = RewardConfig.objects.filter(
+                    reward_type__name="referrals",
+                )
+            
+            reward_config = reward_config.order_by("count").first()
+
+            # Give reward to the new user.
+            RewardPoints.objects.create(
+                user_account=new_user_account,
+                points=reward_config.reward_point,
+                reward_configuration=reward_config,
+            )
+
+            # Reward to the person who's referral code was used.
+            referred_by_reward_point = RewardPoints.objects.create(
+                user_account=referred_by,
+                points=reward_config.reward_point,
+                reward_configuration=reward_config
+            )
+
+            UserReferrals.objects.create(
+                user_account=new_user_account,
+                referred_by=referred_by,
+                # Mapping the reward point about who's referral code was used.
+                referred_by_reward_point=referred_by_reward_point)
+            return None
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"No referral given, invalid referral code - {referral_code}.",
+        }
+
 def createUser(userData, access_token, role, refresh_token, referral_code):
     try:
         is_new_user = False
@@ -288,18 +334,9 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
 
             # New user login with referral_code - 
             if referral_code:
-                # Get user account based on referral_code
-                try:
-                    referred_by = User.objects.get(referral_code=referral_code)
-                    if referred_by:
-                        # Who referred whom
-                        UserReferrals.objects.create(user_account=new_user_account, referred_by=referred_by)
-
-                except Exception as e:
-                    return {
-                        "status": "error",
-                        "message": f"No referral given, invalid referral code - {referral_code}.",
-                    }
+                ref = manage_referrals(referral_code, new_user_account, current_twitter_user)
+                if ref is not None:
+                    return ref
         else:
             if existing_user_account.role.name != role:
                 return {
