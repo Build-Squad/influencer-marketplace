@@ -34,7 +34,7 @@ async def main():
     assert str(business_pk) == configuration["business"]["pubkey"]
     assert str(influencer_pk) == configuration["influencer"]["pubkey"]
 
-    amount = configuration["lamports"]
+    amount = configuration["amount"]["lamports"]
     order_code = configuration["order_code"]
 
     args = {"amount":int(amount), "order_code":int(order_code) }
