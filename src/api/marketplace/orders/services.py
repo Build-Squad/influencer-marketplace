@@ -318,3 +318,17 @@ def create_order_item_meta_data_field_update_message(order_item_meta_data, updat
         logger.error(
             "Error creating order item meta data field update message: ", str(e))
         return False
+
+def create_manual_verification_notification(order_item):
+    try:
+        buyer = order_item.order_id.buyer
+        influencer = order_item.package.influencer
+
+        message = f'Order Item: {order_item.package.name} has been manually verified by {buyer.username}.'
+        title = 'Order Item Manually Verified'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
+    except Exception as e:
+        logger.error(
+            "Error creating manual verification notification: ", str(e))
+        return False
