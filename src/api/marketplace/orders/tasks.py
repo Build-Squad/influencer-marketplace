@@ -17,6 +17,11 @@ from celery_once import QueueOnce
 
 from marketplace import celery_app
 
+from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered
+from pyxfluencer.utils import get_local_keypair_pubkey
+
+logger = logging.getLogger(__name__)
+
 """
 Sends a tweet for a given order item.
 
@@ -36,7 +41,85 @@ CONSUMER_KEY = config("CONSUMER_KEY")
 CONSUMER_SECRET = config("CONSUMER_SECRET")
 ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
+VALIDATOR_KEY_PATH = config("VALIDATOR_KEY_PATH")
 TWEET_LIMIT = 280
+NETWORK = config("NETWORK")
+TWEET_FIELDS = ['public_metrics', 'organic_metrics', 'non_public_metrics']
+
+
+def cancel_escrow(order_id: str, status: str):
+    try:
+        # Get order and corresponding escrow
+        order = Order.objects.get(id=order_id)
+        escrow = Escrow.objects.get(order=order)
+
+        buyer_primary_wallet = Wallet.objects.get(
+            id=escrow.business_wallet.id)
+        influencer_primary_wallet = Wallet.objects.get(
+            id=escrow.influencer_wallet.id)
+
+        val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
+
+        on_chain_transaction = OnChainTransaction.objects.get(
+            escrow=escrow, transaction_type='cancel_escrow'
+        )
+
+        result = asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
+                                              influencer_address=influencer_primary_wallet.wallet_address_id, order_code=order.order_number, network=NETWORK))
+
+        # Update all the values of the on_chain_transaction with result.value[0]
+        transaction_result = result.value[0]
+
+        on_chain_transaction.confirmation_status = transaction_result.confirmation_status
+        on_chain_transaction.confirmations = transaction_result.confirmations
+        on_chain_transaction.err = transaction_result.err
+        on_chain_transaction.slot = transaction_result.slot
+        on_chain_transaction.is_confirmed = transaction_result.err is None
+
+        on_chain_transaction.save()
+
+        # After the above task is finished successfully, update the order status to cancelled
+        order.status = status
+        order.save()
+
+        create_order_tracking(order=order, status=status)
+        create_notification_for_order(order=order, old_status='accepted', new_status=status)
+
+        escrow.status = "cancelled"
+        escrow.save()
+
+        return True
+
+    except Exception as e:
+        logger.error('Error in cancelling escrow: %s', str(e))
+        return False
+
+
+@celery_app.task(base=QueueOnce, once={'graceful': True})
+def confirm_escrow(order_id: str):
+    try:
+        # Get order and corresponding escrow
+        order = Order.objects.get(id=order_id)
+        escrow = Escrow.objects.get(order=order)
+
+        buyer_primary_wallet = Wallet.objects.get(
+            id=escrow.business_wallet.id)
+        influencer_primary_wallet = Wallet.objects.get(
+            id=escrow.influencer_wallet.id)
+
+        val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
+
+        asyncio.run(validate_escrow_to_delivered(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
+                                                 influencer_address=influencer_primary_wallet.wallet_address_id, order_code=order.order_number, network=NETWORK))
+
+        order.status = 'completed'
+        order.save()
+
+        escrow.status = "delivered"
+        escrow.save()
+
+    except Exception as e:
+        raise Exception('Error in confirming escrow', str(e))
 
 logger = logging.getLogger(__name__)
 
@@ -52,18 +135,15 @@ def check_order_status(pk):
 
     is_completed = True
 
-    for order_item in order_items:
-        if order_item.status != 'published':
-            is_completed = False
-            break
+    if not all(order_item.is_verified for order_item in order_items):
+        is_completed = False
 
     if is_completed:
-        order.status = 'completed'
-        order.save()
+        confirm_escrow.apply_async(args=[order.id])
         # Create a Order Tracking for the order
-        create_order_tracking(order, order.status)
+        create_order_tracking(order=order, status=order.status)
         # Send notification to business
-        create_notification_for_order(order, 'accepted', 'completed')
+        create_notification_for_order(order=order, old_status='accepted', new_status='completed')
 
 
 def tweet(text, client):
@@ -84,8 +164,8 @@ def tweet(text, client):
 
 def like_tweet(tweet_id, client):
     try:
-        res = client.like_tweet(tweet_id=tweet_id, user_auth=False)
-        return res.data['id']
+        res = client.like(tweet_id=tweet_id, user_auth=False)
+        return tweet_id if res.data['liked'] else None
     except Exception as e:
         logger.error('Error in liking tweet: %s', str(e))
 
@@ -121,35 +201,33 @@ def poll(text, poll_options, poll_duration_minutes, client):
 def retweet(tweet_id, client):
     try:
         res = client.retweet(tweet_id=tweet_id, user_auth=False)
-        return res.data['id']
+        return res.data['rest_id']
     except Exception as e:
         logger.error('Error in retweeting tweet: %s', str(e))
 
 
 def thread(text, client):
     """
-    Tweet Limit is 280 characters, so we need to split the text into multiple tweets
+    We need to split the text into multiple tweets on the basis of commas
     For the first tweet, we will call the create_tweet method
     For the rest of the tweets, we will call the reply_to_tweet method with the in_reply_to_tweet_id parameter set to
     the tweet_id of the first tweet
     """
     try:
-        if len(text) <= TWEET_LIMIT:
-            res = client.create_tweet(text=text, user_auth=False)
-            return res.data['id']
-        else:
-            # Split the text into multiple tweets
-            tweets = [text[i:i + TWEET_LIMIT]
-                      for i in range(0, len(text), TWEET_LIMIT)]
-            published_tweet_id = ''
-            for i, text in enumerate(tweets):
+        tweets = text.split(',')
+        published_tweet_id = ''
+        for i, text in enumerate(tweets):
+            if len(text) <= TWEET_LIMIT:
                 if i == 0:
                     res = client.create_tweet(text=text, user_auth=False)
                     published_tweet_id = res.data['id']
                 else:
                     res = client.create_tweet(
                         text=text, in_reply_to_tweet_id=published_tweet_id, user_auth=False)
-            return published_tweet_id
+            else:
+                raise Exception(
+                    f"Tweet is longer than {TWEET_LIMIT} characters")
+        return published_tweet_id
     except Exception as e:
         logger.error('Error in creating thread: %s', str(e))
 
@@ -215,19 +293,19 @@ def twitter_task(order_item_id):
         res = None
         # Switch case for different service types
         if service_type == 'tweet':
-            res = tweet(text, client)
+            res = tweet(text=text, client=client)
         elif service_type == 'like_tweet':
-            res = like_tweet(tweet_id, client)
+            res = like_tweet(tweet_id=tweet_id, client=client)
         elif service_type == 'reply_to_tweet':
-            res = reply_to_tweet(text, in_reply_to_tweet_id, client)
+            res = reply_to_tweet(text=text, in_reply_to_tweet_id=in_reply_to_tweet_id, client=client)
         elif service_type == 'quote_tweet':
-            res = quote_tweet(text, tweet_id, client)
+            res = quote_tweet(text=text, tweet_id=tweet_id, client=client)
         elif service_type == 'poll':
-            res = poll(text, poll_options, poll_duration_minutes, client)
+            res = poll(text=text, poll_options=poll_options, poll_duration_minutes=poll_duration_minutes, client=client)
         elif service_type == 'retweet':
-            res = retweet(tweet_id, client)
+            res = retweet(tweet_id=tweet_id, client=client)
         elif service_type == 'thread':
-            res = thread(text, client)
+            res = thread(text=text, client=client)
 
         if res:
             order_item.published_tweet_id = res
@@ -277,8 +355,11 @@ def schedule_tweet(order_item_id):
 
     try:
         # Ensure that the order item is in accepted status
-        if order_item.status != 'accepted':
-            raise Exception('Order item is not in accepted status')
+        if order_item.status not in ['accepted', 'cancelled']:
+            raise Exception('Order item is not in accepted / cancelled status')
+
+        if not order_item.approved:
+            raise Exception('Order item is not approved by the business')
 
         # Get the publish_date
         publish_date = order_item.publish_date
@@ -294,15 +375,19 @@ def schedule_tweet(order_item_id):
         celery_task = twitter_task.apply_async(
             args=[order_item_id], countdown=delay_until_publish)
         if celery_task:
+            old_status = order_item.status
             order_item.celery_task_id = celery_task.id
             order_item.status = 'scheduled'
             order_item.save()
 
-            create_order_item_tracking(order_item, order_item.status)
+            create_order_item_tracking(order_item=order_item, status=order_item.status)
 
             # Send notification to business
             create_notification_for_order_item(
-                order_item, 'accepted', 'scheduled')
+                order_item=order_item, old_status=old_status, new_status='scheduled')
+
+            create_order_item_status_update_message(
+                order_item=order_item, updated_by=order_item.package.influencer)
     except Exception as e:
         raise Exception(str(e))
 
@@ -327,11 +412,13 @@ def cancel_tweet(order_item_id):
             order_item.status = 'cancelled'
             order_item.save()
 
-            create_order_item_tracking(order_item, order_item.status)
+            create_order_item_tracking(order_item=order_item, status=order_item.status)
 
             # Send notification to business
             create_notification_for_order_item(
-                order_item, 'scheduled', 'cancelled')
+                order_item=order_item, old_status='scheduled', new_status='cancelled')
+            create_order_item_status_update_message(
+                order_item=order_item, updated_by=order_item.package.influencer)
     except Exception as e:
         raise Exception(str(e))
 
@@ -355,9 +442,9 @@ def schedule_reminder_notification():
             publish_date__gte=timezone.now())
 
         for order_item in order_items:
-            if not check_notification_sent(order_item.id):
+            if not check_notification_sent(order_item_id=order_item.id):
                 # Send notification to business
-                create_reminider_notification(order_item)
+                create_reminider_notification(order_item=order_item)
     except Exception as e:
         raise Exception(str(e))
 
@@ -433,7 +520,6 @@ def validate_order_item(order_item_id):
             order_item.save()
             check_order_status(pk=order_item.order_id.id)
         else:
-            print('Post verification failed')
             order_item.is_verified = False
             order_item.save()
             create_post_verification_failed_notification(order_item=order_item)

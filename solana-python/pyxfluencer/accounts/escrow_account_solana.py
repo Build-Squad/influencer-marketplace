@@ -12,20 +12,31 @@ from ..program_id import PROGRAM_ID
 
 
 class EscrowAccountSolanaJSON(typing.TypedDict):
+    validation_authority: str
     from_: str
     to: str
     amount: int
+    order_code: int
+    status: int
 
 
 @dataclass
 class EscrowAccountSolana:
     discriminator: typing.ClassVar = b"\x10\x907\x85x\xb0\xebC"
     layout: typing.ClassVar = borsh.CStruct(
-        "from_" / BorshPubkey, "to" / BorshPubkey, "amount" / borsh.U64
+        "validation_authority" / BorshPubkey,
+        "from_" / BorshPubkey,
+        "to" / BorshPubkey,
+        "amount" / borsh.U64,
+        "order_code" / borsh.U64,
+        "status" / borsh.U8,
     )
+    validation_authority: Pubkey
     from_: Pubkey
     to: Pubkey
     amount: int
+    order_code: int
+    status: int
 
     @classmethod
     async def fetch(
@@ -71,22 +82,31 @@ class EscrowAccountSolana:
             )
         dec = EscrowAccountSolana.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
+            validation_authority=dec.validation_authority,
             from_=dec.from_,
             to=dec.to,
             amount=dec.amount,
+            order_code=dec.order_code,
+            status=dec.status,
         )
 
     def to_json(self) -> EscrowAccountSolanaJSON:
         return {
+            "validation_authority": str(self.validation_authority),
             "from_": str(self.from_),
             "to": str(self.to),
             "amount": self.amount,
+            "order_code": self.order_code,
+            "status": self.status,
         }
 
     @classmethod
     def from_json(cls, obj: EscrowAccountSolanaJSON) -> "EscrowAccountSolana":
         return cls(
+            validation_authority=Pubkey.from_string(obj["validation_authority"]),
             from_=Pubkey.from_string(obj["from"]),
             to=Pubkey.from_string(obj["to"]),
             amount=obj["amount"],
+            order_code=obj["order_code"],
+            status=obj["status"],
         )

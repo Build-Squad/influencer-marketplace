@@ -1,10 +1,14 @@
+from decimal import Decimal
 from distutils.util import strtobool
 from http.client import HTTPResponse
 import secrets
-from accounts.tasks import sendEmail
 
-from marketplace.authentication import JWTAuthentication
+from django.shortcuts import get_object_or_404
+from accounts.tasks import promote_xfluencer, sendEmail
+
+from marketplace.authentication import JWTAuthentication, JWTAuthenticationOptional
 from django.db.models import Q
+from rest_framework.exceptions import NotFound
 from marketplace.services import (
     Pagination,
     handleServerException,
@@ -14,15 +18,18 @@ from marketplace.services import (
     JWTOperations,
     truncateWalletAddress,
 )
+from django.db.models import Avg
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from orders.models import Review
 from packages.models import Package, Service
 from .models import (
     AccountLanguage,
     AccountRegion,
+    Bookmark,
     BusinessAccountMetaData,
     TwitterAccount,
     CategoryMaster,
@@ -39,12 +46,16 @@ from .serializers import (
     AccountRegionSerializer,
     BusinessAccountMetaDataSerializer,
     CreateAccountCategorySerializer,
+    CreateBookmarkSerializer,
     DeleteAccountCategorySerializer,
     OTPAuthenticationSerializer,
+    OTPAuthenticationV2Serializer,
     OTPVerificationSerializer,
+    OTPVerificationV2Serializer,
     TwitterAccountSerializer,
     CategoryMasterSerializer,
     AccountCategorySerializer,
+    TwitterPromotionSerializer,
     UserCreateSerializer,
     UserSerializer,
     BankAccountSerializer,
@@ -150,6 +161,7 @@ class TopInfluencers(APIView):
 
 
 class TwitterAccountList(APIView):
+    authentication_classes = [JWTAuthenticationOptional]
     def get(self, request):
         try:
             languages = request.GET.getlist("languages[]", [])
@@ -166,8 +178,7 @@ class TwitterAccountList(APIView):
             lowerFollowerLimit = request.GET.get("lowerFollowerLimit", "")
 
             searchString = request.GET.get("searchString", "")
-            isVerified_str = request.GET.get("isVerified", "false")
-            isVerified = bool(strtobool(isVerified_str))
+            rating = request.GET.get("rating", 0)
             
             # Default fetch influencers for explore page
             role = request.GET.get("role", "influencer")
@@ -210,9 +221,6 @@ class TwitterAccountList(APIView):
                     Q(user_name__icontains=searchString)
                     | Q(name__icontains=searchString)
                 )
-
-            if isVerified:
-                twitterAccount = twitterAccount.filter(verified=isVerified)
 
             if collaborationIds:
                 if collaborationIds[0] == "nil":
@@ -300,10 +308,31 @@ class TwitterAccountList(APIView):
                 twitterAccount = twitterAccount.exclude(
                     id__in=twitter_accounts_to_exclude
                 )
+            
+            if rating:
+                exclude_ids = [] 
+                
+                for twitter_account in twitterAccount:
+                    user = get_object_or_404(User, twitter_account=twitter_account)
+                    
+                    reviews = Review.objects.filter(
+                        order__order_item_order_id__package__influencer=user,
+                        order__deleted_at=None,
+                        order__status="completed"
+                    )
+                    
+                    total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or Decimal('0')
+                    
+                    if total_rating < Decimal(rating):
+                        exclude_ids.append(twitter_account.id)
+                
+                twitterAccount = twitterAccount.exclude(id__in=exclude_ids)
 
-            # Paginate the results
+            twitterAccount = twitterAccount.order_by("-followers_count")
+
             pagination = Pagination(twitterAccount, request)
-            serializer = TwitterAccountSerializer(pagination.getData(), many=True)
+            serializer = TwitterAccountSerializer(
+                pagination.getData(), many=True, context={"request": request})
             return Response(
                 {
                     "isSuccess": True,
@@ -411,7 +440,19 @@ class TwitterAccountDetail(APIView):
 class CategoryMasterList(APIView):
     def get(self, request):
         try:
+            is_verified = request.GET.get("is_verified" , None)
+            show_on_main = request.GET.get("show_on_main" , None)
+            
             categoryMaster = CategoryMaster.objects.all()
+            if is_verified:
+                is_verified = bool(is_verified)
+                categoryMaster = categoryMaster.filter(is_verified=is_verified)
+            
+
+            if show_on_main:
+                show_on_main = bool(show_on_main)
+                categoryMaster = categoryMaster.filter(show_on_main=show_on_main)
+
             pagination = Pagination(categoryMaster, request)
             serializer = CategoryMasterSerializer(pagination.getData(), many=True)
             return Response(
@@ -773,7 +814,7 @@ class UserDetail(APIView):
     def get_authenticators(self):
         if self.request.method == 'PUT' or self.request.method == 'DELETE':
             return [JWTAuthentication()]
-        return super().get_authenticators()
+        return [JWTAuthenticationOptional()]
 
     def get_object(self, pk):
         try:
@@ -786,7 +827,7 @@ class UserDetail(APIView):
             user = self.get_object(pk)
             if user is None:
                 return handleNotFound("User")
-            serializer = UserSerializer(user)
+            serializer = UserSerializer(user, context={"request": request})
             return Response(
                 {
                     "isSuccess": True,
@@ -1060,7 +1101,6 @@ class UserAuth(APIView):
         except Exception as e:
             return handleServerException(e)
 
-
 class OTPAuth(APIView):
     def get_or_create_user(self, email):
         try:
@@ -1072,6 +1112,7 @@ class OTPAuth(APIView):
                 username=email,
             )
             user.save()
+            
             return user
 
     @swagger_auto_schema(request_body=OTPAuthenticationSerializer)
@@ -1113,7 +1154,6 @@ class OTPAuth(APIView):
                             "isSuccess": True,
                             "data": None,
                             "message": "OTP sent successfully",
-                            "otp": otp,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -1158,10 +1198,10 @@ class OTPVerification(APIView):
                 is_valid = otp_service.validateOTP(request.data["otp"], user)
                 if is_valid:
                     # If user is logging in for the first time, set email_verified_at to current time
+                    message = "Logged in successfully"
                     if user.email_verified_at is None:
-                        user.email_verified_at = datetime.datetime.now()
-                    user.login_method = "email"
-                    user.save()
+                        user.email_verified_at = timezone.now()
+                        message = "New user? Head to your profile to earn badges!"
                     jwt_operations = JWTOperations()
                     user_id = str(user.id)
                     payload = {
@@ -1172,6 +1212,9 @@ class OTPVerification(APIView):
                     }
                     response = Response()  # Create a new Response instance
                     token = jwt_operations.generateToken(payload)
+                    user.jwt = token
+                    user.login_method = "email"
+                    user.save()
                     response.set_cookie(
                         "jwt",
                         token,
@@ -1181,10 +1224,13 @@ class OTPVerification(APIView):
                         httponly=True,
                         samesite="None",
                     )
+
+                    
+
                     response.data = {
                         "isSuccess": True,
                         "data": UserSerializer(user).data,
-                        "message": "Logged in successfully",
+                        "message": message,
                     }
                     response.status_code = status.HTTP_200_OK
                     return response
@@ -1202,6 +1248,134 @@ class OTPVerification(APIView):
         except Exception as e:
             return handleServerException(e)
 
+class OTPAuthV2(APIView):
+    def get_user(self, username, email):
+        try:
+
+            current_user = User.objects.get(username=username)
+            # Checking if the user with new email already exists.
+            try:
+                User.objects.get(email=email)
+                return None
+            except User.DoesNotExist:
+                return current_user
+        except User.DoesNotExist:
+            return None
+            
+
+    @swagger_auto_schema(request_body=OTPAuthenticationV2Serializer)
+    def post(self, request):
+        try:
+            serializer = OTPAuthenticationV2Serializer(data=request.data)
+
+            if serializer.is_valid():
+                # If user exists, send OTP.
+                user = self.get_user(request.data["username"], request.data["email"])
+                otp_service = OTPAuthenticationService()
+                otp, otp_expiration = otp_service.generateOTP()
+                if user:
+                    # Only allow a business owner to login
+                    if user.role.name != "business_owner":
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "data": None,
+                                "message": "Only business owners can login via email",
+                                "errors": "Only business owners can login via email",
+                            },
+                            status=status.HTTP_401_UNAUTHORIZED,
+                        )
+                    user.otp = otp
+                    user.otp_expiration = otp_expiration
+                    user.save()
+
+                    sendEmail.delay(
+                        "OTP for login to Xfluencer",
+                        "Your OTP is " + str(otp),
+                        "loginEmail.html",
+                        {"otp": otp, "target": config("FRONT_END_URL")},
+                        [request.data["email"]],
+                    )
+
+                    return Response(
+                        {
+                            "isSuccess": True,
+                            "data": None,
+                            "message": "OTP sent successfully",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:                    
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "User with email Id already exists",
+                        },
+                    )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+class OTPVerifyV2(APIView):
+    def get_object(self, username):
+        try:
+            return User.objects.get(username=username)
+        except User.DoesNotExist:
+            return None
+
+    @swagger_auto_schema(request_body=OTPVerificationV2Serializer)
+    # Login user if OTP is valid
+    def post(self, request):
+        try:
+            serializer = OTPVerificationV2Serializer(data=request.data)
+            if serializer.is_valid():
+                user = self.get_object(request.data["username"])
+                if user is None:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "User not found",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+                otp_service = OTPAuthenticationService()
+                is_valid = otp_service.validateOTP(request.data["otp"], user)
+                if is_valid:
+                    # If the OTP is valid, save the data to the user table
+                        
+                    user.email_verified_at = timezone.now()
+                    user.email = request.data["email"]
+                    if user.login_method == "email":
+                        user.username = request.data["email"]
+                    user.save()
+
+                    business_account_meta = BusinessAccountMetaData.objects.get(user_account=user)
+                    business_account_meta.user_email = request.data["email"]
+                    business_account_meta.save()
+                    response = Response()  # Create a new Response instance
+                    response.data = {
+                        "isSuccess": True,
+                        "data": UserSerializer(user).data,
+                        "message": "OTP Verified successfully",
+                    }
+                    response.status_code = status.HTTP_200_OK
+                    return response
+                else:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "OTP is invalid",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
 
 class EmailVerification(APIView):
     # A GET request to this endpoint will extract the user id from the JWT and check if the user exists and then send an email to the user
@@ -1246,7 +1420,6 @@ class EmailVerification(APIView):
                         "isSuccess": True,
                         "data": None,
                         "message": "Email sent successfully",
-                        "otp": otp,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -1385,6 +1558,7 @@ class WalletAuth(APIView):
     @swagger_auto_schema(request_body=WalletAuthSerializer)
     def post(self, request):
         try:
+            is_new_user = False
             serializer = WalletAuthSerializer(data=request.data)
             if serializer.is_valid():
 
@@ -1425,6 +1599,7 @@ class WalletAuth(APIView):
                     )
                     wallet.user_id = user
                     wallet.save()
+                    is_new_user = True
                 else:
                     user = User.objects.get(username=wallet.user_id)
                 wallet = self.get_wallet(request.data["wallet_address_id"])
@@ -1472,10 +1647,13 @@ class WalletAuth(APIView):
                     httponly=True,
                     samesite="None",
                 )
+                message = "Logged in successfully"
+                if is_new_user:
+                    message="New user? Head to your profile to earn badges!"
                 response.data = {
                     "isSuccess": True,
                     "data": UserSerializer(user).data,
-                    "message": "Logged in successfully",
+                    "message": message,
                 }
                 response.status_code = status.HTTP_200_OK
                 return response
@@ -1515,7 +1693,7 @@ class WalletConnect(APIView):
                                 user_id=request.user_account, deleted_at=None)
                             added_wallets.update(is_primary=False)
                         except Wallet.DoesNotExist:
-                            print("No wallets found for this user.")
+                            pass
                         wallet.is_primary = True
                         wallet.save()
                         return Response(
@@ -1622,6 +1800,53 @@ class WalletList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+class DisconnectTwitterAccount(APIView):
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return None
+
+    authentication_classes = [JWTAuthentication]
+    def delete(self, request, pk):
+        try:
+            # Get the user object
+            user = self.get_object(pk)
+            
+            # If user not found, raise NotFound exception
+            if user is None:
+                raise NotFound("User not found")
+
+            # Get the associated TwitterAccount instance
+            twitter_account = user.twitter_account
+
+            # Set twitter_account field to None
+            user.twitter_account = None
+            user.save()
+
+            # Delete corresponding TwitterAccount entry if it exists
+            if twitter_account:
+                twitter_account.delete()
+
+            # Return success response
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": UserSerializer(user).data,
+                    "message": "Twitter account disconnected successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except NotFound as e:
+            # Return 404 response if user is not found
+            return Response(
+                {"message": str(e)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            # Handle other exceptions
+            return handleServerException(e)
+
 
 class WalletDetail(APIView):
     authentication_classes = [JWTAuthentication]
@@ -1690,6 +1915,160 @@ class BusinessAccountMetaDataDetail(APIView):
                     },
                     status=status.HTTP_200_OK,
                 )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class BookmarkView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        try:
+            bookmarks = Bookmark.objects.filter(user=request.user_account)
+            # Get the twitter_account objects of all the target_users and then paginate that data
+
+            target_twitter_account_ids = User.objects.filter(
+                id__in=[bookmark.target_user.id for bookmark in bookmarks]
+            ).values_list('twitter_account__id', flat=True)
+
+            target_twitter_accounts = TwitterAccount.objects.filter(
+                id__in=target_twitter_account_ids
+            )
+            pagination = Pagination(target_twitter_accounts, request)
+            serializer = TwitterAccountSerializer(
+                pagination.getData(), many=True, context={"request": request})
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "All Bookmarks retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+    @swagger_auto_schema(request_body=CreateBookmarkSerializer)
+    def post(self, request):
+        try:
+            serializer = CreateBookmarkSerializer(data=request.data)
+            if serializer.is_valid():
+                # Check if the bookmark already exists
+                target_user = User.objects.get(id=request.data["target_user"])
+                bookmark = Bookmark.objects.filter(
+                    user=request.user_account, target_user=target_user
+                )
+                if bookmark.exists():
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Bookmark already exists",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    Bookmark.objects.create(
+                        user=request.user_account, target_user=target_user
+                    )
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Bookmark created successfully",
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
+        except Exception as e:
+            return handleServerException(e)
+
+
+class BookmarkDetailView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def delete(self, request, pk):
+        try:
+            target_user = User.objects.get(id=pk)
+            bookmark = Bookmark.objects.filter(
+                user=request.user_account, target_user=target_user
+            ).first()
+            if bookmark.user != request.user_account:
+                return handleBadRequest("You are not authorized to delete this bookmark")
+            bookmark.delete()
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": None,
+                    "message": "Bookmark removed successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Bookmark.DoesNotExist:
+            return handleNotFound("Bookmark")
+        except Exception as e:
+            return handleServerException(e)
+
+
+class TwitterPromotionView(APIView):
+
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=TwitterPromotionSerializer)
+    def post(self, request):
+        try:
+            # check if the user is an influencer
+            if request.user_account.role.name != "influencer":
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Only influencers can share their referral link",
+                        "errors": "Only influencers can share their referral link",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            # check if already a promotion exists
+            if request.user_account.promoted_tweet_id:
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "You have already shared your referral link on X",
+                        "errors": "You have already shared your referral link on X",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            serializer = TwitterPromotionSerializer(data=request.data)
+            if serializer.is_valid():
+                promoted_tweet_id = promote_xfluencer(
+                    user=request.user_account, text=request.data["text"])
+                if promoted_tweet_id is None:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Publication failed on X, please try again later",
+                            "errors": "Publication failed on X, please try again later",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    user = User.objects.get(id=request.user_account.id)
+                    user.promoted_tweet_id = promoted_tweet_id
+                    user.save()
+                    return Response(
+                        {
+                            "isSuccess": True,
+                            "data": UserSerializer(user).data,
+                            "message": "Post was successfully published on X",
+                        },
+                        status=status.HTTP_201_CREATED,
+                    )
             else:
                 return handleBadRequest(serializer.errors)
         except Exception as e:

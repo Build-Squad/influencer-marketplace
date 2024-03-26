@@ -1,12 +1,15 @@
+from .services import get_twitter_usage
 from marketplace.services import Pagination, handleServerException, handleNotFound
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Country, Currency, LanguageMaster, RegionMaster
+from .models import Configuration, Country, Currency, HowItWorksStep, LanguageMaster, RegionMaster
 from django.db.models import Q
 from .serializers import (
+    ConfigurationSerializer,
     CountrySerializer,
     CurrencySerializer,
+    HowItWorksStepSerializer,
     LanguageMasterSerializer,
     RegionMasterSerializer,
 )
@@ -170,6 +173,71 @@ class RegionListView(APIView):
                     "data": serializer.data,
                     "message": "All Regions retrieved successfully",
                     "pagination": pagination.getPageInfo(),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+
+class HowItWorksStepsView(APIView):
+    def post(self, request):
+        try:
+            route = request.data["route"]
+            steps = HowItWorksStep.objects.filter(step_route__route = route)
+            serializer = HowItWorksStepSerializer(steps, many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": f"Data fetched for {route} route successful",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class TwitterUsageView(APIView):
+    def get(self, request):
+        try:
+            usage = get_twitter_usage()
+            if usage:
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": usage,
+                        "message": "Twitter usage data fetched successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Twitter usage data not found",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return handleServerException(e)
+
+
+class ConfigurationView(APIView):
+    # A get request with a key filter from request params
+    def get(self, request):
+        try:
+            configurations = Configuration.objects.all()
+            if request.GET.get("key"):
+                configurations = configurations.filter(
+                    key=request.GET.get("key"))
+            serializer = ConfigurationSerializer(configurations, many=True)
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": serializer.data,
+                    "message": "Configuration fetched successfully",
                 },
                 status=status.HTTP_200_OK,
             )

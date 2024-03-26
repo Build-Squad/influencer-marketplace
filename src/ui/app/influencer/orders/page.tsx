@@ -11,6 +11,7 @@ import OrderSummaryTable from "@/src/components/dashboardComponents/orderSummary
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogTitle,
@@ -31,6 +32,10 @@ import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import { useRouter } from "next/navigation";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
+import { closeSnackbar, enqueueSnackbar } from "notistack";
 
 export default function Orders() {
   const router = useRouter();
@@ -55,6 +60,113 @@ export default function Orders() {
     current_page_size: 6,
   });
 
+  // User Guide for the vwey first order
+  const [stepIndex, setStepIndex] = useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Order's request dashboard.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            This tour will guide you through the order requests where you can
+            view the orders and accept/decline based on your preference.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Select orders.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click on the order row to view details about it on the right hand
+            drawer.
+          </Typography>
+        </Box>
+      ),
+      placement: "right",
+      target: ".joyride-order-column",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            View the order.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Please have a close look at the details of each order item including
+            the content, publish time and the amount it's offering. You can also
+            visit the business profile by clicking on the hyperlink.
+          </Typography>
+        </Box>
+      ),
+      placement: "left",
+      target: ".joyride-order-details-drawer",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Accept/Decline Orders.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Accept or decline the order based on your pereference.
+          </Typography>
+        </Box>
+      ),
+      placement: "left",
+      target: ".joyride-action-column",
+    },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completed your order requests tour, you're good to go and
+            accept or decline the order request.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+  ]);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
+    }
+  };
+
   const getOrders = async () => {
     try {
       setLoading(true);
@@ -68,7 +180,12 @@ export default function Orders() {
         }
       );
       if (isSuccess) {
-        setOrders(data?.data);
+        // Open the user guide if there's only 1 order request.
+        if (data?.pagination?.total_data_count == 1) {
+          setStepIndex(0);
+          setRun(true);
+        }
+        setOrders(data?.data?.orders);
         setPagination({
           ...pagination,
           total_data_count: data?.pagination?.total_data_count,
@@ -97,7 +214,11 @@ export default function Orders() {
       field: "order_code",
       headerName: "Order ID",
       flex: 1,
-      renderHeader: () => <Typography variant="h6">Order ID</Typography>,
+      renderHeader: () => (
+        <Typography className="joyride-order-column" variant="h6">
+          Order ID
+        </Typography>
+      ),
     },
     {
       field: "buyer__username",
@@ -203,7 +324,10 @@ export default function Orders() {
       ): React.ReactNode => {
         const orderId = params?.row?.id;
         return (
-          <Box sx={{ display: "flex", columnGap: "4px" }}>
+          <Box
+            sx={{ display: "flex", columnGap: "4px" }}
+            className="joyride-action-column"
+          >
             <Button
               variant={"contained"}
               color="secondary"
@@ -257,29 +381,65 @@ export default function Orders() {
       const status =
         selectedAction.status == "Accept" ? "accepted" : "rejected";
       setActionLoading(true);
-      const { isSuccess, data, message } = await putService(
-        `orders/update-status/${selectedAction.orderId}/`,
-        {
-          status: status,
+      if (status === "rejected") {
+        handleClose();
+        const action = () => (
+          <>
+            <CircularProgress color="inherit" size={20} />
+          </>
+        );
+        const cancellationNotification = enqueueSnackbar(
+          `Declining order request, please wait for confirmation`,
+          {
+            variant: "default",
+            persist: true,
+            action,
+          }
+        );
+        const { isSuccess, data, message } = await putService(
+          `/orders/cancel-order/${selectedAction.orderId}/`,
+          {}
+        );
+        if (isSuccess) {
+          closeSnackbar(cancellationNotification);
+          getOrders();
+          notification(
+            "Order request was declined successfully",
+            "success",
+            3000
+          );
+        } else {
+          closeSnackbar(cancellationNotification);
+          notification(
+            message ? message : "Something went wrong, couldn't cancel order",
+            "error"
+          );
         }
-      );
-      if (isSuccess) {
-        notification(
-          `Order request was ${
-            selectedAction.status == "Accept" ? "accepted" : "rejected"
-          }`
-        );
       } else {
-        notification(
-          message
-            ? message
-            : "Something went wrong, couldn't update order status",
-          "error"
+        const { isSuccess, data, message } = await putService(
+          `orders/update-status/${selectedAction.orderId}/`,
+          {
+            status: status,
+          }
         );
+        if (isSuccess) {
+          notification(
+            `Order request was ${
+              selectedAction.status == "Accept" ? "accepted" : "rejected"
+            }`
+          );
+        } else {
+          notification(
+            message
+              ? message
+              : "Something went wrong, couldn't update order status",
+            "error"
+          );
+        }
+        handleClose();
       }
       setActionLoading(false);
     }
-    handleClose();
   };
 
   const handleClickOpen = () => {
@@ -298,17 +458,54 @@ export default function Orders() {
           xs={selectedOrder ? 9 : 12}
           sx={{ padding: "16px 20px 0 40px" }}
         >
-          <Image
-            src={BackIcon}
-            alt={"BackIcon"}
-            height={30}
-            style={{ marginTop: "8px", marginBottom: "8px", cursor: "pointer" }}
-            onClick={() => {
-              router.back();
-            }}
-          />
           <Box
-            sx={{ display: "flex", columnGap: "8px", alignItems: "flex-start" }}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              src={BackIcon}
+              alt={"BackIcon"}
+              height={30}
+              style={{
+                marginTop: "8px",
+                marginBottom: "8px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                router.back();
+              }}
+            />
+            {pagination.total_data_count > 0 ? (
+              <Box
+                sx={{
+                  color: "grey",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  columnGap: "4px",
+                }}
+                onClick={() => {
+                  setStepIndex(0);
+                  setRun(true);
+                }}
+              >
+                <DriveEta fontSize="small" />
+                <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+              </Box>
+            ) : null}
+          </Box>
+
+          <Box
+            sx={{
+              display: "flex",
+              columnGap: "8px",
+              alignItems: "flex-start",
+              mt: 1,
+            }}
           >
             <Image src={Star} height={20} alt="Star" />
             <Typography variant="h4" fontWeight={"bold"}>
@@ -384,6 +581,7 @@ export default function Orders() {
             borderTop: "none",
             display: selectedOrder ? "block" : "none",
           }}
+          className="joyride-order-details-drawer"
         >
           <Box
             sx={{
@@ -425,7 +623,7 @@ export default function Orders() {
             <OpenInFull fontSize="medium" sx={{ cursor: "pointer" }} />
           </Box>
           <Divider />
-          <Box sx={{ padding: "20px 40px" }}>
+          <Box sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight={"bold"}>
               Order Summary
             </Typography>
@@ -470,6 +668,22 @@ export default function Orders() {
           </DialogActions>
         </Dialog>
       </Grid>
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous
+        stepIndex={stepIndex}
+        run={run}
+        scrollToFirstStep
+        showSkipButton
+        steps={steps}
+        spotlightClicks
+        styles={{
+          options: {
+            zIndex: 2,
+          },
+        }}
+        locale={{ last: "Finish" }}
+      />
     </RouteProtection>
   );
 }

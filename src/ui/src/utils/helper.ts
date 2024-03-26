@@ -1,3 +1,5 @@
+import parse from "html-react-parser";
+
 export function stringToColor(string: string) {
   let hash = 0;
   let i;
@@ -16,4 +18,10 @@ export function stringToColor(string: string) {
   /* eslint-enable no-bitwise */
 
   return color;
+}
+
+export function htmlStringToComponent(htmlString: string) {
+  if (htmlString) {
+    return parse(htmlString);
+  }
 }

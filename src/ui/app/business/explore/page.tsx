@@ -1,5 +1,5 @@
 "use client";
-import { Box, Grid, Pagination, Typography } from "@mui/material";
+import { Box, Grid, Pagination, Tooltip, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import React, { useEffect, useState } from "react";
 import { ExploreFilterInitialValues, ExploreFilterSchema } from "./validation";
@@ -8,6 +8,7 @@ import Footer from "@/src/components/shared/footer";
 import InfluencersCards from "../components/influencersContainer/influencersCards";
 import { getService } from "@/src/services/httpServices";
 import { notification } from "@/src/components/shared/notification";
+import HelperButton from "@/src/components/helperButton";
 
 type InfluencersType = {
   id: string;
@@ -19,6 +20,7 @@ type InfluencersType = {
   minPrice: number;
   maxPrice: number;
   rating: number;
+  is_bookmarked?: boolean;
 };
 
 type Props = {};
@@ -38,7 +40,7 @@ const formatTwitterFollowers = (followersCount: any) => {
 
 export default function Explore({}: Props) {
   const [influencersData, setInfluencersData] = useState<InfluencersType[]>();
-
+  const [refresh, setRefresh] = useState<boolean>(false);
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
     total_page_count: 0,
@@ -47,11 +49,27 @@ export default function Explore({}: Props) {
   });
   const formik = useFormik({
     initialValues: ExploreFilterInitialValues,
-    onSubmit: (values) => {
-      getInfluencers(values);
-    },
+    onSubmit: () => {},
     validationSchema: ExploreFilterSchema,
   });
+
+  // Applying debouncing for filter's section
+  useEffect(() => {
+    let timeoutId: any;
+
+    const debouncedGetInfluencers = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        getInfluencers(formik.values);
+      }, 1000);
+    };
+
+    debouncedGetInfluencers();
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [formik.values]);
 
   useEffect(() => {
     getInfluencers();
@@ -111,13 +129,16 @@ export default function Explore({}: Props) {
           twitterUsername: inf.user_name || "",
           profileUrl: inf.profile_image_url || "",
           services: inf.service_types
-            ? inf.service_types.map((service: any) => service.serviceType)
+            ? inf.service_types
+                .filter((service: any) => service.packageStatus == "published")
+                .map((service: any) => service.serviceType)
             : [],
 
           followers: formatTwitterFollowers(inf.followers_count),
           minPrice: getPrice(inf, "min"),
           maxPrice: getPrice(inf, "max"),
           rating: inf.rating || 0,
+          is_bookmarked: inf?.is_bookmarked,
         };
       });
       setPagination({
@@ -140,6 +161,14 @@ export default function Explore({}: Props) {
       current_page_number: page,
     }));
   };
+
+  useEffect(() => {
+    if (refresh) {
+      getInfluencers();
+      setRefresh(false);
+    }
+  }, [refresh]);
+
   return (
     <>
       {/* Filters section */}
@@ -154,11 +183,13 @@ export default function Explore({}: Props) {
 
       {/* Top Influencers section */}
       <Box sx={{ px: 3, py: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "baseline", columnGap: "8px" }}>
+        <Box sx={{ display: "flex", alignItems: "center", columnGap: "8px" }}>
           <Typography variant="h5">Top Matches</Typography> -
           <Typography variant="subtitle1" sx={{ fontStyle: "italic" }}>
             {pagination?.total_data_count ?? 0} Results
           </Typography>
+          {/* The step should be in the database with the corresponding route */}
+          {/* <HelperButton step={"filters"} /> */}
         </Box>
         <Grid
           container
@@ -168,7 +199,13 @@ export default function Explore({}: Props) {
           alignItems={"center"}
         >
           {influencersData?.map((inf, index) => {
-            return <InfluencersCards influencer={inf} key={index} />;
+            return (
+              <InfluencersCards
+                influencer={inf}
+                key={index}
+                setRefresh={setRefresh}
+              />
+            );
           })}
         </Grid>
         <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>

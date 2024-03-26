@@ -1,5 +1,3 @@
-// TODO: Bring here all instructions of the escrow using ATA
-
 use anchor_lang::{
     prelude::*, solana_program::entrypoint::ProgramResult    
 };
@@ -14,19 +12,20 @@ pub fn process(ctx: Context<CreateEscrow>, _vault_account_bump: u8,
     amount: u64,
     order_code: u64) -> ProgramResult {
    
-
     let clock: Clock = Clock::get().unwrap();
     
-    ctx.accounts.escrow_account.buyer_key = *ctx.accounts.buyer.key;
-    ctx.accounts.escrow_account.buyer_deposit_token_account = *ctx.accounts.buyer_deposit_token_account.to_account_info().key;
-    ctx.accounts.escrow_account.seller_key = *ctx.accounts.seller.key;
-    ctx.accounts.escrow_account.seller_receive_token_account = *ctx.accounts.seller_receive_token_account.to_account_info().key;
-    ctx.accounts.escrow_account.judge_key = *ctx.accounts.judge.key;
+    ctx.accounts.escrow_account.business_key = *ctx.accounts.business.key;
+    ctx.accounts.escrow_account.business_deposit_token_account = *ctx.accounts.business_deposit_token_account.to_account_info().key;
+    ctx.accounts.escrow_account.influencer_key = *ctx.accounts.influencer.key;
+    ctx.accounts.escrow_account.influencer_receive_token_account = *ctx.accounts.influencer_receive_token_account.to_account_info().key;
+    ctx.accounts.escrow_account.validation_authority = *ctx.accounts.validation_authority.key;
     ctx.accounts.escrow_account.amount = amount;
-    ctx.accounts.escrow_account.order_code = order_code;
-    ctx.accounts.escrow_account.status = 0;
+    ctx.accounts.escrow_account.order_code = order_code;    
     ctx.accounts.escrow_account.delivery_time = clock.unix_timestamp;
+    ctx.accounts.escrow_account.status = 0;
      
+    msg!("Amount of Tokens to store in SPL Escrow: {}", amount);
+
     let escrow_seed: String = format!("{}{}", "escrow".to_string(), order_code.to_string());
     let escrow_pda_seed: &[u8] = escrow_seed.as_bytes();
 

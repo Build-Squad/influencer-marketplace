@@ -48,7 +48,7 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
               color: "#676767",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              whiteSpace: "wrap",
             }}
           >
             {meta_data?.value ? meta_data?.value : "N/A"}
@@ -93,6 +93,38 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
         </Box>
       );
 
+    case "array":
+      return (
+        // Comma separated values
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            gap: "20px",
+          }}
+        >
+          <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
+            <Image
+              src={Mask_group}
+              height={14}
+              alt="Mask_group"
+              style={{ marginRight: "8px" }}
+            />
+            {meta_data?.label}
+          </Typography>
+          {meta_data?.value?.split(",").map((value: string, index: number) => {
+            return (
+              <Box key={index}>
+                <Typography variant="subtitle1" sx={{ color: "#676767" }}>
+                  {`${index + 1}. `}
+                  {value}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+      );
     default:
       return null;
   }
@@ -243,10 +275,19 @@ const OrderSummaryDetails = ({
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box sx={{ my: 2 }}>
       {orderItem.map((eachOrderItem: any, index: number) => {
         return (
-          <>
+          <Box
+            sx={{
+              borderRadius: 4,
+              backgroundColor: "#ffffff",
+              boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.08)",
+              width: "100%",
+              p: 2,
+              my: 2,
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
@@ -338,7 +379,7 @@ const OrderSummaryDetails = ({
                 </Button>
               </DialogActions>
             </Dialog>
-          </>
+          </Box>
         );
       })}
     </Box>

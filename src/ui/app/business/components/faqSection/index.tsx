@@ -16,24 +16,24 @@ type Props = {};
 
 const FAQs = [
   {
-    question: "Do I need to pay to view an influencer's profile and services ?",
+    question: "What I need to get started?",
     answer:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Suspendisse malesuada lacus ex, sit amet blandit leo lobortiseget.",
+      "Explore our selection of influencers on the explore page, filtering them based on follower count, ratings from other businesses, pricing, and more. Next, choose the services offered by the influencer, add them to your cart, and proceed.",
   },
   {
-    question: "Do I need to pay to view an influencer's profile and services ?",
+    question: "How do I send an offer?",
     answer:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Suspendisse malesuada lacus ex, sit amet blandit leo lobortiseget.",
+      "To initiate the process, browse through our selection of influencers and select the services you require, adding them to your cart. Once you've made your selections, proceed to the checkout where you can schedule the services at your convenience. Finally, complete the payment securely using your wallet.",
   },
   {
-    question: "Do I need to pay to view an influencer's profile and services ?",
+    question: "What if the influencer declines my offer?",
     answer:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Suspendisse malesuada lacus ex, sit amet blandit leo lobortiseget.",
+      "If an influencer rejects your order, the smart contract will automatically refund the payment to your designated wallet.",
   },
   {
-    question: "Do I need to pay to view an influencer's profile and services ?",
+    question: "What happens once the influencer accepts my offer?",
     answer:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Suspendisse malesuada lacus ex, sit amet blandit leo lobortiseget.",
+      "Once an influencer accepts your order, they will schedule it, and the service will be automatically completed at the appointed time. You can monitor the progress of your orders on the dashboard page.",
   },
 ];
 

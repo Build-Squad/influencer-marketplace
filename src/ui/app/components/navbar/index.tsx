@@ -35,6 +35,8 @@ import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import NotificationPanel from "@/src/components/notificationPanel";
 import { notification } from "@/src/components/shared/notification";
 import NextLink from "next/link";
+import SavedProfileIcon from "@/public/svg/Saved.svg";
+import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
 
 type NavbarProps = {
   setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -85,6 +87,12 @@ const MENU_ITEMS: {
     icon: CartIcon,
     disabledIcon: CartDisabledIcon,
   },
+  Bookmarks: {
+    label: "Bookmarks",
+    route: "/bookmarks",
+    icon: SavedProfileIcon,
+    disabledIcon: SavedProfileDisabledIcon,
+  },
   Notifications: {
     label: "Notifications",
     route: "/notifications",
@@ -130,7 +138,11 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
             ? `/influencer${item?.route}`
             : "";
           if (item?.label == "Profile") {
-            route = `${route}/${user?.user?.id}` ?? "";
+            if (user?.user?.role?.name?.includes("business")) {
+              route = "/business/profile?tab=wallet";
+            } else {
+              route = `${route}/${user?.user?.id}` ?? "";
+            }
           }
         }
 
@@ -343,11 +355,12 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
               user?.user?.role?.name.includes("business_owner") ? (
                 <MenuItemsComponent
                   items={[
-                    "Home",
+                    "Profile",
                     "Explore",
                     "Dashboard",
                     "Messages",
                     "Cart",
+                    "Bookmarks",
                     "Notifications",
                   ]}
                 />

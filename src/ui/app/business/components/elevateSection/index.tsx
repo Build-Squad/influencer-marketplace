@@ -1,6 +1,6 @@
 "use client";
-import { Box, Button, Typography } from "@mui/material";
-import React, { useState } from "react";
+import { Box, Button, Grid, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { CheckCircle } from "@mui/icons-material";
 import Article3_Business from "@/public/svg/Article3_Business.svg";
@@ -9,21 +9,45 @@ import Article1_Business from "@/public/svg/Article1_Business.svg";
 type Props = {};
 
 const TABS = [
-  "Impactful Services",
-  "Decentralized Community",
-  "X Web3 Influencers",
+  "Discover Influencers",
+  "Collaboration Management",
+  "Unlock Explosive Growth",
 ];
 
 const FirstTabComponent = () => {
+  const [articleImage, setArticleImage] = useState(
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png"
+  );
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const images = [
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png",
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards5.png",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 2000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    setArticleImage(images[currentIndex]);
+  }, [currentIndex]);
+
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Tailored Services from X Web3 Influencers:
+          Search the top influencers:
         </Typography>
         <Typography sx={{ mt: 3 }} variant="h6">
-          Xfluencer is not just another influencer marketplace—it's a dedicated
-          space for X Web3 influencers.
+          The search engine allows businesses to find influencers by region,
+          category, service offerings, and follower ratings, ensuring targeted
+          outreach and collaboration opportunities. Why choose influencers from
+          XFluencer?
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
@@ -46,16 +70,16 @@ const FirstTabComponent = () => {
             with a proven track record on X.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={Article1_Business}
+          src={articleImage}
           alt=""
-          height={100}
-          width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          width={"952"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -63,18 +87,18 @@ const FirstTabComponent = () => {
 const SecondTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Community Building Through Decentralization
+          Manage your dashboard
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Xfluencer fosters a sense of community by embracing
-            decentralization. Influencers and users alike become part of a
-            network where transparency and trust are paramount.
+            Collaboration management centralizes communication, order editing,
+            and status tracking, streamlining interactions between parties
+            involved in projects or transactions.
           </Typography>
         </Box>
 
@@ -83,19 +107,23 @@ const SecondTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            This decentralized approach encourages collaboration, innovation,
-            and a shared commitment to the growth of the Web3 influencer
-            ecosystem.
+            Integrated notifications and transaction tracking ensure efficient
+            oversight, enabling users to manage, track, and monitor
+            collaborations seamlessly from initiation to completion.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={Article2_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/collab3.png"
+          }
+          width={"952"}
+          height={"500"}
           alt=""
-          style={{ marginLeft: "8px", width: "100%", height: "50%" }}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -103,19 +131,18 @@ const SecondTabComponent = () => {
 const ThirdTabComponent = () => {
   return (
     <>
-      <Box sx={{ flex: 1, textAlign: "left" }}>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Typography variant="h4" fontWeight={"bold"}>
-          Diverse Range of Impactful Services
+          Analyse your orders
         </Typography>
         <Box sx={{ display: "flex", columnGap: "8px", mt: 2 }}>
           <CheckCircle
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Our platform offers a diverse array of services tailored to meet the
-            dynamic needs of businesses. From attention-grabbing posts and
-            strategic reposts to engaging replies and prominently placed pinned
-            tweets.
+            Gain insights into growth and revenue acceleration through order
+            analytics, leveraging metrics like reach, likes, comments on tweets,
+            and other relevant analytics.
           </Typography>
         </Box>
 
@@ -124,21 +151,23 @@ const ThirdTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Our influencers provide a spectrum of services to amplify your brand
-            message. Tailor your campaign to align with your brand's unique
-            narrative and objectives.
+            Track progress effectively by analyzing key performance indicators,
+            enabling informed decisions to optimize strategies and drive
+            impactful results.
           </Typography>
         </Box>
-      </Box>
-      <Box sx={{ flex: 1 }}>
+      </Grid>
+      <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={Article3_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graph.png"
+          }
           alt=""
-          height={100}
-          width={100}
-          style={{ marginLeft: "8px", width: "100%", height: "100%" }}
+          width={"952"}
+          height={"500"}
+          style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
-      </Box>
+      </Grid>
     </>
   );
 };
@@ -154,10 +183,10 @@ export default function ElevateSection({}: Props) {
     <>
       <Box>
         <Typography variant="h6" sx={{ color: "#9B9B9B" }}>
-          Revolutionize Your Engagement
+          Save Time and Experience Growth
         </Typography>
         <Typography sx={{ fontSize: "40px" }}>
-          Elevate Your Business with Xfluencer
+          Tailored Marketing Solutions For Businesses
         </Typography>
         <Box
           sx={{ display: "flex", justifyContent: "center", marginTop: "14px" }}
@@ -210,22 +239,22 @@ export default function ElevateSection({}: Props) {
           </Box>
         </Box>
       </Box>
-      <Box
+      <Grid
+        container
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
         sx={{
+          padding: "46px 54px",
           mt: 3,
           borderRadius: "16px",
           boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "46px 54px",
-          alignItems: "center",
-          columnGap: "40px",
         }}
       >
         {selectedTab == 0 ? <FirstTabComponent /> : null}
         {selectedTab == 1 ? <SecondTabComponent /> : null}
         {selectedTab == 2 ? <ThirdTabComponent /> : null}
-      </Box>
+      </Grid>
     </>
   );
 }

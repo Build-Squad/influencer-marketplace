@@ -47,8 +47,11 @@ export const ConfirmCancel: React.FC<Props> = ({
         ...sx,
       }}
     >
-      <Tooltip title="Delete">
-        <Box onClick={() => setOpen(true)} sx={{ width: "100%" }}>
+      <Tooltip title="Cancel">
+        <Box
+          onClick={() => setOpen(true)}
+          sx={{ width: "100%", cursor: "pointer" }}
+        >
           {deleteElement}
         </Box>
       </Tooltip>

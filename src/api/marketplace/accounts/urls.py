@@ -1,8 +1,12 @@
 from django.urls import path
 from .views import (
     AccountRegionList,
+    BookmarkDetailView,
+    BookmarkView,
     OTPAuth,
+    OTPAuthV2,
     OTPVerification,
+    OTPVerifyV2,
     TopInfluencers,
     TwitterAccountList,
     TwitterAccountDetail,
@@ -10,6 +14,7 @@ from .views import (
     CategoryMasterDetail,
     AccountCategoryList,
     AccountCategoryDetail,
+    TwitterPromotionView,
     UserList,
     UserDetail,
     BankAccountList,
@@ -24,7 +29,8 @@ from .views import (
     WalletDetail,
     WalletList,
     BusinessAccountMetaDataDetail,
-    WalletNonceCreateView
+    WalletNonceCreateView, 
+    DisconnectTwitterAccount
 )
 
 urlpatterns = [
@@ -37,6 +43,7 @@ urlpatterns = [
 
     path("twitter-account/", TwitterAccountList.as_view(), name="twitter-account-list"),
     path("twitter-account/<uuid:pk>/", TwitterAccountDetail.as_view(), name="twitter-account-detail"),
+    path("disconnect-twitter-account/<uuid:pk>/", DisconnectTwitterAccount.as_view(), name="disconnect-twitter-account"),
 
 
     path("category-master/", CategoryMasterList.as_view(), name="category-master-list"),
@@ -62,6 +69,9 @@ urlpatterns = [
 
     path("otp/", OTPAuth.as_view(), name="otp-auth"),
     path("otp/verify/", OTPVerification.as_view(), name="otp-verify"),
+    
+    path("otp/v2", OTPAuthV2.as_view(), name="otp-auth-v2"),
+    path("otp/verify/v2", OTPVerifyV2.as_view(), name="otp-verify-v2" ),
 
     path("email-verify/", EmailVerification.as_view(), name="email-verify"),
 
@@ -77,4 +87,11 @@ urlpatterns = [
 
     path("wallet-create/", WalletNonceCreateView.as_view(),
          name="wallet-nonce-create"),
+
+    path("bookmarks/", BookmarkView.as_view(), name="bookmarks"),
+    path("bookmarks/<uuid:pk>/", BookmarkDetailView.as_view(),
+         name="bookmark-detail"),
+
+    path("promote-xfluencer/", TwitterPromotionView.as_view(),
+         name="promote-xfluencer"),
 ]

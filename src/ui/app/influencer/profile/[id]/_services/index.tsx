@@ -43,7 +43,7 @@ const Services = ({
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 5,
+    current_page_size: 10,
   });
   const [loading, setLoading] = React.useState<boolean>(true);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
@@ -62,7 +62,10 @@ const Services = ({
         "packages/service",
         {
           page_number: pagination.current_page_number,
-          page_size: pagination.current_page_size,
+          page_size:
+            id === loggedInUser?.id
+              ? pagination.current_page_size
+              : pagination.current_page_size,
           influencer: id,
           status: id === loggedInUser?.id ? type : "published",
         }
@@ -204,6 +207,7 @@ const Services = ({
                       borderRadius: "16px",
                       boxShadow: "0px 4px 31px 0px rgba(0, 0, 0, 0.08)",
                     }}
+                    className="joyride-create-service-tab"
                     onClick={() => {
                       if (wallets.length > 0) {
                         setSelectedService(null);

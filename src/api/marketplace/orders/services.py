@@ -1,5 +1,5 @@
 import logging
-from orders.models import OrderItem, OrderItemTracking, OrderTracking
+from orders.models import Order, OrderItem, OrderItemTracking, OrderMessage, OrderTracking
 from notifications.models import Notification
 from decouple import config
 
@@ -7,8 +7,8 @@ from django.utils import timezone
 
 FRONT_END_URL = config('FRONT_END_URL')
 ORDERS_DASHBOARD_URL = FRONT_END_URL + 'influencer/orders'
-BUSINESS_DASHBOARD_URL = FRONT_END_URL + 'business/dashboard'
-INFLUENCER_DASHBOARD_URL = FRONT_END_URL + 'influencer/dashboard'
+BUSINESS_DASHBOARD_URL = FRONT_END_URL + '/business/dashboard/?tab=orders'
+INFLUENCER_DASHBOARD_URL = FRONT_END_URL + '/influencer/dashboard/?tab=orders'
 
 
 logger = logging.getLogger(__name__)
@@ -77,6 +77,14 @@ def create_notification_for_order(order, old_status, new_status):
         Notification.objects.create(
             user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
 
+    elif new_status == 'cancelled':
+        # Case 5
+        message = 'Your order ' + order.order_code + \
+            ' has been successfully cancelled. You can now reclaim the funds.'
+        title = 'Order Cancelled'
+        Notification.objects.create(
+            user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
 
 def create_notification_for_order_item(order_item, old_status, new_status):
     """
@@ -97,9 +105,7 @@ def create_notification_for_order_item(order_item, old_status, new_status):
     
     """
     # Get the order
-    logger.error("Order item: " + str(order_item.id))
     order = order_item.order_id
-    logger.error("Order: " + str(order.id))
     buyer = order.buyer
     influencer = order_item.package.influencer
 
@@ -226,4 +232,89 @@ def create_reminider_notification(order_item):
                 user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL, module='order_item_reminder', module_id=order_item.id)
     except Exception as e:
         logger.error("Error creating reminder notification: ", str(e))
+        return False
+
+
+def create_order_item_status_update_message(order_item, updated_by):
+    try:
+        order = order_item.order_id
+        buyer = order.buyer
+        influencer = order_item.package.influencer
+        sender_id = buyer if updated_by == buyer.id else influencer
+        receiver_id = influencer if updated_by == buyer.id else buyer
+        message = f'{order_item.package.name} has been {order_item.status}'
+        OrderMessage.objects.create(
+            sender_id=sender_id, receiver_id=receiver_id, message=message, order_id=order_item.order_id, is_system_message=True)
+    except Exception as e:
+        logger.error(
+            "Error creating order item status update message: ", str(e))
+        return False
+
+def create_order_item_approval_notification(order_item):
+    try:
+        buyer = order_item.order_id.buyer
+        influencer = order_item.package.influencer
+
+        message = f'Order Item: {order_item.package.name} has been approved by {buyer.username}, please review the changes for scheduling.'
+        title = 'Order Item Approved'
+        Notification.objects.create(
+            user=influencer, message=message, title=title, slug=INFLUENCER_DASHBOARD_URL)
+    except Exception as e:
+        logger.error(
+            "Error creating order item approval notification: ", str(e))
+        return False
+
+def update_order_item_approval_status(order_item: OrderItem):
+
+    # Create a notification for the buyer
+    buyer = order_item.order_id.buyer
+    influencer = order_item.package.influencer
+
+    message = f'Your order item {order_item.package.name} has been updated by {influencer.username}, please review the changes for scheduling.'
+    title = 'Order Item Updated'
+    Notification.objects.create(
+        user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
+
+    order_item.approved = False
+    order_item.save()
+
+def create_order_item_publish_date_update_message(order_item, updated_by):
+    try:
+        order = order_item.order_id
+        buyer = order.buyer
+        influencer = order_item.package.influencer
+
+        if updated_by == influencer.id:
+            update_order_item_approval_status(order_item)
+
+        sender_id = buyer if updated_by == buyer.id else influencer
+        receiver_id = influencer if updated_by == buyer.id else buyer
+        message = f'Publish date for {order_item.package.name} has been updated.'
+        OrderMessage.objects.create(
+            sender_id=sender_id, receiver_id=receiver_id, message=message, order_id=order_item.order_id, is_system_message=True)
+    except Exception as e:
+        logger.error(
+            "Error creating order item publish date update message: ", str(e))
+        return False
+
+
+def create_order_item_meta_data_field_update_message(order_item_meta_data, updated_by, old_value):
+    try:
+        order_item = OrderItem.objects.get(
+            id=order_item_meta_data.order_item_id)
+        order = order_item.order_id
+        buyer = order.buyer
+        influencer = order_item.package.influencer
+
+        if updated_by == influencer.id:
+            update_order_item_approval_status(order_item)
+
+        sender_id = buyer if updated_by == buyer.id else influencer
+        receiver_id = influencer if updated_by == buyer.id else buyer
+        message = f'{order_item_meta_data.label} for {order_item.package.name} has been updated from {old_value} to {order_item_meta_data.value}.'
+        OrderMessage.objects.create(
+            sender_id=sender_id, receiver_id=receiver_id, message=message, order_id=order_item.order_id, is_system_message=True)
+    except Exception as e:
+        logger.error(
+            "Error creating order item meta data field update message: ", str(e))
         return False

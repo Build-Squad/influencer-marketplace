@@ -25,8 +25,8 @@ export default function BusinessLayout({
       }
     );
     if (isSuccess) {
-      if (data?.data?.length > 0) {
-        const order = data?.data[0];
+      if (data?.data?.orders?.length > 0) {
+        const order = data?.data?.orders[0];
         if (cart?.orderId && cart?.orderId === order.id) {
           return;
         }

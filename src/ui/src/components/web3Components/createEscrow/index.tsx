@@ -16,6 +16,7 @@ import { LAMPORTS_PER_SOL } from "@/src/utils/consts";
 type CreateEscrowProps = {
   loading: boolean;
   updateStatus: (address: string) => Promise<void>;
+  setLoading: (loading: boolean) => void;
 };
 
 const programId = new PublicKey(idl.metadata.address);
@@ -23,16 +24,14 @@ const programId = new PublicKey(idl.metadata.address);
 export default function CreateEscrow({
   loading,
   updateStatus,
+  setLoading,
 }: CreateEscrowProps) {
   const cart = useAppSelector((state) => state.cart);
   const [localLoading, setLocalLoading] = useState(false);
-  const connection = new Connection(
-    `https://rpc.ironforge.network/devnet?apiKey=${process.env.NEXT_PUBLIC_RPC_KEY}`,
-    {
-      commitment: "confirmed",
-      confirmTransactionInitialTimeout: 30000,
-    }
-  );
+  const connection = new Connection(`https://api.devnet.solana.com`, {
+    commitment: "confirmed",
+    confirmTransactionInitialTimeout: 30000,
+  });
   const wallet = useAnchorWallet();
 
   const program = getAnchorProgram(connection);
@@ -44,6 +43,7 @@ export default function CreateEscrow({
   const createEscrow = async () => {
     try {
       setLocalLoading(true);
+      setLoading(true);
       if (cart?.order_number && cart?.influencer_wallet) {
         // Get influencer wallet address
         const influencer_pk = new PublicKey(
@@ -60,7 +60,9 @@ export default function CreateEscrow({
         console.log("Influencer PK", influencer_pk.toString());
         console.log("Order Number", cart?.order_number);
 
-        const validationAuthorityPk = new PublicKey("CwhNj8h9D2rFYodxChKWzmWKWLEfKq4LuxiN1qzmvG6u")
+        const validationAuthorityPk = new PublicKey(
+          process.env.NEXT_PUBLIC_VALIDATION_KEY!
+        );
 
         // Find the escrow PDA
         const [escrowPDA] = PublicKey.findProgramAddressSync(
@@ -126,6 +128,7 @@ export default function CreateEscrow({
       }
     } finally {
       setLocalLoading(false);
+      setLoading(false);
     }
   };
 
@@ -145,6 +148,7 @@ export default function CreateEscrow({
       onClick={() => {
         createEscrow();
       }}
+      className="joyride-make-payment"
     >
       {localLoading ? (
         <CircularProgress size={24} color="secondary" />

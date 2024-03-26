@@ -12,12 +12,20 @@ import ChatIcon from "@mui/icons-material/Chat";
 import { Box, CircularProgress, Grid, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import * as relativeTime from "dayjs/plugin/relativeTime";
-import React, { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
+import Image from "next/image";
+import BackIcon from "@/public/svg/Back.svg";
 
 const relativeTime1: any = relativeTime;
 dayjs.extend(relativeTime1);
 
 export default function BusinessMessages() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const user = useAppSelector((state) => state.user)?.user;
   const [loading, setLoading] = React.useState(false);
   const [orderChats, setOrderChats] = React.useState<OrderChatType[]>([]);
@@ -30,6 +38,7 @@ export default function BusinessMessages() {
       ORDER_STATUS.REJECTED,
       ORDER_STATUS.PENDING,
       ORDER_STATUS.COMPLETED,
+      ORDER_STATUS.CANCELLED,
     ],
   });
 
@@ -165,6 +174,10 @@ export default function BusinessMessages() {
   };
 
   useEffect(() => {
+    handleUserInteraction();
+  }, []);
+
+  useEffect(() => {
     getAllChats();
 
     // Set up the interval
@@ -175,6 +188,18 @@ export default function BusinessMessages() {
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
   }, [filters]);
+
+  useEffect(() => {
+    if (orderChats?.length > 0) {
+      const selectedOrderChatId = searchParams.get("order_chat_id");
+      if (selectedOrderChatId) {
+        const _selectedOrderChat = orderChats.find(
+          (orderChat) => orderChat.order.id === selectedOrderChatId
+        );
+        if (_selectedOrderChat) setSelectedOrderChat(_selectedOrderChat);
+      }
+    }
+  }, [searchParams, orderChats]);
 
   return (
     <RouteProtection logged_in={true} influencer={true}>
@@ -193,7 +218,48 @@ export default function BusinessMessages() {
             mb: 2,
           }}
         >
-          <Box sx={{ p: 2 }}>
+          <Box
+            sx={{
+              px: 2,
+              pt: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              src={BackIcon}
+              alt={"BackIcon"}
+              height={30}
+              style={{
+                marginTop: "8px",
+                marginBottom: "8px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                router.back();
+              }}
+            />
+            <Box
+              sx={{
+                color: "grey",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                columnGap: "4px",
+                visibility: hasAMessage ? "visible" : "hidden",
+              }}
+              onClick={() => {
+                setStepIndex(0);
+                setRun(true);
+              }}
+            >
+              <DriveEta fontSize="small" />
+              <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ p: 2, pt: 0 }}>
             <OrderChatFilterBar filters={filters} setFilters={setFilters} />
             <Box
               sx={{
@@ -241,7 +307,9 @@ export default function BusinessMessages() {
                       key={orderChat?.order?.id}
                       orderChat={orderChat}
                       chatDisplayDetails={chatDisplayDetails}
-                      setSelectedOrderChat={setSelectedOrderChat}
+                      handleOrderChat={(id: string) => {
+                        router.push(`/influencer/messages?order_chat_id=${id}`);
+                      }}
                     />
                   );
                 })}
@@ -319,6 +387,22 @@ export default function BusinessMessages() {
           )}
         </Grid>
       </Grid>
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous
+        stepIndex={stepIndex}
+        run={run}
+        scrollToFirstStep
+        showSkipButton
+        steps={steps}
+        spotlightClicks
+        styles={{
+          options: {
+            zIndex: 2,
+          },
+        }}
+        locale={{ last: "Finish" }}
+      />
     </RouteProtection>
   );
 }
