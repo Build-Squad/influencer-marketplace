@@ -228,6 +228,7 @@ type OrderItemType = {
   status?: string;
   approved?: boolean;
   is_verified?: boolean;
+  allow_manual_approval?: boolean;
 };
 
 type TransactionType = {

@@ -33,6 +33,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import {
   Box,
+  Button,
   CircularProgress,
   Grid,
   IconButton,
@@ -62,6 +63,8 @@ import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutli
 import MessageIcon from "@mui/icons-material/Message";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import RuleOutlinedIcon from "@mui/icons-material/RuleOutlined";
+import ManualVerifyModal from "@/src/components/dashboardComponents/manualVerifyModal";
 
 const tabs = [
   {
@@ -84,6 +87,8 @@ export default function BusinessDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItemType[]>([]);
+  const [openVerifyModal, setOpenVerifyModal] = useState(false);
+  const [selectedOrderItemId, setSelectedOrderItemId] = useState<string>("");
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [hasAnOrder, setHasAnOrder] = useState(false);
@@ -1177,7 +1182,32 @@ export default function BusinessDashboardPage() {
             {params?.row?.is_verified ? (
               <CheckCircleIcon color="success" />
             ) : (
-              <CancelIcon color="error" />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  columnGap: "4px",
+                }}
+              >
+                {params?.row?.allow_manual_approval ? (
+                  <Tooltip title="Manually Verify">
+                    <Button
+                      size="small"
+                      color="primary"
+                      variant="contained"
+                      endIcon={<RuleOutlinedIcon />}
+                      onClick={() => {
+                        setSelectedOrderItemId(params?.row?.id);
+                        setOpenVerifyModal(true);
+                      }}
+                    >
+                      Verify
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <CancelIcon color="error" />
+                )}
+              </Box>
             )}
           </Typography>
         );
@@ -1235,6 +1265,10 @@ export default function BusinessDashboardPage() {
   useEffect(() => {
     if (!open) getOrders();
   }, [open]);
+
+  useEffect(() => {
+    if (!openVerifyModal) getOrderItems();
+  }, [openVerifyModal]);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -1471,6 +1505,11 @@ export default function BusinessDashboardPage() {
           setOpen={setOpenReviewModal}
           readonly={false}
           updateState={getOrders}
+        />
+        <ManualVerifyModal
+          open={openVerifyModal}
+          setOpen={setOpenVerifyModal}
+          orderItemId={selectedOrderItemId}
         />
         {selectedTab == 0 ? (
           <Joyride
