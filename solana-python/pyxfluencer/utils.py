@@ -30,6 +30,7 @@ def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
 
 
+
 def select_client(network = None, async_client = False):
     if network is None:
         print("[WARN] Client network selected is None, set 'heliux' as default")
@@ -62,16 +63,17 @@ async def sign_and_send_transaction(ix,  signers, opts, network, async_client: b
         client = select_client(network=network, async_client=async_client)
         tx = Transaction().add(ix)
         
-        print("Sending transactions with options",opts)
+        print("Sending transactions with options", opts)
                         
         tx_res = await client.send_transaction(tx, *signers, opts=opts)
         
-        print("Client Response tx signature: ",tx_res)
+        print("Client Response tx signature: ", tx_res)
         print("Waiting for transaction confirmation")
         
         signature_status = await client.confirm_transaction(tx_res.value)
         
-        print("Confirm Transaction Status Value:",signature_status)
+        print("Confirm Transaction Status Value:", signature_status)
         return signature_status.to_json()
     except RPCException as e:        
         raise RPCException(f"RPC exception happened: {e}")
+    
