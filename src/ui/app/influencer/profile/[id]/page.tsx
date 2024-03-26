@@ -281,7 +281,11 @@ const ProfileLayout = ({
     );
     if (isSuccess) {
       setCurrentUser(data?.data);
-      // TODO: Add the referral link to the twitterPromotionText and set it to the state
+      if (data?.data?.referral_code) {
+        setTwitterPromotionText(
+          `${XFLUENCER_PROMOTION_TEXT} ${data?.data?.referral_code}`
+        );
+      }
     } else {
       notification(message ? message : "Error fetching user details", "error");
     }
