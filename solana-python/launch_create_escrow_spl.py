@@ -18,31 +18,28 @@ async def get_token_account_info( ata_address: str, network : str) -> AccountInf
     connection = select_client(network=network, async_client=True)     
     wallet = Wallet.local()
     provider = Provider(connection, wallet)
-    print(ata_address)
-    print(wallet)
     pubkey_token_account = Pubkey.from_string(ata_address) 
-    
-    print("ata",pubkey_token_account)
     account_info = await token.get_token_account(provider, pubkey_token_account)
     return account_info
 
 async def main():
     
-    msg = "Create Escrow for Business and Influencer on order code with an amount of SPL tokens"
-    print(len(msg)*"*")
+    msg = "Create Escrow for a pair of Business and Influencer on an Order Code with SPL tokens"
+    print(len(msg) * "*")
     print(msg)
-    print(len(msg)*"*")
+    print(len(msg) * "*")
     
     configuration = load_configuration()
 
-    ### inputs
-    network = "devnet" #"localnet" #configuration["network"]
+    ### select network
+    network = "devnet"
+    
+    ### select SPL token
     ata_selector = "usdc_ata"
     mint = "usdc_mint_address"
     type_of_asset = "usdc"
     
-    
-    ################################################
+    ### verify ata accounts
     
     print(f"Network: {network}")
     print(f"Program ID: {PROGRAM_ID}")
@@ -51,14 +48,11 @@ async def main():
      
     ata = configuration["payer"][ata_selector]
     account_info = await get_token_account_info(ata, network)
-    print(account_info)    
-    #assert account_info.amount >= 1000000 # 1 USDC
-    #exit()
+    print(f"ATA account {ata} --> amount tokens = {account_info.amount}")    
 
-    #influencer_ata = "EUzxNecLcmpeMfun8zyTKs372vyy7bREmqzq6QXaZTuB"
-    #account_info = await get_token_account_info(influencer_ata)
-    #print(account_info)    
-    #assert account_info.amount >= 1000000 # 1 USDC
+    ata = configuration["business"][ata_selector]
+    account_info = await get_token_account_info(ata, network)
+    print(f"ATA account {ata} --> amount tokens = {account_info.amount}")    
 
     business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
