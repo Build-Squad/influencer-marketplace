@@ -1,0 +1,1 @@
+// Add validation instruction to validate an influencer delivery
