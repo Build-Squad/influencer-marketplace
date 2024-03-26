@@ -8,7 +8,8 @@ use anchor_spl::token;
 use crate::CreateEscrow;
 
 
-pub fn process(ctx: Context<CreateEscrow>, _vault_account_bump: u8,
+pub fn process(ctx: Context<CreateEscrow>, 
+    _vault_account_bump: u8,
     amount: u64,
     order_code: u64) -> ProgramResult {
    
@@ -32,18 +33,19 @@ pub fn process(ctx: Context<CreateEscrow>, _vault_account_bump: u8,
     // Set the Vault Authority to the Escrow PDA
     let (vault_authority, _vault_authority_bump) 
         = Pubkey::find_program_address(&[escrow_pda_seed], ctx.program_id);
+    msg!("Vault Authority {}",vault_authority);
 
     // Set the Authority of the Vault to the Escrow PDA 
     token::set_authority(
-         ctx.accounts.into_set_authority_context(),
-         AuthorityType::AccountOwner,
-         Some(vault_authority),
+        ctx.accounts.into_set_authority_context(),
+        AuthorityType::AccountOwner,
+        Some(vault_authority),
     )?;
 
     // Transfer Tokens to the Vault
     token::transfer(
-         ctx.accounts.into_transfer_to_pda_context(),
-         ctx.accounts.escrow_account.amount,
+        ctx.accounts.into_transfer_to_pda_context(),
+        ctx.accounts.escrow_account.amount,
     )?;
 
     Ok(())
