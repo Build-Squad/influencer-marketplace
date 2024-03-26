@@ -103,6 +103,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   const cart = useAppSelector((state) => state.cart);
   const user = useAppSelector((state) => state.user);
   const pathname = usePathname();
+  const [unreadMessageCount, setUnreadMessageCount] = React.useState(0);
+
   return items ? (
     <>
       {items?.map((key: string) => {
@@ -145,7 +147,9 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                   color: "secondary.main",
                 }}
               >
-                <NotificationPanel />
+                <NotificationPanel
+                  setUnreadMessageCount={setUnreadMessageCount}
+                />
                 <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
               </Box>
             ) : (
@@ -172,7 +176,17 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                     />
                   </Badge>
                 ) : item?.route.includes("/notifications") ? (
-                  <NotificationPanel />
+                  <NotificationPanel
+                    setUnreadMessageCount={setUnreadMessageCount}
+                  />
+                ) : item?.route.includes("/messages") ? (
+                  <Badge badgeContent={unreadMessageCount} color="secondary">
+                    <Image
+                      src={pathname == route ? item?.icon : item?.disabledIcon}
+                      alt={item?.label}
+                      height={16}
+                    />
+                  </Badge>
                 ) : (
                   <Image
                     src={pathname == route ? item?.icon : item?.disabledIcon}

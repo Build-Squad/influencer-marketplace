@@ -1,9 +1,11 @@
-from accounts.models import TwitterAccount, User
+import asyncio
+import logging
+from accounts.models import TwitterAccount, User, Wallet
+from core.models import Configuration
 from notifications.models import Notification
-from orders.services import create_notification_for_order, create_notification_for_order_item, \
-    create_order_item_tracking, create_order_tracking, create_reminider_notification
-from orders.models import Order, OrderItem, OrderItemMetaData
-
+from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
+    create_order_item_tracking, create_order_tracking, create_post_verification_failed_notification, create_reminider_notification
+from orders.models import Escrow, OnChainTransaction, Order, OrderItem, OrderItemMetaData, OrderItemMetric
 from tweepy import Client
 
 from decouple import config
@@ -36,6 +38,7 @@ ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 TWEET_LIMIT = 280
 
+logger = logging.getLogger(__name__)
 
 def check_order_status(pk):
     try:
@@ -76,7 +79,7 @@ def tweet(text, client):
         tweet_id = res.data['id']
         return tweet_id
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in publishing tweet: %s', str(e))
 
 
 def like_tweet(tweet_id, client):
@@ -84,7 +87,7 @@ def like_tweet(tweet_id, client):
         res = client.like_tweet(tweet_id=tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in liking tweet: %s', str(e))
 
 
 def reply_to_tweet(text, in_reply_to_tweet_id, client):
@@ -93,7 +96,7 @@ def reply_to_tweet(text, in_reply_to_tweet_id, client):
             text=text, in_reply_to_tweet_id=in_reply_to_tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in replying to tweet: %s', str(e))
 
 
 def quote_tweet(text, tweet_id, client):
@@ -102,7 +105,7 @@ def quote_tweet(text, tweet_id, client):
             text=text, quote_tweet_id=tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in quoting tweet: %s', str(e))
 
 
 def poll(text, poll_options, poll_duration_minutes, client):
@@ -112,7 +115,7 @@ def poll(text, poll_options, poll_duration_minutes, client):
                                   user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in creating poll: %s', str(e))
 
 
 def retweet(tweet_id, client):
@@ -120,7 +123,7 @@ def retweet(tweet_id, client):
         res = client.retweet(tweet_id=tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in retweeting tweet: %s', str(e))
 
 
 def thread(text, client):
@@ -148,7 +151,7 @@ def thread(text, client):
                         text=text, in_reply_to_tweet_id=published_tweet_id, user_auth=False)
             return published_tweet_id
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in creating thread: %s', str(e))
 
 
 @shared_task
@@ -226,25 +229,44 @@ def twitter_task(order_item_id):
         elif service_type == 'thread':
             res = thread(text, client)
 
-        order_item.published_tweet_id = res
-        order_item.status = 'published'
-        order_item.save()
+        if res:
+            order_item.published_tweet_id = res
+            order_item.status = 'published'
+            order_item.save()
 
-        # Create a order item tracking for the order item
-        create_order_item_tracking(order_item, order_item.status)
+            # Get the countfown time for the validate_order_item task
+            COUNTDOWN_TIME_FOR_VALIDATION = int(Configuration.objects.get(
+                key='countdown_time_for_validation').value)
 
-        # Check if the order is completed
-        check_order_status(order_item.order_id.id)
+            # Call the validate_order_item task to run 2 minutes after now
+            validate_order_item.apply_async(
+                args=[order_item.id], countdown=COUNTDOWN_TIME_FOR_VALIDATION)
 
-        # Create notification for order item
-        create_notification_for_order_item(
-            order_item, 'scheduled', 'published')
+            # Create a order item tracking for the order item
+            create_order_item_tracking(
+                order_item=order_item, status=order_item.status)
+
+            # Check if the order is completed
+            check_order_status(pk=order_item.order_id.id)
+
+            # Create notification for order item
+            create_notification_for_order_item(
+                order_item=order_item, old_status='scheduled', new_status='published')
+            create_order_item_status_update_message(
+                order_item=order_item, updated_by=order_item.package.influencer)
+        else:
+            order_item.status = 'cancelled'
+            order_item.save()
+
+            # Create a order item tracking for the order item
+            create_order_item_tracking(
+                order_item=order_item, status=order_item.status)
+
+            create_notification_for_order_item(
+                order_item=order_item, old_status='scheduled', new_status='failed')
 
     except Exception as e:
-        raise Exception(str(e))
-
-    return True
-
+        logger.error('Error in twitter task: %s', str(e))
 
 def schedule_tweet(order_item_id):
     try:
@@ -338,3 +360,136 @@ def schedule_reminder_notification():
                 create_reminider_notification(order_item)
     except Exception as e:
         raise Exception(str(e))
+
+
+def is_post_published(order_item_id) -> bool:
+    try:
+        # Get order item
+        order_item = OrderItem.objects.get(id=order_item_id)
+    except OrderItem.DoesNotExist:
+        raise Exception('Order item does not exist')
+
+    try:
+        # Get the twitter account of the influencer
+        twitter_account = TwitterAccount.objects.get(
+            id=order_item.package.influencer.twitter_account.id)
+        client = Client(bearer_token=twitter_account.access_token,
+                        consumer_key=CONSUMER_KEY,
+                        consumer_secret=CONSUMER_SECRET,
+                        access_token=ACCESS_TOKEN,
+                        access_token_secret=ACCESS_SECRET
+                        )
+        res = client.get_tweet(
+            id=order_item.published_tweet_id, user_auth=False)
+
+        return str(res.data.get('id', '')) == str(order_item.published_tweet_id)
+    except Exception as e:
+        logger.error('Error in checking if post is published: %s', str(e))
+        return False
+
+
+def is_post_liked(order_item_id) -> bool:
+    try:
+        # Get order item
+        order_item = OrderItem.objects.get(id=order_item_id)
+    except OrderItem.DoesNotExist:
+        raise Exception('Order item does not exist')
+
+    try:
+        # Get the twitter account of the influencer
+        twitter_account = TwitterAccount.objects.get(
+            id=order_item.package.influencer.twitter_account.id)
+        client = Client(bearer_token=twitter_account.access_token,
+                        consumer_key=CONSUMER_KEY,
+                        consumer_secret=CONSUMER_SECRET,
+                        access_token=ACCESS_TOKEN,
+                        access_token_secret=ACCESS_SECRET
+                        )
+        res = client.get_liking_users(
+            id=order_item.published_tweet_id, user_auth=False)
+        # res.data is an array of {id, username, name} objects
+        # Check that twitter_account.twitter_id is in the array
+        return True if any(
+            str(user['id']) == str(twitter_account.twitter_id) for user in res.data) else False
+    except Exception as e:
+        logger.error('Error in checking if post is liked: %s', str(e))
+        return False
+
+
+@celery_app.task(base=QueueOnce, once={'graceful': True})
+def validate_order_item(order_item_id):
+    try:
+        # Get order item
+        order_item = OrderItem.objects.get(id=order_item_id)
+        if order_item.status != 'published':
+            raise Exception('Order item is not in published status')
+        is_published = False
+        if order_item.service_master.twitter_service_type == 'like_tweet':
+            is_published = is_post_liked(order_item_id=order_item.id)
+        else:
+            is_published = is_post_published(order_item_id=order_item.id)
+        if is_published:
+            order_item.is_verified = True
+            order_item.save()
+            check_order_status(pk=order_item.order_id.id)
+        else:
+            print('Post verification failed')
+            order_item.is_verified = False
+            order_item.save()
+            create_post_verification_failed_notification(order_item=order_item)
+    except Exception as e:
+        raise Exception(str(e))
+
+
+@celery_app.task()
+def store_order_item_metrics():
+    # Get the current date
+    now = timezone.now()
+    # Get all order items that are in published status and verified and service type is not retweet or like
+    order_items = OrderItem.objects.filter(
+        status='published', 
+        service_master__twitter_service_type__in=['tweet', 'reply_to_tweet', 'quote_tweet', 'poll', 'thread']
+    )
+    for order_item in order_items:
+        # Calculate the number of days since the order item was published
+        days_since_published = (now - order_item.publish_date).days
+
+        # Check if the current day is the 1st, 2nd, 3rd, 7th, 14th, 21st, or 28th day since the order item was published
+        if days_since_published in [1, 2, 3, 7, 14, 21, 28]:
+            # Get the twitter account of the influencer
+            twitter_account = TwitterAccount.objects.get(
+                id=order_item.package.influencer.twitter_account.id)
+            client = Client(bearer_token=twitter_account.access_token,
+                            consumer_key=CONSUMER_KEY,
+                            consumer_secret=CONSUMER_SECRET,
+                            access_token=ACCESS_TOKEN,
+                            access_token_secret=ACCESS_SECRET
+                            )
+            try:
+                res = client.get_tweet(
+                    id=order_item.published_tweet_id, user_auth=False, tweet_fields=TWEET_FIELDS)
+
+                # For all the res.data fields, create a OrderItemMetric object
+                public_metrics = res.data['public_metrics']
+                organic_metrics = res.data['organic_metrics']
+                non_public_metrics = res.data['non_public_metrics']
+
+                order_item_metrics = []
+
+                for key, value in public_metrics.items():
+                    order_item_metrics.append(
+                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='public_metrics'))
+
+                for key, value in organic_metrics.items():
+                    order_item_metrics.append(
+                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic_metrics'))
+
+                for key, value in non_public_metrics.items():
+                    order_item_metrics.append(
+                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public_metrics'))
+
+                OrderItemMetric.objects.bulk_create(order_item_metrics)
+
+            except Exception as e:
+                logger.error('Error in getting tweet metrics: %s', str(e))
+                continue

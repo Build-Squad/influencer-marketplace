@@ -105,7 +105,7 @@ def create_notification_for_order_item(order_item, old_status, new_status):
 
     if old_status == 'accepted' and new_status == 'scheduled':
         # Case 1
-        message = 'Your order item ' + order_item.package.name + \
+        message = 'Your order item ' + order_item.package.name + ' from order ' + order.order_code + \
             ' has been scheduled by ' + influencer.username
         title = 'Order Item Scheduled'
         Notification.objects.create(
@@ -114,7 +114,7 @@ def create_notification_for_order_item(order_item, old_status, new_status):
     elif old_status == 'scheduled' and new_status == 'published':
 
         # Case 2
-        message = 'Your order item ' + order_item.package.name + \
+        message = 'Your order item ' + order_item.package.name + ' from order ' + order.order_code + \
             ' has been published by ' + influencer.username
         title = 'Order Item Published'
         Notification.objects.create(
@@ -129,12 +129,58 @@ def create_notification_for_order_item(order_item, old_status, new_status):
 
     elif old_status == 'scheduled' and new_status == 'cancelled':
         # Case 3
-        message = 'Your order item ' + order_item.package.name + \
+        message = 'Your order item ' + order_item.package.name + ' from order ' + order.order_code + \
             ' has been cancelled by ' + influencer.username
         title = 'Order Item Cancelled'
         Notification.objects.create(
             user=buyer, message=message, title=title, slug=BUSINESS_DASHBOARD_URL)
 
+    elif old_status == 'scheduled' and new_status == 'failed':
+        # Case 3
+        message = 'Your order item ' + order_item.package.name + 'from order ' + order.order_code + \
+            ' has failed to publish by Xfluencer. Please review the order item and try again.'
+        title = 'Order Item Failed'
+        notifications = []
+        notifications.append({
+            'user_id': buyer.id,
+            'message': message,
+            'title': title,
+            'slug': BUSINESS_DASHBOARD_URL
+        })
+        notifications.append({
+            'user_id': influencer.id,
+            'message': message,
+            'title': title,
+            'slug': INFLUENCER_DASHBOARD_URL
+        })
+        Notification.objects.bulk_create(
+            [Notification(**notification) for notification in notifications])
+
+
+def create_post_verification_failed_notification(order_item):
+    # Get the order
+    order = order_item.order_id
+    buyer = order.buyer
+    influencer = order_item.package.influencer
+
+    message = 'Your order item ' + order_item.package.name + 'from order ' + order.order_code + \
+        ' has failed verification by Xfluencer. Please review the order.'
+    title = 'Order Item Verification Failed'
+    notifications = []
+    notifications.append({
+        'user_id': buyer.id,
+        'message': message,
+        'title': title,
+        'slug': BUSINESS_DASHBOARD_URL
+    })
+    notifications.append({
+        'user_id': influencer.id,
+        'message': message,
+        'title': title,
+        'slug': INFLUENCER_DASHBOARD_URL
+    })
+    Notification.objects.bulk_create(
+        [Notification(**notification) for notification in notifications])
 
 def create_order_tracking(order, status):
     """
@@ -173,7 +219,7 @@ def create_reminider_notification(order_item):
             current_time = timezone.now()
             time_left = order_item.publish_date - current_time
             minutes_left = int(time_left.total_seconds() / 60)
-            message = 'You have an order item ' + order_item.package.name + \
+            message = 'You have an order item ' + order_item.package.name + ' from order ' + order_item.order_id.order_code + \
                 ' due for publishing in ' + str(minutes_left) + ' minutes'
             title = 'Order Item Reminder'
             Notification.objects.create(

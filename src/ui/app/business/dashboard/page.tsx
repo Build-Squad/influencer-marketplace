@@ -43,6 +43,16 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+<<<<<<< Updated upstream
+=======
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import { DriveEta } from "@mui/icons-material";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import MessageIcon from "@mui/icons-material/Message";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+>>>>>>> Stashed changes
 
 export default function BusinessDashboardPage() {
   const router = useRouter();
@@ -507,6 +517,226 @@ export default function BusinessDashboardPage() {
               </Typography>
             )}
           </>
+        );
+      },
+    },
+  ];
+
+  const orderItemColumns = [
+    // Columns for Package name, Price, Order Item Creation Date, Publish Date, Order Code, Published Tweet Link, Status
+    {
+      field: "package__name",
+      headerName: "Service",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography
+            sx={{
+              textAlign: "center",
+              fontSize: "16px",
+              lineHeight: "19px",
+              color: "#000",
+              mt: 1,
+            }}
+          >
+            {params?.row?.package?.name}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "order_id__order_code",
+      headerName: "Order",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography
+            sx={{
+              textAlign: "center",
+              fontSize: "16px",
+              lineHeight: "19px",
+              color: "#000",
+              mt: 1,
+            }}
+          >
+            {params?.row?.order_id?.order_code}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "price",
+      headerName: "Price",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.price} {params?.row?.currency?.symbol}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "publish_date",
+      headerName: "Publish Date & Time",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.publish_date
+              ? dayjs(params?.row?.publish_date).format(
+                  DISPLAY_DATE_TIME_FORMAT
+                )
+              : "Not Published"}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "published_tweet_id",
+      headerName: "Published Post Link",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Link
+            href={`https://x.com/${params?.row?.package?.influencer?.twitter_account?.user_name}/status/${params?.row?.published_tweet_id}`}
+            target="_blank"
+            sx={{
+              textDecoration: "none",
+            }}
+          >
+            {params?.row?.published_tweet_id ? (
+              <Tooltip title="Go To Post" placement="top" arrow>
+                <IconButton>
+                  <OpenInNewIcon color="success" />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Typography
+                sx={{
+                  fontStyle: "italic",
+                }}
+              >
+                Not Published
+              </Typography>
+            )}
+          </Link>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <IconButton
+                onClick={() => {
+                  setSelectedOrder(params?.row?.order_id);
+                  setOpen(true);
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </Tooltip>
+            {params?.row?.status === ORDER_ITEM_STATUS.PUBLISHED &&
+              params?.row?.service_master?.twitter_service_type !==
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
+              params?.row?.service_master?.twitter_service_type !==
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET &&
+              params?.row?.is_verified && (
+                <Link
+                  href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}
+                  component={NextLink}
+                  sx={{
+                    textDecoration: "none",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  <Tooltip title="Order Item Analytics" placement="top" arrow>
+                    <IconButton>
+                      <BarChartIcon color="secondary" />
+                    </IconButton>
+                  </Tooltip>
+                </Link>
+              )}
+            {(params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+              params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) && (
+              // Action to approve the post
+              <>
+                {!params?.row?.approved && (
+                  <Tooltip title="Approve Order Item" placement="top" arrow>
+                    <IconButton
+                      onClick={() => {
+                        approveOrderItem(params?.row?.id);
+                      }}
+                    >
+                      <CheckCircleOutlineOutlinedIcon color="success" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </>
+            )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return <StatusChip status={params?.row?.status} />;
+      },
+    },
+    {
+      field: "is_verified",
+      headerName: "Verification Status",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.is_verified ? (
+              <CheckCircleIcon color="success" />
+            ) : (
+              <CancelIcon color="error" />
+            )}
+          </Typography>
         );
       },
     },
