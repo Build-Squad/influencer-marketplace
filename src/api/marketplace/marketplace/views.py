@@ -19,7 +19,7 @@ import logging
 import hashlib
 from requests_oauthlib import OAuth2Session
 import json
-from referrals.models import ReferralRewardsMaster, UserReferrals
+from reward.models import UserReferrals
 
 logger = logging.getLogger(__name__)
 

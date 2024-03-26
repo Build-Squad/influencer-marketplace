@@ -29,7 +29,7 @@ export default function Referrals({}: Props) {
 
   const getUserReferralLink = async () => {
     const { isSuccess, message, data } = await getService(
-      `/referrals/referral-link/`
+      `/reward/referral-link/`
     );
     if (isSuccess) {
       setReferralLink(data?.data?.referralLink);
@@ -108,6 +108,42 @@ export default function Referrals({}: Props) {
               </Typography>
             </Box>
           </Grid>
+        </Grid>
+        {/* Section for influencer's you've (current user) referred */}
+        <Grid
+          container
+          sx={{
+            mt: 3,
+            p: 3,
+            boxShadow: "0px 4px 31px 0px #00000014",
+            borderRadius: "24px",
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold">
+            My Referrals
+          </Typography>
+          <TableContainer sx={{ mt: 2 }}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Influencer</TableCell>
+                  <TableCell>Date of Joining</TableCell>
+                  <TableCell>Rewards</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    @loremipsumdolor
+                  </TableCell>
+                  <TableCell>25, sept 2023</TableCell>
+                  <TableCell>10 $</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Grid>
       </Grid>
 

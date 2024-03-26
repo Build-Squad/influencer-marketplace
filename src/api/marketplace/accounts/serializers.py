@@ -5,7 +5,7 @@ from rest_framework import serializers
 from core.serializers import LanguageMasterSerializer, RegionMasterSerializer
 from orders.models import Order, OrderItem, Review
 from packages.models import Package, Service
-from referrals.serializers import UserReferralsSerializer
+from reward.serializers import UserReferralsSerializer
 from .models import (
     AccountLanguage,
     AccountRegion,

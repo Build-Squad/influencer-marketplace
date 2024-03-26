@@ -87,7 +87,7 @@ const Login: React.FC = () => {
   const checkReferralCode = async () => {
     try {
       const { isSuccess, data } = await getService(
-        `referrals/check-referral-validity/?referral_code=${referralCode}`
+        `reward/check-referral-validity/?referral_code=${referralCode}`
       );
       if (isSuccess) {
         notification("Referral Code is Valid");
