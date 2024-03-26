@@ -16,7 +16,7 @@ mod processor;
 
 use crate::errors::CustomError;
 
-declare_id!("7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq");
+declare_id!("6mTwD92ynqwDZxjg2ydhAjeX5w7bcsfM7jQUDeHpGM9G");
 
 
 
@@ -136,11 +136,11 @@ pub struct CreateEscrow<'info> {
     /// CHECK: safe
     pub initializer: Signer<'info>,
     /// CHECK: safe
-    pub business: AccountInfo<'info>,  // change name to business
+    pub business: AccountInfo<'info>, 
     /// CHECK: safe
-    pub influencer: AccountInfo<'info>, // change name to influencer
+    pub influencer: AccountInfo<'info>, 
     /// CHECK: safe 
-    pub validation_authority: AccountInfo<'info>,  // change name to xfluencer
+    pub validation_authority: AccountInfo<'info>,  
     pub mint: Account<'info, Mint>,
     
     #[account(
@@ -157,20 +157,20 @@ pub struct CreateEscrow<'info> {
         seeds = [b"escrow".as_ref(), 
                  order_code.to_string().as_bytes().as_ref()],   
         bump,     
-    )]      
-    pub escrow_account: Account<'info, EscrowAccount>,
+    )]    
+    pub escrow_account: Box<Account<'info, EscrowAccount>>,
 
     #[account(
         init,
         seeds = ["vault".as_bytes(), 
-                order_code.to_string().as_bytes().as_ref() ],
+                order_code.to_string().as_bytes().as_ref() ],	
         payer = initializer,
-	    bump,
+        bump,
         token::mint = mint,
         token::authority = initializer,
         constraint = amount > 0,
     )]
-    pub vault_account: Account<'info, TokenAccount>,
+    pub vault_account: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: safe
     pub system_program: AccountInfo<'info>,
@@ -229,7 +229,7 @@ pub struct Cancel<'info> {
         constraint = escrow_account.status == 1 @CustomError::BadEscrowState,
         close = business
     )]
-    pub escrow_account: Account<'info, EscrowAccount>,
+    pub escrow_account: Box<Account<'info, EscrowAccount>>,
     /// CHECK: safe
     pub token_program: AccountInfo<'info>,
 }
