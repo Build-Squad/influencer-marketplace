@@ -155,18 +155,24 @@ export default function ServiceCard({
             sx={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: "flex-start",
+              width: "55%",
             }}
           >
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: "bold",
-                mr: 2,
-              }}
-            >
-              {service?.package?.name}
-            </Typography>
+            <Tooltip title={service?.package?.name}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: "bold",
+                  mr: 1,
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {service?.package?.name}
+              </Typography>
+            </Tooltip>
             {service?.package?.influencer?.id === loggedInUser?.id && (
               <>
                 {service?.package?.status === SERVICE_STATUS.DRAFT ? (
@@ -185,6 +191,8 @@ export default function ServiceCard({
             sx={{
               display: "flex",
               alignItems: "center",
+              width: "40%",
+              justifyContent: "flex-end",
             }}
           >
             {service?.package?.influencer?.id === loggedInUser?.id ? (
