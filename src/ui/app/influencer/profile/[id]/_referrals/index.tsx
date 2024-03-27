@@ -19,7 +19,7 @@ type Props = {};
 
 const REFERAL_GUIDE = [
   "Share your unique referral link to an influential individual in the Xfluencer community.",
-  "Your referral joins Xfluencer they'll be receiving the rewards and you as well.",
+  "Your referral joins Xfluencer, they will receive rewards, and so will you.",
   "The rewards will be based on the number of followers the new user has in the following manner - ",
 ];
 
@@ -176,7 +176,7 @@ export default function Referrals({}: Props) {
                           display: "flex",
                           flexDirection: "column",
                           justifyContent: "center",
-                          alignItems:'center'
+                          alignItems: "center",
                         }}
                       >
                         <Image
@@ -184,8 +184,12 @@ export default function Referrals({}: Props) {
                           alt="no referrals"
                           style={{ height: "60%", maxWidth: "60%" }}
                         />
-                        <Typography variant="body2" sx={{fontStyle:"italic"}}>
-                          No referral points. Start referring influencers to earn points.
+                        <Typography
+                          variant="body2"
+                          sx={{ fontStyle: "italic" }}
+                        >
+                          No referral points. Start referring influencers to
+                          earn points.
                         </Typography>
                       </Box>
                     </TableCell>
@@ -277,6 +281,7 @@ export default function Referrals({}: Props) {
                       sx={{
                         borderRadius: "100%",
                         px: 1,
+                        mt:0.5,
                         color: "white",
                         backgroundColor: "black",
                         height: "fit-content",
@@ -289,12 +294,12 @@ export default function Referrals({}: Props) {
                   </Box>
                 );
               })}
-              <ul>
+              <ul style={{ marginTop: "0px" }}>
                 <li>Upto 100 followers - 100 points</li>
-                <li>1000 followers - 200points,</li>
+                <li>1000 followers - 200 points</li>
                 <li>10000 followers - 500 points</li>
-                <li>100000 followers - 1000 points,</li>
-                <li>1000000 followers - 10000 points.</li>
+                <li>100000 followers - 1000 points</li>
+                <li>More than 1000000 followers - 10000 points</li>
               </ul>
               <Box>
                 <Typography
