@@ -519,4 +519,5 @@ class OrderItemMetricSerializer(serializers.ModelSerializer):
 
 
 class ManualVerifyOrderItemSerializer(serializers.Serializer):
-    published_post_link = serializers.CharField(required=False)
+    published_post_link = serializers.CharField(
+        required=False, allow_blank=True)

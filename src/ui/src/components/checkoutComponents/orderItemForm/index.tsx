@@ -38,6 +38,7 @@ import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
 import ArrayItem from "../arrayItem";
 import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
 import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
+import StatusChip from "../../shared/statusChip";
 
 type OrderItemFormProps = {
   orderItem: any;
@@ -362,10 +363,7 @@ export default function OrderItemForm({
           }}
         >
           {!orderItem?.service_id && (
-            <GetOrderItemBadge
-              orderStatus={orderItem?.order_item?.status}
-              eachOrderItem={orderItem?.order_item}
-            />
+            <StatusChip status={orderItem?.order_item?.status} />
           )}
           {!disableDelete && (
             <ConfirmDelete

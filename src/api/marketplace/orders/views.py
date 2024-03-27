@@ -1,6 +1,6 @@
 from accounts.models import Wallet
 from orders.tasks import cancel_escrow, cancel_tweet, check_order_status, schedule_tweet
-from orders.services import create_manual_verification_notification, create_notification_for_order, create_order_item_approval_notification, create_order_item_tracking, create_order_tracking
+from orders.services import create_manual_verification_notification, create_notification_for_order, create_order_item_approval_notification, create_order_item_tracking, create_order_tracking, validate_order_item_meta_data
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -1423,6 +1423,7 @@ class ReviewDetail(APIView):
 
 
 class SendTweetView(APIView):
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=SendTweetSerializer)
     def post(self, request):
         try:
@@ -1430,6 +1431,33 @@ class SendTweetView(APIView):
             if serializer.is_valid():
                 # Get the order_item_id
                 order_item_id = serializer.validated_data["order_item_id"]
+                order_item = OrderItem.objects.get(pk=order_item_id)
+
+                # Check that the logged in user is the influencer of the order
+                if order_item.package.influencer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to schedule this order item",
+                            "data": None,
+                            "errors": "You are not authorized to schedule this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+                is_valid, validation_error = validate_order_item_meta_data(
+                    order_item)
+
+                if not is_valid:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": validation_error,
+                            "data": None,
+                            "errors": validation_error,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
                 # Schedule the tweet
                 schedule_tweet(order_item_id)
@@ -1449,6 +1477,7 @@ class SendTweetView(APIView):
 
 
 class CancelTweetView(APIView):
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=SendTweetSerializer)
     def post(self, request):
         try:
@@ -1456,6 +1485,19 @@ class CancelTweetView(APIView):
             if serializer.is_valid():
                 # Get the order_item_id
                 order_item_id = serializer.validated_data["order_item_id"]
+                order_item = OrderItem.objects.get(pk=order_item_id)
+
+                # Check that the logged in user is the influencer of the order
+                if order_item.package.influencer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order item",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
 
                 # Schedule the tweet
                 cancel_tweet(order_item_id)
