@@ -158,7 +158,7 @@ describe("Testing Escrow for ATA", () => {
     });
 
 
-    it("Create Escrow using ATA", async () => {
+    it("Create Escrow using SPL (ATAs)", async () => {
 
       const orderCode = 123; // uuid uniquely the escrow and the vault
 

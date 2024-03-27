@@ -11,9 +11,9 @@ import {
 } from "@project-serum/anchor"
 
 import styles from '../styles/PingButton.module.css'
-import idl from "../xfluencer.json"
 
-import { useAnchorWallet, useWallet } from '@solana/wallet-adapter-react';
+import idl from "../xfluencer.json"
+import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import * as anchor from "@coral-xyz/anchor";
 
 import { FC } from "react";
@@ -23,14 +23,18 @@ import * as utils from "./utils";
 
 const programId = new PublicKey(idl.metadata.address);
 
-interface CancelEscrowSolanaProps {
+interface ValidateProps {
+    validator: string,
     business: string,
     influencer: string,
-    orderCode: number
+    percentageFee : number,
+    orderCode: number,
+    targetState: number,
+    textButton: string
   }
 
-
-export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influencer, orderCode}) => {
+export const Validate: FC<ValidateProps> = ({validator, business, influencer, 
+                                             percentageFee, orderCode, targetState, textButton}) => {
 
     const wallet = useAnchorWallet()
     const connection = new Connection(clusterApiUrl('devnet'),
@@ -45,46 +49,61 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
     const { publicKey, signTransaction, sendTransaction } = useWallet()
     
     if (!connection || !publicKey) { 			
-        console.warn("Wallet was not connected")
+        const msg = "Wallet is not connected"
+        console.warn(msg)
         return (
-        <div className={styles.buttonContainer}>
-            <button className={styles.button} disabled>CREATE (wallet not connected)</button>
-        </div>  )      
+            <div className={styles.buttonContainer}>
+                <button className={styles.button} disabled>{textButton} ({msg})</button>
+            </div>  
+        )      
+     } else {       
+        console.log("wallet",wallet.publicKey)
      }
+
 
     const onClick = async () => {
 
-        const business_pk = new PublicKey(business)
-        const influencer_pk = new PublicKey(influencer);
+        if (!connection || !publicKey) { 			
+			console.warn("Wallet is not connected")
+			return }
+
+        const validatorPublicKey = new PublicKey(validator);
+        const businessPublicKey = new PublicKey(business);
+        const influencerPublicKey = new PublicKey(influencer);
         
         const [escrowPDA] = await PublicKey.findProgramAddress([
             utf8.encode('escrow'),
-            business_pk.toBuffer(), 
-            influencer_pk.toBuffer(),
+            businessPublicKey.toBuffer(), 
+            influencerPublicKey.toBuffer(),
             utf8.encode(orderCode.toString())
           ],
           programId
         );
-      
-               
-        const ix = await program.methods.cancelEscrowSol()
-            .accounts({
-                business: business_pk,
-                escrowAccount: escrowPDA, 
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .instruction();
+        
+        const ix = await program.methods.validateEscrowSol(
+            new anchor.BN(targetState),
+            new anchor.BN(percentageFee)
+            ).accounts({
+                validationAuthority: validatorPublicKey,
+                influencer: influencerPublicKey,
+                business: businessPublicKey,
+                escrowAccount: escrowPDA,
+                systemProgram:  anchor.web3.SystemProgram.programId,
+              }).instruction();
         
         const tx = new Transaction().add(ix);
 
+        console.log(tx);
+
         const options = {
 			skipPreflight: true      
-		}
+		  }
 
         try {
             const signature = await sendTransaction(tx, connection, options);
+            console.debug("signature", signature.valueOf());
             const txSign = await connection.confirmTransaction(signature, "processed");
-            console.debug("txSing", txSign);
+            console.debug("txSing",txSign.value);
             console.debug("context", txSign.context);
             console.debug("value", txSign.value);
             if(txSign.value.err != null){
@@ -94,11 +113,16 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
         catch(error)
         {
             console.error(error)
+            alert("Error Found on Validation " + error);
         }
+
+    
     }
 
     return (
-        <button className={styles.button} onClick={onClick}>Cancel Business {business}</button>
+      <button className={styles.button} onClick={onClick}>
+        {textButton}
+      </button>
     )
 
 }

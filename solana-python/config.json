@@ -24,7 +24,7 @@
         "lamports":10000000,
         "usdc": 1000000
     },
-    "order_code": 2001,
+    "order_code": 2002,
     "program_id":{
         "localnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
         "devnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
