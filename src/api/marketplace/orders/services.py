@@ -1,5 +1,5 @@
 import logging
-from orders.models import Order, OrderItem, OrderItemTracking, OrderMessage, OrderTracking
+from orders.models import Order, OrderItem, OrderItemMetaData, OrderItemTracking, OrderMessage, OrderTracking
 from notifications.models import Notification
 from decouple import config
 
@@ -334,3 +334,79 @@ def create_manual_verification_notification(order_item):
         logger.error(
             "Error creating manual verification notification: ", str(e))
         return False
+
+
+def validate_order_item_meta_data(order_item: OrderItem):
+    is_valid = True
+    validation_error = ""
+
+    order_item_meta_datas = OrderItemMetaData.objects.filter(
+        order_item=order_item)
+    service_type = order_item.service_master.twitter_service_type
+
+    text = ''
+    tweet_id = ''
+    in_reply_to_tweet_id = ''
+    poll_options = []
+    poll_duration_minutes = 0
+    for order_item_meta_data in order_item_meta_datas:
+        if order_item_meta_data.field_name == 'text':
+            if order_item_meta_data.value and len(order_item_meta_data.value) > 0:
+                text = order_item_meta_data.value
+        elif order_item_meta_data.field_name == 'tweet_id':
+            # Split the tweet_id and get the last part
+            if order_item_meta_data.value and len(order_item_meta_data.value) > 0:
+                tweet_id = order_item_meta_data.value.split('/')[-1]
+        elif order_item_meta_data.field_name == 'in_reply_to_tweet_id':
+            # Split the tweet_id and get the last part
+            if order_item_meta_data.value and len(order_item_meta_data.value) > 0:
+                in_reply_to_tweet_id = order_item_meta_data.value.split(
+                    '/')[-1]
+        elif order_item_meta_data.field_name == 'poll_options':
+            # This will be a comma separated string, convert to list
+            if order_item_meta_data.value and len(order_item_meta_data.value) > 0:
+                options = order_item_meta_data.value.split(',')
+                poll_options = [option.strip() for option in options]
+        elif order_item_meta_data.field_name == 'poll_duration_minutes':
+            # Convert to integer
+            if order_item_meta_data.value and len(order_item_meta_data.value) > 0:
+                poll_duration_minutes = int(order_item_meta_data.value)
+
+    if service_type == 'tweet' and (not text or len(text) == 0):
+        is_valid = False
+        validation_error = "Content cannot be empty for the post"
+    elif service_type == 'like_tweet' and (not tweet_id or len(tweet_id) == 0):
+        is_valid = False
+        validation_error = "Post Link cannot be empty for the post"
+    elif service_type == 'reply_to_tweet':
+        if not text or len(text) == 0:
+            is_valid = False
+            validation_error = "Content cannot be empty for the post"
+        elif not in_reply_to_tweet_id or len(in_reply_to_tweet_id) == 0:
+            is_valid = False
+            validation_error = "Reply to post link cannot be empty for the post"
+    elif service_type == 'quote_tweet':
+        if not text or len(text) == 0:
+            is_valid = False
+            validation_error = "Content cannot be empty for the post"
+        elif not tweet_id or len(tweet_id) == 0:
+            is_valid = False
+            validation_error = "Quote post link cannot be empty for the post"
+    elif service_type == 'poll':
+        if not text or len(text) == 0:
+            is_valid = False
+            validation_error = "Content cannot be empty for the post"
+        elif len(poll_options) < 2:
+            is_valid = False
+            validation_error = "Minimum of 2 poll options are required for the post"
+        elif poll_duration_minutes < 5:
+            is_valid = False
+            validation_error = "Poll duration should be at least 5 minutes"
+    elif service_type == 'retweet' and (not tweet_id or len(tweet_id) == 0):
+        is_valid = False
+        validation_error = "Post Link cannot be empty for the post"
+    elif service_type == 'thread' and (not text or len(text) == 0):
+        is_valid = False
+        validation_error = "Content cannot be empty for the post"
+
+    return is_valid, validation_error
