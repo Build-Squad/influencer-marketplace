@@ -234,10 +234,9 @@ class TwitterAccountList(APIView):
                     )
 
             if categories:
-                for category in categories:
-                    twitterAccount = twitterAccount.filter(
-                        cat_twitter_account_id__category__name=category
-                    )
+                twitterAccount = twitterAccount.filter(
+                    cat_twitter_account_id__category__name__in=categories
+                )
 
             if regions:
                 region_ids = RegionMaster.objects.filter(regionName__in=regions).values_list('id', flat=True)
