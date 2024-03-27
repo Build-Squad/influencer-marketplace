@@ -23,16 +23,16 @@ const Home: NextPage = (props) => {
   const size = sizes[0];
 
   //// CHANGE THESE ADDRESSED TO CONFIGURE THE XFLUENCER MOCK //////
-  const MINT : string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr` 
-  const VALIDATOR : string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`
-  const BUSINESS : string  = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`
-  const INFLUENCER : string = `4gmJzpuV7PsXg8G4c51Yxe2cR6SoBDcKzxZoyjidPx76`
+  const MINT : string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`; 
+  const VALIDATOR : string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`;
+  const BUSINESS : string  = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`;
+  const INFLUENCER : string = `4AxvMsyEv5X3ioHuguaAk4ETsCQ6AWDpjgzNEUckaDEx`;// `4gmJzpuV7PsXg8G4c51Yxe2cR6SoBDcKzxZoyjidPx76`
 
   //////////////////////////////////////////////////////////////////
 
   const NUM_SOLS : number = 0.1;
   const LAMPORTS : number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
-  const ORDER_CODE : number = 12346 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+  const ORDER_CODE : number = 12347 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
   const NUM_SPL_TOKENS : number = 1000000; // with 6 deciamls 10**6 is 1 token unit
   const PERCENTAGE_FEE: number = 0;
  
