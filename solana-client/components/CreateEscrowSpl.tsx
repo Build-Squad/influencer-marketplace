@@ -35,11 +35,13 @@ import {
 	AccountLayout,
 	MintLayout,
 	getAssociatedTokenAddress,
+	createAssociatedTokenAccountIdempotentInstruction,
 	TOKEN_PROGRAM_ID,
   } from '@solana/spl-token';
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { SendTransactionOptions } from "@solana/wallet-adapter-base";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+
 
 
 const programId = new PublicKey(idl.metadata.address)
@@ -107,14 +109,14 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 
 		const validatorPublicKey = new PublicKey(validator);
 		const businessPublicKey = new PublicKey(business);		
-		const influencerPublickKey = new PublicKey(influencer);
+		const influencerPublicKey = new PublicKey(influencer);
 		const mintPublicKey = new PublicKey(mint);
 
 		console.log("SPL num. of tokens:",  tokens);
 		console.log("Business Public Key", 
 							businessPublicKey.toString());
 		console.log("Influencer Public Key", 
-							influencerPublickKey.toString());
+							influencerPublicKey.toString());
 		console.log("SPL MINT address in use", mintPublicKey.toString());
 		console.log("Program Id", programId.toString())
 	
@@ -141,10 +143,22 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 		const vault_account_bump = _vault_account_bump;
 
 		businessTokenAccount = await findATA(businessPublicKey, mintPublicKey);
-		influencerTokenAccount = await findATA(influencerPublickKey, mintPublicKey);
+		influencerTokenAccount = await findATA(influencerPublicKey, mintPublicKey);
 
 		console.log("Business ATA", businessTokenAccount.toString());
 		console.log("Influencer ATA", influencerTokenAccount.toString());
+
+		const tx = new Transaction();
+
+		const ix_init_influencer_ata 
+			= await createAssociatedTokenAccountIdempotentInstruction(
+								wallet.publicKey,
+								influencerTokenAccount,
+								influencerPublicKey,
+								mintPublicKey);
+
+		tx.add(ix_init_influencer_ata);
+
 
 		const ix = await program.methods
 			.initialize(
@@ -155,7 +169,7 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 		  {
 			initializer: businessPublicKey, 
 			business: businessPublicKey,
-			influencer: influencerPublickKey,
+			influencer: influencerPublicKey,
 			validationAuthority: validatorPublicKey,			
 			mint: mintPublicKey,        
 			businessDepositTokenAccount: businessTokenAccount,
@@ -167,7 +181,7 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 			rent: SYSVAR_RENT_PUBKEY,
 		  }).instruction();
 
-		  const tx = new Transaction().add(ix);
+		  tx.add(ix);
 
 		  console.log(tx);
   
