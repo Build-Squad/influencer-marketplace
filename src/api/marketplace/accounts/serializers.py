@@ -2,7 +2,7 @@ from unicodedata import category
 from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
 
-from core.serializers import LanguageMasterSerializer, RegionMasterSerializer
+from core.serializers import LanguageMasterSerializer
 from orders.models import Order, OrderItem, Review
 from packages.models import Package, Service
 from .models import (
