@@ -24,6 +24,7 @@ type CustomAutoCompleteProps = {
   getOptionDisabled?: (option: unknown) => boolean;
   customFilter?: object;
   size?: "small" | "medium";
+  renderOption?: (props: any, option: any, { selected }: any) => JSX.Element;
 };
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" color="secondary" />;
@@ -47,6 +48,7 @@ const CustomAutoComplete = ({
   isMulti = false,
   customFilter,
   size = "small",
+  renderOption,
 }: CustomAutoCompleteProps) => {
   const [selected, setSelected] = React.useState<unknown>(null); // This is the value that is selected from the options[]
   const [options, setOptions] = React.useState<unknown[]>([]);
@@ -247,11 +249,17 @@ const CustomAutoComplete = ({
           size="small"
         />
       )}
-      renderOption={(props, option, { selected }) => (
-        <li {...props} onScroll={handleScroll}>
-          {getOptionLabel && getOptionLabel(option)}
-        </li>
-      )}
+      renderOption={(props, option, { selected }) => {
+        if (renderOption) {
+          return renderOption(props, option, { selected });
+        } else {
+          return (
+            <li {...props} onScroll={handleScroll}>
+              {getOptionLabel && getOptionLabel(option)}
+            </li>
+          );
+        }
+      }}
       onChange={(event, value) => handleSelect(value)}
       onScroll={handleScroll}
     />
