@@ -15,18 +15,20 @@ const TABS = [
 ];
 
 const FirstTabComponent = () => {
-  const [articleImage, setArticleImage] = useState(
+  const [articleImage1, setArticleImage1] = useState(
     "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png"
   );
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const images = [
+
+  const [currentImage1Index, setCurrentImage1Index] = useState(0);
+
+  const Image1 = [
     "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png",
     "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards5.png",
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      setCurrentImage1Index((prevIndex) => (prevIndex + 1) % Image1.length);
     }, 5000);
 
     // Clean up the interval on component unmount
@@ -34,8 +36,8 @@ const FirstTabComponent = () => {
   }, []);
 
   useEffect(() => {
-    setArticleImage(images[currentIndex]);
-  }, [currentIndex]);
+    setArticleImage1(Image1[currentImage1Index]);
+  }, [currentImage1Index]);
 
   return (
     <>
@@ -73,7 +75,7 @@ const FirstTabComponent = () => {
       </Grid>
       <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={articleImage}
+          src={articleImage1}
           alt=""
           width={"952"}
           height={"500"}
@@ -129,6 +131,26 @@ const SecondTabComponent = () => {
 };
 
 const ThirdTabComponent = () => {
+  const [articleImage3, setArticleImage3] = useState(
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graph.png"
+  );
+  const [currentImage3Index, setCurrentImage3Index] = useState(0);
+  const Image3 = [
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graph.png",
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/bargraph.png",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage3Index((prevIndex) => (prevIndex + 1) % Image3.length);
+    }, 5000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+  useEffect(() => {
+    setArticleImage3(Image3[currentImage3Index]);
+  }, [currentImage3Index]);
   return (
     <>
       <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
@@ -159,9 +181,7 @@ const ThirdTabComponent = () => {
       </Grid>
       <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={
-            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/bargraph.png"
-          }
+          src={articleImage3}
           alt=""
           width={"952"}
           height={"500"}
