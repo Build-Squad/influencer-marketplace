@@ -116,7 +116,7 @@ const SecondTabComponent = () => {
       <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
-            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/collab3.png"
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/business_order_dash.png"
           }
           width={"952"}
           height={"500"}
