@@ -270,10 +270,11 @@ def twitter_task(order_item_id):
             text = order_item_meta_data.value
         elif order_item_meta_data.field_name == 'tweet_id':
             # Split the tweet_id and get the last part
-            tweet_id = order_item_meta_data.value.split('/')[-1]
+            tweet_id = order_item_meta_data.value.split('/')[-1].split('?')[0]
         elif order_item_meta_data.field_name == 'in_reply_to_tweet_id':
             # Split the tweet_id and get the last part
-            in_reply_to_tweet_id = order_item_meta_data.value.split('/')[-1]
+            in_reply_to_tweet_id = order_item_meta_data.value.split(
+                '/')[-1].split('?')[0]
         elif order_item_meta_data.field_name == 'poll_options':
             # This will be a comma separated string, convert to list
             options = order_item_meta_data.value.split(',')

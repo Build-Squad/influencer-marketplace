@@ -356,7 +356,8 @@ def validate_order_item_meta_data(order_item: OrderItem):
         elif order_item_meta_data.field_name == 'tweet_id':
             # Split the tweet_id and get the last part
             if order_item_meta_data.value and len(order_item_meta_data.value) > 0:
-                tweet_id = order_item_meta_data.value.split('/')[-1]
+                tweet_id = order_item_meta_data.value.split(
+                    '/')[-1].split('?')[0]
         elif order_item_meta_data.field_name == 'in_reply_to_tweet_id':
             # Split the tweet_id and get the last part
             if order_item_meta_data.value and len(order_item_meta_data.value) > 0:

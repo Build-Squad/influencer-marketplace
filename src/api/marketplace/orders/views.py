@@ -1650,7 +1650,7 @@ class ManualVerifyOrderItemView(APIView):
                 if serializer.validated_data.get("published_post_link"):
                     published_link = serializer.validated_data.get(
                         "published_post_link")
-                    tweet_id = published_link.split('/')[-1]
+                    tweet_id = published_link.split('/')[-1].split('?')[0]
                     order_item.published_tweet_id = tweet_id
                 order_item.save()
 
