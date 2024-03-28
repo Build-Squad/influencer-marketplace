@@ -135,10 +135,12 @@ const ThirdTabComponent = () => {
       </Grid>
       <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={Article3_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/scheduling.png"
+          }
           alt=""
-          height={100}
-          width={100}
+          width={"500"}
+          height={"500"}
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Grid>
