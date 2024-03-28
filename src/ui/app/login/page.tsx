@@ -47,7 +47,7 @@ const Login: React.FC = () => {
     if (isTwitterUserLoggedIn) {
       const redirectRoute =
         user?.user?.role?.name == "business_owner"
-          ? "/business"
+          ? "/business/explore"
           : "/influencer";
       router.push(redirectRoute);
     }
