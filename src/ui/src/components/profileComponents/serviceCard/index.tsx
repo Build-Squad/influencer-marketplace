@@ -200,7 +200,7 @@ export default function ServiceCard({
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "flex-end",
                   width: "100%",
                 }}
               >
