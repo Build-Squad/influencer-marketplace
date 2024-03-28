@@ -107,7 +107,7 @@ export default function Referrals({}: Props) {
           </Grid>
           <Grid item xs={6} sm={6} md={6} lg={6}>
             <Typography variant="h4" fontWeight={"bold"}>
-              {getTotalEarnings()} Tokens
+              {getTotalEarnings()} Points
             </Typography>
             <Typography>Total Earnings</Typography>
           </Grid>
