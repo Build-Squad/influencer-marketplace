@@ -55,7 +55,10 @@ const initialState: CartState = {
     id: "",
     name: "",
     symbol: "",
-    country: null,
+    token_address: "",
+    decimals: 0,
+    logourl: "",
+    currency_type: "",
   },
 };
 
@@ -213,7 +216,10 @@ export const cartSlice = createSlice({
           id: "",
           name: "",
           symbol: "",
-          country: null,
+          token_address: "",
+          decimals: 0,
+          logourl: "",
+          currency_type: "",
         };
         state.servicesAdded = [];
         return;
@@ -271,7 +277,10 @@ export const cartSlice = createSlice({
         id: "",
         name: "",
         symbol: "",
-        country: null,
+        token_address: "",
+        decimals: 0,
+        logourl: "",
+        currency_type: "",
       };
     },
 
