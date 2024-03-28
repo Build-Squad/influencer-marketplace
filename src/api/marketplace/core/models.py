@@ -19,20 +19,24 @@ class Country(models.Model):
 
 
 class Currency(models.Model):
+
+    CURRENCY_TYPE_CHOICES = (
+        ("SOL", "SOL"),
+        ("SPL", "SPL"),
+    )
+
     id = models.UUIDField(
         primary_key=True, verbose_name="Currency", default=uuid.uuid4, editable=False
     )
     name = models.CharField(max_length=100, blank=True, null=True)
     symbol = models.CharField(max_length=100, blank=True, null=True)
-    country = models.ForeignKey(
-        Country,
-        related_name="currency_country_id",
-        on_delete=SET_NULL,
-        null=True,
-        blank=True,
-    )
     is_default = models.BooleanField(default=False)
-
+    token_address = models.CharField(max_length=100, blank=True, null=True)
+    decimals = models.IntegerField(blank=True, null=True)
+    logourl = models.CharField(max_length=255, blank=True, null=True)
+    currency_type = models.CharField(
+        choices=CURRENCY_TYPE_CHOICES, default="SPL"
+    )
     class Meta:
         db_table = "currency"
 
