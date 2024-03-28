@@ -27,7 +27,7 @@ const FirstTabComponent = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 2000);
+    }, 5000);
 
     // Clean up the interval on component unmount
     return () => clearInterval(interval);
@@ -160,7 +160,7 @@ const ThirdTabComponent = () => {
       <Grid item sx={{ textAlign: "left" }} xs={12} sm={6} md={6} lg={6}>
         <Image
           src={
-            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/line_graph.png"
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/bargraph.png"
           }
           alt=""
           width={"952"}
