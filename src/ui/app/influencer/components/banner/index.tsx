@@ -101,7 +101,7 @@ export default function Banner({}: Props) {
             style={{
               height: "100%",
               width: "100%",
-              maxHeight: "800px",
+              maxHeight: "625px",
               maxWidth: "1200px",
             }}
             alt={"Influencer Banner"}
