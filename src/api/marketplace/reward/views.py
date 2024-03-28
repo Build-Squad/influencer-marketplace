@@ -15,7 +15,7 @@ from reward.serializers import UserReferralsSerializer
 class ReferralLink(APIView):
     def createLink(self,code):
         hostname = config('SERVER')
-        return f"{hostname}auth-twitter-user/influencer/?referral_code={code}"
+        return f"{hostname}auth-twitter-user/influencer/auth/?referral_code={code}"
 
     authentication_classes = [JWTAuthentication]
     def get(self, request):
