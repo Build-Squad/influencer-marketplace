@@ -201,6 +201,7 @@ export default function ServiceCard({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  width: "100%",
                 }}
               >
                 {service?.status === SERVICE_STATUS.DRAFT ? (
@@ -283,14 +284,31 @@ export default function ServiceCard({
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "flex-end",
+                  width: "100%",
                 }}
               >
-                <Typography sx={{ fontWeight: "bold" }} variant="h6">
-                  {Number(service?.platform_price)?.toFixed(4) +
+                <Tooltip
+                  title={
+                    Number(service?.platform_price)?.toFixed(4) +
                     " " +
-                    service?.currency?.symbol}
-                </Typography>
+                    service?.currency?.symbol
+                  }
+                >
+                  <Typography
+                    sx={{
+                      fontWeight: "bold",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                    variant="h6"
+                  >
+                    {Number(service?.platform_price)?.toFixed(4) +
+                      " " +
+                      service?.currency?.symbol}
+                  </Typography>
+                </Tooltip>
               </Box>
             )}
           </Box>
