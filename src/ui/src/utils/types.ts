@@ -15,7 +15,10 @@ type CurrencyType = {
   id: string;
   name: string;
   symbol: string;
-  country: CountryType | null;
+  token_address?: string;
+  decimals?: number;
+  logourl?: string;
+  currency_type?: string;
 };
 
 type LanguageType = {

@@ -148,6 +148,11 @@ export const LOGIN_METHODS = {
   WALLET: "wallet",
 };
 
+export const CURRENCY_TYPE = {
+  SOL: "SOL",
+  SPL: "SPL",
+};
+
 export const CHECKOUT_TEXT =
   "Your payment will be held in an escrow smart contract for the duration of the order. The funds will be transferred to the influencer once the order is completed and validated by Xfluencer. If the influencer declines the order request, you can claim the funds back.";
 
