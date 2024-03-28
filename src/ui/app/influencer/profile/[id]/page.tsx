@@ -164,7 +164,7 @@ const ProfileLayout = ({
         </Box>
       ),
       target: ".joyride-create-service-tab",
-      placement: "top",
+      placement: "right",
     },
     {
       content: (
@@ -1084,7 +1084,7 @@ const ProfileLayout = ({
                   ) : (
                     <Typography variant="h4">Services</Typography>
                   )}
-                  {params.id == loggedInUser?.id ? (
+                  {params.id == loggedInUser?.id && type == "services" ? (
                     <Box
                       sx={{
                         mr: 4,
