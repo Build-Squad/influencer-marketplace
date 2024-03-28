@@ -31,6 +31,7 @@ import { notification } from "../../shared/notification";
 import { serviceFormInitialValues, serviceFormSchema } from "./validation";
 import dayjs from "dayjs";
 import CloseIcon from "@mui/icons-material/Close";
+import Image from "next/image";
 
 type CreateUpdateServiceProps = {
   serviceItem?: ServiceType | null;
@@ -465,6 +466,21 @@ const CreateUpdateService = ({
                         return false;
                       }
                     }}
+                    renderOption={(props, option, { selected }) => (
+                      <Box
+                        component="li"
+                        sx={{ "& > img": { mr: 2, flexShrink: 0 } }}
+                        {...props}
+                      >
+                        <Image
+                          src={option.logourl}
+                          alt={option.name}
+                          width={20}
+                          height={20}
+                        />
+                        <Typography>{option.name}</Typography>
+                      </Box>
+                    )}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12} md={12} lg={12}>
@@ -496,6 +512,7 @@ const CreateUpdateService = ({
                           variant="body1"
                           sx={{
                             ml: 1,
+                            whiteSpace: "nowrap",
                           }}
                         >
                           {formik.values.currencyObject?.symbol}
