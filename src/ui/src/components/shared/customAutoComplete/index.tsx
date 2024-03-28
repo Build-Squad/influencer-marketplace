@@ -83,7 +83,9 @@ const CustomAutoComplete = ({
     value: string
   ) => {
     setSearch(value);
-    setOptions([]);
+    if (!(value == "" && isMulti)) {
+      setOptions([]);
+    }
     setPagination({ ...pagination, current_page_number: 1 }); // Reset pagination
   };
 
