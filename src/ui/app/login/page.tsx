@@ -126,8 +126,8 @@ const Login: React.FC = () => {
           </Typography>
           <Typography variant="caption" sx={{ lineHeight: "2px" }}>
             {loginAs == "Business"
-              ? "Discover a world of opportunity on our marketplace, where you can connect with top influencers on X to elevate your brand's presence. Browse through a variety of services, from tweets to retweets and more, all priced in Solana – the trusted cryptocurrency for secure transactions."
-              : "Monetize your X influence with our marketplace. Set your rates in Solana and showcase your services to businesses eager to connect with you. Link your X account to get started!"}
+              ? "Discover a world of opportunity on our marketplace, where you can connect with top influencers or creators on X. Browse through a variety of services, from tweets, retweets and many more."
+              : "Monetize your X influence with our marketplace. Set your rates and showcase your services to businesses eager to connect with you. Link your X account to get started!"}
           </Typography>
         </Box>
 
