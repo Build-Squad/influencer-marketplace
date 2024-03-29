@@ -9,14 +9,12 @@ use anchor_lang::solana_program::system_instruction;
 use anchor_spl::token::{self, CloseAccount, Mint, SetAuthority, TokenAccount, Transfer};
 use spl_token::instruction::AuthorityType;
 
-
-
 mod errors;
 mod processor;
 
 use crate::errors::CustomError;
 
-declare_id!("6mTwD92ynqwDZxjg2ydhAjeX5w7bcsfM7jQUDeHpGM9G");
+declare_id!("GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig");
 
 
 
@@ -37,33 +35,49 @@ pub mod xfluencer {
         processor::initialize_escrow::process(ctx,_vault_account_bump, amount, order_code)
     }
 
-    pub fn claim(ctx: Context<Claim>) -> ProgramResult {
-        Ok(())
+    pub fn validate_escrow_spl(
+        ctx: Context<ValidateEscrowSpl>, 
+        target_state: u8, 
+        percentage_fee: u16
+    ) -> ProgramResult {
+        processor::validate_escrow_spl::process(ctx, target_state, percentage_fee)
     }
 
-    pub fn cancel(ctx: Context<Cancel>, order_code: u64) -> ProgramResult {
-               processor::cancel::process(ctx, order_code)
+    pub fn claim_escrow_spl(ctx: Context<Claim>,
+                 order_code: u64 ) -> ProgramResult {
+        processor::claim::process(ctx, order_code)
+    }
+
+    pub fn cancel_escrow_spl(ctx: Context<Cancel>, 
+                  order_code: u64 ) -> ProgramResult {
+        processor::cancel::process(ctx, order_code)
     }
 
     /////////////////////////////
     //// ESCROW IX'S USING SOL //
     /////////////////////////////
-    pub fn create_escrow(ctx: Context<CreateEscrowSolana>, amount: u64, order_code: u64) -> ProgramResult {
+    pub fn create_escrow(ctx: Context<CreateEscrowSolana>, 
+                         amount: u64, 
+                         order_code: u64
+    ) -> ProgramResult {
         processor::create_escrow_solana::process(ctx, amount, order_code)
     }
 
-    pub fn claim_escrow(ctx: Context<ClaimEscrowSolana>, order_code: u64) -> ProgramResult {
+    pub fn claim_escrow(ctx: Context<ClaimEscrowSolana>, 
+                        order_code: u64
+    ) -> ProgramResult {
         processor::claim_escrow::process(ctx, order_code)
     }
   
-    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, target_state: u8, 
-        percentage_fee: u16) -> ProgramResult {
+    pub fn validate_escrow_sol(ctx: Context<ValidateEscrowSolana>, 
+                               target_state: u8, 
+                               percentage_fee: u16
+    ) -> ProgramResult {
         processor::validate_escrow_sol::process(ctx, target_state, percentage_fee)
     }
   
-
-
-    pub fn cancel_escrow_sol(ctx: Context<CancelEscrowSolana>) -> ProgramResult {
+    pub fn cancel_escrow_sol(ctx: Context<CancelEscrowSolana>
+    ) -> ProgramResult {
 
         let amount = ctx.accounts.escrow_account.get_lamports();
 
@@ -78,18 +92,13 @@ pub mod xfluencer {
 
  
 
-
-
 }
-
-
 
 
 
 
 #[account]
 pub struct EscrowAccount {
-    // First 8 Bytes are Discriminator (u64)
     pub business_key: Pubkey, // (32)
     pub business_deposit_token_account: Pubkey, // (32)
     pub influencer_key: Pubkey, // (32)
@@ -103,13 +112,8 @@ pub struct EscrowAccount {
         2: Delivered
     */
     pub status: u8, // (1)
-    pub delivery_time: i64, // (8)
-    pub trial_day: u16, // (2)
 }
 
-impl EscrowAccount {
-    const INIT_SPACE: usize = 8 + (32 * 5) + (8 * 2) + 1 + 8 + 2;
-}
 
 
 #[account]
@@ -132,79 +136,83 @@ pub struct EscrowAccountSolana {
 #[derive(Accounts)]
 #[instruction(vault_account_bump: u8, amount: u64, order_code: u64)]
 pub struct CreateEscrow<'info> {
-    #[account(mut)]
     /// CHECK: safe
-    pub initializer: Signer<'info>,
-    /// CHECK: safe
-    pub business: AccountInfo<'info>, 
+    #[account(mut, signer)]    
+    pub business: AccountInfo<'info>,
     /// CHECK: safe
     pub influencer: AccountInfo<'info>, 
     /// CHECK: safe 
     pub validation_authority: AccountInfo<'info>,  
     pub mint: Account<'info, Mint>,
-    
-    #[account(
-         mut,
-         constraint = business_deposit_token_account.amount >= amount @CustomError::BusinessHasInsufficientAmountOfTokens
-    )]
-    pub business_deposit_token_account: Account<'info, TokenAccount>,
-    pub influencer_receive_token_account: Account<'info, TokenAccount>,
-
-    #[account(
-        init,         
-        space = EscrowAccount::INIT_SPACE, 
-        payer = initializer,
-        seeds = [b"escrow".as_ref(), 
-                 order_code.to_string().as_bytes().as_ref()],   
-        bump,     
-    )]    
-    pub escrow_account: Box<Account<'info, EscrowAccount>>,
-
     #[account(
         init,
-        seeds = ["vault".as_bytes(), 
-                order_code.to_string().as_bytes().as_ref() ],	
-        payer = initializer,
-        bump,
+        seeds = [b"token-seed".as_ref(),
+                order_code.to_string().as_bytes().as_ref()], 
+        bump,	
+        payer = business,
         token::mint = mint,
-        token::authority = initializer,
-        constraint = amount > 0,
+        token::authority = business,
     )]
-    pub vault_account: Box<Account<'info, TokenAccount>>,
-
+    pub vault_account: Account<'info, TokenAccount>,
+    #[account(
+        mut,
+        constraint = business_deposit_token_account.amount >= amount @CustomError::BusinessHasInsufficientAmountOfTokens
+   )]
+    pub business_deposit_token_account: Account<'info, TokenAccount>,
+    pub influencer_receive_token_account: Account<'info, TokenAccount>,
+    #[account(init,
+              payer = business,
+              space = size_of::<EscrowAccount>() + 8,
+              seeds = [b"escrow-data".as_ref(),
+                        order_code.to_string().as_bytes().as_ref()],
+              bump)]     
+    pub escrow_account: Account<'info, EscrowAccount>,
     /// CHECK: safe
-    pub system_program: AccountInfo<'info>,
+    pub system_program: AccountInfo<'info>,    
+    pub rent: Sysvar<'info, Rent>,
     /// CHECK: safe
     pub token_program: AccountInfo<'info>,
-    pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]
 #[instruction(order_code: u64)]
 pub struct Claim<'info> {
+     /// CHECK: safe
+     #[account(mut)]
+     pub business: AccountInfo<'info>,
+     #[account(mut)]
+     pub business_deposit_token_account: Account<'info, TokenAccount>,
     /// CHECK: safe
     #[account(mut, signer)]
     pub influencer: AccountInfo<'info>,
     /// CHECK: safe
     #[account(mut)]
-    pub influencer_deposit_token_account: Account<'info, TokenAccount>,
+    pub influencer_receive_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub vault_account: Account<'info, TokenAccount>,
     /// CHECK: safe
     pub vault_authority: AccountInfo<'info>,
     #[account(
         mut,
+        constraint = escrow_account.business_key == *business.key @CustomError::MissmatchBusiness,
+
+        constraint = escrow_account.business_deposit_token_account 
+            == *business_deposit_token_account.to_account_info().key @CustomError::MissmatchBusinessTokenAccount,
+
         constraint = escrow_account.influencer_key == *influencer.key @CustomError::MissmatchInfluencer,
+
         constraint = escrow_account.influencer_receive_token_account 
-            == *influencer_deposit_token_account.to_account_info().key @CustomError::MissmatchBusinessTokenAccount,
+            == *influencer_receive_token_account.to_account_info().key @CustomError::MissmatchInfluencerTokenAccount,
+
         constraint = escrow_account.order_code == order_code @CustomError::MissmatchOrderCode,
+
         constraint = escrow_account.status == 2 @CustomError::BadEscrowState,
         close = influencer
     )]
     pub escrow_account: Account<'info, EscrowAccount>,
     /// CHECK: safe
     pub token_program: AccountInfo<'info>,
-
+    pub rent: Sysvar<'info, Rent>,
 }
 
 
@@ -222,16 +230,21 @@ pub struct Cancel<'info> {
     pub vault_authority: AccountInfo<'info>,
     #[account(
         mut,
-        constraint = escrow_account.business_key == *business.key @CustomError::MissmatchBusiness,
+        constraint = escrow_account.business_key 
+                == *business.key @CustomError::MissmatchBusiness,
+
         constraint = escrow_account.business_deposit_token_account 
                 == *business_deposit_token_account.to_account_info().key @CustomError::MissmatchBusinessTokenAccount,
+
         constraint = escrow_account.order_code == order_code @CustomError::MissmatchOrderCode,
+
         constraint = escrow_account.status == 1 @CustomError::BadEscrowState,
         close = business
     )]
     pub escrow_account: Box<Account<'info, EscrowAccount>>,
     /// CHECK: safe
     pub token_program: AccountInfo<'info>,
+    pub rent: Sysvar<'info, Rent>,
 }
 
 
@@ -279,8 +292,8 @@ pub struct ClaimEscrowSolana<'info> {
         mut,
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
-        constraint = escrow_account.status == 2 @CustomError::BadEscrowState 
-        //close = influencer
+        constraint = escrow_account.status == 2 @CustomError::BadEscrowState,
+        close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
     pub system_program: Program<'info, System>,
@@ -297,6 +310,7 @@ pub struct CancelEscrowSolana<'info> {
         mut,
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.status == 1 @CustomError::BadEscrowState,
+        close = business
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
     pub system_program: Program<'info, System>,
@@ -320,9 +334,35 @@ pub struct ValidateEscrowSolana<'info> {
         constraint = escrow_account.from == *business.key @CustomError::MissmatchBusiness,
         constraint = escrow_account.to == *influencer.key @CustomError::MissmatchInfluencer,
         constraint = escrow_account.validation_authority == *validation_authority.key @CustomError::MissmatchAuthority
-        //close = influencer
     )]
     pub escrow_account: Box<Account<'info, EscrowAccountSolana>>,
+}
+
+
+#[derive(Accounts)]
+#[instruction(state: u8, percentage_fee: u16)]
+
+pub struct ValidateEscrowSpl<'info> {
+    /// CHECK: safe
+    #[account(mut, signer)]    
+    pub validation_authority: AccountInfo<'info>,   
+    #[account(mut)]
+    pub vault_account: Account<'info, TokenAccount>, 
+    /// CHECK: safe
+    #[account(mut)]
+    pub influencer: AccountInfo<'info>,
+    /// CHECK:
+    #[account(mut)]
+    pub business: AccountInfo<'info>,
+    #[account(
+        mut,
+        constraint = escrow_account.business_key == *business.key @CustomError::MissmatchBusiness,
+        constraint = escrow_account.influencer_key == *influencer.key @CustomError::MissmatchInfluencer,
+        constraint = escrow_account.validation_authority == *validation_authority.key @CustomError::MissmatchAuthority
+    )]
+    pub escrow_account: Box<Account<'info, EscrowAccount>>,
+    /// CHECK:
+    pub token_program: AccountInfo<'info>,
 }
 
 
@@ -354,17 +394,12 @@ pub struct ValidateCancellationPayedWithSplToken<'info> {
 
 
 
-
-
-
 #[event]
 pub struct EscrowAccountSolanaCreated {
     pub business: Pubkey,
     pub influencer: Pubkey,
     pub order_code: String
 }
-
-
 
 
 impl<'info> CreateEscrow<'info> {
@@ -374,6 +409,7 @@ impl<'info> CreateEscrow<'info> {
             to: self.vault_account.to_account_info().clone(),
             authority: self.business.clone(),
         };
+
         CpiContext::new(self.token_program.clone(), cpi_accounts)
     }
 
@@ -382,6 +418,7 @@ impl<'info> CreateEscrow<'info> {
             account_or_mint: self.vault_account.to_account_info().clone(),
             current_authority: self.business.clone(),
         };
+
         CpiContext::new(self.token_program.clone(), cpi_accounts)
     }
 }
@@ -398,7 +435,28 @@ impl<'info> Cancel<'info> {
         CpiContext::new(self.token_program.clone(), cpi_accounts)
     }
 
-    fn into_close_contest(&self) -> CpiContext<'_, '_, '_, 'info, CloseAccount<'info>> {
+    fn into_close_context(&self) -> CpiContext<'_, '_, '_, 'info, CloseAccount<'info>> {
+        let cpi_accounts = CloseAccount {
+            account: self.vault_account.to_account_info().clone(),
+            destination: self.business.clone(),
+            authority: self.vault_authority.clone(),
+        };
+        CpiContext::new(self.token_program.clone(), cpi_accounts)
+    }
+}
+
+
+impl<'info> Claim<'info> {
+    fn into_transfer_to_influencer_context(&self) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
+        let cpi_accounts = Transfer {
+            from: self.vault_account.to_account_info().clone(),
+            to: self.influencer_receive_token_account.to_account_info().clone(),
+            authority: self.vault_authority.clone(),
+        };
+        CpiContext::new(self.token_program.clone(), cpi_accounts)
+    }
+
+    fn into_close_context(&self) -> CpiContext<'_, '_, '_, 'info, CloseAccount<'info>> {
         let cpi_accounts = CloseAccount {
             account: self.vault_account.to_account_info().clone(),
             destination: self.business.clone(),
