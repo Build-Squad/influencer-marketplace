@@ -25,3 +25,12 @@ export function htmlStringToComponent(htmlString: string) {
     return parse(htmlString);
   }
 }
+
+export function isUrl(url: string) {
+  try {
+    new URL(url);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
