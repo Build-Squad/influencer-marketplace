@@ -28,7 +28,7 @@ describe("Testing Escrow for SOL", () => {
   
   it('Create Escrow for SOL', async () => {
 
-    const orderCode = 1;
+    const orderCode = 1; // uuid uniquely the escrow and the vault
 
     const provider = anchor.getProvider()
 
@@ -282,8 +282,6 @@ describe("Testing Escrow for SOL", () => {
 
     assert.ok(remaining+fees_collected >= amount) // >= is due to rent is also collected
   
-
-
 
     ////////////////////////////////////////////
     // claim a delivered escrow by Influencer //

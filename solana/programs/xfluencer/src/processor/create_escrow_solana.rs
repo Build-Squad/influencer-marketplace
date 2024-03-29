@@ -16,12 +16,8 @@ pub fn process(ctx: Context<CreateEscrowSolana>, amount: u64, order_code: u64) -
     escrow.to = ctx.accounts.to.key();
     escrow.validation_authority = ctx.accounts.validation_authority.key();
     escrow.order_code = order_code;
-
-    
-
     escrow.amount = amount;
     escrow.status = 0; 
-
 
     let order_code_str = order_code.to_string(); 
 

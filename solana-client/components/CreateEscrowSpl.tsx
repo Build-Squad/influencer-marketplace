@@ -1,5 +1,3 @@
-import * as anchor from "@coral-xyz/anchor";
-
 import {
 	Connection,
 	PublicKey,
@@ -25,11 +23,9 @@ import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapte
 import { Program } from "@coral-xyz/anchor";
 
 import idl from "../xfluencer.json"
-import { Xfluencer } from "../types/xfluencer";
 
 import { FC } from 'react'
 import styles from '../styles/PingButton.module.css'
-import {Input} from "@nextui-org/react";
 
 import {
 	AccountLayout,
@@ -38,21 +34,9 @@ import {
 	createAssociatedTokenAccountIdempotentInstruction,
 	TOKEN_PROGRAM_ID,
   } from '@solana/spl-token';
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
-import { SendTransactionOptions } from "@solana/wallet-adapter-base";
+
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
-
-
-const programId = new PublicKey(idl.metadata.address)
-
-export const getAnchorProgram = (conection: Connection): Program => {
-  
-	const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-	const program = new Program(idl as Idl, programId, { connection });
-  
-	return program;
-}
 
 export const findATA = (
 	walletKey: PublicKey,
@@ -74,19 +58,20 @@ interface CreateEscrowSplProps {
     tokens: number
 }
 
-export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business, 
+export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, 
+														   business, 
 														   influencer, 
 														   mint, 
 														   orderCode, 
-														   tokens}) => {
-
+														   tokens}) => {														
+	const programId = new PublicKey(idl.metadata.address)
 	const wallet = useAnchorWallet()
     const connection = new Connection(clusterApiUrl('devnet'),
     {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
     });
-    const program = utils.getAnchorProgram(connection);
+    const program = new Program(idl as Idl, programId, { connection });
     const provider = new AnchorProvider(connection, wallet, {})
     setProvider(provider)
     const { publicKey, signTransaction, sendTransaction } = useWallet()
@@ -96,14 +81,12 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 		return (
 			<div className={styles.buttonContainer}>
 				<button className={styles.button} disabled>Create Escrow With Spl Token (wallet not connected)</button>
-			</div>  )    
+			</div>  
+		)    
 	}
 
 	let businessTokenAccount=null;
 	let influencerTokenAccount=null;
-
-	/// WALLETS MUST have a ATA S
-	// https://spl-token-faucet.com/?token-name=USDC-Dev
 
 	const onClick = async () => {
 
@@ -128,7 +111,6 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 			programId
 		);
 		console.log("Program Id", programId)
-		
 		console.info("Escrow Address found:",
 					escrow_account_pda.toString(), _escrow_account_bump)
 
@@ -137,6 +119,7 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 		const [_vault_account_pda, _vault_account_bump] 
 			= await PublicKey.findProgramAddress(
 				[VAULT_SEED],programId);
+
 		console.info("vault",_vault_account_pda.toString(),_vault_account_bump)
 
 		const vault_account_pda = _vault_account_pda;
@@ -158,7 +141,6 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 								mintPublicKey);
 
 		tx.add(ix_init_influencer_ata);
-
 
 		const ix = await program.methods
 			.initialize(
@@ -182,9 +164,7 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 		  }).instruction();
 
 		  tx.add(ix);
-
-		  console.log(tx);
-  
+ 
 		  const options = {
 			  skipPreflight: true,
 			  confirm: false			     
@@ -206,63 +186,6 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 			  console.error(error);
 		  }
 	}
-/*
-		  const recentBlockhash = (
-				await connection.getLatestBlockhash('confirmed')).blockhash;
-		  console.log('blockhash', recentBlockhash);
-		  const tx = new Transaction({
-			feePayer: publicKey,
-			recentBlockhash,
-		  });
-
-
-		  tx.add(ix);
-
-		  const options : SendTransactionOptions = {
-			skipPreflight: true,
-			preflightCommitment: 'processed'
-		  };
-
-		  //console.log("tx",tx)
-
-		
-		  /*const adapter = new PhantomWalletAdapter();
-		  console.log("connecting wallet adapter")
-		  try {
-			adapter.connect();
-			const txSign = await adapter.sendTransaction(tx,connection, options);
-			return txSign
-		  }
-		  catch (error) {
-			console.error("Onchain tx was wrong",error)    
-			return null;
-		  }*/
-		  /*tx.addSignature(publicKey, publicKey);
-
-		  const wireTransaction = tx.serialize();
-		  const txSign = await connection.sendRawTransaction(wireTransaction,  options)
-		  	.then((transactionSignature) => {
-				console.log("txSing",transactionSignature)
-				return transactionSignature
-		  });
-
-		  const latestBlockHash = await connection.getLatestBlockhash()*/
-		 
-/*
-		  const adapter = new PhantomWalletAdapter();
-		  try {
-			adapter.connect();			
-			const txSign = await adapter.sendTransaction(tx, connection);
-			console.log("Transaction Signature", txSign);
-			
-			return txSign;
-		  }
-		  catch (error) {
-			console.warn(error);
-			return null;
-		  }
-
-	}*/
 
 	return (
 		<div>
@@ -272,3 +195,5 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator, business,
 		</div>
 	)
 }
+
+
