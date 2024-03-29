@@ -17,6 +17,8 @@ import {
   DialogTitle,
   DialogActions,
   Button,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import dayjs from "dayjs";
 import Image from "next/image";
@@ -25,6 +27,8 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import { useState } from "react";
 import { useAppSelector } from "@/src/hooks/useRedux";
+import { isUrl } from "@/src/utils/helper";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
   switch (meta_data.field_type) {
@@ -41,18 +45,48 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
             />
             {meta_data?.label}
           </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              position: "relative",
-              color: "#676767",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "wrap",
-            }}
-          >
-            {meta_data?.value ? meta_data?.value : "N/A"}
-          </Typography>
+          {meta_data?.value && isUrl(meta_data.value) ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Link
+                href={meta_data.value}
+                component={NextLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                underline="hover"
+                sx={{ color: "#676767" }}
+              >
+                {meta_data.value}
+              </Link>
+              <Tooltip title="Copy to clipboard" arrow>
+                <IconButton
+                  onClick={() => {
+                    navigator.clipboard.writeText(meta_data.value);
+                    notification("Copied to clipboard");
+                  }}
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          ) : (
+            <Typography
+              variant="subtitle1"
+              sx={{
+                position: "relative",
+                color: "#676767",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "wrap",
+              }}
+            >
+              {meta_data?.value ? meta_data?.value : "N/A"}
+            </Typography>
+          )}
         </Box>
       );
 
