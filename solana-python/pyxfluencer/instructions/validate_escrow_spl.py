@@ -3,43 +3,41 @@ import typing
 from solders.pubkey import Pubkey
 from spl.token.constants import TOKEN_PROGRAM_ID
 from solders.instruction import Instruction, AccountMeta
+import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
 
-class ClaimAccounts(typing.TypedDict):
-    business: Pubkey
-    business_deposit_token_account: Pubkey
-    influencer: Pubkey
-    influencer_receive_token_account: Pubkey
+class ValidateEscrowSplArgs(typing.TypedDict):
+    target_state: int
+    percentage_fee: int
+
+
+layout = borsh.CStruct("target_state" / borsh.U8, "percentage_fee" / borsh.U16)
+
+
+class ValidateEscrowSplAccounts(typing.TypedDict):
+    validation_authority: Pubkey
     vault_account: Pubkey
-    vault_authority: Pubkey
+    influencer: Pubkey
+    business: Pubkey
     escrow_account: Pubkey
 
 
-def claim(
-    accounts: ClaimAccounts,
+def validate_escrow_spl(
+    args: ValidateEscrowSplArgs,
+    accounts: ValidateEscrowSplAccounts,
     program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> Instruction:
     keys: list[AccountMeta] = [
-        AccountMeta(pubkey=accounts["business"], is_signer=False, is_writable=True),
         AccountMeta(
-            pubkey=accounts["business_deposit_token_account"],
-            is_signer=False,
-            is_writable=False,
-        ),
-        AccountMeta(pubkey=accounts["influencer"], is_signer=True, is_writable=True),
-        AccountMeta(
-            pubkey=accounts["influencer_receive_token_account"],
-            is_signer=False,
-            is_writable=True,
+            pubkey=accounts["validation_authority"], is_signer=True, is_writable=True
         ),
         AccountMeta(
             pubkey=accounts["vault_account"], is_signer=False, is_writable=True
         ),
-        AccountMeta(
-            pubkey=accounts["vault_authority"], is_signer=False, is_writable=False
-        ),
+        AccountMeta(pubkey=accounts["influencer"], is_signer=False, is_writable=True),
+        AccountMeta(pubkey=accounts["business"], is_signer=False, is_writable=True),
         AccountMeta(
             pubkey=accounts["escrow_account"], is_signer=False, is_writable=True
         ),
@@ -47,7 +45,12 @@ def claim(
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
-    identifier = b">\xc6\xd6\xc1\xd5\x9fl\xd2"
-    encoded_args = b""
+    identifier = b"\xcf\xd6\xd4\x95G*\x9e\xb6"
+    encoded_args = layout.build(
+        {
+            "target_state": args["target_state"],
+            "percentage_fee": args["percentage_fee"],
+        }
+    )
     data = identifier + encoded_args
     return Instruction(program_id, data, keys)

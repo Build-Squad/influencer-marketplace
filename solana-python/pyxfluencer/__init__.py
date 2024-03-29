@@ -9,8 +9,17 @@ from .instructions import validate_escrow_sol
 from .utils import sign_and_send_transaction
 from .program_id import PROGRAM_ID
 
-xfluencer_solana_python_client_version="1.1.0"
+xfluencer_solana_python_client_version="1.2.0"
 
+###################
+# Version: 1.2.0
+# Bump: Minor
+# Updated: 29.03.2024
+###################
+# Issues
+# - Fully SPL support to manage escrows using SPL tokens 
+# - CLI tool to interact with program unitfying all launchers
+#
 ###################
 # Version: 1.1.0
 # Bump: Minor

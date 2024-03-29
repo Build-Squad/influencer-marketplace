@@ -21,15 +21,14 @@ layout = borsh.CStruct(
 
 
 class InitializeAccounts(typing.TypedDict):
-    initializer: Pubkey
     business: Pubkey
     influencer: Pubkey
     validation_authority: Pubkey
     mint: Pubkey
+    vault_account: Pubkey
     business_deposit_token_account: Pubkey
     influencer_receive_token_account: Pubkey
     escrow_account: Pubkey
-    vault_account: Pubkey
 
 
 def initialize(
@@ -39,13 +38,15 @@ def initialize(
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> Instruction:
     keys: list[AccountMeta] = [
-        AccountMeta(pubkey=accounts["initializer"], is_signer=True, is_writable=True),
-        AccountMeta(pubkey=accounts["business"], is_signer=False, is_writable=False),
+        AccountMeta(pubkey=accounts["business"], is_signer=True, is_writable=True),
         AccountMeta(pubkey=accounts["influencer"], is_signer=False, is_writable=False),
         AccountMeta(
             pubkey=accounts["validation_authority"], is_signer=False, is_writable=False
         ),
         AccountMeta(pubkey=accounts["mint"], is_signer=False, is_writable=False),
+        AccountMeta(
+            pubkey=accounts["vault_account"], is_signer=False, is_writable=True
+        ),
         AccountMeta(
             pubkey=accounts["business_deposit_token_account"],
             is_signer=False,
@@ -59,12 +60,9 @@ def initialize(
         AccountMeta(
             pubkey=accounts["escrow_account"], is_signer=False, is_writable=True
         ),
-        AccountMeta(
-            pubkey=accounts["vault_account"], is_signer=False, is_writable=True
-        ),
         AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
-        AccountMeta(pubkey=TOKEN_PROGRAM_ID, is_signer=False, is_writable=False),
         AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=TOKEN_PROGRAM_ID, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
