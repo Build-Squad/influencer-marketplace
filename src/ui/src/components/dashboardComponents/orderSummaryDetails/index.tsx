@@ -135,7 +135,6 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
             display: "flex",
             flexDirection: "column",
             width: "100%",
-            gap: "20px",
           }}
         >
           <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
@@ -147,6 +146,11 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
             />
             {meta_data?.label}
           </Typography>
+          {(!meta_data?.value || meta_data?.value?.length === 0) && (
+            <Typography variant="subtitle1" sx={{ color: "#676767" }}>
+              N/A
+            </Typography>
+          )}
           {meta_data?.value?.split(",").map((value: string, index: number) => {
             return (
               <Box key={index}>
