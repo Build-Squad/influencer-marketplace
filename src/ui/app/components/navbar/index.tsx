@@ -273,6 +273,16 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
     router.push(`/login?role=${roleQueryParams}`);
   };
 
+  const getButtonVariant = (type: string) => {
+    // A temp hack considering if the user is not logged in,
+    // only business owner will view the influencer's profile
+    if (!user?.loggedIn && pathname.includes("influencer/profile")) {
+      if (type == "influencer") return "outlined";
+      if (type == "business") return "contained";
+    }
+    return pathname.includes(type) ? "contained" : "outlined";
+  };
+
   return (
     <AppBar
       position="static"
@@ -314,9 +324,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
             }}
           >
             <Button
-              variant={
-                pathname.includes("influencer") ? "contained" : "outlined"
-              }
+              variant={getButtonVariant("influencer")}
               color="secondary"
               sx={{
                 borderRadius: "20px",
@@ -328,7 +336,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
               For Influencer
             </Button>
             <Button
-              variant={pathname.includes("business") ? "contained" : "outlined"}
+              variant={getButtonVariant("business")}
               color="secondary"
               sx={{
                 borderRadius: "20px",

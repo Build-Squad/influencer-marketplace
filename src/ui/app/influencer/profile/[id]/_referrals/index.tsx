@@ -107,7 +107,7 @@ export default function Referrals({}: Props) {
           </Grid>
           <Grid item xs={6} sm={6} md={6} lg={6}>
             <Typography variant="h4" fontWeight={"bold"}>
-              {getTotalEarnings()} Tokens
+              {getTotalEarnings()} Points
             </Typography>
             <Typography>Total Earnings</Typography>
           </Grid>
@@ -281,7 +281,7 @@ export default function Referrals({}: Props) {
                       sx={{
                         borderRadius: "100%",
                         px: 1,
-                        mt:0.5,
+                        mt: 0.5,
                         color: "white",
                         backgroundColor: "black",
                         height: "fit-content",
@@ -294,13 +294,52 @@ export default function Referrals({}: Props) {
                   </Box>
                 );
               })}
-              <ul style={{ marginTop: "0px" }}>
-                <li>Upto 100 followers - 100 points</li>
-                <li>1000 followers - 200 points</li>
-                <li>10000 followers - 500 points</li>
-                <li>100000 followers - 1000 points</li>
-                <li>More than 1000000 followers - 10000 points</li>
-              </ul>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>
+                      <Typography
+                        sx={{
+                          fontWeight: "bold",
+                        }}
+                      >
+                        No. Of Followers
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography
+                        sx={{
+                          fontWeight: "bold",
+                        }}
+                      >
+                        Points
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Upto 100</TableCell>
+                    <TableCell>100</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Upto 1000</TableCell>
+                    <TableCell>200</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Upto 10000</TableCell>
+                    <TableCell>500</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Upto 100000</TableCell>
+                    <TableCell>1000</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>{">="} 1000000</TableCell>
+                    <TableCell>10000</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
               <Box>
                 <Typography
                   variant="caption"

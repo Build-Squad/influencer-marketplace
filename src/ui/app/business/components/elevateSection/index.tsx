@@ -16,13 +16,13 @@ const TABS = [
 
 const FirstTabComponent = () => {
   const [articleImage1, setArticleImage1] = useState(
-    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png"
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/explorepg.png"
   );
 
   const [currentImage1Index, setCurrentImage1Index] = useState(0);
 
   const Image1 = [
-    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards2.png",
+    "https://xfluencer.s3.eu-west-2.amazonaws.com/static/explorepg.png",
     "https://xfluencer.s3.eu-west-2.amazonaws.com/static/inf_cards5.png",
   ];
 
