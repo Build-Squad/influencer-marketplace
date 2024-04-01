@@ -15,19 +15,18 @@ class TestValidator:
         self.network = network
 
     async def test_validate_to_delivered_instruction(self):   
-        results = await validate_escrow_to_delivered(self.validator_keypair, 
+        return await validate_escrow_to_delivered(self.validator_keypair, 
                                                      self.business, 
                                                      self.influencer, 
                                                      self.order_code, 
                                                      self.network)
         
     async def test_validate_to_canel_instruction(self):   
-        results = await validate_escrow_to_cancel(self.validator_keypair, 
-                                                  self.business, 
-                                                  self.influencer, 
-                                                  self.order_code, 
-                                                  self.network)
-        print(results)
+        return await validate_escrow_to_cancel(self.validator_keypair, 
+                                               self.business, 
+                                               self.influencer, 
+                                               self.order_code, 
+                                               self.network)
 
 
 path="test_wallets/platform_EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH.json" # path to keypair    
@@ -43,7 +42,7 @@ test_validator = TestValidator(val_auth_keypair, bus, inf, order_code, network)
 
 async def main():
     result = await test_validator.test_validate_to_canel_instruction()
-    print(result.json())
+    print(result)    
 
 asyncio.run(main())
 #asyncio.run(test_validator.test_validate_to_delivered_instruction())

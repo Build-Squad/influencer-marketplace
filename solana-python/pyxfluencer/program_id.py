@@ -1,3 +1,3 @@
 from solders.pubkey import Pubkey
 
-PROGRAM_ID = Pubkey.from_string("6mTwD92ynqwDZxjg2ydhAjeX5w7bcsfM7jQUDeHpGM9G")
+PROGRAM_ID = Pubkey.from_string("DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9")

@@ -20,8 +20,6 @@ class EscrowAccountJSON(typing.TypedDict):
     amount: int
     order_code: int
     status: int
-    delivery_time: int
-    trial_day: int
 
 
 @dataclass
@@ -36,8 +34,6 @@ class EscrowAccount:
         "amount" / borsh.U64,
         "order_code" / borsh.U64,
         "status" / borsh.U8,
-        "delivery_time" / borsh.I64,
-        "trial_day" / borsh.U16,
     )
     business_key: Pubkey
     business_deposit_token_account: Pubkey
@@ -47,8 +43,6 @@ class EscrowAccount:
     amount: int
     order_code: int
     status: int
-    delivery_time: int
-    trial_day: int
 
     @classmethod
     async def fetch(
@@ -102,8 +96,6 @@ class EscrowAccount:
             amount=dec.amount,
             order_code=dec.order_code,
             status=dec.status,
-            delivery_time=dec.delivery_time,
-            trial_day=dec.trial_day,
         )
 
     def to_json(self) -> EscrowAccountJSON:
@@ -118,8 +110,6 @@ class EscrowAccount:
             "amount": self.amount,
             "order_code": self.order_code,
             "status": self.status,
-            "delivery_time": self.delivery_time,
-            "trial_day": self.trial_day,
         }
 
     @classmethod
@@ -137,6 +127,4 @@ class EscrowAccount:
             amount=obj["amount"],
             order_code=obj["order_code"],
             status=obj["status"],
-            delivery_time=obj["delivery_time"],
-            trial_day=obj["trial_day"],
         )

@@ -98,12 +98,12 @@ async def main():
     accounts = {
         "business": business_pk,         
         "influencer": influencer_pk,
+        "vault_account": vault_pda,
         "validation_authority": validation_authority_pk,
         "mint": mint_pk,
         "business_deposit_token_account": business_deposit_token_account_pk,
         "influencer_receive_token_account": influencer_deposit_token_account_pk,
-        "escrow_account": escrow_pda,
-        "vault_account": vault_pda        
+        "escrow_account": escrow_pda,      
     }
 
     opts = TxOpts(skip_confirmation = True,

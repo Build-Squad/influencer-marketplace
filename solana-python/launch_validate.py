@@ -10,9 +10,19 @@ from pyxfluencer.program_id import PROGRAM_ID
 
 from config import KeypairPaths, load_configuration
 
-async def main():
+from enum import Enum
 
-    msg = "Validate Escrow to Cancel deliver so refunding to Businessr"
+class TargetState(Enum):
+    CANCEL = 1
+    DELIVERY = 2
+
+async def main(target_state):
+
+    if target_state == TargetState.CANCEL:
+        msg = "Validate Escrow to Cancel so Business Can Re-Funding"
+    else:
+        msg = "Validate Escrow to Deliver so Influencer Can claim"
+        
     print(len(msg)*"*")
     print(msg)
     print(len(msg)*"*")
@@ -29,9 +39,11 @@ async def main():
     _, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     
+    # check configuration matches local keypairs
     assert str(validation_authority_pk) == configuration["platform"]   
-    assert str(business_pk) == configuration["business"]
-    assert str(influencer_pk) == configuration["influencer"]
+    assert str(business_pk) == configuration["business"]["pubkey"]
+    assert str(influencer_pk) == configuration["influencer"]["pubkey"]
+    
     
     order_code = configuration["order_code"]
     SEEDS = [b"escrow",
@@ -41,8 +53,13 @@ async def main():
             ]
 
     escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
+    print("Escrow SOL PDA",escrow_pda)
+  
+    # state 1 = unlock funds so business can re-fund    
+    # state 2 = unlock funds so influencer can claim        
+    # percentage_fee is passed is passed always (both cases cancel and deliver)
     
-    args = {"target_state":1 } # state 1 = unlock funds to business can re-fund
+    args = {"target_state":target_state.value, "percentage_fee": 0 } 
     
     accounts = {
         "validation_authority": validation_authority_pk, 
@@ -62,5 +79,19 @@ async def main():
     await sign_and_send_transaction(ix, signers, opts, network)
 
 
+import argparse
+parser = argparse.ArgumentParser(prog='launch_validate_sol.py')
+parser.add_argument('--target', choices=['cancel', 'deliver'])
 
-asyncio.run(main())
+
+args = parser.parse_args()
+if args.target == 'cancel':
+    target_state = TargetState.CANCEL
+elif args.target == 'deliver':
+    target_state = TargetState.DELIVERY
+else:
+    exit()
+    
+
+asyncio.run(main(TargetState.DELIVERY))
+    
