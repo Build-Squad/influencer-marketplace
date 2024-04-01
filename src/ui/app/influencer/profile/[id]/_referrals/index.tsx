@@ -323,19 +323,19 @@ export default function Referrals({}: Props) {
                     <TableCell>100</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>1000</TableCell>
+                    <TableCell>Upto 1000</TableCell>
                     <TableCell>200</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>10000</TableCell>
+                    <TableCell>Upto 10000</TableCell>
                     <TableCell>500</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>100000</TableCell>
+                    <TableCell>Upto 100000</TableCell>
                     <TableCell>1000</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>More than 1000000</TableCell>
+                    <TableCell>{">="} 1000000</TableCell>
                     <TableCell>10000</TableCell>
                   </TableRow>
                 </TableBody>
