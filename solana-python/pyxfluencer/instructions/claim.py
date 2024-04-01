@@ -7,8 +7,10 @@ from ..program_id import PROGRAM_ID
 
 
 class ClaimAccounts(typing.TypedDict):
+    business: Pubkey
+    business_deposit_token_account: Pubkey
     influencer: Pubkey
-    influencer_deposit_token_account: Pubkey
+    influencer_receive_token_account: Pubkey
     vault_account: Pubkey
     vault_authority: Pubkey
     escrow_account: Pubkey
@@ -20,9 +22,15 @@ def claim(
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> Instruction:
     keys: list[AccountMeta] = [
+        AccountMeta(pubkey=accounts["business"], is_signer=False, is_writable=True),
+        AccountMeta(
+            pubkey=accounts["business_deposit_token_account"],
+            is_signer=False,
+            is_writable=False,
+        ),
         AccountMeta(pubkey=accounts["influencer"], is_signer=True, is_writable=True),
         AccountMeta(
-            pubkey=accounts["influencer_deposit_token_account"],
+            pubkey=accounts["influencer_receive_token_account"],
             is_signer=False,
             is_writable=True,
         ),
