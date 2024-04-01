@@ -1,4 +1,4 @@
-from orders.models import OrderMessage
+from orders.models import Order, OrderMessage
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import Pagination, handleNotFound
 from notifications.serializers import NotificationSerializer
@@ -7,6 +7,7 @@ from marketplace.services import handleServerException
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
 
 # Create your views here.
 
@@ -31,6 +32,13 @@ class NotificationListView(APIView):
       unread_message_count = OrderMessage.objects.filter(
           receiver_id=user, status__in=['delivered', 'sent']).count()
 
+      order_requests_count = 0
+      if user.role.name == "influencer":
+        order_requests_count = Order.objects.filter(
+            Q(order_item_order_id__package__influencer=user),
+            deleted_at=None,
+            status="pending"
+        ).distinct().count()
 
       # Paginate the notifications
       pagination = Pagination(notifications, request)
@@ -43,6 +51,7 @@ class NotificationListView(APIView):
                   "notifications": serializer.data,
                   "unread_count": unread_count,
                   "unread_message_count": unread_message_count,
+                  "order_requests_count": order_requests_count,
               },
               "message": "All Notifications retrieved successfully",
               "pagination": pagination.getPageInfo(),

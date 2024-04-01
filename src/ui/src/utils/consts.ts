@@ -114,6 +114,7 @@ export const ORDER_ITEM_STATUS = {
   ACCEPTED: "accepted",
   SCHEDULED: "scheduled",
   PUBLISHED: "published",
+  DRAFT: "draft",
 };
 
 export const SERVICE_STATUS = {

@@ -39,6 +39,9 @@ import ArrayItem from "../arrayItem";
 import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
 import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import StatusChip from "../../shared/statusChip";
+import { isUrl } from "@/src/utils/helper";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 type OrderItemFormProps = {
   orderItem: any;
@@ -362,7 +365,7 @@ export default function OrderItemForm({
             alignItems: "center",
           }}
         >
-          {!orderItem?.service_id && (
+          {!orderItem?.service_id && orderItem?.order_item?.status !== ORDER_ITEM_STATUS.DRAFT && (
             <StatusChip status={orderItem?.order_item?.status} />
           )}
           {!disableDelete && (
@@ -492,66 +495,102 @@ export default function OrderItemForm({
                   {formFields?.label}
                 </FormLabel>
                 {formFields?.field_type === "text" && (
-                  <TextField
-                    disabled={disabled}
-                    color="secondary"
-                    value={formFields?.value ? formFields?.value : ""}
-                    name={formFields?.id}
-                    onChange={(e) => {
-                      if (updateFunction) {
-                        updateFunction(
-                          orderItem?.order_item?.id
-                            ? orderItem?.order_item?.id
-                            : "",
-                          formFields?.id ? formFields?.id : "",
-                          e.target.value
-                        );
-                        return;
-                      }
-                      dispatch(
-                        updateFieldValues({
-                          index: index,
-                          service_master_meta_data_id:
-                            formFields?.service_master_meta_data_id
-                              ? formFields?.service_master_meta_data_id
-                              : "",
-                          order_item_meta_data_id: formFields?.id,
-                          value: e.target.value,
-                        })
-                      );
-                    }}
-                    variant="outlined"
-                    fullWidth
-                    placeholder={formFields?.placeholder}
-                    size="small"
+                  <Box
                     sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 3,
-                      },
+                      display: "flex",
+                      flexDirection: "column",
                     }}
-                    InputProps={{
-                      inputProps: {
-                        maxLength: formFields?.max,
-                      },
-                    }}
-                    helperText={
+                  >
+                    <TextField
+                      disabled={disabled}
+                      color="secondary"
+                      value={formFields?.value ? formFields?.value : ""}
+                      name={formFields?.id}
+                      onChange={(e) => {
+                        if (updateFunction) {
+                          updateFunction(
+                            orderItem?.order_item?.id
+                              ? orderItem?.order_item?.id
+                              : "",
+                            formFields?.id ? formFields?.id : "",
+                            e.target.value
+                          );
+                          return;
+                        }
+                        dispatch(
+                          updateFieldValues({
+                            index: index,
+                            service_master_meta_data_id:
+                              formFields?.service_master_meta_data_id
+                                ? formFields?.service_master_meta_data_id
+                                : "",
+                            order_item_meta_data_id: formFields?.id,
+                            value: e.target.value,
+                          })
+                        );
+                      }}
+                      variant="outlined"
+                      fullWidth
+                      placeholder={formFields?.placeholder}
+                      size="small"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 3,
+                        },
+                      }}
+                      InputProps={{
+                        inputProps: {
+                          maxLength: formFields?.max,
+                        },
+                      }}
+                      helperText={
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          {formFields?.max
+                            ? `${
+                                formFields?.value?.length
+                                  ? formFields?.value?.length
+                                  : 0
+                              }/${formFields?.max}`
+                            : ""}
+                        </Box>
+                      }
+                    />
+                    {formFields?.value && isUrl(formFields?.value) && (
                       <Box
-                        component="span"
                         sx={{
-                          display: "flex",
-                          justifyContent: "flex-end",
+                          mt: 1,
                         }}
                       >
-                        {formFields?.max
-                          ? `${
-                              formFields?.value?.length
-                                ? formFields?.value?.length
-                                : 0
-                            }/${formFields?.max}`
-                          : ""}
+                        <Button
+                          href={formFields?.value}
+                          target="_blank"
+                          variant="outlined"
+                          sx={{
+                            mr: 1,
+                          }}
+                          endIcon={<OpenInNewIcon fontSize="small" />}
+                        >
+                          Visit Link
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            navigator.clipboard.writeText(formFields?.value);
+                            notification("Link copied to clipboard", "success");
+                          }}
+                          variant="outlined"
+                          endIcon={<ContentCopyIcon fontSize="small" />}
+                        >
+                          Copy Link
+                        </Button>
                       </Box>
-                    }
-                  />
+                    )}
+                  </Box>
                 )}
                 {formFields?.field_type === "long_text" && (
                   <TextField

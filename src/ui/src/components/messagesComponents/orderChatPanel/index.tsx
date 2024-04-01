@@ -23,15 +23,18 @@ import StatusChip from "../../shared/statusChip";
 import { stringToColor } from "@/src/utils/helper";
 
 type OrderChatPanelType = {
-  selectedOrderChat: OrderChatType;
+  selectedOrderChatId: string | null;
 };
 
 export default function OrderChatPanel({
-  selectedOrderChat,
+  selectedOrderChatId,
 }: OrderChatPanelType) {
   const [loading, setLoading] = React.useState(false);
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [toSendMessage, setToSendMessage] = React.useState("");
+  const [selectedOrder, setSelectedOrder] = React.useState<OrderType | null>(
+    null
+  );
 
   const user = useAppSelector((state) => state.user)?.user;
 
@@ -39,17 +42,18 @@ export default function OrderChatPanel({
     try {
       setLoading(true);
       const { isSuccess, message, data } = await getService(
-        `/orders/order-message/${selectedOrderChat?.order?.id}/`,
+        `/orders/order-message/${selectedOrderChatId}/`,
         {
           page_size: 10000,
           page_number: 1,
         }
       );
       if (isSuccess) {
-        data?.data?.forEach((message: MessageType) => {
+        data?.data?.order_messages?.forEach((message: MessageType) => {
           message.isMe = message.sender_id === user?.id;
         });
-        setMessages(data?.data);
+        setMessages(data?.data?.order_messages);
+        setSelectedOrder(data?.data?.order);
         await markAsRead();
       }
     } finally {
@@ -58,9 +62,7 @@ export default function OrderChatPanel({
   };
 
   const markAsRead = async () => {
-    await patchService(
-      `/orders/order-message/${selectedOrderChat?.order?.id}/`
-    );
+    await patchService(`/orders/order-message/${selectedOrderChatId}/`);
   };
 
   const sendMessage = async () => {
@@ -71,7 +73,7 @@ export default function OrderChatPanel({
       `/orders/order-message/`,
       {
         message: toSendMessage,
-        order_id: selectedOrderChat?.order?.id,
+        order_id: selectedOrderChatId,
       }
     );
     if (isSuccess) {
@@ -88,20 +90,22 @@ export default function OrderChatPanel({
   };
 
   useEffect(() => {
-    getAllMessages();
-
-    // Set up the interval
-    const intervalId = setInterval(() => {
+    if (selectedOrderChatId) {
       getAllMessages();
-    }, 30000); // 30000 milliseconds = 30 seconds
 
-    // Clear the interval when the component is unmounted
-    return () => clearInterval(intervalId);
-  }, [selectedOrderChat]);
+      // Set up the interval
+      const intervalId = setInterval(() => {
+        getAllMessages();
+      }, 30000); // 30000 milliseconds = 30 seconds
+
+      // Clear the interval when the component is unmounted
+      return () => clearInterval(intervalId);
+    }
+  }, [selectedOrderChatId]);
 
   useEffect(() => {
-    markAsRead();
-  }, [selectedOrderChat]);
+    if (selectedOrderChatId) markAsRead();
+  }, [selectedOrderChatId]);
 
   return (
     <Grid container direction="column" sx={{ height: "100%", pr: 2 }}>
@@ -115,13 +119,13 @@ export default function OrderChatPanel({
           }}
         >
           <Box sx={{ p: 2, display: "flex", alignItems: "center" }}>
-            {selectedOrderChat?.order?.order_item_order_id && (
+            {selectedOrder?.order_item_order_id && (
               <>
-                {user?.id === selectedOrderChat?.order?.buyer?.id ? (
+                {user?.id === selectedOrder?.buyer?.id ? (
                   <>
-                    {selectedOrderChat?.order?.order_item_order_id[0]?.package
-                      ?.influencer?.twitter_account?.profile_image_url &&
-                    !selectedOrderChat?.order?.order_item_order_id[0]?.package?.influencer?.twitter_account?.profile_image_url.includes(
+                    {selectedOrder?.order_item_order_id[0]?.package?.influencer
+                      ?.twitter_account?.profile_image_url &&
+                    !selectedOrder?.order_item_order_id[0]?.package?.influencer?.twitter_account?.profile_image_url.includes(
                       "default"
                     ) ? (
                       <>
@@ -131,9 +135,8 @@ export default function OrderChatPanel({
                             cursor: "pointer",
                           }}
                           src={
-                            selectedOrderChat?.order?.order_item_order_id[0]
-                              ?.package?.influencer?.twitter_account
-                              ?.profile_image_url
+                            selectedOrder?.order_item_order_id[0]?.package
+                              ?.influencer?.twitter_account?.profile_image_url
                           }
                         />
                       </>
@@ -141,11 +144,10 @@ export default function OrderChatPanel({
                       <Avatar
                         sx={{
                           bgcolor: stringToColor(
-                            selectedOrderChat?.order?.order_item_order_id[0]
-                              ?.package?.influencer?.twitter_account?.user_name
-                              ? selectedOrderChat?.order?.order_item_order_id[0]
-                                  ?.package?.influencer?.twitter_account
-                                  ?.user_name
+                            selectedOrder?.order_item_order_id[0]?.package
+                              ?.influencer?.twitter_account?.user_name
+                              ? selectedOrder?.order_item_order_id[0]?.package
+                                  ?.influencer?.twitter_account?.user_name
                               : ""
                           ),
                           mr: 1,
@@ -153,7 +155,7 @@ export default function OrderChatPanel({
                           cursor: "pointer",
                         }}
                       >
-                        {selectedOrderChat?.order?.order_item_order_id[0]?.package?.influencer?.twitter_account?.user_name
+                        {selectedOrder?.order_item_order_id[0]?.package?.influencer?.twitter_account?.user_name
                           ?.charAt(0)
                           ?.toUpperCase()}
                       </Avatar>
@@ -164,15 +166,13 @@ export default function OrderChatPanel({
                     sx={{
                       mr: 1,
                       bgcolor: stringToColor(
-                        selectedOrderChat?.order?.buyer?.username
-                          ? selectedOrderChat?.order?.buyer?.username
+                        selectedOrder?.buyer?.username
+                          ? selectedOrder?.buyer?.username
                           : ""
                       ),
                     }}
                   >
-                    {selectedOrderChat?.order?.buyer?.username
-                      ?.charAt(0)
-                      ?.toUpperCase()}
+                    {selectedOrder?.buyer?.username?.charAt(0)?.toUpperCase()}
                   </Avatar>
                 )}
               </>
@@ -183,7 +183,7 @@ export default function OrderChatPanel({
                 flexDirection: "column",
               }}
             >
-              {selectedOrderChat?.order?.order_item_order_id && (
+              {selectedOrder?.order_item_order_id && (
                 <Typography
                   variant="body1"
                   sx={{
@@ -191,10 +191,10 @@ export default function OrderChatPanel({
                   }}
                 >
                   @
-                  {user?.id === selectedOrderChat?.order?.buyer?.id
-                    ? selectedOrderChat?.order?.order_item_order_id[0]?.package
-                        ?.influencer?.twitter_account?.user_name
-                    : selectedOrderChat?.order?.buyer?.username}
+                  {user?.id === selectedOrder?.buyer?.id
+                    ? selectedOrder?.order_item_order_id[0]?.package?.influencer
+                        ?.twitter_account?.user_name
+                    : selectedOrder?.buyer?.username}
                 </Typography>
               )}
               <Typography
@@ -203,16 +203,12 @@ export default function OrderChatPanel({
                   color: "#000",
                 }}
               >
-                #{selectedOrderChat?.order?.order_code}
+                #{selectedOrder?.order_code}
               </Typography>
             </Box>
           </Box>
           <StatusChip
-            status={
-              selectedOrderChat?.order?.status
-                ? selectedOrderChat?.order?.status
-                : ""
-            }
+            status={selectedOrder?.status ? selectedOrder?.status : ""}
           />
         </Box>
       </Grid>
@@ -262,8 +258,8 @@ export default function OrderChatPanel({
         )}
       </Grid>
       <Grid item>
-        {selectedOrderChat?.order?.status === ORDER_STATUS.PENDING ||
-        selectedOrderChat?.order?.status === ORDER_STATUS.ACCEPTED ? (
+        {selectedOrder?.status === ORDER_STATUS.PENDING ||
+        selectedOrder?.status === ORDER_STATUS.ACCEPTED ? (
           <TextField
             color="secondary"
             fullWidth
@@ -275,6 +271,7 @@ export default function OrderChatPanel({
               },
               my: 1,
             }}
+            maxRows={5}
             multiline
             InputProps={{
               endAdornment: (

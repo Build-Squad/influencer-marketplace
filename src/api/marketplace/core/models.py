@@ -24,6 +24,12 @@ class Currency(models.Model):
         ("SOL", "SOL"),
         ("SPL", "SPL"),
     )
+    NETWORK_CHOICES = (
+        ("mainnet", "mainnet"),
+        ("devnet", "devnet"),
+        ("testnet", "testnet"),
+        ("native", "native"),
+    )
 
     id = models.UUIDField(
         primary_key=True, verbose_name="Currency", default=uuid.uuid4, editable=False
@@ -37,6 +43,8 @@ class Currency(models.Model):
     currency_type = models.CharField(
         choices=CURRENCY_TYPE_CHOICES, default="SPL"
     )
+    network = models.CharField(
+        choices=NETWORK_CHOICES, default="native")
     class Meta:
         db_table = "currency"
 

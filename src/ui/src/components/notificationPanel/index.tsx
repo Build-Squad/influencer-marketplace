@@ -25,10 +25,12 @@ import { notification } from "../shared/notification";
 
 type NotificationPanelProps = {
   setUnreadMessageCount: (count: number) => void;
+  setOrderRequestCount: (count: number) => void;
 };
 
 export default function NotificationPanel({
   setUnreadMessageCount,
+  setOrderRequestCount,
 }: NotificationPanelProps) {
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -61,6 +63,7 @@ export default function NotificationPanel({
           total_page_count: data?.pagination?.total_page_count,
         });
         setUnreadMessageCount(data?.data?.unread_message_count);
+        setOrderRequestCount(data?.data?.order_requests_count);
       } else {
       }
     } finally {
