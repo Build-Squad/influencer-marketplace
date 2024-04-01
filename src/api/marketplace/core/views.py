@@ -14,6 +14,8 @@ from .serializers import (
     RegionMasterSerializer,
 )
 
+from decouple import config
+CURRENT_NETWORK = config("NETWORK", default="devnet")
 
 class CountryListView(APIView):
     def get(self, request, format=None):
@@ -68,17 +70,23 @@ class CurrencyListView(APIView):
             search = request.GET.get("search", None)
             order_by = request.GET.get("order_by", None)
             is_default = request.GET.get("is_default", None)
+
+            currencies = Currency.objects.all()
+
             if search:
-                currencies = Currency.objects.filter(
+                currencies = currencies.filter(
                     Q(name__icontains=search) | Q(symbol__icontains=search)
                 )
             if is_default:
-                currencies = Currency.objects.filter(
+                currencies = currencies.filter(
                     is_default=is_default == "true")
-            else:
-                currencies = Currency.objects.all()
+
+            currencies = currencies.filter(
+                network__in=[CURRENT_NETWORK, "native"])
+
             if order_by:
                 currencies = currencies.order_by(order_by)
+
             pagination = Pagination(currencies, request)
             serializer = CurrencySerializer(pagination.getData(), many=True)
             return Response(
