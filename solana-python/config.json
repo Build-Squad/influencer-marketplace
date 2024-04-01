@@ -27,8 +27,9 @@
     "order_code": 2002,
     "program_id":{
         "localnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
-        "devnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
+        "devnet": "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9",
         "devnet_alt": "6mTwD92ynqwDZxjg2ydhAjeX5w7bcsfM7jQUDeHpGM9G",
-        "testnet": "EV31JFJxt28CoRUGm2UAsTHndmpYvpuMFH9Y8JZBJcYd"
+        "testnet": "EV31JFJxt28CoRUGm2UAsTHndmpYvpuMFH9Y8JZBJcYd",
+        "mainnet": "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9"
     }
 }
