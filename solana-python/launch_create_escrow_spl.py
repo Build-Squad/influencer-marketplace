@@ -72,10 +72,11 @@ async def main():
     # find pdas for create escrow with spl 
     order_code = configuration["order_code"]
     
-    SEEDS = [b"vault", 
+    SEEDS = [b"token-seed", 
              bytes(str(order_code),"UTF-8")]
 
-    vault_pda, vault_account_bump = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
+    vault_pda, vault_account_bump = \
+        Pubkey.find_program_address(SEEDS, PROGRAM_ID)
 
     amount = configuration["amount"][type_of_asset]
     order_code = configuration["order_code"]
@@ -84,7 +85,7 @@ async def main():
             "order_code":int(order_code),
             "vault_account_bump":vault_account_bump}
     
-    SEEDS = [b"escrow",
+    SEEDS = [b"escrow-data",
             bytes(str(order_code),"UTF-8")]
 
     escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
@@ -95,7 +96,6 @@ async def main():
 
 
     accounts = {
-        "initializer": business_pk,
         "business": business_pk,         
         "influencer": influencer_pk,
         "validation_authority": validation_authority_pk,
