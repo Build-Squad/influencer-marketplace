@@ -130,6 +130,7 @@ async def validate_escrow(validation_authority: Keypair,
     signers = [validation_authority]   
     
     if not processing_spl_escrow: 
+        print("Processing Escrow SOL case")
         SEEDS = [b"escrow", bytes(business_pk), bytes(influencer_pk),
                 bytes(str(order_code),"UTF-8")]
 
@@ -147,6 +148,8 @@ async def validate_escrow(validation_authority: Keypair,
         #return await sign_and_send_transaction(ix, signers, opts, network)
     
     else:
+        print("Processing Escrow SPL case")
+        
         # find vault and escrows pdas      
         vault_account_pda, _ = \
             Pubkey.find_program_address([b"token-seed", 
