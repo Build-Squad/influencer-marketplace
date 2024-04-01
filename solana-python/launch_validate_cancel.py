@@ -41,8 +41,10 @@ async def main():
             ]
 
     escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
-    
-    args = {"target_state":1 } # state 1 = unlock funds to business can re-fund
+
+    # state 1 = unlock funds to business can re-fund    
+    # percentage_fee is passed in by not applied in case target state is 1 (state to cancel)
+    args = {"target_state":1, "percentage_fee": 0} 
     
     accounts = {
         "validation_authority": validation_authority_pk, 
