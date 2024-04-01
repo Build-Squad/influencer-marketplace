@@ -1,19 +1,14 @@
 export type Xfluencer = {
-  "version": "0.2.0",
+  "version": "1.0.0",
   "name": "xfluencer",
   "instructions": [
     {
       "name": "initialize",
       "accounts": [
         {
-          "name": "initializer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "business",
-          "isMut": false,
-          "isSigner": false
         },
         {
           "name": "influencer",
@@ -28,6 +23,11 @@ export type Xfluencer = {
         {
           "name": "mint",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -46,22 +46,17 @@ export type Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "vaultAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "tokenProgram",
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "rent",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -82,15 +77,70 @@ export type Xfluencer = {
       ]
     },
     {
-      "name": "claim",
+      "name": "validateEscrowSpl",
       "accounts": [
+        {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vaultAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "targetState",
+          "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "claimEscrowSpl",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "businessDepositTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
         {
           "name": "influencer",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "influencerDepositTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -113,12 +163,22 @@ export type Xfluencer = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "orderCode",
+          "type": "u64"
+        }
+      ]
     },
     {
-      "name": "cancel",
+      "name": "cancelEscrowSpl",
       "accounts": [
         {
           "name": "business",
@@ -147,6 +207,11 @@ export type Xfluencer = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -326,14 +391,6 @@ export type Xfluencer = {
               "status\n        0: New\n        1: Shipping\n        2: Delivered"
             ],
             "type": "u8"
-          },
-          {
-            "name": "deliveryTime",
-            "type": "i64"
-          },
-          {
-            "name": "trialDay",
-            "type": "u16"
           }
         ]
       }
@@ -476,21 +533,16 @@ export type Xfluencer = {
 };
 
 export const IDL: Xfluencer = {
-  "version": "0.2.0",
+  "version": "1.0.0",
   "name": "xfluencer",
   "instructions": [
     {
       "name": "initialize",
       "accounts": [
         {
-          "name": "initializer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "business",
-          "isMut": false,
-          "isSigner": false
         },
         {
           "name": "influencer",
@@ -505,6 +557,11 @@ export const IDL: Xfluencer = {
         {
           "name": "mint",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAccount",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -523,22 +580,17 @@ export const IDL: Xfluencer = {
           "isSigner": false
         },
         {
-          "name": "vaultAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "tokenProgram",
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "rent",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -559,15 +611,70 @@ export const IDL: Xfluencer = {
       ]
     },
     {
-      "name": "claim",
+      "name": "validateEscrowSpl",
       "accounts": [
+        {
+          "name": "validationAuthority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vaultAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "targetState",
+          "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "claimEscrowSpl",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "businessDepositTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
         {
           "name": "influencer",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "influencerDepositTokenAccount",
+          "name": "influencerReceiveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -590,12 +697,22 @@ export const IDL: Xfluencer = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "orderCode",
+          "type": "u64"
+        }
+      ]
     },
     {
-      "name": "cancel",
+      "name": "cancelEscrowSpl",
       "accounts": [
         {
           "name": "business",
@@ -624,6 +741,11 @@ export const IDL: Xfluencer = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -803,14 +925,6 @@ export const IDL: Xfluencer = {
               "status\n        0: New\n        1: Shipping\n        2: Delivered"
             ],
             "type": "u8"
-          },
-          {
-            "name": "deliveryTime",
-            "type": "i64"
-          },
-          {
-            "name": "trialDay",
-            "type": "u16"
           }
         ]
       }

@@ -5,7 +5,14 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-xfluencer = "6mTwD92ynqwDZxjg2ydhAjeX5w7bcsfM7jQUDeHpGM9G"
+xfluencer = "GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig"
+
+[programs.devnet]
+xfluencer = "GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig"
+
+[programs.mainnet]
+xfluencer = "GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig"
+
 
 [registry]
 url = "https://api.apr.dev"
