@@ -16,7 +16,7 @@ xfluencer_solana_python_client_version="1.1.0"
 # Bump: Minor
 # Updated: 01.04.2024
 # - Update launchers
-# - Update new program id
+# - Update new program id DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9
 
 ###################
 # Version: 1.1.0
