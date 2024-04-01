@@ -17,8 +17,8 @@ xfluencer_solana_python_client_version="1.2.0"
 # Bump: Minor
 # Updated: 01.04.2024
 # - Add SPL case  
-# - Add percentage fee to both escrow cases SOLa and SPL 
-# - Update Launchers t
+# - Add percentage fee to both cases escrow cases SOL and SPL 
+# - Update Test launchers 
 # - Update program id DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9
 # 
 ###################
@@ -62,51 +62,84 @@ class EscrowValidator:
     network: str = "https://api.devnet.solana.com"
     percentage_fee: int = 0
     processing_spl_escrow: bool = False
-    mint: str = None
-    
+        
     async def cancel(self):
         return await validate_escrow(self.validator_authority,
-                                    self.business_address, 
-                                    self.influencer_address, 
-                                    EscrowState.CANCEL, 
-                                    self.order_code,
-                                    self.network)
+                                     self.business_address, 
+                                     self.influencer_address, 
+                                     EscrowState.CANCEL, 
+                                     self.order_code,
+                                     self.network,
+                                     self.percentage_fee,
+                                     self.processing_spl_escrow)
     async def deliver(self):
         return await validate_escrow(self.validator_authority,
                                      self.business_address, 
                                      self.influencer_address, 
                                      EscrowState.DELIVERED, 
                                      self.order_code, 
-                                     self.network) 
+                                     self.network,
+                                     self.percentage_fee,
+                                     self.processing_spl_escrow) 
         
     
-# non spl case
+# NON SPL escrow
 async def validate_escrow_to_cancel(validator_authority: Keypair,
                                     business_address: str,
                                     influencer_address: str,
                                     order_code:int, 
-                                    network="https://api.devnet.solana.com"):
-    
+                                    network: str = "https://api.devnet.solana.com", 
+                                    percentage_fee: int = 0):
+    """
+
+    Args:
+        validator_authority (Keypair): 
+        business_address (str):
+        influencer_address (str):
+        order_code (int): 
+        network (_type_, optional):  Defaults to "https://api.devnet.solana.com".
+        percentage_fee (int, optional): Defaults to 0. Integer from 0 to 5000 (0 is 0% and 5000 is 5.00%)
+
+    Returns:
+    """
+        
     return await validate_escrow(validator_authority,
                                 business_address, 
                                 influencer_address, 
                                 EscrowState.CANCEL, 
                                 order_code,
-                                network)    
+                                network, 
+                                percentage_fee, 
+                                processing_spl_escrow=False)    
 
-# non spl case
+# NON SPL escrow
 async def validate_escrow_to_delivered(validator_authority: Keypair,
                                        business_address: str,
                                        influencer_address: str,
                                        order_code:int,
-                                       network="https://api.devnet.solana.com"):
+                                       network: str = "https://api.devnet.solana.com",
+                                       percentage_fee: int = 0): 
+    """_summary_
+
+    Args:
+        validator_authority (Keypair): 
+        business_address (str): 
+        influencer_address (str): 
+        order_code (int): 
+        network (_type_, optional):  Defaults to "https://api.devnet.solana.com".
+        percentage_fee (int, optional): Defaults to 0. (0 is 0% and 5000 is 5.00%)
+
+    Returns:
+    """
     
     return await validate_escrow(validator_authority,
                                  business_address, 
                                  influencer_address, 
                                  EscrowState.DELIVERED, 
                                  order_code, 
-                                 network)    
+                                 network, 
+                                 percentage_fee, 
+                                 processing_spl_escrow=False)    
 
 
 async def validate_escrow(validation_authority: Keypair,
@@ -114,9 +147,9 @@ async def validate_escrow(validation_authority: Keypair,
                           influencer_address: str,
                           target_escrow_state: EscrowState,                          
                           order_code: int,
-                          network="https://api.devnet.solana.com",
-                          percentage_fee=0,
-                          processing_spl_escrow=False):
+                          network: str = "https://api.devnet.solana.com",
+                          percentage_fee: int = 0,
+                          processing_spl_escrow: bool = False):
     
     business_pk = Pubkey.from_string(business_address)
     influencer_pk = Pubkey.from_string(influencer_address)
