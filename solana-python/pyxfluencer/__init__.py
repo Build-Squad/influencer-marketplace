@@ -12,6 +12,13 @@ from .program_id import PROGRAM_ID
 xfluencer_solana_python_client_version="1.1.0"
 
 ###################
+# Version: 1.2.0
+# Bump: Minor
+# Updated: 01.04.2024
+# - Update launchers
+# - Update new program id
+
+###################
 # Version: 1.1.0
 # Bump: Minor
 # Updated: 25.03.2024

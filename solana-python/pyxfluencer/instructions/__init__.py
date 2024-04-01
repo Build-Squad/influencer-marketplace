@@ -1,6 +1,19 @@
 from .initialize import initialize, InitializeArgs, InitializeAccounts
-from .claim import claim, ClaimAccounts
-from .cancel import cancel, CancelArgs, CancelAccounts
+from .validate_escrow_spl import (
+    validate_escrow_spl,
+    ValidateEscrowSplArgs,
+    ValidateEscrowSplAccounts,
+)
+from .claim_escrow_spl import (
+    claim_escrow_spl,
+    ClaimEscrowSplArgs,
+    ClaimEscrowSplAccounts,
+)
+from .cancel_escrow_spl import (
+    cancel_escrow_spl,
+    CancelEscrowSplArgs,
+    CancelEscrowSplAccounts,
+)
 from .create_escrow import create_escrow, CreateEscrowArgs, CreateEscrowAccounts
 from .claim_escrow import claim_escrow, ClaimEscrowArgs, ClaimEscrowAccounts
 from .validate_escrow_sol import (
