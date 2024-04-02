@@ -1,3 +1,5 @@
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
 import parse from "html-react-parser";
 
 export function stringToColor(string: string) {
@@ -34,3 +36,14 @@ export function isUrl(url: string) {
     return false;
   }
 }
+
+export const findATA = (
+  walletKey: PublicKey,
+  mintKey: PublicKey
+): Promise<PublicKey> => {
+  return getAssociatedTokenAddress(
+    mintKey,
+    walletKey,
+    true // allowOwnerOffCurve aka PDA
+  );
+};

@@ -12,29 +12,18 @@ import idl from "../../../utils/xfluencer.json";
 import * as anchor from "@coral-xyz/anchor";
 
 import { getAnchorProgram } from "@/src/utils/anchorUtils";
-import { CURRENCY_TYPE, LAMPORTS_PER_SOL } from "@/src/utils/consts";
+import { CURRENCY_TYPE } from "@/src/utils/consts";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { AnchorProvider, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import { notification } from "../../shared/notification";
 
+import { findATA } from "@/src/utils/helper";
 import {
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
-  getAssociatedTokenAddress,
 } from "@solana/spl-token";
-
-export const findATA = (
-  walletKey: PublicKey,
-  mintKey: PublicKey
-): Promise<PublicKey> => {
-  return getAssociatedTokenAddress(
-    mintKey,
-    walletKey,
-    true // allowOwnerOffCurve aka PDA
-  );
-};
 
 type CreateEscrowProps = {
   loading: boolean;

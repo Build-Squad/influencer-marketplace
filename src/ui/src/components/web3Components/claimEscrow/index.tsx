@@ -12,13 +12,14 @@ import * as anchor from "@coral-xyz/anchor";
 import { postService } from "@/src/services/httpServices";
 import { getAnchorProgram } from "@/src/utils/anchorUtils";
 import { CURRENCY_TYPE, TRANSACTION_TYPE } from "@/src/utils/consts";
+import { findATA } from "@/src/utils/helper";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import DownloadingIcon from "@mui/icons-material/Downloading";
-import { AnchorProvider, Program, setProvider } from "@project-serum/anchor";
+import { AnchorProvider, setProvider } from "@project-serum/anchor";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import { notification } from "../../shared/notification";
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 
 type CreateEscrowProps = {
   order: OrderType;
@@ -26,17 +27,6 @@ type CreateEscrowProps = {
 };
 
 const programId = new PublicKey(idl.metadata.address);
-
-export const findATA = (
-  walletKey: PublicKey,
-  mintKey: PublicKey
-): Promise<PublicKey> => {
-  return getAssociatedTokenAddress(
-    mintKey,
-    walletKey,
-    true // allowOwnerOffCurve aka PDA
-  );
-};
 
 export default function ClaimEscrow({
   updateStatus,
