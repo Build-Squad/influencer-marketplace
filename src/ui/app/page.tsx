@@ -19,9 +19,5 @@ export default function Home({}: Props) {
     router.push(url);
   }, []);
 
-  return (
-    <Backdrop open={true}>
-      <CircularProgress color="secondary" />
-    </Backdrop>
-  );
+  return null;
 }
