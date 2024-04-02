@@ -104,21 +104,22 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator,
 		console.log("Program Id", programId.toString())
 	
 		const [escrow_account_pda, _escrow_account_bump]
-		 = await PublicKey.findProgramAddress([
-			utf8.encode('escrow'),
-			utf8.encode(orderCode.toString())
-			],
-			programId
-		);
+		 			= await PublicKey.findProgramAddress([
+							utf8.encode('escrow-data'),
+							utf8.encode(orderCode.toString())
+							],
+							programId
+					);
+
 		console.log("Program Id", programId)
 		console.info("Escrow Address found:",
-					escrow_account_pda.toString(), _escrow_account_bump)
-
-		const VAULT_SEED = Buffer.from("vault" + orderCode.toString(),"utf8"); 
+					escrow_account_pda.toString(), 
+					_escrow_account_bump)
 	
 		const [_vault_account_pda, _vault_account_bump] 
 			= await PublicKey.findProgramAddress(
-				[VAULT_SEED],programId);
+				[Buffer.from("token-seed" + orderCode.toString(),"utf8")],
+				programId);
 
 		console.info("vault",_vault_account_pda.toString(),_vault_account_bump)
 
@@ -149,15 +150,14 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator,
 				new BN(orderCode))
 		  .accounts(
 		  {
-			initializer: businessPublicKey, 
 			business: businessPublicKey,
 			influencer: influencerPublicKey,
+			vaultAccount: vault_account_pda,
 			validationAuthority: validatorPublicKey,			
 			mint: mintPublicKey,        
 			businessDepositTokenAccount: businessTokenAccount,
 			influencerReceiveTokenAccount: influencerTokenAccount,
 			escrowAccount: escrow_account_pda,
-			vaultAccount: vault_account_pda,
 			systemProgram: SystemProgram.programId,
 			tokenProgram: TOKEN_PROGRAM_ID,
 			rent: SYSVAR_RENT_PUBKEY,
