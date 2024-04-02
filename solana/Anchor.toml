@@ -8,17 +8,16 @@ skip-lint = false
 xfluencer = "GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig"
 
 [programs.devnet]
-xfluencer = "GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig"
+xfluencer = "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9"
 
 [programs.mainnet]
-xfluencer = "GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig"
-
+xfluencer = "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "mainnet"
 wallet = "/home/ruben/.config/solana/id.json"
 
 [scripts]

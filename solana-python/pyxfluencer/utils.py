@@ -10,6 +10,11 @@ from solana.rpc.core import RPCException
 
 import os
 
+from anchorpy import Wallet, Provider
+from anchorpy.utils import token
+from anchorpy.utils.rpc import AccountInfo
+
+
 def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
     home = os.getenv("HOME")
@@ -56,6 +61,15 @@ def select_client(network = None, async_client = False):
         raise Exception(f"Selecting RPC Solana Client Network {e}")
 
 
+async def get_token_account_info(ata_address: str, network : str) -> AccountInfo:
+    connection = select_client(network=network, async_client=True)     
+    wallet = Wallet.local()
+    provider = Provider(connection, wallet)
+    pubkey_token_account = Pubkey.from_string(ata_address) 
+    try:
+        return await token.get_token_account(provider, pubkey_token_account)
+    except Exception as e:
+        raise Exception(f"Getting Token Account Info {e}")
 
 async def sign_and_send_transaction(ix,  signers, opts, network, async_client: bool = True):
           

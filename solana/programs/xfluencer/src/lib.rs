@@ -14,8 +14,8 @@ mod processor;
 
 use crate::errors::CustomError;
 
-declare_id!("GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig");
-
+//declare_id!("GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig");
+declare_id!("DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9");
 
 
 #[program]
