@@ -150,14 +150,14 @@ export default function CreateEscrow({
           const [escrow_account_pda, _escrow_account_bump] =
             PublicKey.findProgramAddressSync(
               [
-                utf8.encode("escrow"),
+                utf8.encode("escrow-data"),
                 utf8.encode(cart?.order_number?.toString()),
               ],
               programId
             );
 
           const VAULT_SEED = Buffer.from(
-            "vault" + cart?.order_number?.toString(),
+            "token-seed" + cart?.order_number?.toString(),
             "utf8"
           );
 
@@ -188,7 +188,6 @@ export default function CreateEscrow({
               new anchor.BN(cart?.order_number)
             )
             .accounts({
-              initializer: businessPk,
               business: businessPk,
               influencer: influencer_pk,
               validationAuthority: validationAuthorityPk,
