@@ -1,18 +1,24 @@
 import { IconButton, Tooltip } from "@mui/material";
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  SYSVAR_RENT_PUBKEY,
+  Transaction,
+} from "@solana/web3.js";
 import idl from "../../../utils/xfluencer.json";
 
 import * as anchor from "@coral-xyz/anchor";
 
 import { postService } from "@/src/services/httpServices";
 import { getAnchorProgram } from "@/src/utils/anchorUtils";
-import { TRANSACTION_TYPE } from "@/src/utils/consts";
+import { CURRENCY_TYPE, TRANSACTION_TYPE } from "@/src/utils/consts";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import DownloadingIcon from "@mui/icons-material/Downloading";
-import { AnchorProvider, setProvider } from "@project-serum/anchor";
+import { AnchorProvider, Program, setProvider } from "@project-serum/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import { notification } from "../../shared/notification";
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 
 type CreateEscrowProps = {
   order: OrderType;
@@ -20,6 +26,17 @@ type CreateEscrowProps = {
 };
 
 const programId = new PublicKey(idl.metadata.address);
+
+export const findATA = (
+  walletKey: PublicKey,
+  mintKey: PublicKey
+): Promise<PublicKey> => {
+  return getAssociatedTokenAddress(
+    mintKey,
+    walletKey,
+    true // allowOwnerOffCurve aka PDA
+  );
+};
 
 export default function ClaimEscrow({
   updateStatus,
@@ -86,55 +103,134 @@ export default function ClaimEscrow({
           return;
         }
 
-        // Find the escrow PDA
-        const [escrowPDA] = PublicKey.findProgramAddressSync(
-          [
-            utf8.encode("escrow"),
-            buyer_pk.toBuffer(),
-            publicKey.toBuffer(),
-            utf8.encode(order?.order_number?.toString()),
-          ],
-          programId
-        );
-
-        // Create the escrow
-        const ix = await program.methods
-          .claimEscrow(new anchor.BN(order?.order_number))
-          .accounts({
-            influencer: publicKey,
-            business: buyer_pk,
-            escrowAccount: escrowPDA,
-            systemProgram: anchor.web3.SystemProgram.programId,
-          })
-          .instruction();
-
-        const tx = new Transaction().add(ix);
-
-        const options = {
-          skipPreflight: true,
-        };
-
-        try {
-          const signature = await sendTransaction(tx, connection, options);
-
-          console.log("Transaction signature: ", signature);
-
-          const txSign = await connection.confirmTransaction(
-            signature,
-            "processed"
+        if (order?.currency?.currency_type === CURRENCY_TYPE.SOL) {
+          // Find the escrow PDA
+          const [escrowPDA] = PublicKey.findProgramAddressSync(
+            [
+              utf8.encode("escrow"),
+              buyer_pk.toBuffer(),
+              publicKey.toBuffer(),
+              utf8.encode(order?.order_number?.toString()),
+            ],
+            programId
           );
 
-          if (txSign.value.err != null) {
-            notification(
-              `Instruction error number found: ` +
-                txSign?.value?.err?.toString(),
-              "error"
+          // Claim the escrow
+          const ix = await program.methods
+            .claimEscrow(new anchor.BN(order?.order_number))
+            .accounts({
+              influencer: publicKey,
+              business: buyer_pk,
+              escrowAccount: escrowPDA,
+              systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .instruction();
+
+          const tx = new Transaction().add(ix);
+
+          const options = {
+            skipPreflight: true,
+          };
+
+          try {
+            const signature = await sendTransaction(tx, connection, options);
+
+            console.log("Transaction signature: ", signature);
+
+            const txSign = await connection.confirmTransaction(
+              signature,
+              "processed"
             );
-          } else {
-            updateInfluencerTransactionAddress(signature);
+
+            if (txSign.value.err != null) {
+              notification(
+                `Instruction error number found: ` +
+                  txSign?.value?.err?.toString(),
+                "error"
+              );
+            } else {
+              updateInfluencerTransactionAddress(signature);
+            }
+          } catch (error) {
+            console.error("Transaction error", error);
           }
-        } catch (error) {
-          console.error("Transaction error", error);
+        } else {
+          const validationAuthorityPk = new PublicKey(
+            process.env.NEXT_PUBLIC_VALIDATION_KEY!
+          );
+          const mintPublicKey = new PublicKey(order?.currency?.token_address!);
+          const associatedTokenAccForBusiness = await findATA(
+            buyer_pk!,
+            mintPublicKey
+          );
+          const associatedTokenAccForInfluencer = await findATA(
+            publicKey!,
+            mintPublicKey
+          );
+          const businessPublicKey = new PublicKey(buyer_pk);
+          const [vaultAccountPda] = PublicKey.findProgramAddressSync(
+            [
+              Buffer.from(
+                anchor.utils.bytes.utf8.encode(
+                  "token-seed" + order?.order_number?.toString()
+                )
+              ),
+            ],
+            program.programId
+          );
+
+          const [escrowAccountPda] = PublicKey.findProgramAddressSync(
+            [
+              Buffer.from(
+                anchor.utils.bytes.utf8.encode(
+                  "escrow-data" + order?.order_number?.toString()
+                )
+              ),
+            ],
+            program.programId
+          );
+
+          const ix = await program.methods
+            .claimEscrowSpl(new anchor.BN(order?.order_number))
+            .accounts({
+              business: businessPublicKey,
+              businessDepositTokenAccount: associatedTokenAccForBusiness,
+              influencer: publicKey!,
+              influencerReceiveTokenAccount: associatedTokenAccForInfluencer,
+              vaultAccount: vaultAccountPda,
+              vaultAuthority: validationAuthorityPk,
+              escrowAccount: escrowAccountPda,
+              tokenProgram: TOKEN_PROGRAM_ID,
+              rent: SYSVAR_RENT_PUBKEY,
+            })
+            .instruction();
+
+          const tx = new Transaction().add(ix);
+
+          const options = {
+            skipPreflight: true,
+          };
+          try {
+            const signature = await sendTransaction(tx, connection, options);
+            const txSign = await connection.confirmTransaction(
+              signature,
+              "processed"
+            );
+            console.debug("txSing", txSign);
+            console.debug("context", txSign.context);
+            console.debug("value", txSign.value);
+            if (txSign.value.err != null) {
+              notification(
+                `Instruction error number found: ` +
+                  txSign?.value?.err?.toString(),
+                "error"
+              );
+            } else {
+              updateInfluencerTransactionAddress(signature);
+            }
+          } catch (error) {
+            console.error(error);
+          }
         }
       }
     } finally {
