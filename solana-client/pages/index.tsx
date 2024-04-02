@@ -7,11 +7,17 @@ import { AppBar } from '../components/AppBar'
 
 import Head from 'next/head'
 import {Input} from "@nextui-org/react";
+
+// import components to support escrow using sol
 import { CreateEscrowSolana } from '../components/CreateEscrowSolana'
 import { ClaimEscrowSolana } from '../components/ClaimEscrowSolana'
 import { CancelEscrowSolana } from '../components/CancelEscrowSolana'
-import { CreateEscrowSpl } from '../components/CreateEscrowSpl'
 import { Validate } from '../components/Validate'
+
+// import components to support escrows using spl
+import { CreateEscrowSpl } from '../components/CreateEscrowSpl'
+import { CancelEscrowSpl } from '../components/CancelEscrowSpl'
+import { ValidateEscrowSpl } from '../components/ValidateEscrowSpl'
 
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { findATA } from "../components/utils";
@@ -33,7 +39,7 @@ const Home: NextPage = (props) => {
   const NUM_SOLS : number = 0.1;
   const LAMPORTS : number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
   const ORDER_CODE : number = 12347 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
-  const NUM_SPL_TOKENS : number = 1000000; // with 6 deciamls 10**6 is 1 token unit
+  const NUM_SPL_TOKENS : number = 1000000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
   const PERCENTAGE_FEE: number = 0;
  
 
@@ -103,8 +109,6 @@ const Home: NextPage = (props) => {
                     orderCode={ORDER_CODE} targetState={2} textButton={"Validate Escrow Delivery"}/>
 
           <ClaimEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
-          <CancelEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />         
-
         </div>
    
         <div className={styles.AppBody}>
@@ -143,6 +147,22 @@ const Home: NextPage = (props) => {
                            mint={MINT}
                            tokens={NUM_SPL_TOKENS} 
                            orderCode={ORDER_CODE}/> 
+
+           <CancelEscrowSpl business={BUSINESS} 
+                            validatorAuthority={VALIDATOR}                          
+                            mintTokenAccount={MINT}
+                            orderCode={ORDER_CODE} />         
+
+
+          <ValidateEscrowSpl 
+                    validator={VALIDATOR} 
+                    business={BUSINESS} 
+                    influencer={INFLUENCER} 
+                    percentageFee={0}
+                    orderCode={ORDER_CODE} 
+                    targetState={1} 
+                    textButton={"Validate Escrow Cancel(Target State 1)"}/>
+
         </div>
 
       </WalletContextProvider >
