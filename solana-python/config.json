@@ -1,5 +1,9 @@
 {
     "network": "devnet",
+    "rpc":{
+        "mainnet":"https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474",
+        "devnet":""
+    },
     "payer": {
         "pubkey": "GQRDv58u1dULSyHSYWPqNTjcWjsFHHi763mbqDaEEgQ3",
         "usdc_ata":"EN2jBpee542UCU7k8p83qziyvHiYcavddz9kqV7eFZ6C",
@@ -24,7 +28,7 @@
         "lamports":10000000,
         "usdc": 1000000
     },
-    "order_code": 2002,
+    "order_code": 2005,
     "program_id":{
         "localnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
         "devnet": "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9",
