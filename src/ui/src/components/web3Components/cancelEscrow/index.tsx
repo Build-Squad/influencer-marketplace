@@ -77,7 +77,7 @@ export default function CancelEscrow({
       setLocalLoading(true);
       if (order?.influencer_wallet && order?.order_number) {
         // Get influencer wallet address
-        const influencer_pk = new PublicKey(
+        const influencerPk = new PublicKey(
           order?.influencer_wallet?.wallet_address_id
         );
 
@@ -101,7 +101,7 @@ export default function CancelEscrow({
             [
               utf8.encode("escrow"),
               publicKey.toBuffer(),
-              influencer_pk.toBuffer(),
+              influencerPk.toBuffer(),
               utf8.encode(order?.order_number?.toString()),
             ],
             programId
