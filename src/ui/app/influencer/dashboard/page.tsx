@@ -1308,7 +1308,6 @@ export default function BusinessDashboardPage() {
                             card?.value === 0
                               ? orderCount?.accepted +
                                 orderCount?.completed +
-                                orderCount?.pending +
                                 orderCount?.rejected +
                                 orderCount?.cancelled
                               : card?.value === 1
