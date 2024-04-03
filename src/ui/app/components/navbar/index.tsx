@@ -71,7 +71,7 @@ const MENU_ITEMS: {
   },
   Dashboard: {
     label: "Dashboard",
-    route: "/dashboard",
+    route: "/dashboard?tab=orders",
     icon: DashboardIcon,
     disabledIcon: DashboardDisabledIcon,
   },
