@@ -64,7 +64,7 @@ class Pagination:
             'page_number', request.GET.get('page_number', 1))
         self.page_size = request.data.get(
             'page_size', request.GET.get('page_size', 10))
-        self.total_data_count = qs.count()
+        self.total_data_count = len(qs)
         self.setValidPagination()
         i = self.page_size * (self.page_number - 1)
         j = self.page_size * self.page_number

@@ -1,28 +1,22 @@
-
 {
-  "version": "0.1.0",
+  "version": "1.0.0",
   "name": "xfluencer",
   "instructions": [
     {
       "name": "initialize",
       "accounts": [
         {
-          "name": "initializer",
+          "name": "business",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "influencer",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "seller",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "judge",
+          "name": "validationAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -32,12 +26,17 @@
           "isSigner": false
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "vaultAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "sellerReceiveTokenAccount",
+          "name": "businessDepositTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "influencerReceiveTokenAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -47,22 +46,17 @@
           "isSigner": false
         },
         {
-          "name": "vaultAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "tokenProgram",
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "rent",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -83,15 +77,70 @@
       ]
     },
     {
-      "name": "cancel",
+      "name": "validateEscrowSpl",
       "accounts": [
         {
-          "name": "buyer",
+          "name": "validationAuthority",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyerDepositTokenAccount",
+          "name": "vaultAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "targetState",
+          "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "claimEscrowSpl",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "businessDepositTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "influencer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "influencerReceiveTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -112,6 +161,57 @@
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "orderCode",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "cancelEscrowSpl",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "businessDepositTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -195,74 +295,6 @@
       ]
     },
     {
-      "name": "cancelEscrowSol",
-      "accounts": [
-        {
-          "name": "business",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "escrowAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "createFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "updateFees",
-      "accounts": [
-        {
-          "name": "feesAuthority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "feesConfig",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "percentageRate",
-          "type": "i32"
-        }
-      ]
-    },
-    {
       "name": "validateEscrowSol",
       "accounts": [
         {
@@ -290,8 +322,33 @@
         {
           "name": "targetState",
           "type": "u8"
+        },
+        {
+          "name": "percentageFee",
+          "type": "u16"
         }
       ]
+    },
+    {
+      "name": "cancelEscrowSol",
+      "accounts": [
+        {
+          "name": "business",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "escrowAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -301,23 +358,23 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "buyerKey",
+            "name": "businessKey",
             "type": "publicKey"
           },
           {
-            "name": "buyerDepositTokenAccount",
+            "name": "businessDepositTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "sellerKey",
+            "name": "influencerKey",
             "type": "publicKey"
           },
           {
-            "name": "sellerReceiveTokenAccount",
+            "name": "influencerReceiveTokenAccount",
             "type": "publicKey"
           },
           {
-            "name": "judgeKey",
+            "name": "validationAuthority",
             "type": "publicKey"
           },
           {
@@ -334,14 +391,6 @@
               "status\n        0: New\n        1: Shipping\n        2: Delivered"
             ],
             "type": "u8"
-          },
-          {
-            "name": "deliveryTime",
-            "type": "i64"
-          },
-          {
-            "name": "trialDay",
-            "type": "u16"
           }
         ]
       }
@@ -380,22 +429,28 @@
           }
         ]
       }
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "FeesConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "percentageRate",
-            "type": "i32"
-          }
-        ]
-      }
+      "name": "EscrowAccountSolanaCreated",
+      "fields": [
+        {
+          "name": "business",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "influencer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "orderCode",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -443,9 +498,39 @@
       "code": 6008,
       "name": "MissmatchAuthority",
       "msg": "Missmatch Authority"
+    },
+    {
+      "code": 6009,
+      "name": "PercentageFeeOutOfrange",
+      "msg": "Percengate Fee Out of Range"
+    },
+    {
+      "code": 6010,
+      "name": "NumericalProblemFoundCalculatingFees",
+      "msg": "Numerical Problem Found Calculating Fees"
+    },
+    {
+      "code": 6011,
+      "name": "BusinessHasInsufficientAmountOfTokens",
+      "msg": "Busines Has Insufficient Amount Of Tokens"
+    },
+    {
+      "code": 6012,
+      "name": "MissmatchBusinessTokenAccount",
+      "msg": "Missmatch Business Token Account"
+    },
+    {
+      "code": 6013,
+      "name": "MissmatchInfluencerTokenAccount",
+      "msg": "Missmatch Influencer Token Account"
+    },
+    {
+      "code": 6014,
+      "name": "MissmatchOrderCode",
+      "msg": "Missmatch Order Code"
     }
   ],
   "metadata": {
-    "address": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
+    "address": "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9"
   }
 }

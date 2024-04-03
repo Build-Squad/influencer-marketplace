@@ -9,7 +9,13 @@ import { useAppSelector } from "@/src/hooks/useRedux";
 import { postService } from "@/src/services/httpServices";
 import { ORDER_STATUS } from "@/src/utils/consts";
 import ChatIcon from "@mui/icons-material/Chat";
-import { Box, CircularProgress, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  Pagination,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import * as relativeTime from "dayjs/plugin/relativeTime";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -29,9 +35,9 @@ export default function BusinessMessages() {
   const user = useAppSelector((state) => state.user)?.user;
   const [loading, setLoading] = React.useState(false);
   const [orderChats, setOrderChats] = React.useState<OrderChatType[]>([]);
-  const [totalUnreadMessages, setTotalUnreadMessages] = React.useState(0);
-  const [selectedOrderChat, setSelectedOrderChat] =
-    React.useState<OrderChatType | null>(null);
+  const [selectedOrderChatId, setSelectedOrderChatId] = React.useState<
+    string | null
+  >(null);
   const [filters, setFilters] = React.useState<OrderFilterType>({
     status: [
       ORDER_STATUS.ACCEPTED,
@@ -40,6 +46,12 @@ export default function BusinessMessages() {
       ORDER_STATUS.COMPLETED,
       ORDER_STATUS.CANCELLED,
     ],
+  });
+  const [pagination, setPagination] = React.useState<PaginationType>({
+    total_data_count: 0,
+    total_page_count: 0,
+    current_page_number: 1,
+    current_page_size: 10,
   });
 
   // User Guide for the very first order
@@ -159,18 +171,34 @@ export default function BusinessMessages() {
       const { isSuccess, message, data } = await postService(
         "/orders/user-order-messages/",
         {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
           ...filters,
         }
       );
       if (isSuccess) {
-        setOrderChats(data?.data?.orders);
-        setTotalUnreadMessages(data?.data?.total_unread_messages_count);
+        setOrderChats(data?.data);
+        setPagination({
+          ...pagination,
+          total_data_count: data?.pagination?.total_data_count,
+          total_page_count: data?.pagination?.total_page_count,
+        });
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaginationChange = (
+    event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page_number: page,
+    }));
   };
 
   useEffect(() => {
@@ -187,19 +215,14 @@ export default function BusinessMessages() {
 
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
-  }, [filters]);
+  }, [filters, pagination.current_page_number, pagination.current_page_size]);
 
   useEffect(() => {
-    if (orderChats?.length > 0) {
-      const selectedOrderChatId = searchParams.get("order_chat_id");
-      if (selectedOrderChatId) {
-        const _selectedOrderChat = orderChats.find(
-          (orderChat) => orderChat.order.id === selectedOrderChatId
-        );
-        if (_selectedOrderChat) setSelectedOrderChat(_selectedOrderChat);
-      }
+    const _selectedOrderChatId = searchParams.get("order_chat_id");
+    if (_selectedOrderChatId) {
+      setSelectedOrderChatId(_selectedOrderChatId);
     }
-  }, [searchParams, orderChats]);
+  }, [searchParams]);
 
   return (
     <RouteProtection logged_in={true} influencer={true}>
@@ -274,7 +297,7 @@ export default function BusinessMessages() {
                   fontStyle: "italic",
                 }}
               >
-                {orderChats?.length} Orders
+                {pagination?.total_data_count} Orders
               </Typography>
               {loading && <CircularProgress size={20} />}
             </Box>
@@ -310,9 +333,32 @@ export default function BusinessMessages() {
                       handleOrderChat={(id: string) => {
                         router.push(`/influencer/messages?order_chat_id=${id}`);
                       }}
+                      selectedOrderChatId={selectedOrderChatId}
                     />
                   );
                 })}
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      mt: 2,
+                    }}
+                  >
+                    <Pagination
+                      count={pagination.total_page_count}
+                      page={pagination.current_page_number}
+                      onChange={handlePaginationChange}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                      color="secondary"
+                      shape="rounded"
+                    />
+                  </Box>
+                </Grid>
               </>
             ) : (
               <>
@@ -357,8 +403,8 @@ export default function BusinessMessages() {
             width: "100%",
           }}
         >
-          {selectedOrderChat ? (
-            <OrderChatPanel selectedOrderChat={selectedOrderChat} />
+          {selectedOrderChatId ? (
+            <OrderChatPanel selectedOrderChatId={selectedOrderChatId} />
           ) : (
             <Box
               sx={{

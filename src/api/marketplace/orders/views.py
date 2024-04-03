@@ -29,6 +29,7 @@ from .serializers import (
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
     ManualVerifyOrderItemSerializer,
+    OrderDetailSerializer,
     OrderItemListFilterSerializer,
     OrderItemMetricSerializer,
     OrderItemReadSerializer,
@@ -304,7 +305,6 @@ class UserOrderMessagesView(APIView):
                     )
                     | Q(order_code__icontains=filters["search"])
                 )
-            total_unread_count = 0
             data = []
             for order in orders:
                 order_messages = OrderMessage.objects.filter(order_id=order)
@@ -313,7 +313,6 @@ class UserOrderMessagesView(APIView):
                     unread_count = order_messages.filter(
                         status="sent", receiver_id=request.user_account
                     ).count()
-                    total_unread_count += unread_count
                     message_data = {
                         "message": last_message,
                         "order_unread_messages_count": unread_count,
@@ -331,14 +330,18 @@ class UserOrderMessagesView(APIView):
                 key=lambda x: x["order_message"]["created_at"] or x["order"].created_at,
                 reverse=True,
             )
-            serializer = UserOrderMessagesSerializer(
-                {"orders": data, "total_unread_messages_count": total_unread_count}
-            )
+
+            pagination = Pagination(data, request)
+
+            paginated_data = pagination.getData()
+            serializer = OrderDetailSerializer(paginated_data, many=True)
+
             return Response(
                 {
                     "isSuccess": True,
                     "data": serializer.data,
                     "message": "All Order Messages retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
                 },
                 status=status.HTTP_200_OK,
             )
@@ -1153,13 +1156,17 @@ class OrderMessageList(APIView):
                     },
                     status=status.HTTP_403_FORBIDDEN,
                 )
+            order = Order.objects.get(pk=pk)
             orderMessages = order.order_message_order_id.all().order_by("-created_at")
             pagination = Pagination(orderMessages, request)
             serializer = OrderMessageSerializer(pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
-                    "data": serializer.data,
+                    "data": {
+                        "order_messages": serializer.data,
+                        "order": OrderSerializer(order).data,
+                    },
                     "message": "All Order Messages retrieved successfully",
                     "pagination": pagination.getPageInfo(),
                 },

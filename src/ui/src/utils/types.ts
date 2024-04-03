@@ -15,7 +15,10 @@ type CurrencyType = {
   id: string;
   name: string;
   symbol: string;
-  country: CountryType | null;
+  token_address?: string;
+  decimals?: number;
+  logourl?: string;
+  currency_type?: string;
 };
 
 type LanguageType = {
@@ -368,29 +371,24 @@ declare module "*.svg?icon" {
 }
 
 type Xfluencer = {
-  version: "0.1.0";
+  version: "1.0.0";
   name: "xfluencer";
   instructions: [
     {
       name: "initialize";
       accounts: [
         {
-          name: "initializer";
+          name: "business";
           isMut: true;
           isSigner: true;
         },
         {
-          name: "buyer";
+          name: "influencer";
           isMut: false;
           isSigner: false;
         },
         {
-          name: "seller";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "judge";
+          name: "validationAuthority";
           isMut: false;
           isSigner: false;
         },
@@ -400,12 +398,17 @@ type Xfluencer = {
           isSigner: false;
         },
         {
-          name: "buyerDepositTokenAccount";
+          name: "vaultAccount";
           isMut: true;
           isSigner: false;
         },
         {
-          name: "sellerReceiveTokenAccount";
+          name: "businessDepositTokenAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "influencerReceiveTokenAccount";
           isMut: false;
           isSigner: false;
         },
@@ -415,22 +418,17 @@ type Xfluencer = {
           isSigner: false;
         },
         {
-          name: "vaultAccount";
-          isMut: true;
-          isSigner: false;
-        },
-        {
           name: "systemProgram";
           isMut: false;
           isSigner: false;
         },
         {
-          name: "tokenProgram";
+          name: "rent";
           isMut: false;
           isSigner: false;
         },
         {
-          name: "rent";
+          name: "tokenProgram";
           isMut: false;
           isSigner: false;
         }
@@ -451,15 +449,70 @@ type Xfluencer = {
       ];
     },
     {
-      name: "cancel";
+      name: "validateEscrowSpl";
       accounts: [
         {
-          name: "buyer";
+          name: "validationAuthority";
           isMut: true;
           isSigner: true;
         },
         {
-          name: "buyerDepositTokenAccount";
+          name: "vaultAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "influencer";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "business";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "escrowAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "tokenProgram";
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: "targetState";
+          type: "u8";
+        },
+        {
+          name: "percentageFee";
+          type: "u16";
+        }
+      ];
+    },
+    {
+      name: "claimEscrowSpl";
+      accounts: [
+        {
+          name: "business";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "businessDepositTokenAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "influencer";
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: "influencerReceiveTokenAccount";
           isMut: true;
           isSigner: false;
         },
@@ -482,6 +535,57 @@ type Xfluencer = {
           name: "tokenProgram";
           isMut: false;
           isSigner: false;
+        },
+        {
+          name: "rent";
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: "orderCode";
+          type: "u64";
+        }
+      ];
+    },
+    {
+      name: "cancelEscrowSpl";
+      accounts: [
+        {
+          name: "business";
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: "businessDepositTokenAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "vaultAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "vaultAuthority";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "escrowAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "tokenProgram";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "rent";
+          isMut: false;
+          isSigner: false;
         }
       ];
       args: [
@@ -494,6 +598,11 @@ type Xfluencer = {
     {
       name: "createEscrow";
       accounts: [
+        {
+          name: "validationAuthority";
+          isMut: true;
+          isSigner: false;
+        },
         {
           name: "escrow";
           isMut: true;
@@ -558,7 +667,42 @@ type Xfluencer = {
       ];
     },
     {
-      name: "canceEscrowSol";
+      name: "validateEscrowSol";
+      accounts: [
+        {
+          name: "validationAuthority";
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: "influencer";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "business";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "escrowAccount";
+          isMut: true;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: "targetState";
+          type: "u8";
+        },
+        {
+          name: "percentageFee";
+          type: "u16";
+        }
+      ];
+    },
+    {
+      name: "cancelEscrowSol";
       accounts: [
         {
           name: "business";
@@ -586,23 +730,23 @@ type Xfluencer = {
         kind: "struct";
         fields: [
           {
-            name: "buyerKey";
+            name: "businessKey";
             type: "publicKey";
           },
           {
-            name: "buyerDepositTokenAccount";
+            name: "businessDepositTokenAccount";
             type: "publicKey";
           },
           {
-            name: "sellerKey";
+            name: "influencerKey";
             type: "publicKey";
           },
           {
-            name: "sellerReceiveTokenAccount";
+            name: "influencerReceiveTokenAccount";
             type: "publicKey";
           },
           {
-            name: "judgeKey";
+            name: "validationAuthority";
             type: "publicKey";
           },
           {
@@ -619,14 +763,6 @@ type Xfluencer = {
               "status\n        0: New\n        1: Shipping\n        2: Delivered"
             ];
             type: "u8";
-          },
-          {
-            name: "deliveryTime";
-            type: "i64";
-          },
-          {
-            name: "trialDay";
-            type: "u16";
           }
         ];
       };
@@ -636,6 +772,10 @@ type Xfluencer = {
       type: {
         kind: "struct";
         fields: [
+          {
+            name: "validationAuthority";
+            type: "publicKey";
+          },
           {
             name: "from";
             type: "publicKey";
@@ -653,11 +793,36 @@ type Xfluencer = {
             type: "u64";
           },
           {
-            name: "delivered";
-            type: "bool";
+            name: "status";
+            docs: [
+              "status\n        0: New\n        1: Cancel\n        2: Delivered"
+            ];
+            type: "u8";
           }
         ];
       };
+    }
+  ];
+  events: [
+    {
+      name: "EscrowAccountSolanaCreated";
+      fields: [
+        {
+          name: "business";
+          type: "publicKey";
+          index: false;
+        },
+        {
+          name: "influencer";
+          type: "publicKey";
+          index: false;
+        },
+        {
+          name: "orderCode";
+          type: "string";
+          index: false;
+        }
+      ];
     }
   ];
   errors: [
@@ -670,6 +835,71 @@ type Xfluencer = {
       code: 6001;
       name: "AlreadyClaim";
       msg: "Already claim";
+    },
+    {
+      code: 6002;
+      name: "EscrowAlreadyCancel";
+      msg: "Escrow already cancel for business";
+    },
+    {
+      code: 6003;
+      name: "EscrowAlreadyReleased";
+      msg: "Escrow already released for influencer";
+    },
+    {
+      code: 6004;
+      name: "BadTargetStateForEscrow";
+      msg: "Bad Target State for Escrow (1) for cancel, (2) for release";
+    },
+    {
+      code: 6005;
+      name: "MissmatchBusiness";
+      msg: "Missmatch business public key";
+    },
+    {
+      code: 6006;
+      name: "MissmatchInfluencer";
+      msg: "Missmatch influencer publick key";
+    },
+    {
+      code: 6007;
+      name: "BadEscrowState";
+      msg: "Bad Escrow State";
+    },
+    {
+      code: 6008;
+      name: "MissmatchAuthority";
+      msg: "Missmatch Authority";
+    },
+    {
+      code: 6009;
+      name: "PercentageFeeOutOfrange";
+      msg: "Percengate Fee Out of Range";
+    },
+    {
+      code: 6010;
+      name: "NumericalProblemFoundCalculatingFees";
+      msg: "Numerical Problem Found Calculating Fees";
+    },
+    {
+      code: 6011;
+      name: "BusinessHasInsufficientAmountOfTokens";
+      msg: "Busines Has Insufficient Amount Of Tokens";
+    },
+    {
+      code: 6012;
+      name: "MissmatchBusinessTokenAccount";
+      msg: "Missmatch Business Token Account";
+    },
+    {
+      code: 6013;
+      name: "MissmatchInfluencerTokenAccount";
+      msg: "Missmatch Influencer Token Account";
+    },
+    {
+      code: 6014;
+      name: "MissmatchOrderCode";
+      msg: "Missmatch Order Code";
     }
   ];
 };

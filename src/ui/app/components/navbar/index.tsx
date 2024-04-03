@@ -71,7 +71,7 @@ const MENU_ITEMS: {
   },
   Dashboard: {
     label: "Dashboard",
-    route: "/dashboard",
+    route: "/dashboard?tab=orders",
     icon: DashboardIcon,
     disabledIcon: DashboardDisabledIcon,
   },
@@ -112,6 +112,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   const user = useAppSelector((state) => state.user);
   const pathname = usePathname();
   const [unreadMessageCount, setUnreadMessageCount] = React.useState(0);
+  const [orderRequestCount, setOrderRequestCount] = React.useState(0);
 
   return items ? (
     <>
@@ -161,6 +162,7 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
               >
                 <NotificationPanel
                   setUnreadMessageCount={setUnreadMessageCount}
+                  setOrderRequestCount={setOrderRequestCount}
                 />
                 <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
               </Box>
@@ -190,9 +192,18 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                 ) : item?.route.includes("/notifications") ? (
                   <NotificationPanel
                     setUnreadMessageCount={setUnreadMessageCount}
+                    setOrderRequestCount={setOrderRequestCount}
                   />
                 ) : item?.route.includes("/messages") ? (
                   <Badge badgeContent={unreadMessageCount} color="secondary">
+                    <Image
+                      src={pathname == route ? item?.icon : item?.disabledIcon}
+                      alt={item?.label}
+                      height={16}
+                    />
+                  </Badge>
+                ) : item?.route.includes("/orders") ? (
+                  <Badge badgeContent={orderRequestCount} color="secondary">
                     <Image
                       src={pathname == route ? item?.icon : item?.disabledIcon}
                       alt={item?.label}

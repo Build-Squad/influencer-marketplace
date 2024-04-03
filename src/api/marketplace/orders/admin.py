@@ -8,6 +8,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = [field.name for field in OrderItem._meta.fields]
+    list_filter = ('package__influencer__username', 'order_id')
 
 
 class OrderItemMetaDataAdmin(admin.ModelAdmin):
