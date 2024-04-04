@@ -15,7 +15,6 @@ import styles from '../styles/PingButton.module.css'
 import idl from "../xfluencer.json"
 import {
     useAnchorWallet,
-    useConnection,
     useWallet
 } from '@solana/wallet-adapter-react';
 import * as anchor from "@coral-xyz/anchor";
