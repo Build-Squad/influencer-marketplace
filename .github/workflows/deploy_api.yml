@@ -38,6 +38,7 @@ jobs:
           cd src/api/marketplace
           source venv/bin/activate
           pip3 install -r requirements.txt
+          pip3 uninstall pyxfluencer -y
           pip3 install pyxfluencer-1.2.1-py3-none-any.whl
           python3 manage.py migrate
           python3 manage.py collectstatic -link --noinput
