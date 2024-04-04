@@ -35,7 +35,7 @@ export default function ClaimEscrow({
   setConnectWallet,
 }: CreateEscrowProps) {
   const [localLoading, setLocalLoading] = useState(false);
-  const connection = new Connection(`https://api.devnet.solana.com`, {
+  const connection = new Connection(`${process.env.NEXT_PUBLIC_RPC_LINK}`, {
     commitment: "confirmed",
     confirmTransactionInitialTimeout: 30000,
   });
@@ -202,7 +202,7 @@ export default function ClaimEscrow({
           const tx = new Transaction().add(ix);
 
           const options = {
-            skipPreflight: true,
+            skipPreflight: process.env.NEXT_PUBLIC_RPC_LINK?.includes("devnet"),
           };
           try {
             const signature = await sendTransaction(tx, connection, options);
