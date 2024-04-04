@@ -32,7 +32,7 @@ async def main():
     configuration = load_configuration()
 
     ### select network
-    network = "devnet"
+    network = configuration["network"]
     
     ### select SPL token
     ata_selector = "usdc_ata"
