@@ -36,12 +36,10 @@ def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
 
 
-def select_client(network = None, async_client = False):
-    if network is None:
-        print("[WARN] Client network selected is None, set 'heliux' as default")
-        network="heliux"
+def select_client(network: str = None, async_client: bool = False, default_network: str = "devnet-helius"):
+    
         
-    urls = {
+    default_urls = {
         "devnet":   "https://api.devnet.solana.com",
         "dev":      "https://api.devnet.solana.com",
         "testnet":  "https://api.testnet.solana.com",
@@ -49,13 +47,19 @@ def select_client(network = None, async_client = False):
         "local":    "http://localhost:8899/",
         "mainnet":      "https://api.mainnet-beta.solana.com/",
         "mainnet-beta": "https://api.mainnet-beta.solana.com/",
-        "heliux":       "https://rpc.helius.xyz/?api-key=f895a64d-ca66-403f-801a-f6196c36b560"
+        "devnet-helius": "https://devnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605",
+        "mainnet-helius": "https://mainnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605"
     }
+    
+    if network is None:        
+        print("[WARN] Client network selected is None, set devnet from 'helius' as default")
+        network=default_urls[default_network]
+    
 
     try:    
         if async_client:
-            return AsyncClient(urls[network])
-        return Client(urls[network])
+            return AsyncClient(network)
+        return Client(network)
 
     except Exception as e:
         raise Exception(f"Selecting RPC Solana Client Network {e}")
