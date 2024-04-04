@@ -96,23 +96,29 @@ def cancel_escrow(order_id: str, status: str):
         on_chain_transaction.save()
 
         # After the above task is finished successfully, update the order status to cancelled
-        order.status = status
-        order.save()
 
-        create_order_tracking(order=order, status=status)
-        create_notification_for_order(order=order, old_status='accepted', new_status=status)
+        if on_chain_transaction.is_confirmed:
 
-        escrow.status = "cancelled"
-        escrow.save()
+            order.status = status
+            order.save()
 
-        return True
+            create_order_tracking(order=order, status=status)
+            create_notification_for_order(
+                order=order, old_status='accepted', new_status=status)
+
+            escrow.status = "cancelled"
+            escrow.save()
+
+            return True
+        else:
+            return False
 
     except Exception as e:
         logger.error('Error in cancelling escrow: %s', str(e))
         return False
 
 
-@celery_app.task(base=QueueOnce, once={'graceful': True})
+@celery_app.task(base=QueueOnce, once={'graceful': True}, autoretry_for=(Exception,), retry_kwargs={'max_retries': 3})
 def confirm_escrow(order_id: str):
     try:
         # Get order and corresponding escrow
@@ -169,11 +175,21 @@ def confirm_escrow(order_id: str):
 
         on_chain_transaction.save()
 
-        order.status = 'completed'
-        order.save()
+        if on_chain_transaction.is_confirmed:
+            order.status = 'completed'
+            order.save()
 
-        escrow.status = "delivered"
-        escrow.save()
+            create_order_tracking(order=order, status=order.status)
+            create_notification_for_order(
+                order=order, old_status='accepted', new_status='completed')
+
+            escrow.status = "delivered"
+            escrow.save()
+
+            return True
+
+        else:
+            return False
 
     except Exception as e:
         raise Exception('Error in confirming escrow', str(e))

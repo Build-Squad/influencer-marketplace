@@ -38,11 +38,6 @@ import NextLink from "next/link";
 import SavedProfileIcon from "@/public/svg/Saved.svg";
 import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
 
-type NavbarProps = {
-  setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  categoryOpen: boolean;
-};
-
 const MENU_ITEMS: {
   [key: string]: {
     label: string;
@@ -71,7 +66,7 @@ const MENU_ITEMS: {
   },
   Dashboard: {
     label: "Dashboard",
-    route: "/dashboard?tab=orders",
+    route: "/dashboard",
     icon: DashboardIcon,
     disabledIcon: DashboardDisabledIcon,
   },
@@ -228,13 +223,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   ) : null;
 };
 
-export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
-  const {
-    isTwitterUserLoggedIn,
-    logoutTwitterUser,
-    isAccountSetupComplete,
-    checkAccountSetup,
-  } = useTwitterAuth();
+export default function Navbar() {
+  const { isTwitterUserLoggedIn, logoutTwitterUser } = useTwitterAuth();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -259,23 +249,6 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
       router.push(pathname);
     }
   }, [isTwitterUserLoggedIn]);
-
-  useEffect(() => {
-    const status = params.get("authenticationStatus");
-    if (
-      isTwitterUserLoggedIn &&
-      !isAccountSetupComplete &&
-      status === "success"
-    ) {
-      setCategoryOpen(true);
-    }
-  }, [isTwitterUserLoggedIn, isAccountSetupComplete]);
-
-  useEffect(() => {
-    if (!categoryOpen) {
-      checkAccountSetup();
-    }
-  }, [categoryOpen]);
 
   const handleConnect = () => {
     const roleQueryParams = pathname.includes("business")

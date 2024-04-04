@@ -740,7 +740,7 @@ class CancelOrderView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 else:
-                    if not on_chain_transaction.err:
+                    if not on_chain_transaction.err and on_chain_transaction.created_at > timezone.now() - timezone.timedelta(minutes=5):
                         action = "cancellation" if request.user_account.id == order.buyer.id else "rejection"
                         return Response(
                             {
@@ -752,15 +752,29 @@ class CancelOrderView(APIView):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                     else:
-                        return Response(
-                            {
-                                "isSuccess": False,
-                                "message": "Order cancellation failed",
-                                "data": None,
-                                "errors": "Order cancellation failed",
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
+                        # Retry the transaction
+                        res = cancel_escrow(pk, order_status)
+                        if res:
+                            # Cancel all order items
+                            order_items.update(status=order_status)
+                            return Response(
+                                {
+                                    "isSuccess": True,
+                                    "data": None,
+                                    "message": "Order cancelled successfully",
+                                },
+                                status=status.HTTP_200_OK,
+                            )
+                        else:
+                            return Response(
+                                {
+                                    "isSuccess": False,
+                                    "message": "Order cancellation failed",
+                                    "data": None,
+                                    "errors": "Order cancellation failed",
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
             # Create an on chain transaction
             else:
                 self.create_on_chain_transaction(order)
