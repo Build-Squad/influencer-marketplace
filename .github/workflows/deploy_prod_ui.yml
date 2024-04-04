@@ -1,8 +1,8 @@
-name: Deploy UI
+name: Deploy UI - Prod
 
 on:
   push:
-    branches: [ main ]   
+    branches: [ release ]   
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,7 +13,7 @@ jobs:
     - name: Setting environment variables..
       run: |
         echo "AWS_DEFAULT_REGION=eu-west-2" >> $GITHUB_ENV
-        echo "AWS_SG_NAME=${{ secrets.AWS_SECURITY_GROUP_ID }}" >> $GITHUB_ENV
+        echo "AWS_SG_NAME=${{ secrets.AWS_SECURITY_GROUP_ID_PROD }}" >> $GITHUB_ENV
         
     - name: Add Github Actions IP to Security group
       run: |
@@ -27,23 +27,23 @@ jobs:
       uses: appleboy/ssh-action@master
       continue-on-error: false
       with:
-        host: ${{ secrets.DEVSERVER_UI }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SECRETKEY_UI }}
+        host: ${{ secrets.PRODSERVER_UI }}
+        username: ${{ secrets.USERNAME_PROD }}
+        key: ${{ secrets.SECRETKEY_PROD }}
         command_timeout: 5m
         script: |
-          cd xfluencer/influencer-marketplace
-          git pull
-          cd src/ui
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm use 20
-          npm cache clean -f
-          npm install
-          npm run build 
-          sudo systemctl restart nginx
-          pm2 stop marketplace
-          pm2 start npm --name marketplace -- start
+          cd xfluencer/influencer-marketplace 
+          git pull 
+          cd src/ui 
+          export NVM_DIR="$HOME/.nvm" 
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 
+          nvm use 20 
+          npm cache clean -f 
+          npm install 
+          npm run build  
+          sudo systemctl restart nginx 
+          pm2 stop marketplace 
+          pm2 start npm --name marketplace -- start 
           
     - name: Remove Github Actions IP from security group
       if: always()
