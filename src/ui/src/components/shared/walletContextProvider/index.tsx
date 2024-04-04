@@ -7,7 +7,6 @@ import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react";
-import { clusterApiUrl } from "@solana/web3.js";
 import { useSnackbar } from "notistack";
 import type { ReactNode } from "react";
 import { useCallback, useMemo } from "react";
@@ -18,7 +17,7 @@ export default function WalletContextProvider({
   children: ReactNode;
 }) {
   const network = WalletAdapterNetwork.Mainnet;
-  const endpoint = useMemo(() => `https://api.devnet.solana.com`, []);
+  const endpoint = useMemo(() => `${process.env.NEXT_PUBLIC_RPC_LINK}`, []);
   const wallets = useMemo(
     () => [],
     // eslint-disable-next-line react-hooks/exhaustive-deps

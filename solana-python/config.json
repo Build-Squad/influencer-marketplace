@@ -1,5 +1,5 @@
 {
-    "network": "devnet",
+    "network": "https://devnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605",
     "rpc":{
         "mainnet":"https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474",
         "devnet":""
@@ -28,7 +28,7 @@
         "lamports":10000000,
         "usdc": 1000000
     },
-    "order_code": 21234,
+    "order_code": 21235,
     "program_id":{
         "localnet": "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq",
         "devnet": "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9",

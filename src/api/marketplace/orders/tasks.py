@@ -39,7 +39,7 @@ ACCESS_TOKEN = config("ACCESS_TOKEN")
 ACCESS_SECRET = config("ACCESS_SECRET")
 VALIDATOR_KEY_PATH = config("VALIDATOR_KEY_PATH")
 TWEET_LIMIT = 280
-NETWORK = config("NETWORK")
+RPC_ENDPOINT = config("RPC_ENDPOINT")
 TWEET_FIELDS = ['public_metrics', 'organic_metrics', 'non_public_metrics']
 
 
@@ -68,7 +68,7 @@ def cancel_escrow(order_id: str, status: str):
                                                            business_address=buyer_primary_wallet.wallet_address_id,
                                                            influencer_address=influencer_primary_wallet.wallet_address_id,
                                                            order_code=order.order_number,
-                                                           network=NETWORK,
+                                                           network=RPC_ENDPOINT,
                                                            ))
         elif order_currency.currency_type == 'SPL':
             result = asyncio.run(validate_escrow(
@@ -77,7 +77,7 @@ def cancel_escrow(order_id: str, status: str):
                 influencer_address=influencer_primary_wallet.wallet_address_id,
                 target_escrow_state=EscrowState.CANCEL,
                 order_code=order.order_number,
-                network=NETWORK,
+                network=RPC_ENDPOINT,
                 processing_spl_escrow=True
             ))
         # Update all the values of the on_chain_transaction with result.value[0]
@@ -145,7 +145,7 @@ def confirm_escrow(order_id: str):
                                                               business_address=buyer_primary_wallet.wallet_address_id,
                                                               influencer_address=influencer_primary_wallet.wallet_address_id,
                                                               order_code=order.order_number,
-                                                              network=NETWORK,
+                                                              network=RPC_ENDPOINT,
                                                               percentage_fee=platform_fees
                                                               ))
         elif order_currency.currency_type == 'SPL':
@@ -155,7 +155,7 @@ def confirm_escrow(order_id: str):
                 influencer_address=influencer_primary_wallet.wallet_address_id,
                 target_escrow_state=EscrowState.DELIVERED,
                 order_code=order.order_number,
-                network=NETWORK,
+                network=RPC_ENDPOINT,
                 percentage_fee=platform_fees,
                 processing_spl_escrow=True
             ))

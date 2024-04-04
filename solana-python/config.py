@@ -10,7 +10,8 @@ def load_configuration(config_file="config.json"):
 
 
 configuration = load_configuration()
-program_id = configuration["program_id"][configuration["network"]]
+program_id = configuration["program_id"]["devnet"]
+print("Program Id Selected From Configuration:", program_id)
 PROGRAM_ID = Pubkey.from_string(program_id)
 
 

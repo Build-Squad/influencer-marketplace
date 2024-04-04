@@ -29,7 +29,7 @@ import { useState } from "react";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { isUrl } from "@/src/utils/helper";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
+import { Tweet } from "react-tweet";
 const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
   switch (meta_data.field_type) {
     case "text":
@@ -49,29 +49,44 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
               }}
+              className="light"
             >
-              <Link
-                href={meta_data.value}
-                component={NextLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                underline="hover"
-                sx={{ color: "#676767" }}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
               >
-                {meta_data.value}
-              </Link>
-              <Tooltip title="Copy to clipboard" arrow>
-                <IconButton
-                  onClick={() => {
-                    navigator.clipboard.writeText(meta_data.value);
-                    notification("Copied to clipboard");
-                  }}
+                <Link
+                  href={meta_data.value}
+                  component={NextLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  sx={{ color: "#676767" }}
                 >
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
+                  {meta_data.value}
+                </Link>
+                <Tooltip title="Copy to clipboard" arrow>
+                  <IconButton
+                    onClick={() => {
+                      navigator.clipboard.writeText(meta_data.value);
+                      notification("Copied to clipboard");
+                    }}
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Tweet
+                apiUrl={
+                  meta_data.value.split("/").pop() &&
+                  `/api/tweet/${meta_data.value.split("/").pop()}`
+                }
+              />
             </Box>
           ) : (
             <Typography
@@ -369,7 +384,7 @@ const OrderSummaryDetails = ({
               <Box
                 sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
               >
-                <Box>
+                <Box className="light">
                   <Typography variant="subtitle1" sx={{ color: "#9E9E9E" }}>
                     <OpenInNewIcon sx={{ fontSize: 14, mr: 1 }} />
                     Post Link
@@ -384,6 +399,12 @@ const OrderSummaryDetails = ({
                   >
                     {`https://x.com/${eachOrderItem?.package?.influencer?.twitter_account?.user_name}/status/${eachOrderItem?.published_tweet_id}`}
                   </Link>
+                  <Tweet
+                    apiUrl={
+                      eachOrderItem?.published_tweet_id &&
+                      `/api/tweet/${eachOrderItem?.published_tweet_id}`
+                    }
+                  />
                 </Box>
               </Box>
             )}
