@@ -65,6 +65,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RuleOutlinedIcon from "@mui/icons-material/RuleOutlined";
 import ManualVerifyModal from "@/src/components/dashboardComponents/manualVerifyModal";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 
 const tabs = [
   {
@@ -82,6 +83,7 @@ const tabs = [
 ];
 export default function BusinessDashboardPage() {
   const router = useRouter();
+  const [connectWallet, setConnectWallet] = useState(false);
   const searchParams = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
@@ -858,7 +860,11 @@ export default function BusinessDashboardPage() {
                   transaction.transaction_type ===
                   TRANSACTION_TYPE.CANCEL_ESCROW
               )?.length === 0 && (
-                <CancelEscrow order={params?.row} updateStatus={getOrders} />
+                <CancelEscrow
+                  order={params?.row}
+                  updateStatus={getOrders}
+                  setConnectWallet={setConnectWallet}
+                />
               )}
             {(params?.row?.status === ORDER_STATUS.ACCEPTED ||
               params?.row?.status === ORDER_STATUS.PENDING) &&
@@ -1530,6 +1536,11 @@ export default function BusinessDashboardPage() {
           />
         ) : null}
       </Box>
+      <WalletConnectModal
+        open={connectWallet}
+        setOpen={setConnectWallet}
+        connect={true}
+      />
     </RouteProtection>
   );
 }

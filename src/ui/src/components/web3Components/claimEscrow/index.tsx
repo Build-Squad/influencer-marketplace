@@ -24,6 +24,7 @@ import { notification } from "../../shared/notification";
 type CreateEscrowProps = {
   order: OrderType;
   updateStatus: () => void;
+  setConnectWallet: (value: boolean) => void;
 };
 
 const programId = new PublicKey(idl.metadata.address);
@@ -31,6 +32,7 @@ const programId = new PublicKey(idl.metadata.address);
 export default function ClaimEscrow({
   updateStatus,
   order,
+  setConnectWallet,
 }: CreateEscrowProps) {
   const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(`https://api.devnet.solana.com`, {
@@ -82,6 +84,7 @@ export default function ClaimEscrow({
         // Check if wallet is connected
         if (!connection || !publicKey) {
           notification("Please connect your wallet first", "error");
+          setConnectWallet(true);
           return;
         }
 
@@ -90,6 +93,7 @@ export default function ClaimEscrow({
           publicKey?.toBase58() !== order?.influencer_wallet?.wallet_address_id
         ) {
           notification("Please connect the correct wallet", "error");
+          setConnectWallet(true);
           return;
         }
 

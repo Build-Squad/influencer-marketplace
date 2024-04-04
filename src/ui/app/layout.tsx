@@ -1,13 +1,10 @@
 "use client";
 
-import CategorySelectionModal from "@/src/components/categorySelectionModal";
-import EmailLoginModal from "@/src/components/emailLoginModal";
 import WalletContextProvider from "@/src/components/shared/walletContextProvider";
-import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 import { AppStore, makeStore } from "@/src/store";
 import { Inter } from "next/font/google";
 import { SnackbarProvider } from "notistack";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Provider } from "react-redux";
 import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/integration/react";
@@ -29,10 +26,6 @@ export default function RootLayout({
   }
   const persistor = persistStore(storeRef.current);
 
-  const [emailOpen, setEmailOpen] = useState<boolean>(false);
-  const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
-  const [walletOpen, setWalletOpen] = useState<boolean>(false);
-
   return (
     <html lang="en">
       <head>
@@ -52,20 +45,8 @@ export default function RootLayout({
             <PersistGate loading={null} persistor={persistor}>
               <ThemeRegistry options={{ key: "mui-theme" }}>
                 <WalletContextProvider>
-                  <Navbar
-                    setCategoryOpen={setCategoryOpen}
-                    categoryOpen={categoryOpen}
-                  />
+                  <Navbar />
                   {children}
-                  <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
-                  <CategorySelectionModal
-                    open={categoryOpen}
-                    setOpen={setCategoryOpen}
-                  />
-                  <WalletConnectModal
-                    open={walletOpen}
-                    setOpen={setWalletOpen}
-                  />
                 </WalletContextProvider>
               </ThemeRegistry>
             </PersistGate>
