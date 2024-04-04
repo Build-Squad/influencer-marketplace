@@ -48,7 +48,7 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
         console.warn("Wallet was not connected")
         return (
         <div className={styles.buttonContainer}>
-            <button className={styles.button} disabled>CREATE (wallet not connected)</button>
+            <button className={styles.button} disabled>CANCEL (wallet not connected)</button>
         </div>  )      
      }
 

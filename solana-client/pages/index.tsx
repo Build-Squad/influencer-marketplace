@@ -1,12 +1,12 @@
 import React from "react";
 import { NextPage } from 'next'
-import styles from '../styles/Home.module.css'
+import Head from 'next/head'
+import { Input } from "@nextui-org/react";
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 
+import styles from '../styles/Home.module.css'
 import WalletContextProvider from '../components/WalletContextProvider'
 import { AppBar } from '../components/AppBar'
-
-import Head from 'next/head'
-import {Input} from "@nextui-org/react";
 
 // import components to support escrow using sol
 import { CreateEscrowSolana } from '../components/CreateEscrowSolana'
@@ -18,30 +18,25 @@ import { Validate } from '../components/Validate'
 import { CreateEscrowSpl } from '../components/CreateEscrowSpl'
 import { CancelEscrowSpl } from '../components/CancelEscrowSpl'
 import { ValidateEscrowSpl } from '../components/ValidateEscrowSpl'
+import { ClaimEscrowSpl } from '../components/ClaimEscrowSpl'
 
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
-import { findATA } from "../components/utils";
 
 
 const Home: NextPage = (props) => {
 
-  const sizes = ["sm", "md", "lg"];
-  const size = sizes[0];
-
   //// CHANGE THESE ADDRESSED TO CONFIGURE THE XFLUENCER MOCK //////
-  const MINT : string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`; 
-  const VALIDATOR : string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`;
-  const BUSINESS : string  = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`;
-  const INFLUENCER : string = `4AxvMsyEv5X3ioHuguaAk4ETsCQ6AWDpjgzNEUckaDEx`;// `4gmJzpuV7PsXg8G4c51Yxe2cR6SoBDcKzxZoyjidPx76`
+  const MINT: string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`;
+  const VALIDATOR: string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`;
+  const BUSINESS: string = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`;
+  const INFLUENCER: string = `4AxvMsyEv5X3ioHuguaAk4ETsCQ6AWDpjgzNEUckaDEx`;
 
   //////////////////////////////////////////////////////////////////
-
-  const NUM_SOLS : number = 0.1;
-  const LAMPORTS : number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
-  const ORDER_CODE : number = 12347 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
-  const NUM_SPL_TOKENS : number = 1000000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
+  const NUM_SOLS: number = 0.1;
+  const LAMPORTS: number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
+  const ORDER_CODE: number = 12349 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+  const NUM_SPL_TOKENS: number = 1000000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
   const PERCENTAGE_FEE: number = 0;
- 
+
 
 
   return (
@@ -60,108 +55,138 @@ const Home: NextPage = (props) => {
         <AppBar />
 
         <div className={styles.AppBody}>
-          Set Authority of the Escrows 
+          Set Authority of the Escrows
         </div>
 
         <div className={styles.input}>
-           <Input type="validator_authority" label="validator Authority" 
-                   placeholder="Enter a valid solana address" 
-                   value={VALIDATOR} />
+          <Input type="validator_authority" label="validator Authority"
+            placeholder="Enter a valid solana address"
+            value={VALIDATOR} />
         </div>
 
         <div className={styles.AppBody}>
-          Mocking Escrows Using Solana Tokens 
+          Mocking Escrows Using Solana Tokens
         </div>
 
         <div className={styles.input}>
-                <Input type="address_business" label="Business Address" 
-                      placeholder="Enter a valid solana address"  
-                      value={BUSINESS}/>
+          <Input type="address_business" label="Business Address"
+            placeholder="Enter a valid solana address"
+            value={BUSINESS} />
 
-                <Input type="address_influencer" label="Influencer Address" 
-                      placeholder="Enter a valid solana address" 
-                      value={INFLUENCER} />
+          <Input type="address_influencer" label="Influencer Address"
+            placeholder="Enter a valid solana address"
+            value={INFLUENCER} />
 
-                <Input type="amount_sol" label="Amount Lamports" 
-                      placeholder="Enter amount of lamports" 
-                      value={LAMPORTS}/>
-                          
-                <Input type="order_number" label="Order Number" 
-                      placeholder="Enter integer positive number" 
-                      value= {ORDER_CODE}/> 
+          <Input type="amount_sol" label="Amount Lamports"
+            placeholder="Enter amount of lamports"
+            value={LAMPORTS} />
 
-                <Input type="percentage_fee" label="Percentage Fee" 
-                      placeholder="Enter integer positive number" 
-                      value= {PERCENTAGE_FEE}/> 
+          <Input type="order_number" label="Order Number"
+            placeholder="Enter integer positive number"
+            value={ORDER_CODE} />
+
+          <Input type="percentage_fee" label="Percentage Fee"
+            placeholder="Enter integer positive number"
+            value={PERCENTAGE_FEE} />
 
         </div>
 
-        <div className={styles.AppBody}>  
-          <CreateEscrowSolana validator={VALIDATOR} 
-                              business={BUSINESS} 
-                              influencer={INFLUENCER} 
-                              lamports={LAMPORTS} orderCode={ORDER_CODE}/>
+        <div className={styles.AppBody}>
+          <CreateEscrowSolana validator={VALIDATOR}
+            business={BUSINESS}
+            influencer={INFLUENCER}
+            lamports={LAMPORTS}
+            orderCode={ORDER_CODE} />
 
-          <Validate validator={VALIDATOR} business={BUSINESS} influencer={INFLUENCER} percentageFee={0}
-                    orderCode={ORDER_CODE} targetState={1} textButton={"Validate Escrow Cancel"}/>
+          <CancelEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
 
-          <Validate validator={VALIDATOR} business={BUSINESS} influencer={INFLUENCER} percentageFee={0}
-                    orderCode={ORDER_CODE} targetState={2} textButton={"Validate Escrow Delivery"}/>
+          <Validate validator={VALIDATOR}
+            business={BUSINESS}
+            influencer={INFLUENCER}
+            percentageFee={0}
+            orderCode={ORDER_CODE}
+            targetState={1}
+            textButton={"Validate Escrow Cancel"} />
+
+          <Validate validator={VALIDATOR} 
+            business={BUSINESS} 
+            influencer={INFLUENCER} 
+            percentageFee={0}
+            orderCode={ORDER_CODE} 
+            targetState={2} 
+            textButton={"Validate Escrow Delivery"} />
 
           <ClaimEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
         </div>
-   
+
         <div className={styles.AppBody}>
-          Mocking Escrows Using SPL Tokens 
+          Mocking Escrows Using SPL Tokens
         </div>
 
         <div className={styles.input}>
-            <Input type="address_business" label="Business Address" 
-                   placeholder = "Enter a valid solana address"  
-                   value = {BUSINESS} />
+          <Input type="address_business" label="Business Address"
+            placeholder="Enter a valid solana address"
+            value={BUSINESS} />
 
-            <Input type="address_influencer" label="Influencer Address" 
-                   placeholder = "Enter a valid solana address" 
-                   value = {INFLUENCER} />
+          <Input type="address_influencer" label="Influencer Address"
+            placeholder="Enter a valid solana address"
+            value={INFLUENCER} />
 
-            <Input type="order_number" label="Order Number" 
-                   placeholder = "Enter integer positive number" 
-                   value = {ORDER_CODE} />
+          <Input type="order_number" label="Order Number"
+            placeholder="Enter integer positive number"
+            value={ORDER_CODE} />
 
-            <Input type="mint" label="Mint" 
-                   placeholder = "Enter a valid solana address" 
-                   value = {MINT} />    
+          <Input type="mint" label="Mint"
+            placeholder="Enter a valid solana address"
+            value={MINT} />
 
-            <Input type="tokens" label="Num. SPL Tokens times 10 ^ decimals " 
-                   placeholder = "Enter a valid solana address" 
-                   value = {NUM_SPL_TOKENS} />                
+          <Input type="tokens" label="Num. SPL Tokens times 10 ^ decimals "
+            placeholder="Enter a valid solana address"
+            value={NUM_SPL_TOKENS} />
 
-         
+
         </div>
 
 
-        <div className={styles.AppBody}>       
-          <CreateEscrowSpl validator={VALIDATOR} 
-                           business={BUSINESS} 
-                           influencer={INFLUENCER} 
-                           mint={MINT}
-                           tokens={NUM_SPL_TOKENS} 
-                           orderCode={ORDER_CODE}/> 
+        <div className={styles.AppBody}>
+          <CreateEscrowSpl validator={VALIDATOR}
+            business={BUSINESS}
+            influencer={INFLUENCER}
+            mint={MINT}
+            tokens={NUM_SPL_TOKENS}
+            orderCode={ORDER_CODE} />
 
-           <CancelEscrowSpl business={BUSINESS} 
-                            validatorAuthority={VALIDATOR}                          
-                            mintTokenAccount={MINT}
-                            orderCode={ORDER_CODE} />         
+          <CancelEscrowSpl business={BUSINESS}
+            validatorAuthority={VALIDATOR}
+            mintTokenAccount={MINT}
+            orderCode={ORDER_CODE} />
+
+          <ValidateEscrowSpl
+            validator={VALIDATOR}
+            business={BUSINESS}
+            influencer={INFLUENCER}
+            percentageFee={0}
+            orderCode={ORDER_CODE}
+            targetState={1}
+            textButton={"Validate Escrow Cancel with Fee 0%"} />
+
+          <ValidateEscrowSpl
+            validator={VALIDATOR}
+            business={BUSINESS}
+            influencer={INFLUENCER}
+            percentageFee={0}
+            orderCode={ORDER_CODE}
+            targetState={2}
+            textButton={"Validate Escrow Delivery with Fee 0%"} />
 
 
-          <ValidateEscrowSpl 
-                    validator={VALIDATOR} 
-                    business={BUSINESS} 
-                    influencer={INFLUENCER} 
-                    percentageFee={0}
-                    orderCode={ORDER_CODE} 
-                    targetState={1} 
-                    textButton={"Validate Escrow Cancel(Target State 1)"}/>
+
+          <ClaimEscrowSpl business={BUSINESS}
+            influencer={INFLUENCER}
+            validatorAuthority={VALIDATOR}
+            mintTokenAccount={MINT}
+            orderCode={ORDER_CODE} />
+
 
         </div>
 
