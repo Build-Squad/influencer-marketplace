@@ -55,6 +55,7 @@ import MessageIcon from "@mui/icons-material/Message";
 import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import { DriveEta } from "@mui/icons-material";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 
 const tabs = [
   {
@@ -90,6 +91,7 @@ const getProfileCompletedStatus: (businessDetails: any) => string = (
 export default function BusinessDashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [connectWallet, setConnectWallet] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -178,8 +180,8 @@ export default function BusinessDashboardPage() {
             Customized filters.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Advanced filters for orders based on the services, date, order ID, and
-            businesses.
+            Advanced filters for orders based on the services, date, order ID,
+            and businesses.
           </Typography>
         </Box>
       ),
@@ -853,7 +855,11 @@ export default function BusinessDashboardPage() {
                 (transaction: TransactionType) =>
                   transaction.transaction_type === TRANSACTION_TYPE.CLAIM_ESCROW
               )?.length === 0 && (
-                <ClaimEscrow order={params?.row} updateStatus={getOrders} />
+                <ClaimEscrow
+                  order={params?.row}
+                  updateStatus={getOrders}
+                  setConnectWallet={setConnectWallet}
+                />
               )}
           </Box>
         );
@@ -1452,6 +1458,11 @@ export default function BusinessDashboardPage() {
           />
         ) : null}
       </Box>
+      <WalletConnectModal
+        open={connectWallet}
+        setOpen={setConnectWallet}
+        connect={true}
+      />
     </RouteProtection>
   );
 }
