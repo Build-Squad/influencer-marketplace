@@ -2,7 +2,7 @@ name: Deploy UI - Prod
 
 on:
   push:
-    branches: [ github-actions-prod ]   
+    branches: [ release ]   
 jobs:
   deploy:
     runs-on: ubuntu-latest
