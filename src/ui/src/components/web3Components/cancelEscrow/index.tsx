@@ -24,6 +24,7 @@ import { notification } from "../../shared/notification";
 type CancelEscrowProps = {
   order: OrderType;
   updateStatus: () => void;
+  setConnectWallet: (value: boolean) => void;
 };
 
 const programId = new PublicKey(idl.metadata.address);
@@ -31,6 +32,7 @@ const programId = new PublicKey(idl.metadata.address);
 export default function CancelEscrow({
   updateStatus,
   order,
+  setConnectWallet,
 }: CancelEscrowProps) {
   const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(`https://api.devnet.solana.com`, {
@@ -86,12 +88,14 @@ export default function CancelEscrow({
         // Check if wallet is connected
         if (!connection || !publicKey) {
           notification("Please connect your wallet first", "error");
+          setConnectWallet(true);
           return;
         }
 
         // Check that the correct wallet is connected
         if (publicKey?.toBase58() !== order?.buyer_wallet?.wallet_address_id) {
           notification("Please connect the correct wallet", "error");
+          setConnectWallet(true);
           return;
         }
 
