@@ -42,7 +42,7 @@ jobs:
           python3 manage.py migrate 
           python3 manage.py collectstatic -link --noinput 
           echo "Stopping previous processes..."
-          pkill -f "beat"
+          pgrep gunicorn | xargs kill -9
           echo "Stopping redis service..."
           sudo systemctl stop redis
           echo "Starting redis service..."
