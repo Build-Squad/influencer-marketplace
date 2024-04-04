@@ -10,8 +10,23 @@ from .instructions import validate_escrow_spl
 from .utils import sign_and_send_transaction
 from .program_id import PROGRAM_ID
 
-xfluencer_solana_python_client_version="1.2.0"
+xfluencer_solana_python_client_version="1.2.1"
 
+###################
+# Version: 1.2.1
+# Bump: Patch
+# Updated: 04.04.2024
+# - use `network` parametesr as full rpc url
+# 
+###################
+# Version: 1.2.0
+# Bump: Minor
+# Updated: 01.04.2024
+# - Add SPL case  
+# - Add percentage fee to both cases escrow cases SOL and SPL 
+# - Update Test launchers 
+# - Update program id DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9
+# 
 ###################
 # Version: 1.2.0
 # Bump: Minor
@@ -98,7 +113,7 @@ async def validate_escrow_to_cancel(validator_authority: Keypair,
         influencer_address (str):
         order_code (int): 
         network (_type_, optional):  Defaults to "https://api.devnet.solana.com".
-        percentage_fee (int, optional): Defaults to 0. Integer from 0 to 5000 (0 is 0% and 5000 is 5.00%)
+        percentage_fee (int, optional): Defaults to 0. Integer from 0 to 500 (0 is 0% and 500 is 5.00%)
 
     Returns:
     """
@@ -127,7 +142,7 @@ async def validate_escrow_to_delivered(validator_authority: Keypair,
         influencer_address (str): 
         order_code (int): 
         network (_type_, optional):  Defaults to "https://api.devnet.solana.com".
-        percentage_fee (int, optional): Defaults to 0. (0 is 0% and 5000 is 5.00%)
+        percentage_fee (int, optional): Defaults to 0. (0 is 0% and 500 is 5.00%)
 
     Returns:
     """
@@ -148,6 +163,7 @@ async def validate_escrow(validation_authority: Keypair,
                           target_escrow_state: EscrowState,                          
                           order_code: int,
                           network: str = "https://api.devnet.solana.com",
+                          url: str = None,
                           percentage_fee: int = 0,
                           processing_spl_escrow: bool = False):
     
