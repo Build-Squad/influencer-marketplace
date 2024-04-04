@@ -163,7 +163,6 @@ async def validate_escrow(validation_authority: Keypair,
                           target_escrow_state: EscrowState,                          
                           order_code: int,
                           network: str = "https://api.devnet.solana.com",
-                          url: str = None,
                           percentage_fee: int = 0,
                           processing_spl_escrow: bool = False):
     
