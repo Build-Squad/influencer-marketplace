@@ -97,7 +97,7 @@ class OTPAuthenticationService:
 def create_inlfuencer_account_notification(user: User):
     try:
         INLFUENCER_PROFILE_SLUG = FRONT_END_URL + \
-            '/influencer/profile' + str(user.id)
+            '/influencer/profile/' + str(user.id)
 
         # Club the above 3 notifications in one notification
         Notification.objects.create(
