@@ -14,14 +14,17 @@ from enum import Enum
 
 class TargetState(Enum):
     CANCEL = 1
-    DELIVERY = 2
+    DELIVER= 2
 
 async def main(target_state, percentage_fee=0):
 
     if target_state == TargetState.CANCEL:
         msg = "Validate Escrow to Cancel so Business Can Re-Funding (SPL tokens)"
-    else:
+    elif target_state == TargetState.DELIVER:
         msg = "Validate Escrow to Deliver so Influencer Can claim (SPL tokens)"
+    else:
+        print("Bad target state")
+        exit()
         
     print(len(msg)*"*")
     print(msg)
@@ -84,16 +87,18 @@ import argparse
 parser = argparse.ArgumentParser(prog='launch_validate_sol.py')
 parser.add_argument('--target', choices=['cancel', 'deliver'])
 
-
-args = parser.parse_args()
-if args.target == 'cancel':
-    target_state = TargetState.CANCEL
-elif args.target == 'deliver':
-    target_state = TargetState.DELIVERY
-else:
-    exit()
-    
 percentage_fee = 0
 
-asyncio.run(main(TargetState.DELIVERY, percentage_fee=percentage_fee))
+args = parser.parse_args()
+
+if args.target == 'cancel':    
+    target_state = TargetState.CANCEL
+elif args.target == 'deliver':
+    target_state = TargetState.DELIVER
+else:
+    exit()
+
+
+asyncio.run(main(target_state, percentage_fee=percentage_fee))
+
     
