@@ -42,6 +42,7 @@ import StatusChip from "../../shared/statusChip";
 import { isUrl } from "@/src/utils/helper";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { Tweet } from "react-tweet";
 
 type OrderItemFormProps = {
   orderItem: any;
@@ -365,9 +366,10 @@ export default function OrderItemForm({
             alignItems: "center",
           }}
         >
-          {!orderItem?.service_id && orderItem?.order_item?.status !== ORDER_ITEM_STATUS.DRAFT && (
-            <StatusChip status={orderItem?.order_item?.status} />
-          )}
+          {!orderItem?.service_id &&
+            orderItem?.order_item?.status !== ORDER_ITEM_STATUS.DRAFT && (
+              <StatusChip status={orderItem?.order_item?.status} />
+            )}
           {!disableDelete && (
             <ConfirmDelete
               title="this order item"
@@ -566,6 +568,7 @@ export default function OrderItemForm({
                         sx={{
                           mt: 1,
                         }}
+                        className="light"
                       >
                         <Button
                           href={formFields?.value}
@@ -588,6 +591,12 @@ export default function OrderItemForm({
                         >
                           Copy Link
                         </Button>
+                        <Tweet
+                          apiUrl={
+                            formFields?.value?.split("/").pop() &&
+                            `/api/tweet/${formFields?.value?.split("/").pop()}`
+                          }
+                        />
                       </Box>
                     )}
                   </Box>
