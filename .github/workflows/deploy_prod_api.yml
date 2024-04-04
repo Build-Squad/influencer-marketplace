@@ -30,7 +30,7 @@ jobs:
         host: ${{ secrets.PRODSERVER_API }}
         username: ${{ secrets.USERNAME_PROD }}
         key: ${{ secrets.SECRETKEY_PROD }}
-        command_timeout: 10m
+        command_timeout: 5m
         script: |
           cd xfluencer/influencer-marketplace
           pwd
@@ -41,6 +41,27 @@ jobs:
           pip3 install -r requirements.txt 
           python3 manage.py migrate 
           python3 manage.py collectstatic -link --noinput 
+          echo "Stopping previous processes..."
+          # Get the PID of the processes
+          celery_pid=$(pgrep -f "celery worker")
+          beat_pid=$(pgrep -f "beat")
+          marketplace_pid=$(pgrep -f "marketplace")
+          
+          # Check if the PID is non-empty and kill the processes
+          if [ -n "$celery_pid" ]; then
+              kill $celery_pid
+              echo "Celery worker process with PID $celery_pid killed."
+          fi
+          
+          if [ -n "$beat_pid" ]; then
+              kill $beat_pid
+              echo "Beat process with PID $beat_pid killed."
+          fi
+          
+          if [ -n "$marketplace_pid" ]; then
+              kill $marketplace_pid
+              echo "Marketplace process with PID $marketplace_pid killed."
+          fi
           echo "Stopping redis service..."
           sudo systemctl stop redis
           echo "Starting redis service..."
