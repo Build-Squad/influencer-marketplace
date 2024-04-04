@@ -40,7 +40,7 @@ export default function CreateEscrow({
 }: CreateEscrowProps) {
   const cart = useAppSelector((state) => state.cart);
   const [localLoading, setLocalLoading] = useState(false);
-  const connection = new Connection(`https://api.devnet.solana.com`, {
+  const connection = new Connection(`${process.env.NEXT_PUBLIC_RPC_LINK}`, {
     commitment: "confirmed",
     confirmTransactionInitialTimeout: 30000,
   });
@@ -194,8 +194,7 @@ export default function CreateEscrow({
           tx.add(ix);
 
           const options = {
-            skipPreflight: true,
-            confirm: false,
+            skipPreflight: process.env.NEXT_PUBLIC_RPC_LINK?.includes("devnet"),
           };
 
           try {
