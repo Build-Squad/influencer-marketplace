@@ -20,6 +20,8 @@ import {
   XFLUENCER_PROMOTION_TEXT,
 } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
+import { Lock } from "@mui/icons-material";
+import Referrals from "./_referrals";
 import {
   Avatar,
   Box,
@@ -28,6 +30,7 @@ import {
   CircularProgress,
   Grid,
   IconButton,
+  ButtonGroup,
   Link,
   MenuItem,
   Select,
@@ -56,23 +59,25 @@ import Joyride, {
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import { DriveEta } from "@mui/icons-material";
 
-const tabs = [
-  {
-    value: "services",
-    label: "Services",
-  },
-  // {
-  //   value: "packages",
-  //   label: "Packages",
-  // },
-];
-
 const debounce = (fn: Function, ms = 500) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   return function (this: any, ...args: any[]) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
+};
+const getReferralStyles = (referralsEnabled: number | boolean | undefined) => {
+  if (!referralsEnabled) {
+    return {
+      cursor: "not-allowed",
+      color: "rgba(0, 0, 0, 0.26)",
+      border: "1px solid rgba(0, 0, 0, 0.12)",
+      "&:hover": {
+        border: "1px solid rgba(0, 0, 0, 0.12)",
+      },
+    };
+  }
+  return {};
 };
 
 const ProfileLayout = ({
@@ -82,6 +87,9 @@ const ProfileLayout = ({
     id: string;
   };
 }) => {
+  const [type, setType] = React.useState<string>("services");
+  const [referralsEnabled, setReferralsEnabled] =
+    React.useState<boolean>(false);
   const [twitterPromotionText, setTwitterPromotionText] = React.useState(
     XFLUENCER_PROMOTION_TEXT
   );
@@ -119,8 +127,8 @@ const ProfileLayout = ({
           <Typography>
             This tour will walk you through the listing of your service and
             claiming your payments upon completion and validation of orders.
-            Simply create and list your service for business owners and
-            let the magic happen.
+            Simply create and list your service for business owners and let the
+            magic happen.
           </Typography>
         </Box>
       ),
@@ -156,7 +164,7 @@ const ProfileLayout = ({
         </Box>
       ),
       target: ".joyride-create-service-tab",
-      placement: "top",
+      placement: "right",
     },
     {
       content: (
@@ -186,9 +194,10 @@ const ProfileLayout = ({
     // Fetch services for the tour,
     // if there are none, open the tour
     if (params.id == loggedInUser?.id) getServices();
-  }, []);
+  }, [loggedInUser, params]);
 
   const getServices = async () => {
+    console.log("getServices getting called")
     try {
       const { message, data, isSuccess, errors } = await getService(
         "packages/service",
@@ -218,6 +227,10 @@ const ProfileLayout = ({
       setRun(false);
     }
   };
+
+  useEffect(() => {
+    setReferralsEnabled(!!(wallets?.length && params?.id == loggedInUser?.id));
+  }, [wallets]);
 
   useEffect(() => {
     if (params.id) {
@@ -269,7 +282,11 @@ const ProfileLayout = ({
     );
     if (isSuccess) {
       setCurrentUser(data?.data);
-      // TODO: Add the referral link to the twitterPromotionText and set it to the state
+      if (data?.data?.referral_code) {
+        setTwitterPromotionText(
+          `${XFLUENCER_PROMOTION_TEXT} ${data?.data?.referral_code}`
+        );
+      }
     } else {
       notification(message ? message : "Error fetching user details", "error");
     }
@@ -1011,12 +1028,63 @@ const ProfileLayout = ({
                     justifyContent: "space-between",
                   }}
                 >
-                  {tabs.map((item) => (
-                    <Typography variant="h4" key={item.value}>
-                      {item.label}
-                    </Typography>
-                  ))}
-                  {params.id == loggedInUser?.id ? (
+                  {params?.id === loggedInUser?.id ? (
+                    <ButtonGroup
+                      aria-label="outlined primary button group"
+                      sx={{
+                        mb: 2,
+                        borderRadius: 8,
+                      }}
+                      size="large"
+                    >
+                      <Button
+                        variant={type === "services" ? "contained" : "outlined"}
+                        color="secondary"
+                        onClick={() => {
+                          setType("services");
+                        }}
+                        sx={{
+                          borderRadius: "20px",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        Services
+                      </Button>
+                      <Tooltip
+                        title={
+                          !referralsEnabled
+                            ? "Connect a wallet to unlock referrals."
+                            : ""
+                        }
+                      >
+                        <Button
+                          variant={
+                            type === "referrals" ? "contained" : "outlined"
+                          }
+                          color="secondary"
+                          onClick={() => {
+                            if (!referralsEnabled) return;
+                            setType("referrals");
+                          }}
+                          sx={{
+                            borderRadius: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            ...getReferralStyles(referralsEnabled),
+                          }}
+                        >
+                          Referrals
+                          {!referralsEnabled ? (
+                            <Lock fontSize="small" sx={{ ml: 1 }} />
+                          ) : null}
+                        </Button>
+                      </Tooltip>
+                    </ButtonGroup>
+                  ) : (
+                    <Typography variant="h4">Services</Typography>
+                  )}
+                  {params.id == loggedInUser?.id && type == "services" ? (
                     <Box
                       sx={{
                         mr: 4,
@@ -1046,12 +1114,16 @@ const ProfileLayout = ({
                   /> */}
                 </Box>
                 <Box sx={{ p: 2 }}>
-                  <Services
-                    currentInfluencer={currentUser}
-                    id={params.id}
-                    wallets={wallets}
-                    setOpen={setOpenWalletConnectModal}
-                  />
+                  {type == "services" ? (
+                    <Services
+                      currentInfluencer={currentUser}
+                      id={params.id}
+                      wallets={wallets}
+                      setOpen={setOpenWalletConnectModal}
+                    />
+                  ) : (
+                    <Referrals />
+                  )}
                 </Box>
               </Grid>
             </Grid>

@@ -232,7 +232,7 @@ const ConnectXComponent = () => {
             (window.location.href = `${BACKEND_URL}auth-twitter-user/business_owner/connect`)
           }
         >
-          Login to X
+          Connect with X
         </Button>
       </Box>
     </>

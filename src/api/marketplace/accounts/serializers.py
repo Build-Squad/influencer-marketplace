@@ -2,7 +2,7 @@ from unicodedata import category
 from marketplace.services import truncateWalletAddress
 from rest_framework import serializers
 
-from core.serializers import LanguageMasterSerializer, RegionMasterSerializer
+from core.serializers import LanguageMasterSerializer
 from orders.models import Order, OrderItem, Review
 from packages.models import Package, Service
 from .models import (
@@ -227,6 +227,7 @@ class UserSerializer(serializers.ModelSerializer):
     region = AccountRegionSerializer(
         read_only=True, source="region_user_account"
     )
+    twitter_account = TwitterAccountSerializer(required=False)
 
     class Meta:
         model = User
@@ -258,11 +259,11 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         # Update TwitterAccount fields
-        twitter_account_data = validated_data.get('twitter_account')
+        twitter_account_data = validated_data.pop('twitter_account', None)
         if twitter_account_data:
             twitter_account = instance.twitter_account
-            twitter_account.description = twitter_account_data.get(
-                'description', twitter_account.description)
+            for attr, value in twitter_account_data.items():
+                setattr(twitter_account, attr, value)
             twitter_account.save()
 
         return instance

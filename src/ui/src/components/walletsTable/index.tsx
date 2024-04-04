@@ -23,6 +23,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ConfirmDelete } from "../shared/confirmDeleteModal";
 import { notification } from "../shared/notification";
+import { LOGIN_METHODS } from "@/src/utils/consts";
 
 type Props = {
   walletOpen: boolean;
@@ -114,7 +115,10 @@ export default function WalletsTable({ walletOpen }: Props) {
 
   const disConnectWallet = async () => {
     try {
-      if (connectedWallet?.wallet_address_id === user?.user?.username) {
+      if (
+        connectedWallet?.wallet_address_id === user?.user?.username &&
+        user?.user?.login_method === LOGIN_METHODS.WALLET
+      ) {
         await logoutTwitterUser();
         return;
       }

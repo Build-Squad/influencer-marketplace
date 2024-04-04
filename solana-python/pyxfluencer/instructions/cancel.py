@@ -15,8 +15,8 @@ layout = borsh.CStruct("order_code" / borsh.U64)
 
 
 class CancelAccounts(typing.TypedDict):
-    buyer: Pubkey
-    buyer_deposit_token_account: Pubkey
+    business: Pubkey
+    business_deposit_token_account: Pubkey
     vault_account: Pubkey
     vault_authority: Pubkey
     escrow_account: Pubkey
@@ -29,9 +29,9 @@ def cancel(
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> Instruction:
     keys: list[AccountMeta] = [
-        AccountMeta(pubkey=accounts["buyer"], is_signer=True, is_writable=True),
+        AccountMeta(pubkey=accounts["business"], is_signer=True, is_writable=True),
         AccountMeta(
-            pubkey=accounts["buyer_deposit_token_account"],
+            pubkey=accounts["business_deposit_token_account"],
             is_signer=False,
             is_writable=True,
         ),

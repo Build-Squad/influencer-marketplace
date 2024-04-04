@@ -23,7 +23,7 @@ import {
 import styles from '../styles/PingButton.module.css'
 
 import idl from "../xfluencer.json"
-import { Xfluencer } from "../types/xfluencer";
+import { IDL, Xfluencer } from "../types/xfluencer";
 
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import * as anchor from "@coral-xyz/anchor";
@@ -31,7 +31,7 @@ import { Program } from "@coral-xyz/anchor";
 
 import { FC } from "react";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
-import { getAnchorProvider, sleep } from "./utils";
+import { getAnchorProvider } from "./utils";
 
 import * as utils from "./utils";
 
@@ -45,17 +45,6 @@ interface ClaimEscrowSolanaProps {
 
 export const ClaimEscrowSolana: FC<ClaimEscrowSolanaProps> = ({business, influencer, orderCode }) => {
 
-
-    // ARGUMENTS FOR INSTRUCTION SET BY XFLUENCER
-    const BUSINESS   = `4mc6MJVRgyedZxNwjoTHHkk9G7638GQXFCYmyi3TFuwy`;
-    const INFLUENCER = `HPJeMLfpswFC7HnTzCKBbwXeGnUiW6M3h1oNmFiCeSNz`;    
-    //const orderCode = 125 // THIS MUST BE UNIQUE OTHERWISE ERROR
-
-    const business_pk = new PublicKey(BUSINESS);
-    const influencer_pk = new PublicKey(INFLUENCER);
-
-    
-    
     const wallet = useAnchorWallet()
     const connection = new Connection(clusterApiUrl('devnet'),
     {

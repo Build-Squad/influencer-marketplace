@@ -43,7 +43,7 @@ const Services = ({
     total_data_count: 0,
     total_page_count: 0,
     current_page_number: 1,
-    current_page_size: 10,
+    current_page_size: 9,
   });
   const [loading, setLoading] = React.useState<boolean>(true);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
@@ -65,7 +65,7 @@ const Services = ({
           page_size:
             id === loggedInUser?.id
               ? pagination.current_page_size
-              : pagination.current_page_size,
+              : pagination.current_page_size + 1,
           influencer: id,
           status: id === loggedInUser?.id ? type : "published",
         }

@@ -38,11 +38,6 @@ import NextLink from "next/link";
 import SavedProfileIcon from "@/public/svg/Saved.svg";
 import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
 
-type NavbarProps = {
-  setCategoryOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  categoryOpen: boolean;
-};
-
 const MENU_ITEMS: {
   [key: string]: {
     label: string;
@@ -111,6 +106,9 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   const cart = useAppSelector((state) => state.cart);
   const user = useAppSelector((state) => state.user);
   const pathname = usePathname();
+  const [unreadMessageCount, setUnreadMessageCount] = React.useState(0);
+  const [orderRequestCount, setOrderRequestCount] = React.useState(0);
+
   return items ? (
     <>
       {items?.map((key: string) => {
@@ -157,7 +155,10 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                   color: "secondary.main",
                 }}
               >
-                <NotificationPanel />
+                <NotificationPanel
+                  setUnreadMessageCount={setUnreadMessageCount}
+                  setOrderRequestCount={setOrderRequestCount}
+                />
                 <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
               </Box>
             ) : (
@@ -184,7 +185,26 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                     />
                   </Badge>
                 ) : item?.route.includes("/notifications") ? (
-                  <NotificationPanel />
+                  <NotificationPanel
+                    setUnreadMessageCount={setUnreadMessageCount}
+                    setOrderRequestCount={setOrderRequestCount}
+                  />
+                ) : item?.route.includes("/messages") ? (
+                  <Badge badgeContent={unreadMessageCount} color="secondary">
+                    <Image
+                      src={pathname == route ? item?.icon : item?.disabledIcon}
+                      alt={item?.label}
+                      height={16}
+                    />
+                  </Badge>
+                ) : item?.route.includes("/orders") ? (
+                  <Badge badgeContent={orderRequestCount} color="secondary">
+                    <Image
+                      src={pathname == route ? item?.icon : item?.disabledIcon}
+                      alt={item?.label}
+                      height={16}
+                    />
+                  </Badge>
                 ) : (
                   <Image
                     src={pathname == route ? item?.icon : item?.disabledIcon}
@@ -203,13 +223,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
   ) : null;
 };
 
-export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
-  const {
-    isTwitterUserLoggedIn,
-    logoutTwitterUser,
-    isAccountSetupComplete,
-    checkAccountSetup,
-  } = useTwitterAuth();
+export default function Navbar() {
+  const { isTwitterUserLoggedIn, logoutTwitterUser } = useTwitterAuth();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -235,28 +250,21 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
     }
   }, [isTwitterUserLoggedIn]);
 
-  useEffect(() => {
-    const status = params.get("authenticationStatus");
-    if (
-      isTwitterUserLoggedIn &&
-      !isAccountSetupComplete &&
-      status === "success"
-    ) {
-      setCategoryOpen(true);
-    }
-  }, [isTwitterUserLoggedIn, isAccountSetupComplete]);
-
-  useEffect(() => {
-    if (!categoryOpen) {
-      checkAccountSetup();
-    }
-  }, [categoryOpen]);
-
   const handleConnect = () => {
     const roleQueryParams = pathname.includes("business")
       ? "Business"
       : "Influencer";
     router.push(`/login?role=${roleQueryParams}`);
+  };
+
+  const getButtonVariant = (type: string) => {
+    // A temp hack considering if the user is not logged in,
+    // only business owner will view the influencer's profile
+    if (!user?.loggedIn && pathname.includes("influencer/profile")) {
+      if (type == "influencer") return "outlined";
+      if (type == "business") return "contained";
+    }
+    return pathname.includes(type) ? "contained" : "outlined";
   };
 
   return (
@@ -300,9 +308,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
             }}
           >
             <Button
-              variant={
-                pathname.includes("influencer") ? "contained" : "outlined"
-              }
+              variant={getButtonVariant("influencer")}
               color="secondary"
               sx={{
                 borderRadius: "20px",
@@ -314,7 +320,7 @@ export default function Navbar({ setCategoryOpen, categoryOpen }: NavbarProps) {
               For Influencer
             </Button>
             <Button
-              variant={pathname.includes("business") ? "contained" : "outlined"}
+              variant={getButtonVariant("business")}
               color="secondary"
               sx={{
                 borderRadius: "20px",

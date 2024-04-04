@@ -98,7 +98,12 @@ export default function Banner({}: Props) {
             width={"650"}
             height={"0"}
             objectFit="cover"
-            style={{ height: "100%" }}
+            style={{
+              height: "100%",
+              width: "100%",
+              maxHeight: "625px",
+              maxWidth: "1200px",
+            }}
             alt={"Influencer Banner"}
           />
         </Grid>

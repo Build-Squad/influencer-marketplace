@@ -33,6 +33,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import {
   Box,
+  Button,
   CircularProgress,
   Grid,
   IconButton,
@@ -60,6 +61,11 @@ import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import { DriveEta } from "@mui/icons-material";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import MessageIcon from "@mui/icons-material/Message";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import RuleOutlinedIcon from "@mui/icons-material/RuleOutlined";
+import ManualVerifyModal from "@/src/components/dashboardComponents/manualVerifyModal";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
 
 const tabs = [
   {
@@ -77,11 +83,14 @@ const tabs = [
 ];
 export default function BusinessDashboardPage() {
   const router = useRouter();
+  const [connectWallet, setConnectWallet] = useState(false);
   const searchParams = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItemType[]>([]);
+  const [openVerifyModal, setOpenVerifyModal] = useState(false);
+  const [selectedOrderItemId, setSelectedOrderItemId] = useState<string>("");
   const [selectedCard, setSelectedCard] = React.useState<number>(0);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [hasAnOrder, setHasAnOrder] = useState(false);
@@ -851,7 +860,11 @@ export default function BusinessDashboardPage() {
                   transaction.transaction_type ===
                   TRANSACTION_TYPE.CANCEL_ESCROW
               )?.length === 0 && (
-                <CancelEscrow order={params?.row} updateStatus={getOrders} />
+                <CancelEscrow
+                  order={params?.row}
+                  updateStatus={getOrders}
+                  setConnectWallet={setConnectWallet}
+                />
               )}
             {(params?.row?.status === ORDER_STATUS.ACCEPTED ||
               params?.row?.status === ORDER_STATUS.PENDING) &&
@@ -1113,7 +1126,8 @@ export default function BusinessDashboardPage() {
               params?.row?.service_master?.twitter_service_type !==
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
               params?.row?.service_master?.twitter_service_type !==
-                SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET && (
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET &&
+              params?.row?.is_verified && (
                 <Link
                   href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}
                   component={NextLink}
@@ -1160,6 +1174,49 @@ export default function BusinessDashboardPage() {
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ): React.ReactNode => {
         return <StatusChip status={params?.row?.status} />;
+      },
+    },
+    {
+      field: "is_verified",
+      headerName: "Verification Status",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.is_verified ? (
+              <CheckCircleIcon color="success" />
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  columnGap: "4px",
+                }}
+              >
+                {params?.row?.allow_manual_approval ? (
+                  <Tooltip title="Manually Verify">
+                    <Button
+                      size="small"
+                      color="primary"
+                      variant="contained"
+                      endIcon={<RuleOutlinedIcon />}
+                      onClick={() => {
+                        setSelectedOrderItemId(params?.row?.id);
+                        setOpenVerifyModal(true);
+                      }}
+                    >
+                      Verify
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <CancelIcon color="error" />
+                )}
+              </Box>
+            )}
+          </Typography>
+        );
       },
     },
   ];
@@ -1214,6 +1271,10 @@ export default function BusinessDashboardPage() {
   useEffect(() => {
     if (!open) getOrders();
   }, [open]);
+
+  useEffect(() => {
+    if (!openVerifyModal) getOrderItems();
+  }, [openVerifyModal]);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -1451,6 +1512,11 @@ export default function BusinessDashboardPage() {
           readonly={false}
           updateState={getOrders}
         />
+        <ManualVerifyModal
+          open={openVerifyModal}
+          setOpen={setOpenVerifyModal}
+          orderItemId={selectedOrderItemId}
+        />
         {selectedTab == 0 ? (
           <Joyride
             callback={handleJoyrideCallback}
@@ -1470,6 +1536,11 @@ export default function BusinessDashboardPage() {
           />
         ) : null}
       </Box>
+      <WalletConnectModal
+        open={connectWallet}
+        setOpen={setConnectWallet}
+        connect={true}
+      />
     </RouteProtection>
   );
 }

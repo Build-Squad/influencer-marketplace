@@ -22,28 +22,22 @@ export default function useTwitterAuth() {
 
   // State to track whether the user is logged in via X
   const [isTwitterUserLoggedIn, setTwitterUserLoggedIn] = useState(false);
-  const [isAccountSetupComplete, setIsAccountSetupComplete] = useState(true);
   const [userDetails, setUserDetails] = useState<UserType | null>(null);
-  const [categoriesAdded, setCategoriesAdded] = useState(false);
 
   useEffect(() => {
     checkTwitterUserAuthentication();
   }, []);
 
-  useEffect(() => {
-    if (isTwitterUserLoggedIn) {
-      checkAccountSetup();
-    }
-  }, [isTwitterUserLoggedIn]);
-
   // Function to initiate X user authentication
   const startTwitterAuthentication = async ({
     role = "",
+    referral_code = "",
   }: {
     role: string;
+    referral_code?: string;
   }) => {
     try {
-      window.location.href = `${BACKEND_URL}auth-twitter-user/${role}/auth`;
+      window.location.href = `${BACKEND_URL}auth-twitter-user/${role}/auth/?referral_code=${referral_code}`;
     } catch (error) {
       console.error("Error initiating Twitter authentication:", error);
     }
@@ -101,39 +95,11 @@ export default function useTwitterAuth() {
     }
   };
 
-  const checkAccountSetup = async () => {
-    try {
-      if (
-        isTwitterUserLoggedIn &&
-        userDetails?.role?.name === ROLE_NAME.INFLUENCER &&
-        !categoriesAdded
-      ) {
-        const { isSuccess, data } = await getService(
-          "account/account-category/"
-        );
-        if (isSuccess) {
-          if (data?.data?.length > 0) {
-            setIsAccountSetupComplete(true);
-            setCategoriesAdded(true);
-          } else if (data?.data?.length === 0) {
-            setIsAccountSetupComplete(false);
-            setCategoriesAdded(false);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error during account setup check:", error);
-    }
-  };
-
   return {
     isTwitterUserLoggedIn,
     startTwitterAuthentication,
     logoutTwitterUser,
     checkTwitterUserAuthentication,
-    isAccountSetupComplete,
     userDetails,
-    categoriesAdded,
-    checkAccountSetup,
   };
 }

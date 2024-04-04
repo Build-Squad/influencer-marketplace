@@ -5,13 +5,19 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-xfluencer = "7zNs7f6rJyhvu9k4DZwqeqgBa27GqX12mVeQAS528xEq"
+xfluencer = "GxojWLjFSxSaCBBDzu6ynZ8QTmwUDtN65TMEtNF6P8ig"
+
+[programs.devnet]
+xfluencer = "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9"
+
+[programs.mainnet]
+xfluencer = "DmYaabL1PhacWWsRwyZpBqBP9n7tVq7115zG2tznYLb9"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "mainnet"
 wallet = "/home/ruben/.config/solana/id.json"
 
 [scripts]

@@ -5,6 +5,7 @@ import secrets
 
 from django.shortcuts import get_object_or_404
 from accounts.tasks import promote_xfluencer, sendEmail
+from core.models import RegionMaster
 
 from marketplace.authentication import JWTAuthentication, JWTAuthenticationOptional
 from django.db.models import Q
@@ -172,13 +173,15 @@ class TwitterAccountList(APIView):
 
             collaborationIds = request.GET.getlist("collaborationIds[]", [])
 
+            regions = request.GET.getlist("regions[]", [])
+
             upperPriceLimit = request.GET.get("upperPriceLimit", "")
             lowerPriceLimit = request.GET.get("lowerPriceLimit", "")
             upperFollowerLimit = request.GET.get("upperFollowerLimit", "")
             lowerFollowerLimit = request.GET.get("lowerFollowerLimit", "")
 
             searchString = request.GET.get("searchString", "")
-            rating = request.GET.get("rating", 0)
+            rating = request.GET.get("rating", "0")
             
             # Default fetch influencers for explore page
             role = request.GET.get("role", "influencer")
@@ -231,11 +234,15 @@ class TwitterAccountList(APIView):
                     )
 
             if categories:
-                for category in categories:
-                    twitterAccount = twitterAccount.filter(
-                        cat_twitter_account_id__category__name=category
-                    )
+                twitterAccount = twitterAccount.filter(
+                    cat_twitter_account_id__category__name__in=categories
+                )
 
+            if regions:
+                region_ids = RegionMaster.objects.filter(regionName__in=regions).values_list('id', flat=True)
+                twitterAccount = twitterAccount.filter(
+                    Q(user_twitter_account_id__region_user_account__region__in=region_ids)
+                )
             if languages:
                 twitter_accounts_to_exclude = [
                     twitter_account.id
@@ -309,7 +316,7 @@ class TwitterAccountList(APIView):
                     id__in=twitter_accounts_to_exclude
                 )
             
-            if rating:
+            if rating != "0":
                 exclude_ids = [] 
                 
                 for twitter_account in twitterAccount:
@@ -1290,9 +1297,9 @@ class OTPAuthV2(APIView):
                     user.save()
 
                     sendEmail.delay(
-                        "OTP for login to Xfluencer",
+                        "OTP for email verification",
                         "Your OTP is " + str(otp),
-                        "loginEmail.html",
+                        "verifyEmail.html",
                         {"otp": otp, "target": config("FRONT_END_URL")},
                         [request.data["email"]],
                     )

@@ -155,18 +155,24 @@ export default function ServiceCard({
             sx={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: "flex-start",
+              width: "55%",
             }}
           >
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: "bold",
-                mr: 2,
-              }}
-            >
-              {service?.package?.name}
-            </Typography>
+            <Tooltip title={service?.package?.name}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: "bold",
+                  mr: 1,
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {service?.package?.name}
+              </Typography>
+            </Tooltip>
             {service?.package?.influencer?.id === loggedInUser?.id && (
               <>
                 {service?.package?.status === SERVICE_STATUS.DRAFT ? (
@@ -185,6 +191,8 @@ export default function ServiceCard({
             sx={{
               display: "flex",
               alignItems: "center",
+              width: "40%",
+              justifyContent: "flex-end",
             }}
           >
             {service?.package?.influencer?.id === loggedInUser?.id ? (
@@ -192,7 +200,8 @@ export default function ServiceCard({
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "flex-end",
+                  width: "100%",
                 }}
               >
                 {service?.status === SERVICE_STATUS.DRAFT ? (
@@ -275,14 +284,31 @@ export default function ServiceCard({
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "flex-end",
+                  width: "100%",
                 }}
               >
-                <Typography sx={{ fontWeight: "bold" }} variant="h6">
-                  {Number(service?.platform_price)?.toFixed(4) +
+                <Tooltip
+                  title={
+                    Number(service?.platform_price)?.toFixed(4) +
                     " " +
-                    service?.currency?.symbol}
-                </Typography>
+                    service?.currency?.symbol
+                  }
+                >
+                  <Typography
+                    sx={{
+                      fontWeight: "bold",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                    variant="h6"
+                  >
+                    {Number(service?.platform_price)?.toFixed(4) +
+                      " " +
+                      service?.currency?.symbol}
+                  </Typography>
+                </Tooltip>
               </Box>
             )}
           </Box>

@@ -211,15 +211,27 @@ export default function BusinessProfilePreview({ params }: Props) {
               alignItems: "center",
             }}
           >
-            <Avatar
-              alt={businessDetails?.business_name}
-              src={businessDetails?.business_name}
-              sx={{
-                width: 138,
-                height: 138,
-                bgcolor: stringToColor(user?.username ?? ""),
-              }}
-            />
+            {user?.twitter_account?.profile_image_url ? (
+              <Avatar
+                alt={"Business Account Image"}
+                src={user?.twitter_account?.profile_image_url}
+                sx={{
+                  width: 138,
+                  height: 138,
+                }}
+              />
+            ) : (
+              <Avatar
+                alt={businessDetails?.business_name}
+                src={businessDetails?.business_name}
+                sx={{
+                  width: 138,
+                  height: 138,
+                  bgcolor: stringToColor(user?.username ?? ""),
+                }}
+              />
+            )}
+
             <Typography variant="h6" fontWeight={"bold"} sx={{ mt: 2 }}>
               {!businessDetails?.business_name ||
               businessDetails?.business_name == "" ? (

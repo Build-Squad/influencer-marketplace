@@ -1,6 +1,7 @@
 from email import message
 from accounts.serializers import BusinessAccountMetaDataSerializer, UserSerializer, WalletCompleteSerializer
 from accounts.models import BusinessAccountMetaData, User, Wallet
+from core.models import Configuration
 from orders.services import create_order_item_meta_data_field_update_message, create_order_item_publish_date_update_message, create_order_item_status_update_message, create_order_item_tracking
 from core.serializers import CurrencySerializer
 from packages.serializers import PackageSerializer, ServiceMasterReadSerializer
@@ -20,6 +21,8 @@ from .models import (
 )
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from datetime import timedelta
+
 
 class OrderItemMetaDataSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,6 +43,7 @@ class OrderItemReadSerializer(serializers.ModelSerializer):
     currency = CurrencySerializer(read_only=True)
     order_item_meta_data = serializers.SerializerMethodField()
     order_id = OrderReadSerializer(read_only=True)
+    allow_manual_approval = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
@@ -53,6 +57,10 @@ class OrderItemReadSerializer(serializers.ModelSerializer):
         order_item_meta_data = OrderItemMetaData.objects.filter(order_item=obj)
         return OrderItemMetaDataSerializer(order_item_meta_data, many=True).data
 
+    def get_allow_manual_approval(self, obj):
+        COUNTDOWN_TIME_FOR_VALIDATION = int(Configuration.objects.get(
+            key='countdown_time_for_validation').value)
+        return obj.status == "published" and (not obj.is_verified) and obj.publish_date < (timezone.now() - timedelta(seconds=COUNTDOWN_TIME_FOR_VALIDATION))
 
 # Not being used
 class ReviewSerializer(serializers.ModelSerializer):
@@ -508,3 +516,8 @@ class OrderItemMetricSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItemMetric
         fields = '__all__'
+
+
+class ManualVerifyOrderItemSerializer(serializers.Serializer):
+    published_post_link = serializers.CharField(
+        required=False, allow_blank=True)

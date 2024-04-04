@@ -10,12 +10,14 @@ type OrderChatCardType = {
   orderChat: OrderChatType;
   handleOrderChat(id: string): void;
   chatDisplayDetails: ChatDisplayType;
+  selectedOrderChatId?: string | null;
 };
 
 export default function OrderChatCard({
   orderChat,
   handleOrderChat,
   chatDisplayDetails,
+  selectedOrderChatId,
 }: OrderChatCardType) {
   return (
     <Box className="joyride-user-chats">
@@ -27,6 +29,17 @@ export default function OrderChatCard({
           cursor: "pointer",
           my: 1,
           p: 1,
+          borderRadius: 2,
+          backgroundColor:
+            selectedOrderChatId === orderChat?.order?.id
+              ? "rgba(0,0,0,0.1)"
+              : "transparent",
+          "&:hover": {
+            backgroundColor:
+              selectedOrderChatId === orderChat?.order?.id
+                ? "rgba(0,0,0,0.1)"
+                : "#f6f6f6",
+          },
         }}
         onClick={() => {
           handleOrderChat(orderChat?.order?.id!);

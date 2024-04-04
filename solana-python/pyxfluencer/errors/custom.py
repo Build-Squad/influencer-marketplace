@@ -85,6 +85,60 @@ class MissmatchAuthority(ProgramError):
     msg = "Missmatch Authority"
 
 
+class PercentageFeeOutOfrange(ProgramError):
+    def __init__(self) -> None:
+        super().__init__(6009, "Percengate Fee Out of Range")
+
+    code = 6009
+    name = "PercentageFeeOutOfrange"
+    msg = "Percengate Fee Out of Range"
+
+
+class NumericalProblemFoundCalculatingFees(ProgramError):
+    def __init__(self) -> None:
+        super().__init__(6010, "Numerical Problem Found Calculating Fees")
+
+    code = 6010
+    name = "NumericalProblemFoundCalculatingFees"
+    msg = "Numerical Problem Found Calculating Fees"
+
+
+class BusinessHasInsufficientAmountOfTokens(ProgramError):
+    def __init__(self) -> None:
+        super().__init__(6011, "Busines Has Insufficient Amount Of Tokens")
+
+    code = 6011
+    name = "BusinessHasInsufficientAmountOfTokens"
+    msg = "Busines Has Insufficient Amount Of Tokens"
+
+
+class MissmatchBusinessTokenAccount(ProgramError):
+    def __init__(self) -> None:
+        super().__init__(6012, "Missmatch Business Token Account")
+
+    code = 6012
+    name = "MissmatchBusinessTokenAccount"
+    msg = "Missmatch Business Token Account"
+
+
+class MissmatchInfluencerTokenAccount(ProgramError):
+    def __init__(self) -> None:
+        super().__init__(6013, "Missmatch Influencer Token Account")
+
+    code = 6013
+    name = "MissmatchInfluencerTokenAccount"
+    msg = "Missmatch Influencer Token Account"
+
+
+class MissmatchOrderCode(ProgramError):
+    def __init__(self) -> None:
+        super().__init__(6014, "Missmatch Order Code")
+
+    code = 6014
+    name = "MissmatchOrderCode"
+    msg = "Missmatch Order Code"
+
+
 CustomError = typing.Union[
     CannotClaim,
     AlreadyClaim,
@@ -95,6 +149,12 @@ CustomError = typing.Union[
     MissmatchInfluencer,
     BadEscrowState,
     MissmatchAuthority,
+    PercentageFeeOutOfrange,
+    NumericalProblemFoundCalculatingFees,
+    BusinessHasInsufficientAmountOfTokens,
+    MissmatchBusinessTokenAccount,
+    MissmatchInfluencerTokenAccount,
+    MissmatchOrderCode,
 ]
 CUSTOM_ERROR_MAP: dict[int, CustomError] = {
     6000: CannotClaim(),
@@ -106,6 +166,12 @@ CUSTOM_ERROR_MAP: dict[int, CustomError] = {
     6006: MissmatchInfluencer(),
     6007: BadEscrowState(),
     6008: MissmatchAuthority(),
+    6009: PercentageFeeOutOfrange(),
+    6010: NumericalProblemFoundCalculatingFees(),
+    6011: BusinessHasInsufficientAmountOfTokens(),
+    6012: MissmatchBusinessTokenAccount(),
+    6013: MissmatchInfluencerTokenAccount(),
+    6014: MissmatchOrderCode(),
 }
 
 

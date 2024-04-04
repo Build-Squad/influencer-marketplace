@@ -1,11 +1,12 @@
 import asyncio
+from enum import Enum
 import logging
 from accounts.models import TwitterAccount, User, Wallet
+from core.models import Configuration
 from notifications.models import Notification
 from orders.services import create_notification_for_order, create_notification_for_order_item, create_order_item_status_update_message, \
-    create_order_item_tracking, create_order_tracking, create_reminider_notification
+    create_order_item_tracking, create_order_tracking, create_post_verification_failed_notification, create_reminider_notification
 from orders.models import Escrow, OnChainTransaction, Order, OrderItem, OrderItemMetaData, OrderItemMetric
-
 from tweepy import Client
 
 from decouple import config
@@ -17,24 +18,19 @@ from celery_once import QueueOnce
 
 from marketplace import celery_app
 
-from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered
+from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered, validate_escrow
 from pyxfluencer.utils import get_local_keypair_pubkey
+
+import time
+import json
 
 logger = logging.getLogger(__name__)
 
-"""
-Sends a tweet for a given order item.
 
-Parameters:
-- order_item_id (UUID): The ID of the order item.
-
-Returns:
-- bool: True if the tweet is successfully published, False otherwise.
-
-Raises:
-- Exception: If the order item does not exist or there is an error publishing the tweet.
-
-"""
+class EscrowState(Enum):
+    NEW = 0
+    CANCEL = 1
+    DELIVERED = 2
 
 TWITTER_POST_TWITTER_URL = 'https://api.twitter.com/2/tweets'
 CONSUMER_KEY = config("CONSUMER_KEY")
@@ -53,6 +49,9 @@ def cancel_escrow(order_id: str, status: str):
         order = Order.objects.get(id=order_id)
         escrow = Escrow.objects.get(order=order)
 
+        order_items = OrderItem.objects.filter(order_id=order)
+        order_currency = order_items[0].currency
+
         buyer_primary_wallet = Wallet.objects.get(
             id=escrow.business_wallet.id)
         influencer_primary_wallet = Wallet.objects.get(
@@ -64,43 +63,71 @@ def cancel_escrow(order_id: str, status: str):
             escrow=escrow, transaction_type='cancel_escrow'
         )
 
-        result = asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
-                                              influencer_address=influencer_primary_wallet.wallet_address_id, order_code=order.order_number, network=NETWORK))
-
+        if order_currency.currency_type == 'SOL':
+            result = asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair,
+                                                           business_address=buyer_primary_wallet.wallet_address_id,
+                                                           influencer_address=influencer_primary_wallet.wallet_address_id,
+                                                           order_code=order.order_number,
+                                                           network=NETWORK,
+                                                           ))
+        elif order_currency.currency_type == 'SPL':
+            result = asyncio.run(validate_escrow(
+                validation_authority=val_auth_keypair,
+                business_address=buyer_primary_wallet.wallet_address_id,
+                influencer_address=influencer_primary_wallet.wallet_address_id,
+                target_escrow_state=EscrowState.CANCEL,
+                order_code=order.order_number,
+                network=NETWORK,
+                processing_spl_escrow=True
+            ))
         # Update all the values of the on_chain_transaction with result.value[0]
-        transaction_result = result.value[0]
+        result_dict = json.loads(result)
 
-        on_chain_transaction.confirmation_status = transaction_result.confirmation_status
-        on_chain_transaction.confirmations = transaction_result.confirmations
-        on_chain_transaction.err = transaction_result.err
-        on_chain_transaction.slot = transaction_result.slot
-        on_chain_transaction.is_confirmed = transaction_result.err is None
+        # Access the first item in the 'value' list
+        transaction_result = result_dict['result']['value'][0]
+
+        on_chain_transaction.confirmation_status = transaction_result['confirmationStatus']
+        on_chain_transaction.confirmations = transaction_result.get(
+            'confirmations')  # This might be None
+        on_chain_transaction.err = transaction_result['err']
+        on_chain_transaction.slot = transaction_result['slot']
+        on_chain_transaction.is_confirmed = transaction_result['err'] is None
 
         on_chain_transaction.save()
 
         # After the above task is finished successfully, update the order status to cancelled
-        order.status = status
-        order.save()
 
-        create_order_tracking(order=order, status=status)
-        create_notification_for_order(order=order, old_status='accepted', new_status=status)
+        if on_chain_transaction.is_confirmed:
 
-        escrow.status = "cancelled"
-        escrow.save()
+            order.status = status
+            order.save()
 
-        return True
+            create_order_tracking(order=order, status=status)
+            create_notification_for_order(
+                order=order, old_status='accepted', new_status=status)
+
+            escrow.status = "cancelled"
+            escrow.save()
+
+            return True
+        else:
+            return False
 
     except Exception as e:
         logger.error('Error in cancelling escrow: %s', str(e))
         return False
 
 
-@celery_app.task(base=QueueOnce, once={'graceful': True})
+@celery_app.task(base=QueueOnce, once={'graceful': True}, autoretry_for=(Exception,), retry_kwargs={'max_retries': 3})
 def confirm_escrow(order_id: str):
     try:
         # Get order and corresponding escrow
         order = Order.objects.get(id=order_id)
         escrow = Escrow.objects.get(order=order)
+
+        order_items = OrderItem.objects.filter(order_id=order)
+        platform_fees = int(order_items[0].platform_fee)
+        order_currency = order_items[0].currency
 
         buyer_primary_wallet = Wallet.objects.get(
             id=escrow.business_wallet.id)
@@ -109,18 +136,65 @@ def confirm_escrow(order_id: str):
 
         val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
 
-        asyncio.run(validate_escrow_to_delivered(validator_authority=val_auth_keypair, business_address=buyer_primary_wallet.wallet_address_id,
-                                                 influencer_address=influencer_primary_wallet.wallet_address_id, order_code=order.order_number, network=NETWORK))
+        on_chain_transaction = OnChainTransaction.objects.create(
+            escrow=escrow, transaction_type='confirm_escrow'
+        )
 
-        order.status = 'completed'
-        order.save()
+        if order_currency.currency_type == 'SOL':
+            result = asyncio.run(validate_escrow_to_delivered(validator_authority=val_auth_keypair,
+                                                              business_address=buyer_primary_wallet.wallet_address_id,
+                                                              influencer_address=influencer_primary_wallet.wallet_address_id,
+                                                              order_code=order.order_number,
+                                                              network=NETWORK,
+                                                              percentage_fee=platform_fees
+                                                              ))
+        elif order_currency.currency_type == 'SPL':
+            result = asyncio.run(validate_escrow(
+                validation_authority=val_auth_keypair,
+                business_address=buyer_primary_wallet.wallet_address_id,
+                influencer_address=influencer_primary_wallet.wallet_address_id,
+                target_escrow_state=EscrowState.DELIVERED,
+                order_code=order.order_number,
+                network=NETWORK,
+                percentage_fee=platform_fees,
+                processing_spl_escrow=True
+            ))
 
-        escrow.status = "delivered"
-        escrow.save()
+        # Update all the values of the on_chain_transaction with result.value[0]
+        result_dict = json.loads(result)
+
+        # Access the first item in the 'value' list
+        transaction_result = result_dict['result']['value'][0]
+
+        on_chain_transaction.confirmation_status = transaction_result['confirmationStatus']
+        on_chain_transaction.confirmations = transaction_result.get(
+            'confirmations')  # This might be None
+        on_chain_transaction.err = transaction_result['err']
+        on_chain_transaction.slot = transaction_result['slot']
+        on_chain_transaction.is_confirmed = transaction_result['err'] is None
+
+        on_chain_transaction.save()
+
+        if on_chain_transaction.is_confirmed:
+            order.status = 'completed'
+            order.save()
+
+            create_order_tracking(order=order, status=order.status)
+            create_notification_for_order(
+                order=order, old_status='accepted', new_status='completed')
+
+            escrow.status = "delivered"
+            escrow.save()
+
+            return True
+
+        else:
+            return False
 
     except Exception as e:
         raise Exception('Error in confirming escrow', str(e))
 
+logger = logging.getLogger(__name__)
 
 def check_order_status(pk):
     try:
@@ -158,7 +232,7 @@ def tweet(text, client):
         tweet_id = res.data['id']
         return tweet_id
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in publishing tweet: %s', str(e))
 
 
 def like_tweet(tweet_id, client):
@@ -166,7 +240,7 @@ def like_tweet(tweet_id, client):
         res = client.like(tweet_id=tweet_id, user_auth=False)
         return tweet_id if res.data['liked'] else None
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in liking tweet: %s', str(e))
 
 
 def reply_to_tweet(text, in_reply_to_tweet_id, client):
@@ -175,7 +249,7 @@ def reply_to_tweet(text, in_reply_to_tweet_id, client):
             text=text, in_reply_to_tweet_id=in_reply_to_tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in replying to tweet: %s', str(e))
 
 
 def quote_tweet(text, tweet_id, client):
@@ -184,7 +258,7 @@ def quote_tweet(text, tweet_id, client):
             text=text, quote_tweet_id=tweet_id, user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in quoting tweet: %s', str(e))
 
 
 def poll(text, poll_options, poll_duration_minutes, client):
@@ -194,7 +268,7 @@ def poll(text, poll_options, poll_duration_minutes, client):
                                   user_auth=False)
         return res.data['id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in creating poll: %s', str(e))
 
 
 def retweet(tweet_id, client):
@@ -202,7 +276,7 @@ def retweet(tweet_id, client):
         res = client.retweet(tweet_id=tweet_id, user_auth=False)
         return res.data['rest_id']
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in retweeting tweet: %s', str(e))
 
 
 def thread(text, client):
@@ -228,7 +302,7 @@ def thread(text, client):
                     f"Tweet is longer than {TWEET_LIMIT} characters")
         return published_tweet_id
     except Exception as e:
-        raise Exception(str(e))
+        logger.error('Error in creating thread: %s', str(e))
 
 
 @shared_task
@@ -269,10 +343,11 @@ def twitter_task(order_item_id):
             text = order_item_meta_data.value
         elif order_item_meta_data.field_name == 'tweet_id':
             # Split the tweet_id and get the last part
-            tweet_id = order_item_meta_data.value.split('/')[-1]
+            tweet_id = order_item_meta_data.value.split('/')[-1].split('?')[0]
         elif order_item_meta_data.field_name == 'in_reply_to_tweet_id':
             # Split the tweet_id and get the last part
-            in_reply_to_tweet_id = order_item_meta_data.value.split('/')[-1]
+            in_reply_to_tweet_id = order_item_meta_data.value.split(
+                '/')[-1].split('?')[0]
         elif order_item_meta_data.field_name == 'poll_options':
             # This will be a comma separated string, convert to list
             options = order_item_meta_data.value.split(',')
@@ -285,7 +360,8 @@ def twitter_task(order_item_id):
                     consumer_key=CONSUMER_KEY,
                     consumer_secret=CONSUMER_SECRET,
                     access_token=ACCESS_TOKEN,
-                    access_token_secret=ACCESS_SECRET
+                    access_token_secret=ACCESS_SECRET,
+                    wait_on_rate_limit=True
                     )
     try:
         service_type = order_item.service_master.twitter_service_type
@@ -306,31 +382,44 @@ def twitter_task(order_item_id):
         elif service_type == 'thread':
             res = thread(text=text, client=client)
 
-        order_item.published_tweet_id = res
-        order_item.status = 'published'
-        order_item.save()
+        if res:
+            order_item.published_tweet_id = res
+            order_item.status = 'published'
+            order_item.save()
 
-        # Call the validate_order_item task to run 2 minutes after now
-        validate_order_item.apply_async(
-            args=[order_item.id], countdown=120)
+            # Get the countfown time for the validate_order_item task
+            COUNTDOWN_TIME_FOR_VALIDATION = int(Configuration.objects.get(
+                key='countdown_time_for_validation').value)
 
-        # Create a order item tracking for the order item
-        create_order_item_tracking(order_item=order_item, status=order_item.status)
+            # Call the validate_order_item task to run 2 minutes after now
+            validate_order_item.apply_async(
+                args=[order_item.id], countdown=COUNTDOWN_TIME_FOR_VALIDATION)
 
-        # Check if the order is completed
-        check_order_status(pk=order_item.order_id.id)
+            # Create a order item tracking for the order item
+            create_order_item_tracking(
+                order_item=order_item, status=order_item.status)
 
-        # Create notification for order item
-        create_notification_for_order_item(
-            order_item=order_item, old_status='scheduled', new_status='published')
-        create_order_item_status_update_message(
-            order_item=order_item, updated_by=order_item.package.influencer)
+            # Check if the order is completed
+            check_order_status(pk=order_item.order_id.id)
+
+            # Create notification for order item
+            create_notification_for_order_item(
+                order_item=order_item, old_status='scheduled', new_status='published')
+            create_order_item_status_update_message(
+                order_item=order_item, updated_by=order_item.package.influencer)
+        else:
+            order_item.status = 'cancelled'
+            order_item.save()
+
+            # Create a order item tracking for the order item
+            create_order_item_tracking(
+                order_item=order_item, status='failed')
+
+            create_notification_for_order_item(
+                order_item=order_item, old_status='scheduled', new_status='failed')
 
     except Exception as e:
-        raise Exception(str(e))
-
-    return True
-
+        logger.error('Error in twitter task: %s', str(e))
 
 def schedule_tweet(order_item_id):
     try:
@@ -450,12 +539,13 @@ def is_post_published(order_item_id) -> bool:
                         consumer_key=CONSUMER_KEY,
                         consumer_secret=CONSUMER_SECRET,
                         access_token=ACCESS_TOKEN,
-                        access_token_secret=ACCESS_SECRET
+                        access_token_secret=ACCESS_SECRET,
+                        wait_on_rate_limit=True
                         )
         res = client.get_tweet(
             id=order_item.published_tweet_id, user_auth=False)
 
-        return True if str(res.data['id']) == str(order_item.published_tweet_id) else False
+        return str(res.data.get('id', '')) == str(order_item.published_tweet_id)
     except Exception as e:
         logger.error('Error in checking if post is published: %s', str(e))
         return False
@@ -476,7 +566,8 @@ def is_post_liked(order_item_id) -> bool:
                         consumer_key=CONSUMER_KEY,
                         consumer_secret=CONSUMER_SECRET,
                         access_token=ACCESS_TOKEN,
-                        access_token_secret=ACCESS_SECRET
+                        access_token_secret=ACCESS_SECRET,
+                        wait_on_rate_limit=True
                         )
         res = client.get_liking_users(
             id=order_item.published_tweet_id, user_auth=False)
@@ -505,59 +596,124 @@ def validate_order_item(order_item_id):
             order_item.is_verified = True
             order_item.save()
             check_order_status(pk=order_item.order_id.id)
+        else:
+            order_item.is_verified = False
+            order_item.save()
+            create_post_verification_failed_notification(order_item=order_item)
     except Exception as e:
         raise Exception(str(e))
 
 
-@celery_app.task()
+@celery_app.task(base=QueueOnce, once={'graceful': True})
 def store_order_item_metrics():
-    # Get the current date
     now = timezone.now()
-    # Get all order items that are in published status and verified and service type is not retweet or like
+    # Get all order items that are in published status and service type is not retweet or like
     order_items = OrderItem.objects.filter(
         status='published', 
         service_master__twitter_service_type__in=['tweet', 'reply_to_tweet', 'quote_tweet', 'poll', 'thread']
     )
+    logger.info(f'Found {len(order_items)} order items')
+
+    # Group order items by influencer
+    influencers_order_items = {}
     for order_item in order_items:
-        # Calculate the number of days since the order item was published
         days_since_published = (now - order_item.publish_date).days
-
-        # Check if the current day is the 1st, 2nd, 3rd, 7th, 14th, 21st, or 28th day since the order item was published
         if days_since_published in [1, 2, 3, 7, 14, 21, 28]:
-            # Get the twitter account of the influencer
-            twitter_account = TwitterAccount.objects.get(
-                id=order_item.package.influencer.twitter_account.id)
-            client = Client(bearer_token=twitter_account.access_token,
-                            consumer_key=CONSUMER_KEY,
-                            consumer_secret=CONSUMER_SECRET,
-                            access_token=ACCESS_TOKEN,
-                            access_token_secret=ACCESS_SECRET
-                            )
+            if order_item.package.influencer.twitter_account.id not in influencers_order_items:
+                influencers_order_items[order_item.package.influencer.twitter_account.id] = [
+                ]
+            influencers_order_items[order_item.package.influencer.twitter_account.id].append(
+                order_item)
+
+    logger.info(
+        f'Grouped order items by {len(influencers_order_items)} influencers')
+
+    for influencer_id, influencer_order_items in influencers_order_items.items():
+        logger.info(f'Processing influencer id {influencer_id}')
+        # Get the twitter account of the influencer
+        twitter_account = TwitterAccount.objects.get(id=influencer_id)
+        client = Client(bearer_token=twitter_account.access_token,
+                        consumer_key=CONSUMER_KEY,
+                        consumer_secret=CONSUMER_SECRET,
+                        access_token=ACCESS_TOKEN,
+                        access_token_secret=ACCESS_SECRET,
+                        wait_on_rate_limit=True
+                        )
+
+        # Collect all tweet ids for this influencer
+        tweet_ids = [
+            order_item.published_tweet_id for order_item in influencer_order_items]
+        logger.info(
+            f'Collected {len(tweet_ids)} tweet ids for influencer id {influencer_id}')
+
+        # Split tweet_ids into chunks of 100
+        tweet_ids_chunks = [tweet_ids[i:i + 100]
+                            for i in range(0, len(tweet_ids), 100)]
+
+        for tweet_ids_chunk in tweet_ids_chunks:
+            logger.info(
+                f'Processing chunk of {len(tweet_ids_chunk)} tweet ids')
             try:
-                res = client.get_tweet(
-                    id=order_item.published_tweet_id, user_auth=False, tweet_fields=TWEET_FIELDS)
+                # Use get_tweets() to get metrics of all tweets for this influencer
+                res = client.get_tweets(
+                    ids=tweet_ids_chunk, user_auth=False, tweet_fields=TWEET_FIELDS)
 
-                # For all the res.data fields, create a OrderItemMetric object
-                public_metrics = res.data['public_metrics']
-                organic_metrics = res.data['organic_metrics']
-                non_public_metrics = res.data['non_public_metrics']
+                # Log the response object
+                logger.info(f'Got response object: {res.data}')
 
-                order_item_metrics = []
+                logger.info(
+                    f'Got metrics for {len(res.data)} tweets for influencer id {influencer_id}')
 
-                for key, value in public_metrics.items():
-                    order_item_metrics.append(
-                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='public_metrics'))
+                # Check for errors in the response
+                if 'errors' in res:
+                    for error in res['errors']:
+                        logger.error('Error in getting tweet metrics for tweet id: %s : %s',
+                                     error['resource_id'], error['detail'])
 
-                for key, value in organic_metrics.items():
-                    order_item_metrics.append(
-                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic_metrics'))
+                for data in res.data:
 
-                for key, value in non_public_metrics.items():
-                    order_item_metrics.append(
-                        OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public_metrics'))
+                    matching_items = [
+                        item for item in influencer_order_items if str(item.published_tweet_id) == str(data['id'])]
+                    order_item = matching_items[0] if matching_items else None
 
-                OrderItemMetric.objects.bulk_create(order_item_metrics)
+                    logger.info(f'Processing tweet id {data["id"]}')
+
+                    logger.info(
+                        f'Found order item with order item id {order_item.id}')
+
+                    if order_item is None:
+                        logger.info(
+                            f'No order item found for tweet id {data["id"]}')
+                        continue
+
+                    # For all the data fields, create a OrderItemMetric object
+                    public_metrics = data['public_metrics']
+                    organic_metrics = data['organic_metrics']
+                    non_public_metrics = data['non_public_metrics']
+
+                    order_item_metrics = []
+
+                    for key, value in public_metrics.items():
+                        order_item_metrics.append(
+                            OrderItemMetric(order_item=order_item, metric=key, value=value, type='public_metrics'))
+
+                    for key, value in organic_metrics.items():
+                        order_item_metrics.append(
+                            OrderItemMetric(order_item=order_item, metric=key, value=value, type='organic_metrics'))
+
+                    for key, value in non_public_metrics.items():
+                        order_item_metrics.append(
+                            OrderItemMetric(order_item=order_item, metric=key, value=value, type='non_public_metrics'))
+
+                    OrderItemMetric.objects.bulk_create(order_item_metrics)
+                    logger.info(
+                        f'Created {len(order_item_metrics)} OrderItemMetric objects')
 
             except Exception as e:
-                logger.error('Error in getting tweet metrics: %s', str(e))
+                logger.error(
+                    'Error in getting tweet metrics for influencer id: %s : %s', influencer_id, str(e))
                 continue
+
+            # Sleep for 1 minute after each request
+            time.sleep(60)
+            logger.info('Sleeping for 1 minute')

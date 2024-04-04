@@ -11,6 +11,7 @@ from config import KeypairPaths, load_configuration
 
 async def main():
     
+  
     msg = "Create Escrow for Business and Influencer with an amount and an order code"
     print(len(msg)*"*")
     print(msg)
@@ -24,16 +25,20 @@ async def main():
     print(f"Program ID: {PROGRAM_ID}")
 
     keypair_paths = KeypairPaths()
+    
+    # @TODO: add to utils a way to get the base58 from keypair
+    #validation, validation_authority_pk = get_local_keypair_pubkey(path=keypair_paths.validation_authority)
+    #print(validation)  # way to get base58 from keypair seed
         
     _, validation_authority_pk = get_local_keypair_pubkey(path=keypair_paths.validation_authority)
     business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     
-    assert str(validation_authority_pk) == configuration["platform"]   
-    assert str(business_pk) == configuration["business"]
-    assert str(influencer_pk) == configuration["influencer"]
+    assert str(validation_authority_pk) == configuration["platform"]       
+    assert str(business_pk) == configuration["business"]["pubkey"]
+    assert str(influencer_pk) == configuration["influencer"]["pubkey"]
 
-    amount = configuration["lamports"]
+    amount = configuration["amount"]["lamports"]
     order_code = configuration["order_code"]
 
     args = {"amount":int(amount), "order_code":int(order_code) }

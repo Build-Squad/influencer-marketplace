@@ -70,9 +70,11 @@ const SecondTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            With the integration of web3 wallets, our platform ensures that all
-            transactions are secure, transparent, and tamper-proof. Bid farewell
-            to concerns about delayed payments or disputes.
+            By integrating Solana blockchain and a smart contract-based escrow
+            system, XFluencer ensures secure, transparent, and tamper-proof
+            transactions. Users can trust in the inherent security of blockchain
+            technology, knowing that their exchanges are protected and
+            transparent.
           </Typography>
         </Box>
 
@@ -81,12 +83,9 @@ const SecondTabComponent = () => {
             sx={{ width: "16px", height: "16px", marginTop: "6px" }}
           />
           <Typography variant="h6">
-            Leveraging blockchain technology and specifically Solana blockchain
-            - known for its high performance and scalability, utilizing Proof of
-            History (PoH) to timestamp transactions efficiently. Solana boasts
-            remarkable speed and efficiency, processing transactions at a
-            significantly faster rate and with lower fees compared to
-            competitors like Ethereum.
+            Benefiting from Solana's efficiency and our pioneering system,
+            transactions unfold seamlessly, guaranteeing swift and dependable
+            exchanges that offer reassurance to all involved parties.
           </Typography>
         </Box>
       </Grid>
@@ -136,10 +135,12 @@ const ThirdTabComponent = () => {
       </Grid>
       <Grid item xs={12} sm={6} md={6} lg={6}>
         <Image
-          src={Article3_Business}
+          src={
+            "https://xfluencer.s3.eu-west-2.amazonaws.com/static/scheduling.png"
+          }
           alt=""
-          height={100}
-          width={100}
+          width={"500"}
+          height={"500"}
           style={{ marginLeft: "8px", width: "100%", height: "500px" }}
         />
       </Grid>

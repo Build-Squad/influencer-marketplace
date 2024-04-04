@@ -24,13 +24,14 @@ import * as utils from "./utils";
 const programId = new PublicKey(idl.metadata.address);
 
 interface CreateEscrowSolanaProps {
+    validator: string,
     business: string,
     influencer: string,
     orderCode: number,
     lamports: number
   }
 
-export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influencer, orderCode, lamports}) => {
+export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({validator, business, influencer, orderCode, lamports}) => {
 
     const wallet = useAnchorWallet()
     const connection = new Connection(clusterApiUrl('devnet'),
@@ -44,12 +45,19 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
     const { publicKey, signTransaction, sendTransaction } = useWallet()
     
     if (!connection || !publicKey) { 			
-        console.warn("Wallet was not connected")
+        const msg = "Wallet was not connected"
+        console.warn(msg)
         return (
-        <div className={styles.buttonContainer}>
-            <button className={styles.button} disabled>CREATE (wallet not connected)</button>
-        </div>  )      
+            <div className={styles.buttonContainer}>
+                <button className={styles.button} disabled>CREATE ({msg})</button>
+            </div>  
+        )      
+     } else {
+        console.warn("Wallet does NOT Business Configuration");
+        console.log("public",publicKey)
+        console.log("wallet",wallet.publicKey)
      }
+
 
     const onClick = async () => {
         console.log("CreateEscrowSolana")
@@ -58,13 +66,14 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
 			console.warn("Wallet was not connected")
 			return }
 
-        const business_pk = new PublicKey(business)
-        const influencer_pk = new PublicKey(influencer);
+        const validatorPublicKey = new PublicKey(validator);
+        const businessPublicKey = new PublicKey(business);
+        const influencerPublicKey = new PublicKey(influencer);
         
         const [escrowPDA] = await PublicKey.findProgramAddress([
             utf8.encode('escrow'),
-            business_pk.toBuffer(), 
-            influencer_pk.toBuffer(),
+            businessPublicKey.toBuffer(), 
+            influencerPublicKey.toBuffer(),
             utf8.encode(orderCode.toString())
           ],
           programId
@@ -72,23 +81,25 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
         
         console.debug("escrowPDA", escrowPDA);
           
-        const amount = lamports * 0.01;
-        console.log("amount",amount.toString())
-
         const ix = await program.methods.createEscrow(
-            new anchor.BN(amount),
+            new anchor.BN(lamports),
             new anchor.BN(orderCode)
             ).accounts({
-                from: publicKey,
-                to: influencer_pk,
+                validationAuthority: validatorPublicKey,
+                from: businessPublicKey,
+                to: influencerPublicKey,
                 systemProgram:  anchor.web3.SystemProgram.programId,
                 escrow: escrowPDA
               }).instruction();
         
         const tx = new Transaction().add(ix);
+
+        console.log(tx);
+
         const options = {
 			skipPreflight: true      
 		  }
+
         try {
             const signature = await sendTransaction(tx, connection, options);
             console.debug("signature", signature.valueOf());
@@ -97,22 +108,17 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({business, influ
             console.debug("context", txSign.context);
             console.debug("value", txSign.value);
             if(txSign.value.err != null){
-                throw new Error(`Instruction error number found: `+txSign.value.err['InstructionError'][0].toString());
-                
+                throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
             }
         }
         catch(error)
         {
-            console.error(error)
+            console.error(error);
         }
-
-    
     }
 
     return (
-        <div className={styles.buttonContainer} onClick={onClick}>
-            <button className={styles.button}>CREATE Business {business} Influencer {influencer}</button>
-        </div>
+      <button className={styles.button} onClick={onClick}>CREATE Business {business} Influencer {influencer}</button>
     )
 
 }

@@ -3,6 +3,7 @@ from .views import (
     ApproveOrderItemView,
     CancelOrderView,
     CancelTweetView,
+    ManualVerifyOrderItemView,
     OrderItemMetricDetailView,
     OrderList,
     OrderDetail,
@@ -57,4 +58,6 @@ urlpatterns = [
          name="order-item-metrics"),
     path("approve-ordder-item/<uuid:pk>/",
          ApproveOrderItemView.as_view(),      name="approve-order-item"),
+    path("order-item/verify/<uuid:pk>/",
+         ManualVerifyOrderItemView.as_view(), name="verify-order-item"),
 ]

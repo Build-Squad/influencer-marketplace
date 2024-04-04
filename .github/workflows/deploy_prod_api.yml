@@ -1,0 +1,70 @@
+name: Deploy API - Prod
+
+on:
+  push:
+    branches: [ release ]   
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get Github action IP
+      id: ip
+      uses: haythem/public-ip@v1.2
+    - name: Setting environment variables..
+      run: |
+        echo "AWS_DEFAULT_REGION=eu-west-2" >> $GITHUB_ENV
+        echo "AWS_SG_NAME=${{ secrets.AWS_SECURITY_GROUP_ID_PROD }}" >> $GITHUB_ENV
+        
+    - name: Add Github Actions IP to Security group
+      run: |
+        aws ec2 authorize-security-group-ingress --group-id ${{ env.AWS_SG_NAME }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32    
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
+     
+    - name: Steps
+      uses: appleboy/ssh-action@master
+      continue-on-error: false
+      with:
+        host: ${{ secrets.PRODSERVER_API }}
+        username: ${{ secrets.USERNAME_PROD }}
+        key: ${{ secrets.SECRETKEY_PROD }}
+        command_timeout: 5m
+        script: |
+          cd xfluencer/influencer-marketplace
+          pwd
+          git status
+          git pull 
+          pgrep gunicorn | xargs kill -9
+          cd src/api/marketplace 
+          source venv/bin/activate 
+          pip3 install -r requirements.txt 
+          python3 manage.py migrate 
+          python3 manage.py collectstatic -link --noinput 
+          echo "Stopping previous processes..."
+          pgrep gunicorn | xargs kill -9
+          echo "Stopping redis service..."
+          sudo systemctl stop redis
+          echo "Starting redis service..."
+          sudo systemctl start redis
+          echo "Starting gunicorn..."
+          nohup sh -c 'gunicorn -w 4 marketplace.wsgi:application > gunicorn.out 2>&1' &
+          echo "Gunicorn started."
+          echo "Starting celery worker..."
+          nohup sh -c 'celery -A marketplace worker -l info > celery_worker.out 2>&1' &
+          echo "Celery worker started."
+          echo "Starting celery beat..."
+          nohup sh -c 'celery -A marketplace beat -l info > celery_beat.out 2>&1' &
+          echo "Celery beat started."
+          sudo systemctl restart nginx
+          echo "Restarted nginx"
+          
+    - name: Remove Github Actions IP from security group
+      if: always()
+      run: |
+        aws ec2 revoke-security-group-ingress --group-id ${{ env.AWS_SG_NAME }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}

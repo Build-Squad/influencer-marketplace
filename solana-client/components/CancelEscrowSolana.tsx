@@ -38,6 +38,7 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
     });
+
     const program = utils.getAnchorProgram(connection);
     const provider = new AnchorProvider(connection, wallet, {})
     setProvider(provider)
@@ -47,7 +48,7 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
         console.warn("Wallet was not connected")
         return (
         <div className={styles.buttonContainer}>
-            <button className={styles.button} disabled>CREATE (wallet not connected)</button>
+            <button className={styles.button} disabled>CANCEL (wallet not connected)</button>
         </div>  )      
      }
 
@@ -56,7 +57,6 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
         const business_pk = new PublicKey(business)
         const influencer_pk = new PublicKey(influencer);
         
-
         const [escrowPDA] = await PublicKey.findProgramAddress([
             utf8.encode('escrow'),
             business_pk.toBuffer(), 
@@ -65,29 +65,30 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
           ],
           programId
         );
-        console.log()
+      
                
         const ix = await program.methods.cancelEscrowSol()
             .accounts({
                 business: business_pk,
                 escrowAccount: escrowPDA, 
-                systemProgram:  anchor.web3.SystemProgram.programId,
+                systemProgram: anchor.web3.SystemProgram.programId,
             })
             .instruction();
         
         const tx = new Transaction().add(ix);
+
         const options = {
 			skipPreflight: true      
-		  }
+		}
+
         try {
             const signature = await sendTransaction(tx, connection, options);
             const txSign = await connection.confirmTransaction(signature, "processed");
-            console.debug("txSing",txSign)
+            console.debug("txSing", txSign);
             console.debug("context", txSign.context);
             console.debug("value", txSign.value);
             if(txSign.value.err != null){
-                throw new Error(`Instruction error number found: `+txSign.value.err['InstructionError'][0].toString());
-                
+                throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
             }
         }
         catch(error)
@@ -97,9 +98,7 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
     }
 
     return (
-        <div className={styles.buttonContainer} onClick={onClick}>
-            <button className={styles.button}>CANCEL Business {business}</button>
-        </div>
+        <button className={styles.button} onClick={onClick}>Cancel Business {business}</button>
     )
 
 }

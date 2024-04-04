@@ -167,6 +167,29 @@ export default function Orders() {
     }
   };
 
+  const handleUserInteraction = async () => {
+    const { isSuccess, data, message } = await postService(
+      `orders/order-list/`,
+      {
+        page_number: pagination.current_page_number,
+        page_size: pagination.current_page_size,
+      }
+    );
+
+    if (isSuccess && data?.data?.status_counts) {
+      const { status_counts: orders } = data.data;
+      const totalOrders = Object.values(orders).reduce(
+        (acc: number, curr: any) => acc + curr,
+        0
+      );
+
+      if (totalOrders === 1 && orders.pending === 1) {
+        setStepIndex(0);
+        setRun(true);
+      }
+    }
+  };
+
   const getOrders = async () => {
     try {
       setLoading(true);
@@ -180,11 +203,6 @@ export default function Orders() {
         }
       );
       if (isSuccess) {
-        // Open the user guide if there's only 1 order request.
-        if (data?.pagination?.total_data_count == 1) {
-          setStepIndex(0);
-          setRun(true);
-        }
         setOrders(data?.data?.orders);
         setPagination({
           ...pagination,
@@ -364,6 +382,10 @@ export default function Orders() {
       ),
     },
   ];
+
+  useEffect(() => {
+    handleUserInteraction();
+  }, []);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

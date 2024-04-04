@@ -83,6 +83,9 @@ export default function Explore({}: Props) {
       formik.setFieldValue("categories", filterData?.categories);
     }
     getInfluencers(filterData);
+    return () => {
+      localStorage.removeItem("filterData");
+    };
   }, []);
 
   const getPrice = (inf: any, type = "max") => {

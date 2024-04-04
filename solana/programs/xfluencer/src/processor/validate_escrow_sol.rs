@@ -77,20 +77,17 @@ pub fn process(
         let to_account = ctx.accounts.validation_authority.to_account_info();
 
         msg!(
-            "Trander fees ({} lamports) from escrow to validation authority",
+            "Fees to transfer ({} lamports) from escrow to validation authority",
             &fees_amount.to_string()
         );
         **from_account.try_borrow_mut_lamports()? -= fees_amount;
         **to_account.try_borrow_mut_lamports()? += fees_amount;
 
         msg!(
-            "Lamports Remaining in Escrow {}",
+            "Remaining lamports in Escrow {}",
             from_account.get_lamports().to_string()
         );
-        msg!(
-            "Lamports Tranferred to Validation Authority {}",
-            to_account.get_lamports().to_string()
-        );
+
     }
 
     Ok(())

@@ -23,7 +23,15 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { notification } from "../shared/notification";
 
-export default function NotificationPanel() {
+type NotificationPanelProps = {
+  setUnreadMessageCount: (count: number) => void;
+  setOrderRequestCount: (count: number) => void;
+};
+
+export default function NotificationPanel({
+  setUnreadMessageCount,
+  setOrderRequestCount,
+}: NotificationPanelProps) {
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notificationsAnchor, setNotificationsAnchor] = React.useState(null);
@@ -54,6 +62,8 @@ export default function NotificationPanel() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+        setUnreadMessageCount(data?.data?.unread_message_count);
+        setOrderRequestCount(data?.data?.order_requests_count);
       } else {
       }
     } finally {
@@ -98,7 +108,7 @@ export default function NotificationPanel() {
   const handleClickNotifications = React.useCallback((event: any) => {
     setNotificationsAnchor(event.currentTarget);
   }, []);
-  
+
   const handleCloseNotifications = () => {
     setNotificationsAnchor(null);
   };

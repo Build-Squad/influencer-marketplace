@@ -1,6 +1,6 @@
 from accounts.models import Wallet
-from orders.tasks import cancel_escrow, cancel_tweet, schedule_tweet
-from orders.services import create_notification_for_order, create_order_item_approval_notification, create_order_item_tracking, create_order_tracking
+from orders.tasks import cancel_escrow, cancel_tweet, check_order_status, schedule_tweet
+from orders.services import create_manual_verification_notification, create_notification_for_order, create_order_item_approval_notification, create_order_item_tracking, create_order_tracking, validate_order_item_meta_data
 from marketplace.authentication import JWTAuthentication
 from marketplace.services import (
     Pagination,
@@ -28,6 +28,8 @@ from .serializers import (
     ApproveOrderItemSerializer,
     CreateOrderMessageSerializer,
     CreateOrderSerializer,
+    ManualVerifyOrderItemSerializer,
+    OrderDetailSerializer,
     OrderItemListFilterSerializer,
     OrderItemMetricSerializer,
     OrderItemReadSerializer,
@@ -303,7 +305,6 @@ class UserOrderMessagesView(APIView):
                     )
                     | Q(order_code__icontains=filters["search"])
                 )
-            total_unread_count = 0
             data = []
             for order in orders:
                 order_messages = OrderMessage.objects.filter(order_id=order)
@@ -312,7 +313,6 @@ class UserOrderMessagesView(APIView):
                     unread_count = order_messages.filter(
                         status="sent", receiver_id=request.user_account
                     ).count()
-                    total_unread_count += unread_count
                     message_data = {
                         "message": last_message,
                         "order_unread_messages_count": unread_count,
@@ -330,14 +330,18 @@ class UserOrderMessagesView(APIView):
                 key=lambda x: x["order_message"]["created_at"] or x["order"].created_at,
                 reverse=True,
             )
-            serializer = UserOrderMessagesSerializer(
-                {"orders": data, "total_unread_messages_count": total_unread_count}
-            )
+
+            pagination = Pagination(data, request)
+
+            paginated_data = pagination.getData()
+            serializer = OrderDetailSerializer(paginated_data, many=True)
+
             return Response(
                 {
                     "isSuccess": True,
                     "data": serializer.data,
                     "message": "All Order Messages retrieved successfully",
+                    "pagination": pagination.getPageInfo(),
                 },
                 status=status.HTTP_200_OK,
             )
@@ -736,7 +740,7 @@ class CancelOrderView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 else:
-                    if not on_chain_transaction.err:
+                    if not on_chain_transaction.err and on_chain_transaction.created_at > timezone.now() - timezone.timedelta(minutes=5):
                         action = "cancellation" if request.user_account.id == order.buyer.id else "rejection"
                         return Response(
                             {
@@ -748,15 +752,29 @@ class CancelOrderView(APIView):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                     else:
-                        return Response(
-                            {
-                                "isSuccess": False,
-                                "message": "Order cancellation failed",
-                                "data": None,
-                                "errors": "Order cancellation failed",
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
+                        # Retry the transaction
+                        res = cancel_escrow(pk, order_status)
+                        if res:
+                            # Cancel all order items
+                            order_items.update(status=order_status)
+                            return Response(
+                                {
+                                    "isSuccess": True,
+                                    "data": None,
+                                    "message": "Order cancelled successfully",
+                                },
+                                status=status.HTTP_200_OK,
+                            )
+                        else:
+                            return Response(
+                                {
+                                    "isSuccess": False,
+                                    "message": "Order cancellation failed",
+                                    "data": None,
+                                    "errors": "Order cancellation failed",
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
             # Create an on chain transaction
             else:
                 self.create_on_chain_transaction(order)
@@ -955,7 +973,7 @@ class OrderItemDetail(APIView):
             orderItem = self.get_object(pk)
             if orderItem is None:
                 return handleNotFound("Order Item")
-            serializer = OrderItemSerializer(orderItem)
+            serializer = OrderItemReadSerializer(orderItem)
             return Response(
                 {
                     "isSuccess": True,
@@ -1152,13 +1170,17 @@ class OrderMessageList(APIView):
                     },
                     status=status.HTTP_403_FORBIDDEN,
                 )
+            order = Order.objects.get(pk=pk)
             orderMessages = order.order_message_order_id.all().order_by("-created_at")
             pagination = Pagination(orderMessages, request)
             serializer = OrderMessageSerializer(pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
-                    "data": serializer.data,
+                    "data": {
+                        "order_messages": serializer.data,
+                        "order": OrderSerializer(order).data,
+                    },
                     "message": "All Order Messages retrieved successfully",
                     "pagination": pagination.getPageInfo(),
                 },
@@ -1422,6 +1444,7 @@ class ReviewDetail(APIView):
 
 
 class SendTweetView(APIView):
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=SendTweetSerializer)
     def post(self, request):
         try:
@@ -1429,6 +1452,33 @@ class SendTweetView(APIView):
             if serializer.is_valid():
                 # Get the order_item_id
                 order_item_id = serializer.validated_data["order_item_id"]
+                order_item = OrderItem.objects.get(pk=order_item_id)
+
+                # Check that the logged in user is the influencer of the order
+                if order_item.package.influencer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to schedule this order item",
+                            "data": None,
+                            "errors": "You are not authorized to schedule this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+                is_valid, validation_error = validate_order_item_meta_data(
+                    order_item)
+
+                if not is_valid:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": validation_error,
+                            "data": None,
+                            "errors": validation_error,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
                 # Schedule the tweet
                 schedule_tweet(order_item_id)
@@ -1448,6 +1498,7 @@ class SendTweetView(APIView):
 
 
 class CancelTweetView(APIView):
+    authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(request_body=SendTweetSerializer)
     def post(self, request):
         try:
@@ -1455,6 +1506,19 @@ class CancelTweetView(APIView):
             if serializer.is_valid():
                 # Get the order_item_id
                 order_item_id = serializer.validated_data["order_item_id"]
+                order_item = OrderItem.objects.get(pk=order_item_id)
+
+                # Check that the logged in user is the influencer of the order
+                if order_item.package.influencer.id != request.user_account.id:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "You are not authorized to cancel this order item",
+                            "data": None,
+                            "errors": "You are not authorized to cancel this order item",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
 
                 # Schedule the tweet
                 cancel_tweet(order_item_id)
@@ -1560,5 +1624,69 @@ class OrderItemMetricDetailView(APIView):
                 status=status.HTTP_200_OK,
             )
 
+        except Exception as e:
+            return handleServerException(e)
+
+
+class ManualVerifyOrderItemView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @swagger_auto_schema(request_body=ManualVerifyOrderItemSerializer)
+    def put(self, request, pk):
+        try:
+            order_item = OrderItem.objects.get(pk=pk)
+            if order_item is None:
+                return handleNotFound("Order Item")
+
+            # Check that the logged in user is the buyer of the order
+            if request.user_account.role.name != "business_owner" or order_item.order_id.buyer.id != request.user_account.id:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "You are not authorized to verify this order item",
+                        "data": None,
+                        "errors": "You are not authorized to verify this order item",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Also check that the order_item is in accepted or cancelled state
+            if order_item.status not in ["published"]:
+                return Response(
+                    {
+                        "isSuccess": False,
+                        "message": "Order item is already " + order_item.status,
+                        "data": None,
+                        "errors": "Order item is already " + order_item.status,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Get the data from serializer
+            serializer = ManualVerifyOrderItemSerializer(
+                instance=order_item, data=request.data, partial=True
+            )
+            if serializer.is_valid():
+                order_item.is_verified = True
+                if serializer.validated_data.get("published_post_link"):
+                    published_link = serializer.validated_data.get(
+                        "published_post_link")
+                    tweet_id = published_link.split('/')[-1].split('?')[0]
+                    order_item.published_tweet_id = tweet_id
+                order_item.save()
+
+                create_manual_verification_notification(order_item)
+
+                check_order_status(pk=order_item.order_id.id)
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "Order Item verified successfully",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)

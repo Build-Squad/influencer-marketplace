@@ -12,43 +12,37 @@ from ..program_id import PROGRAM_ID
 
 
 class EscrowAccountJSON(typing.TypedDict):
-    buyer_key: str
-    buyer_deposit_token_account: str
-    seller_key: str
-    seller_receive_token_account: str
-    judge_key: str
+    business_key: str
+    business_deposit_token_account: str
+    influencer_key: str
+    influencer_receive_token_account: str
+    validation_authority: str
     amount: int
     order_code: int
     status: int
-    delivery_time: int
-    trial_day: int
 
 
 @dataclass
 class EscrowAccount:
     discriminator: typing.ClassVar = b"$E0\x12\x80\xe1}\x87"
     layout: typing.ClassVar = borsh.CStruct(
-        "buyer_key" / BorshPubkey,
-        "buyer_deposit_token_account" / BorshPubkey,
-        "seller_key" / BorshPubkey,
-        "seller_receive_token_account" / BorshPubkey,
-        "judge_key" / BorshPubkey,
+        "business_key" / BorshPubkey,
+        "business_deposit_token_account" / BorshPubkey,
+        "influencer_key" / BorshPubkey,
+        "influencer_receive_token_account" / BorshPubkey,
+        "validation_authority" / BorshPubkey,
         "amount" / borsh.U64,
         "order_code" / borsh.U64,
         "status" / borsh.U8,
-        "delivery_time" / borsh.I64,
-        "trial_day" / borsh.U16,
     )
-    buyer_key: Pubkey
-    buyer_deposit_token_account: Pubkey
-    seller_key: Pubkey
-    seller_receive_token_account: Pubkey
-    judge_key: Pubkey
+    business_key: Pubkey
+    business_deposit_token_account: Pubkey
+    influencer_key: Pubkey
+    influencer_receive_token_account: Pubkey
+    validation_authority: Pubkey
     amount: int
     order_code: int
     status: int
-    delivery_time: int
-    trial_day: int
 
     @classmethod
     async def fetch(
@@ -94,47 +88,43 @@ class EscrowAccount:
             )
         dec = EscrowAccount.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
-            buyer_key=dec.buyer_key,
-            buyer_deposit_token_account=dec.buyer_deposit_token_account,
-            seller_key=dec.seller_key,
-            seller_receive_token_account=dec.seller_receive_token_account,
-            judge_key=dec.judge_key,
+            business_key=dec.business_key,
+            business_deposit_token_account=dec.business_deposit_token_account,
+            influencer_key=dec.influencer_key,
+            influencer_receive_token_account=dec.influencer_receive_token_account,
+            validation_authority=dec.validation_authority,
             amount=dec.amount,
             order_code=dec.order_code,
             status=dec.status,
-            delivery_time=dec.delivery_time,
-            trial_day=dec.trial_day,
         )
 
     def to_json(self) -> EscrowAccountJSON:
         return {
-            "buyer_key": str(self.buyer_key),
-            "buyer_deposit_token_account": str(self.buyer_deposit_token_account),
-            "seller_key": str(self.seller_key),
-            "seller_receive_token_account": str(self.seller_receive_token_account),
-            "judge_key": str(self.judge_key),
+            "business_key": str(self.business_key),
+            "business_deposit_token_account": str(self.business_deposit_token_account),
+            "influencer_key": str(self.influencer_key),
+            "influencer_receive_token_account": str(
+                self.influencer_receive_token_account
+            ),
+            "validation_authority": str(self.validation_authority),
             "amount": self.amount,
             "order_code": self.order_code,
             "status": self.status,
-            "delivery_time": self.delivery_time,
-            "trial_day": self.trial_day,
         }
 
     @classmethod
     def from_json(cls, obj: EscrowAccountJSON) -> "EscrowAccount":
         return cls(
-            buyer_key=Pubkey.from_string(obj["buyer_key"]),
-            buyer_deposit_token_account=Pubkey.from_string(
-                obj["buyer_deposit_token_account"]
+            business_key=Pubkey.from_string(obj["business_key"]),
+            business_deposit_token_account=Pubkey.from_string(
+                obj["business_deposit_token_account"]
             ),
-            seller_key=Pubkey.from_string(obj["seller_key"]),
-            seller_receive_token_account=Pubkey.from_string(
-                obj["seller_receive_token_account"]
+            influencer_key=Pubkey.from_string(obj["influencer_key"]),
+            influencer_receive_token_account=Pubkey.from_string(
+                obj["influencer_receive_token_account"]
             ),
-            judge_key=Pubkey.from_string(obj["judge_key"]),
+            validation_authority=Pubkey.from_string(obj["validation_authority"]),
             amount=obj["amount"],
             order_code=obj["order_code"],
             status=obj["status"],
-            delivery_time=obj["delivery_time"],
-            trial_day=obj["trial_day"],
         )

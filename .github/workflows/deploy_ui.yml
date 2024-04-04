@@ -30,7 +30,7 @@ jobs:
         host: ${{ secrets.DEVSERVER_UI }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SECRETKEY_UI }}
-        command_timeout: 50m
+        command_timeout: 5m
         script: |
           cd xfluencer/influencer-marketplace
           git pull

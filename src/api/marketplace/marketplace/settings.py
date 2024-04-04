@@ -157,6 +157,7 @@ INSTALLED_APPS = [
     "packages",
     "core",
     "orders",
+    "reward",
     "notifications",
     "corsheaders",
     "drf_yasg",

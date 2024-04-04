@@ -10,6 +10,11 @@ from solana.rpc.core import RPCException
 
 import os
 
+from anchorpy import Wallet, Provider
+from anchorpy.utils import token
+from anchorpy.utils.rpc import AccountInfo
+
+
 def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
     home = os.getenv("HOME")
@@ -27,6 +32,7 @@ def get_local_keypair_pubkey(keypair_file="id.json", path=None):
     keypair_owner = Keypair.from_bytes(secret_data)
     pubkey_owner = keypair_owner.pubkey()
     return keypair_owner, pubkey_owner
+
 
 
 
@@ -55,6 +61,15 @@ def select_client(network = None, async_client = False):
         raise Exception(f"Selecting RPC Solana Client Network {e}")
 
 
+async def get_token_account_info(ata_address: str, network : str) -> AccountInfo:
+    connection = select_client(network=network, async_client=True)     
+    wallet = Wallet.local()
+    provider = Provider(connection, wallet)
+    pubkey_token_account = Pubkey.from_string(ata_address) 
+    try:
+        return await token.get_token_account(provider, pubkey_token_account)
+    except Exception as e:
+        raise Exception(f"Getting Token Account Info {e}")
 
 async def sign_and_send_transaction(ix,  signers, opts, network, async_client: bool = True):
           
@@ -62,16 +77,17 @@ async def sign_and_send_transaction(ix,  signers, opts, network, async_client: b
         client = select_client(network=network, async_client=async_client)
         tx = Transaction().add(ix)
         
-        print("Sending transactions with options",opts)
+        print("Sending transactions with options", opts)
                         
         tx_res = await client.send_transaction(tx, *signers, opts=opts)
         
-        print("Client Response tx signature: ",tx_res)
+        print("Client Response tx signature: ", tx_res)
         print("Waiting for transaction confirmation")
         
         signature_status = await client.confirm_transaction(tx_res.value)
         
-        print("Confirm Transaction Status Value:",signature_status)
+        print("Confirm Transaction Status Value:", signature_status)
         return signature_status.to_json()
     except RPCException as e:        
         raise RPCException(f"RPC exception happened: {e}")
+    

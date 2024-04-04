@@ -4,7 +4,15 @@ import {
   ORDER_STATUS,
   ROLE_NAME,
 } from "@/src/utils/consts";
-import { Box, Button, FormLabel, Grid, Link, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  FormLabel,
+  Grid,
+  IconButton,
+  Link,
+  Typography,
+} from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
@@ -16,6 +24,7 @@ import { notification } from "../../shared/notification";
 import StatusChip from "../../shared/statusChip";
 import OrderSummaryDetails from "../orderSummaryDetails";
 import { useAppSelector } from "@/src/hooks/useRedux";
+import CloseIcon from "@mui/icons-material/Close";
 
 type UpdateOrderProps = {
   order_id: string;
@@ -221,15 +230,31 @@ export default function UpdateOrder({
               ml: 2,
             }}
           >
-            <Typography
-              variant="h6"
-              fontWeight={"bold"}
+            <Box
               sx={{
-                my: 2,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
               }}
             >
-              Order Details: {order?.order_code}
-            </Typography>
+              <Typography
+                variant="h6"
+                fontWeight={"bold"}
+                sx={{
+                  my: 2,
+                }}
+              >
+                Order Details: {order?.order_code}
+              </Typography>
+              <IconButton
+                onClick={() => {
+                  setOpen(false);
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
             {order && (
               <Box
                 sx={{

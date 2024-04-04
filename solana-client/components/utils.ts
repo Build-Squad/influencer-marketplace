@@ -28,7 +28,7 @@ import {
 
 import idl from "../xfluencer.json"
 
-import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
+//import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { TOKEN_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 
 import { Connection, Commitment } from '@solana/web3.js'
@@ -105,6 +105,7 @@ export async function getTokenAccountBalance_v2(
     const result = await provider.connection.getTokenAccountBalance(tokenAccount);
     
     return parseInt(result.value.amount);
+}
 
 export const getTokenAccountBalance = async ( 
   tokenAccount: anchor.web3.PublicKey
