@@ -2,7 +2,7 @@ name: Deploy API - Prod
 
 on:
   push:
-    branches: [ github-actions-prod ]   
+    branches: [ release ]   
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -36,6 +36,7 @@ jobs:
           pwd
           git status
           git pull 
+          pgrep gunicorn | xargs kill -9
           cd src/api/marketplace 
           source venv/bin/activate 
           pip3 install -r requirements.txt 
