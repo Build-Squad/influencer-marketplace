@@ -560,7 +560,7 @@ const CreateUpdateService = ({
                       {(
                         formik.values.price *
                         (1 + platform_fees / 100)
-                      ).toFixed(2) + " "}
+                      ).toFixed(4) + " "}
                       {formik.values.currencyObject?.symbol}
                     </Typography>
                   </Box>
