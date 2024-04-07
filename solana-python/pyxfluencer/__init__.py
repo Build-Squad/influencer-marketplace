@@ -16,7 +16,7 @@ xfluencer_solana_python_client_version="1.2.1"
 # Version: 1.2.1
 # Bump: Patch
 # Updated: 04.04.2024
-# - use `network` parametesr as full rpc url
+# - use network parameter to specify full URL of a private RPC
 # 
 ###################
 # Version: 1.2.0
