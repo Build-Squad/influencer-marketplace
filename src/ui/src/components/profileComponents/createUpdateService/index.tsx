@@ -458,6 +458,13 @@ const CreateUpdateService = ({
                     isOptionEqualToValue={(option, value) => {
                       if (typeof option === "object" && option) {
                         if ("id" in option) {
+                          if (typeof value === "object" && value) {
+                            if ("id" in value) {
+                              return option.id === value.id;
+                            } else {
+                              return false;
+                            }
+                          }
                           return option.id === value;
                         } else {
                           return false;

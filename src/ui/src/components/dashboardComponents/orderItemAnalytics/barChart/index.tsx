@@ -107,23 +107,6 @@ export default function BarChart({ keys, data, indexBy }: BarChartProps) {
         legend: "Date",
         legendPosition: "middle",
         legendOffset: 32,
-        renderTick: (tick) => {
-          return (
-            <g transform={`translate(${tick.x},${tick.y})`}>
-              <text
-                x={0}
-                y={0}
-                dy={16}
-                textAnchor="middle"
-                fill="#666"
-                transform="rotate(0)"
-                fontSize={11}
-              >
-                {getTspanGroups(tick.value, 10)}
-              </text>
-            </g>
-          );
-        },
       }}
       axisLeft={{
         tickSize: 5,

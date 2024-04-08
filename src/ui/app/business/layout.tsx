@@ -18,12 +18,9 @@ export default function BusinessLayout({
   const dispatch = useAppDispatch();
 
   const getCurrentDraftOrder = async () => {
-    const { isSuccess, data, message } = await postService(
-      `orders/order-list/`,
-      {
-        status: [ORDER_STATUS.DRAFT],
-      }
-    );
+    const { isSuccess, data } = await postService(`orders/order-list/`, {
+      status: [ORDER_STATUS.DRAFT],
+    });
     if (isSuccess) {
       if (data?.data?.orders?.length > 0) {
         const order = data?.data?.orders[0];
@@ -53,10 +50,6 @@ export default function BusinessLayout({
       getCurrentDraftOrder();
     }
   }, [user?.loggedIn]);
-
-  useEffect(() => {
-    console.log("Business publicKey", publicKey);
-  }, [publicKey]);
 
   return <div>{children}</div>;
 }
