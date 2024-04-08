@@ -16,12 +16,16 @@ const userPersistConfig = {
   key: "user",
   storage: storage,
   whitelist: ["user"],
+  blacklist: ["navigation"],
+  timeout: 1000,
 };
 
 const cartPersistConfig = {
   key: "cart",
   storage: storage,
   whitelist: ["cart"],
+  blacklist: ["navigation"],
+  timeout: 1000,
 };
 
 const persistedUserReducer = persistReducer(
