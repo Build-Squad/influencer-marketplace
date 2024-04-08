@@ -6,12 +6,9 @@ import { Inter } from "next/font/google";
 import { SnackbarProvider } from "notistack";
 import { useRef } from "react";
 import { Provider } from "react-redux";
-import { persistStore } from "redux-persist";
-import { PersistGate } from "redux-persist/integration/react";
 import ThemeRegistry from "./ThemeRegistry";
 import Navbar from "./components/navbar";
 import "./globals.css";
-import { CircularProgress } from "@mui/material";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +22,6 @@ export default function RootLayout({
     // Create the store instance the first time this renders
     storeRef.current = makeStore();
   }
-  const persistor = persistStore(storeRef.current);
 
   return (
     <html lang="en">
@@ -43,13 +39,12 @@ export default function RootLayout({
           preventDuplicate
         >
           <Provider store={storeRef.current}>
-            
-              <ThemeRegistry options={{ key: "mui-theme" }}>
-                <WalletContextProvider>
-                  <Navbar />
-                  {children}
-                </WalletContextProvider>
-              </ThemeRegistry>
+            <ThemeRegistry options={{ key: "mui-theme" }}>
+              <WalletContextProvider>
+                <Navbar />
+                {children}
+              </WalletContextProvider>
+            </ThemeRegistry>
           </Provider>
         </SnackbarProvider>
       </body>
