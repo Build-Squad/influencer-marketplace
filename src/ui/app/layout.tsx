@@ -11,6 +11,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import ThemeRegistry from "./ThemeRegistry";
 import Navbar from "./components/navbar";
 import "./globals.css";
+import { CircularProgress } from "@mui/material";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,14 +43,13 @@ export default function RootLayout({
           preventDuplicate
         >
           <Provider store={storeRef.current}>
-            <PersistGate loading={null} persistor={persistor}>
+            
               <ThemeRegistry options={{ key: "mui-theme" }}>
                 <WalletContextProvider>
                   <Navbar />
                   {children}
                 </WalletContextProvider>
               </ThemeRegistry>
-            </PersistGate>
           </Provider>
         </SnackbarProvider>
       </body>
