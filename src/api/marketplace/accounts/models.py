@@ -141,9 +141,6 @@ class AccountCategory(models.Model):
     class Meta:
         db_table = "account_category"
 
-    def __str__(self):
-        return self.twitter_account.user_name + " - " + self.category.name
-
 
 class AccountRegion(models.Model):
     id = models.UUIDField(

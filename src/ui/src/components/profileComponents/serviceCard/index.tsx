@@ -205,7 +205,7 @@ export default function ServiceCard({
                 }}
               >
                 {service?.status === SERVICE_STATUS.DRAFT ? (
-                  <Tooltip title="Publish">
+                  <Tooltip title="List">
                     <IconButton
                       color="info"
                       size="small"
@@ -222,7 +222,7 @@ export default function ServiceCard({
                     </IconButton>
                   </Tooltip>
                 ) : (
-                  <Tooltip title="Unpublish">
+                  <Tooltip title="Unlist">
                     <IconButton
                       color="info"
                       size="small"

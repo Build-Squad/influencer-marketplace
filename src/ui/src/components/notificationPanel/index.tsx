@@ -153,17 +153,26 @@ export default function NotificationPanel({
 
   return (
     <>
-      <Badge
-        badgeContent={unreadCount}
-        color="secondary"
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          cursor: "pointer",
+        }}
         onClick={handleClickNotifications}
       >
-        <Image
-          src={openNotifications ? NotificationIcon : NotificationDisabledIcon}
-          alt={"Notification"}
-          height={16}
-        />
-      </Badge>
+        <Badge badgeContent={unreadCount} color="secondary">
+          <Image
+            src={
+              openNotifications ? NotificationIcon : NotificationDisabledIcon
+            }
+            alt={"Notification"}
+            height={16}
+          />
+        </Badge>
+        <Typography sx={{ fontSize: "10px" }}>Notifications</Typography>
+      </Box>
       <Menu
         id="basic-menu"
         anchorEl={notificationsAnchor}
