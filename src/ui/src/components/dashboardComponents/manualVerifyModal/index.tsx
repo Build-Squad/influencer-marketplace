@@ -115,6 +115,7 @@ export default function ManualVerifyModal({
         minWidth: "50vw",
         maxWidth: "50vw",
         minHeight: "50vh",
+        maxHeight: "80vh",
       }}
       customCloseButton={true}
     >

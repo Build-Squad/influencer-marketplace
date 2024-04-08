@@ -1,0 +1,928 @@
+"use client";
+
+import BackIcon from "@/public/svg/Back.svg";
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
+import AcceptedOrders from "@/public/svg/acceptedOrders.svg?icon";
+import CompletedOrders from "@/public/svg/completedOrders.svg?icon";
+import RejectedOrders from "@/public/svg/rejectedOrders.svg?icon";
+import TotalOrders from "@/public/svg/totalOrders.svg?icon";
+import FilterBar from "@/src/components/dashboardComponents/filtersBar";
+import ReviewModal from "@/src/components/dashboardComponents/reviewModal";
+import StatusCard from "@/src/components/dashboardComponents/statusCard";
+import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
+import UpdateOrder from "@/src/components/dashboardComponents/updateOrder";
+import { notification } from "@/src/components/shared/notification";
+import RouteProtection from "@/src/components/shared/routeProtection";
+import StatusChip from "@/src/components/shared/statusChip";
+import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
+import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
+import { postService } from "@/src/services/httpServices";
+import {
+  BADGES,
+  DISPLAY_DATE_FORMAT,
+  ORDER_ITEM_STATUS,
+  ORDER_STATUS,
+  TRANSACTION_TYPE,
+} from "@/src/utils/consts";
+import { DriveEta } from "@mui/icons-material";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import MessageIcon from "@mui/icons-material/Message";
+import {
+  Badge,
+  Box,
+  Grid,
+  IconButton,
+  Link,
+  Pagination,
+  Rating,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import {
+  DataGrid,
+  GridRenderCellParams,
+  GridTreeNodeWithRender,
+} from "@mui/x-data-grid";
+import dayjs from "dayjs";
+import Image from "next/image";
+import NextLink from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+
+const getProfileCompletedStatus: (businessDetails: any) => string = (
+  businessDetails
+) => {
+  if (businessDetails) {
+    let count = 0;
+    if (businessDetails?.isTwitterAccountConnected) count += 5;
+    if (businessDetails?.isWalletConnected) count += 5;
+    count +=
+      Object.values(businessDetails).filter(
+        (value) => value !== "" && value !== null
+      ).length - 7;
+    return `${count} / ${10 + Object.keys(businessDetails).length - 7}`;
+  }
+  return "-";
+};
+
+export default function BusinessDashboardPage() {
+  const router = useRouter();
+  const [connectWallet, setConnectWallet] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState<OrderType[]>([]);
+  const [selectedReviewOrder, setSelectedReviewOrder] =
+    useState<OrderType | null>(null);
+  const [open, setOpen] = useState(false);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [selectedCard, setSelectedCard] = React.useState<number>(0);
+  const [filters, setFilters] = React.useState<OrderFilterType>({
+    status: [
+      ORDER_STATUS.ACCEPTED,
+      ORDER_STATUS.REJECTED,
+      ORDER_STATUS.COMPLETED,
+      ORDER_STATUS.CANCELLED,
+    ],
+    order_by: "upcoming",
+  });
+  const [orderCount, setOrderCount] = React.useState({
+    accepted: 0,
+    completed: 0,
+    pending: 0,
+    rejected: 0,
+    cancelled: 0,
+  });
+  const [pagination, setPagination] = React.useState<PaginationType>({
+    total_data_count: 0,
+    total_page_count: 0,
+    current_page_number: 1,
+    current_page_size: 10,
+  });
+
+  // User Guide only for the order's tab for the very first order. And if there are no orders only show the first step
+  const [stepIndex, setStepIndex] = useState<number>(0);
+  const [run, setRun] = useState(false);
+  const [steps, setSteps] = useState<any>([
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Manage your orders here!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            This tour will help you manage your order accurately once you have
+            an order. The options would include editing the orders, claiming the
+            payouts, view your ratings, and many more.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Categorise your orders.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click on the status you wanna view your orders for.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-tabs",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Customized filters.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Advanced filters for orders based on the services, date, order ID,
+            and businesses.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-dashboard-filters",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Take actions.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Hover the actions to see what it does and click to do the action.
+            Actions include claiming funds, viewing order details and editing
+            them.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-actions-column",
+    },
+    {
+      content: (
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Review by businesses.
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Click the stars (if there's any) to see what the businesses have to
+            say about your work.
+          </Typography>
+        </Box>
+      ),
+      placement: "top",
+      target: ".joyride-review-column",
+    },
+    {
+      content: (
+        <Box>
+          <Image
+            src={XfluencerLogo}
+            width={175}
+            height={30}
+            alt="bgimg"
+            priority
+          />
+          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+            Congratulations!!!
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            You've completed your dashboard tour, you're good to go to manage
+            your orders and analyse your performance.
+          </Typography>
+        </Box>
+      ),
+      placement: "center",
+      target: "body",
+    },
+  ]);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { action, index, status, type } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+      // Update state to advance the tour
+      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+    } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      // Need to set our running state to false, so we can restart if we click start again.
+      setRun(false);
+    }
+  };
+
+  const handleUserInteraction = async () => {
+    try {
+      setLoading(true);
+      const { isSuccess, data, message } = await postService(
+        `orders/order-list/`,
+        {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          order_by: "upcoming",
+        }
+      );
+      if (isSuccess) {
+        if (data?.pagination?.total_data_count == 1) {
+          setStepIndex(0);
+          setRun(true);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getOrders = async () => {
+    try {
+      setLoading(true);
+      const { isSuccess, data, message } = await postService(
+        `orders/order-list/`,
+        {
+          page_number: pagination.current_page_number,
+          page_size: pagination.current_page_size,
+          ...filters,
+        }
+      );
+      if (isSuccess) {
+        setOrders(data?.data?.orders);
+        setOrderCount({
+          accepted: data?.data?.status_counts?.accepted,
+          completed: data?.data?.status_counts?.completed,
+          pending: data?.data?.status_counts?.pending,
+          rejected: data?.data?.status_counts?.rejected,
+          cancelled: data?.data?.status_counts?.cancelled,
+        });
+        setPagination({
+          ...pagination,
+          total_data_count: data?.pagination?.total_data_count,
+          total_page_count: data?.pagination?.total_page_count,
+        });
+      } else {
+        notification(message ? message : "Something went wrong", "error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePaginationChange = (
+    event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page_number: page,
+    }));
+  };
+
+  const statusCards = [
+    {
+      label: "All",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [
+            ORDER_STATUS.ACCEPTED,
+            ORDER_STATUS.REJECTED,
+            ORDER_STATUS.COMPLETED,
+            ORDER_STATUS.CANCELLED,
+          ],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(0);
+      },
+      value: 0,
+      icon: (
+        <TotalOrders
+          style={{
+            fill: selectedCard === 0 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Accepted",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_STATUS.ACCEPTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(1);
+      },
+      value: 1,
+      icon: (
+        <AcceptedOrders
+          style={{
+            fill: selectedCard === 1 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Completed",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_STATUS.COMPLETED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(2);
+      },
+      value: 2,
+      icon: (
+        <CompletedOrders
+          style={{
+            fill: selectedCard === 2 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Rejected",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_STATUS.REJECTED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(4);
+      },
+      value: 4,
+      icon: (
+        <RejectedOrders
+          style={{
+            fill: selectedCard === 4 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+    {
+      label: "Cancelled",
+      onClick: () => {
+        setFilters((prev) => ({
+          ...prev,
+          status: [ORDER_STATUS.CANCELLED],
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          current_page_number: 1,
+        }));
+        setSelectedCard(5);
+      },
+      value: 5,
+      icon: (
+        <RejectedOrders
+          style={{
+            fill: selectedCard === 5 ? "#fff" : "#19191929",
+          }}
+        />
+      ),
+    },
+  ];
+
+  const getProgressPercentage = (order: OrderType) => {
+    const completionStringArr = getProfileCompletedStatus(
+      order?.buyer_meta_data
+    )
+      .replace(/\s/g, "")
+      .split("/");
+
+    return (
+      (parseInt(completionStringArr[0]) / parseInt(completionStringArr[1])) *
+      100
+    );
+  };
+
+  const getCurrentBadgeIndex = (order: OrderType) => {
+    const per = getProgressPercentage(order);
+    return per <= 25 ? 0 : per <= 50 ? 1 : per <= 75 ? 2 : per <= 100 ? 3 : 0;
+  };
+
+  const columns = [
+    {
+      field: "order_code",
+      headerName: "Order ID",
+      flex: 1,
+    },
+    {
+      field: "buyer__username",
+      headerName: "Business",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        const badge = BADGES[getCurrentBadgeIndex(params?.row)];
+        return (
+          <Typography
+            sx={{
+              textAlign: "center",
+              fontSize: "16px",
+              lineHeight: "19px",
+              color: "#000",
+              display: "flex",
+              alignItems: "center",
+              columnGap: "8px",
+            }}
+          >
+            <Tooltip
+              title={
+                <React.Fragment>
+                  <Typography variant="body2" fontWeight={"bold"}>
+                    {badge?.name}
+                  </Typography>
+                  <Typography variant="caption">
+                    {badge?.description}
+                  </Typography>
+                </React.Fragment>
+              }
+              arrow
+            >
+              <Image
+                src={badge?.icon}
+                style={{ width: 24, height: 24 }}
+                alt="Business Badge"
+              />
+            </Tooltip>
+            <Link
+              href={`/business/profile-preview/${params?.row?.buyer?.id}`}
+              target="_blank"
+              component={NextLink}
+              sx={{
+                color: "#0099FF",
+                textDecoration: "none",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              {params?.row?.buyer?.username}
+            </Link>
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "services",
+      headerName: "Services",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        const services = params?.row?.order_item_order_id;
+        // create a string of services
+        let servicesString = "";
+        services?.map((service: ServiceType, index: number) => {
+          servicesString += service?.service_master?.name;
+          if (index + 1 !== services?.length) {
+            servicesString += ", ";
+          }
+        });
+        return (
+          <Tooltip
+            title={servicesString}
+            placement="top"
+            arrow
+            disableHoverListener={servicesString?.length < 50}
+          >
+            <Typography
+              sx={{
+                // Wrap the text if it is too long
+                whiteSpace: "normal",
+              }}
+            >
+              {servicesString?.length > 50
+                ? `${servicesString?.substring(0, 50)}...`
+                : servicesString}
+            </Typography>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      field: "amount",
+      headerName: "Total Amount",
+      sortable: false,
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {params?.row?.amount} {params?.row?.currency?.symbol}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return <StatusChip status={params?.row?.status} />;
+      },
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            className="joyride-actions-column"
+          >
+            <Tooltip
+              title="View Order Details"
+              placement="top"
+              arrow
+              disableInteractive
+            >
+              <Badge
+                badgeContent={
+                  params?.row?.status === ORDER_STATUS.ACCEPTED
+                    ? params?.row?.order_item_order_id?.filter(
+                        (orderItem: OrderItemType) =>
+                          (orderItem?.status === ORDER_ITEM_STATUS.ACCEPTED ||
+                            orderItem?.status ===
+                              ORDER_ITEM_STATUS.CANCELLED) &&
+                          dayjs(orderItem?.publish_date) > dayjs()
+                      )?.length
+                    : 0
+                }
+                color="secondary"
+                overlap="circular"
+                // Dont show badge if the order is completed
+                invisible={
+                  params?.row?.status === ORDER_STATUS.COMPLETED ||
+                  params?.row?.status === ORDER_STATUS.REJECTED
+                }
+              >
+                <IconButton
+                  onClick={() => {
+                    setSelectedOrder(params?.row);
+                    setOpen(true);
+                  }}
+                >
+                  <EditNoteIcon />
+                </IconButton>
+              </Badge>
+            </Tooltip>
+            <Link
+              href={`/influencer/messages/${params?.row?.id}`}
+              component={NextLink}
+              sx={{
+                textDecoration: "none",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              <Tooltip title="Go to Order Chat" placement="top" arrow>
+                <IconButton>
+                  <MessageIcon />
+                </IconButton>
+              </Tooltip>
+            </Link>
+            {params?.row?.status === ORDER_STATUS.COMPLETED &&
+              params?.row?.transactions.filter(
+                (transaction: TransactionType) =>
+                  transaction.transaction_type === TRANSACTION_TYPE.CLAIM_ESCROW
+              )?.length === 0 && (
+                <ClaimEscrow
+                  order={params?.row}
+                  updateStatus={getOrders}
+                  setConnectWallet={setConnectWallet}
+                />
+              )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "transactions",
+      headerName: "Transactions",
+      flex: 1,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {params?.row?.transactions?.map((transaction: TransactionType) => {
+              return (
+                <TransactionIcon
+                  key={transaction?.transaction_address}
+                  transaction={transaction}
+                />
+              );
+            })}
+          </Box>
+        );
+      },
+    },
+    {
+      field: "created_at",
+      headerName: "Order Date",
+      flex: 1,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <Typography>
+            {dayjs(params?.row?.created_at).format(DISPLAY_DATE_FORMAT)}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "review__rating",
+      headerName: "Review",
+      flex: 1,
+      minWidth: 200,
+      sortable: false,
+      renderCell: (
+        params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+      ): React.ReactNode => {
+        return (
+          <>
+            {params?.row?.review?.rating ? (
+              <Tooltip
+                title={
+                  params?.row?.review?.note
+                    ? params?.row?.review?.note
+                    : "No Review Available"
+                }
+                placement="top"
+                arrow
+                disableHoverListener={!params?.row?.review?.note}
+              >
+                <Box
+                  onClick={() => {
+                    setSelectedReviewOrder(params?.row);
+                    setOpenReviewModal(true);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                  className="joyride-review-column"
+                >
+                  <Rating
+                    name="read-only"
+                    value={Number(params?.row?.review?.rating)}
+                    readOnly
+                  />
+                </Box>
+              </Tooltip>
+            ) : (
+              <Typography sx={{ textAlign: "center", fontStyle: "italic" }}>
+                No Review
+              </Typography>
+            )}
+          </>
+        );
+      },
+    },
+  ];
+
+  useEffect(() => {
+    handleUserInteraction();
+  }, []);
+
+  useEffect(() => {
+    if (!open) getOrders();
+  }, [open]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      getOrders();
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [pagination.current_page_number, pagination.current_page_size, filters]);
+
+  return (
+    <RouteProtection logged_in={true} influencer={true}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexDirection: "row",
+              mb: 2,
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Image
+                src={BackIcon}
+                alt={"BackIcon"}
+                height={30}
+                style={{
+                  marginTop: "8px",
+                  marginBottom: "8px",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  router.back();
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                mr: 4,
+                color: "grey",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                columnGap: "4px",
+                visibility:
+                  pagination.total_data_count > 0 ? "visible" : "hidden",
+              }}
+              onClick={() => {
+                setStepIndex(0);
+                setRun(true);
+              }}
+            >
+              <DriveEta fontSize="small" />
+              <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+            </Box>
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Grid container spacing={2} className="joyride-tabs">
+              {statusCards.map((card, index) => {
+                return (
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
+                    <StatusCard
+                      card={card}
+                      selectedCard={selectedCard}
+                      count={
+                        card?.value === 0
+                          ? orderCount?.accepted +
+                            orderCount?.completed +
+                            orderCount?.rejected +
+                            orderCount?.cancelled
+                          : card?.value === 1
+                          ? orderCount?.accepted
+                          : card?.value === 2
+                          ? orderCount?.completed
+                          : card?.value === 3
+                          ? orderCount?.pending
+                          : card?.value === 4
+                          ? orderCount?.rejected
+                          : card?.value === 5
+                          ? orderCount?.cancelled
+                          : 0
+                      }
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Grid>
+          <Grid item xs={12}>
+            {/* Filters bar */}
+            <FilterBar filters={filters} setFilters={setFilters} />
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              getRowId={(row) => (row?.id ? row?.id : 0)}
+              autoHeight
+              loading={loading}
+              rows={orders}
+              columns={columns}
+              disableRowSelectionOnClick
+              disableColumnFilter
+              hideFooter
+              getRowHeight={(params) => 100}
+              sx={{
+                backgroundColor: "#fff",
+              }}
+              sortingMode="server"
+              onSortModelChange={(model) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  order_by: model?.[0]?.field
+                    ? model?.[0]?.sort === "asc"
+                      ? `-${model?.[0]?.field}`
+                      : `${model?.[0]?.field}`
+                    : "upcoming",
+                }));
+              }}
+              localeText={{
+                noRowsLabel: "No orders found",
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                mt: 2,
+              }}
+            >
+              <Pagination
+                count={pagination.total_page_count}
+                page={pagination.current_page_number}
+                onChange={handlePaginationChange}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                color="secondary"
+                shape="rounded"
+              />
+            </Box>
+          </Grid>
+        </Grid>
+        <UpdateOrder
+          order_id={selectedOrder?.id!}
+          open={open}
+          setOpen={setOpen}
+        />
+        <ReviewModal
+          reviewOrder={selectedReviewOrder}
+          open={openReviewModal}
+          setOpen={setOpenReviewModal}
+          readonly={true}
+        />
+
+        <Joyride
+          callback={handleJoyrideCallback}
+          continuous
+          stepIndex={stepIndex}
+          run={run}
+          scrollToFirstStep
+          showSkipButton
+          steps={steps}
+          spotlightClicks
+          styles={{
+            options: {
+              zIndex: 2,
+            },
+          }}
+          locale={{ last: "Finish" }}
+        />
+      </Box>
+      <WalletConnectModal
+        open={connectWallet}
+        setOpen={setConnectWallet}
+        connect={true}
+      />
+    </RouteProtection>
+  );
+}

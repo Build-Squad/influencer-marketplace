@@ -66,7 +66,7 @@ const MENU_ITEMS: {
   },
   Dashboard: {
     label: "Dashboard",
-    route: "/dashboard",
+    route: "/dashboard/orders",
     icon: DashboardIcon,
     disabledIcon: DashboardDisabledIcon,
   },
@@ -196,7 +196,8 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                       height={16}
                     />
                   </Badge>
-                ) : item?.route.includes("/orders") ? (
+                ) : item?.route.includes("/orders") &&
+                  !item?.route?.includes("dashboard") ? (
                   <Badge badgeContent={orderRequestCount} color="secondary">
                     <Image
                       src={pathname == route ? item?.icon : item?.disabledIcon}

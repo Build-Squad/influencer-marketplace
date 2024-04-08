@@ -4,7 +4,6 @@ import BackIcon from "@/public/svg/Back.svg";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import OrderChatCard from "@/src/components/messagesComponents/orderChatCard";
 import OrderChatFilterBar from "@/src/components/messagesComponents/orderChatFilterBar";
-import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import { useAppSelector } from "@/src/hooks/useRedux";
 import { postService } from "@/src/services/httpServices";
@@ -27,7 +26,7 @@ import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
 const relativeTime1: any = relativeTime;
 dayjs.extend(relativeTime1);
 
-export default function InfluencerMessages({
+export default function BusinessMessages({
   children,
 }: {
   children: React.ReactNode;
@@ -35,8 +34,8 @@ export default function InfluencerMessages({
   const router = useRouter();
   const pathname = usePathname();
   const user = useAppSelector((state) => state.user)?.user;
-  const [loading, setLoading] = React.useState(false);
   const [orderChats, setOrderChats] = React.useState<OrderChatType[]>([]);
+  const [loading, setLoading] = React.useState(false);
   const [selectedOrderChatId, setSelectedOrderChatId] = React.useState<
     string | null
   >(null);
@@ -72,12 +71,12 @@ export default function InfluencerMessages({
             priority
           />
           <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Chat with businesses.
+            Chat with influencers.
           </Typography>
           <Typography sx={{ mt: 1 }}>
             This tour will guide you through the chatting room where you can
-            message the business owner and have a short discussion about the
-            order they've placed.
+            message the influencers and have a short discussion about your
+            order.
           </Typography>
         </Box>
       ),
@@ -92,7 +91,7 @@ export default function InfluencerMessages({
           </Typography>
           <Typography sx={{ mt: 1 }}>
             Advanced filters for chats based on the services, order ID, and
-            status of order.
+            status of orders.
           </Typography>
         </Box>
       ),
@@ -103,11 +102,11 @@ export default function InfluencerMessages({
       content: (
         <Box>
           <Typography variant="h6" fontWeight="bold">
-            Businesses List.
+            Influencer's List.
           </Typography>
           <Typography sx={{ mt: 1 }}>
-            Click on the business to chat with them and have a discussion about
-            the order.
+            Click on the influencer to chat with them and have a discussion
+            about the order.
           </Typography>
         </Box>
       ),
@@ -129,7 +128,7 @@ export default function InfluencerMessages({
           </Typography>
           <Typography sx={{ mt: 1 }}>
             You've completed your messages tour, you're good to go and chat with
-            the business.
+            your influencer.
           </Typography>
         </Box>
       ),
@@ -185,8 +184,6 @@ export default function InfluencerMessages({
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
-      } else {
-        notification(message ? message : "Something went wrong", "error");
       }
     } finally {
       setLoading(false);
@@ -204,8 +201,14 @@ export default function InfluencerMessages({
   };
 
   useEffect(() => {
-    handleUserInteraction();
-  }, []);
+    // The last part of the URL is the order ID if it's a message page
+    const urlParts = pathname.split("/");
+    const orderChatId = urlParts[urlParts.length - 1];
+    // if its an UUID
+    if (orderChatId.length === 36) {
+      setSelectedOrderChatId(orderChatId);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     getAllChats();
@@ -220,17 +223,35 @@ export default function InfluencerMessages({
   }, [filters, pagination.current_page_number, pagination.current_page_size]);
 
   useEffect(() => {
-    // The last part of the URL is the order ID if it's a message page
-    const urlParts = pathname.split("/");
-    const orderChatId = urlParts[urlParts.length - 1];
-    // if its an UUID
-    if (orderChatId.length === 36) {
-      setSelectedOrderChatId(orderChatId);
-    }
-  }, [pathname]);
+    handleUserInteraction();
+  }, []);
+
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          // In the center of this component
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontStyle: "italic",
+          }}
+        >
+          Please login to view Messages
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <RouteProtection logged_in={true} influencer={true}>
+    <RouteProtection logged_in={true} business_owner={true}>
       <Grid container spacing={2}>
         <Grid
           item
@@ -322,13 +343,6 @@ export default function InfluencerMessages({
                             ?.influencer?.twitter_account?.profile_image_url,
                       };
                     }
-                  } else {
-                    chatDisplayDetails = {
-                      username: orderChat?.order?.buyer?.username
-                        ? orderChat?.order?.buyer?.username
-                        : "",
-                      message: orderChat?.order_message,
-                    };
                   }
                   return (
                     <OrderChatCard
@@ -336,7 +350,7 @@ export default function InfluencerMessages({
                       orderChat={orderChat}
                       chatDisplayDetails={chatDisplayDetails}
                       handleOrderChat={(id: string) => {
-                        router.push(`/influencer/messages/${id}`);
+                        router.push(`/business/messages/${id}`);
                       }}
                       selectedOrderChatId={selectedOrderChatId}
                     />

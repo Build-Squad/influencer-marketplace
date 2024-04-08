@@ -8,13 +8,13 @@ import React, { useEffect } from "react";
 const tabs = [
   {
     title: "Orders",
-    route: `/influencer/dashboard/orders`,
+    route: `/business/dashboard/orders`,
     value: 0,
     key: "orders",
   },
   {
     title: "Order Items",
-    route: `/influencer/dashboard/order-items`,
+    route: `/business/dashboard/order-items`,
     value: 1,
     key: "order-items",
   },
@@ -74,7 +74,7 @@ export default function DashboardLayout({
                       value={tab.value}
                       sx={{
                         color:
-                          selectedTab === tab.value ? "#0099FF" : "#000000",
+                          selectedTab === tab.value ? "#000000" : "#000000",
                         fontSize: "16px",
                         lineHeight: "19px",
                         fontWeight: "bold",

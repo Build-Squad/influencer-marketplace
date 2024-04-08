@@ -15,15 +15,11 @@ import storage from "./storage";
 const userPersistConfig = {
   key: "user",
   storage: storage,
-  whitelist: ["user"],
-  blacklist: ["navigation"],
 };
 
 const cartPersistConfig = {
   key: "cart",
   storage: storage,
-  whitelist: ["cart"],
-  blacklist: ["navigation"],
 };
 
 const persistedUserReducer = persistReducer(
