@@ -43,23 +43,23 @@ export default function RootLayout({
           }}
           preventDuplicate
         >
-          <PersistGate
-            loading={
-              <Backdrop open={true}>
-                <CircularProgress color="secondary" />
-              </Backdrop>
-            }
-            persistor={persistor}
-          >
-            <Provider store={storeRef.current}>
+          <Provider store={storeRef.current}>
+            <PersistGate
+              loading={
+                <Backdrop open={true}>
+                  <CircularProgress color="secondary" />
+                </Backdrop>
+              }
+              persistor={persistor}
+            >
               <ThemeRegistry options={{ key: "mui-theme" }}>
                 <WalletContextProvider>
                   <Navbar />
                   {children}
                 </WalletContextProvider>
               </ThemeRegistry>
-            </Provider>
-          </PersistGate>
+            </PersistGate>
+          </Provider>
         </SnackbarProvider>
       </body>
     </html>
