@@ -136,6 +136,9 @@ def confirm_escrow(order_id: str):
 
         val_auth_keypair, _ = get_local_keypair_pubkey(path=VALIDATOR_KEY_PATH)
 
+        if escrow.status == 'cancelled' or escrow.status == 'delivered':
+            return False
+
         on_chain_transaction = OnChainTransaction.objects.create(
             escrow=escrow, transaction_type='confirm_escrow'
         )
@@ -175,7 +178,7 @@ def confirm_escrow(order_id: str):
 
         on_chain_transaction.save()
 
-        if on_chain_transaction.is_confirmed:
+        if on_chain_transaction.is_confirmed and order.status != 'completed':
             order.status = 'completed'
             order.save()
 

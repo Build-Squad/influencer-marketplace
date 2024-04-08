@@ -17,7 +17,6 @@ const userPersistConfig = {
   storage: storage,
   whitelist: ["user"],
   blacklist: ["navigation"],
-  timeout: 1000,
 };
 
 const cartPersistConfig = {
@@ -25,7 +24,6 @@ const cartPersistConfig = {
   storage: storage,
   whitelist: ["cart"],
   blacklist: ["navigation"],
-  timeout: 1000,
 };
 
 const persistedUserReducer = persistReducer(
