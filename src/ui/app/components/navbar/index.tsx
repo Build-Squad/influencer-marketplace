@@ -159,7 +159,6 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
                   setUnreadMessageCount={setUnreadMessageCount}
                   setOrderRequestCount={setOrderRequestCount}
                 />
-                <Typography sx={{ fontSize: "10px" }}>{item?.label}</Typography>
               </Box>
             ) : (
               <Link
