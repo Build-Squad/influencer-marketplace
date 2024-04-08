@@ -9,6 +9,9 @@ import { Provider } from "react-redux";
 import ThemeRegistry from "./ThemeRegistry";
 import Navbar from "./components/navbar";
 import "./globals.css";
+import { PersistGate } from "redux-persist/es/integration/react";
+import persistStore from "redux-persist/es/persistStore";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +25,8 @@ export default function RootLayout({
     // Create the store instance the first time this renders
     storeRef.current = makeStore();
   }
+
+  const persistor = persistStore(storeRef.current);
 
   return (
     <html lang="en">
@@ -38,14 +43,23 @@ export default function RootLayout({
           }}
           preventDuplicate
         >
-          <Provider store={storeRef.current}>
-            <ThemeRegistry options={{ key: "mui-theme" }}>
-              <WalletContextProvider>
-                <Navbar />
-                {children}
-              </WalletContextProvider>
-            </ThemeRegistry>
-          </Provider>
+          <PersistGate
+            loading={
+              <Backdrop open={true}>
+                <CircularProgress color="secondary" />
+              </Backdrop>
+            }
+            persistor={persistor}
+          >
+            <Provider store={storeRef.current}>
+              <ThemeRegistry options={{ key: "mui-theme" }}>
+                <WalletContextProvider>
+                  <Navbar />
+                  {children}
+                </WalletContextProvider>
+              </ThemeRegistry>
+            </Provider>
+          </PersistGate>
         </SnackbarProvider>
       </body>
     </html>
