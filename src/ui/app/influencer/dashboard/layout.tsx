@@ -1,5 +1,6 @@
 "use client";
 
+import RouteProtection from "@/src/components/shared/routeProtection";
 import { Box, Grid, Link, Tab, Tabs } from "@mui/material";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
@@ -38,57 +39,57 @@ export default function DashboardLayout({
   }, [pathname]);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid
-          item
-          xs={12}
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "row",
-            mb: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", justifyContent: "center", flex: 2 }}>
-            <Tabs value={selectedTab}>
-              {tabs.map((tab, index) => {
-                return (
-                  <Link
-                    key={index}
-                    href={tab.route}
-                    underline="none"
-                    sx={{
-                      textDecoration: "none",
-                    }}
-                    component={NextLink}
-                  >
-                    <Tab
+    <RouteProtection logged_in={true} influencer={true}>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "row",
+              mb: 2,
+            }}
+          >
+            <Box sx={{ display: "flex", justifyContent: "center", flex: 2 }}>
+              <Tabs value={selectedTab}>
+                {tabs.map((tab, index) => {
+                  return (
+                    <Link
                       key={index}
-                      label={tab.title}
-                      value={tab.value}
+                      href={tab.route}
+                      underline="none"
                       sx={{
-                        color:
-                          selectedTab === tab.value ? "#0099FF" : "#000000",
-                        fontSize: "16px",
-                        lineHeight: "19px",
-                        fontWeight: "bold",
-                        textTransform: "none",
+                        textDecoration: "none",
                       }}
-                    />
-                  </Link>
-                );
-              })}
-            </Tabs>
-          </Box>
+                      component={NextLink}
+                    >
+                      <Tab
+                        key={index}
+                        label={tab.title}
+                        value={tab.value}
+                        sx={{
+                          fontSize: "16px",
+                          lineHeight: "19px",
+                          fontWeight: "bold",
+                          textTransform: "none",
+                        }}
+                      />
+                    </Link>
+                  );
+                })}
+              </Tabs>
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-      <Box>{children}</Box>
-    </Box>
+        <Box>{children}</Box>
+      </Box>
+    </RouteProtection>
   );
 }

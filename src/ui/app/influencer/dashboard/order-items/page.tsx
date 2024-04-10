@@ -8,7 +8,6 @@ import FilterBar from "@/src/components/dashboardComponents/filtersBar";
 import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import UpdateOrder from "@/src/components/dashboardComponents/updateOrder";
 import { notification } from "@/src/components/shared/notification";
-import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import { postService } from "@/src/services/httpServices";
 import {
@@ -481,138 +480,136 @@ export default function BusinessDashboardPage() {
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
-    <RouteProtection logged_in={true} influencer={true}>
-      <Box
-        sx={{
-          p: 2,
-        }}
-      >
-        <Grid container spacing={2}>
-          <Grid
-            item
-            xs={12}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexDirection: "row",
-              mb: 2,
-            }}
-          >
-            <Box sx={{ flex: 1 }}>
-              <Image
-                src={BackIcon}
-                alt={"BackIcon"}
-                height={30}
-                style={{
-                  marginTop: "8px",
-                  marginBottom: "8px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  router.back();
-                }}
-              />
-            </Box>
-          </Grid>
-        </Grid>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Grid container spacing={2} className="joyride-tabs">
-              {orderItemStatusCards.map((card, index) => {
-                return (
-                  <Grid item key={index} xs={12} sm={6} md={2} lg={2}>
-                    <StatusCard
-                      card={card}
-                      selectedCard={selectedCard}
-                      count={
-                        card?.value === 0
-                          ? orderItemsCount?.accepted +
-                            orderItemsCount?.scheduled +
-                            orderItemsCount?.published +
-                            orderItemsCount?.rejected +
-                            orderItemsCount?.cancelled
-                          : card?.value === 1
-                          ? orderItemsCount?.accepted
-                          : card?.value === 2
-                          ? orderItemsCount?.scheduled
-                          : card?.value === 3
-                          ? orderItemsCount?.published
-                          : card?.value === 4
-                          ? orderItemsCount?.rejected
-                          : card?.value === 5
-                          ? orderItemsCount?.cancelled
-                          : 0
-                      }
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </Grid>
-          <Grid item xs={12}>
-            {/* Filters bar */}
-            <FilterBar filters={filters} setFilters={setFilters} />
-          </Grid>
-          <Grid item xs={12}>
-            <DataGrid
-              getRowId={(row) => (row?.id ? row?.id : 0)}
-              autoHeight
-              loading={loading}
-              rows={orderItems}
-              columns={orderItemColumns}
-              disableRowSelectionOnClick
-              disableColumnFilter
-              hideFooter
-              getRowHeight={(params) => 100}
-              sx={{
-                backgroundColor: "#fff",
+    <Box
+      sx={{
+        p: 2,
+      }}
+    >
+      <Grid container spacing={2}>
+        <Grid
+          item
+          xs={12}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: "row",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <Image
+              src={BackIcon}
+              alt={"BackIcon"}
+              height={30}
+              style={{
+                marginTop: "8px",
+                marginBottom: "8px",
+                cursor: "pointer",
               }}
-              sortingMode="server"
-              onSortModelChange={(model) => {
-                setFilters((prev) => ({
-                  ...prev,
-                  order_by: model?.[0]?.field
-                    ? model?.[0]?.sort === "asc"
-                      ? `-${model?.[0]?.field}`
-                      : `${model?.[0]?.field}`
-                    : "upcoming",
-                }));
-              }}
-              localeText={{
-                noRowsLabel: "No order items found",
+              onClick={() => {
+                router.back();
               }}
             />
+          </Box>
+        </Grid>
+      </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Grid container spacing={2} className="joyride-tabs">
+            {orderItemStatusCards.map((card, index) => {
+              return (
+                <Grid item key={index} xs={12} sm={6} md={2} lg={2}>
+                  <StatusCard
+                    card={card}
+                    selectedCard={selectedCard}
+                    count={
+                      card?.value === 0
+                        ? orderItemsCount?.accepted +
+                          orderItemsCount?.scheduled +
+                          orderItemsCount?.published +
+                          orderItemsCount?.rejected +
+                          orderItemsCount?.cancelled
+                        : card?.value === 1
+                        ? orderItemsCount?.accepted
+                        : card?.value === 2
+                        ? orderItemsCount?.scheduled
+                        : card?.value === 3
+                        ? orderItemsCount?.published
+                        : card?.value === 4
+                        ? orderItemsCount?.rejected
+                        : card?.value === 5
+                        ? orderItemsCount?.cancelled
+                        : 0
+                    }
+                  />
+                </Grid>
+              );
+            })}
           </Grid>
-          <Grid item xs={12}>
-            <Box
+        </Grid>
+        <Grid item xs={12}>
+          {/* Filters bar */}
+          <FilterBar filters={filters} setFilters={setFilters} />
+        </Grid>
+        <Grid item xs={12}>
+          <DataGrid
+            getRowId={(row) => (row?.id ? row?.id : 0)}
+            autoHeight
+            loading={loading}
+            rows={orderItems}
+            columns={orderItemColumns}
+            disableRowSelectionOnClick
+            disableColumnFilter
+            hideFooter
+            getRowHeight={(params) => 100}
+            sx={{
+              backgroundColor: "#fff",
+            }}
+            sortingMode="server"
+            onSortModelChange={(model) => {
+              setFilters((prev) => ({
+                ...prev,
+                order_by: model?.[0]?.field
+                  ? model?.[0]?.sort === "asc"
+                    ? `-${model?.[0]?.field}`
+                    : `${model?.[0]?.field}`
+                  : "upcoming",
+              }));
+            }}
+            localeText={{
+              noRowsLabel: "No order items found",
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+            }}
+          >
+            <Pagination
+              count={pagination.total_page_count}
+              page={pagination.current_page_number}
+              onChange={handlePaginationChange}
               sx={{
                 display: "flex",
                 justifyContent: "center",
-                alignItems: "center",
-                mt: 2,
               }}
-            >
-              <Pagination
-                count={pagination.total_page_count}
-                page={pagination.current_page_number}
-                onChange={handlePaginationChange}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-                color="secondary"
-                shape="rounded"
-              />
-            </Box>
-          </Grid>
+              color="secondary"
+              shape="rounded"
+            />
+          </Box>
         </Grid>
-        <UpdateOrder
-          order_id={selectedOrder?.id!}
-          open={open}
-          setOpen={setOpen}
-        />
-      </Box>
-    </RouteProtection>
+      </Grid>
+      <UpdateOrder
+        order_id={selectedOrder?.id!}
+        open={open}
+        setOpen={setOpen}
+      />
+    </Box>
   );
 }

@@ -226,30 +226,6 @@ export default function BusinessMessages({
     handleUserInteraction();
   }, []);
 
-  if (!user) {
-    return (
-      <Box
-        sx={{
-          // In the center of this component
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          flexDirection: "column",
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            fontStyle: "italic",
-          }}
-        >
-          Please login to view Messages
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <RouteProtection logged_in={true} business_owner={true}>
       <Grid container spacing={2}>

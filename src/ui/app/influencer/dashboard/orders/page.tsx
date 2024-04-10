@@ -12,7 +12,6 @@ import StatusCard from "@/src/components/dashboardComponents/statusCard";
 import TransactionIcon from "@/src/components/dashboardComponents/transactionIcon";
 import UpdateOrder from "@/src/components/dashboardComponents/updateOrder";
 import { notification } from "@/src/components/shared/notification";
-import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import ClaimEscrow from "@/src/components/web3Components/claimEscrow";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
@@ -743,186 +742,184 @@ export default function BusinessDashboardPage() {
   }, [pagination.current_page_number, pagination.current_page_size, filters]);
 
   return (
-    <RouteProtection logged_in={true} influencer={true}>
-      <Box
-        sx={{
-          p: 2,
-        }}
-      >
-        <Grid container spacing={2}>
-          <Grid
-            item
-            xs={12}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexDirection: "row",
-              mb: 2,
-            }}
-          >
-            <Box sx={{ flex: 1 }}>
-              <Image
-                src={BackIcon}
-                alt={"BackIcon"}
-                height={30}
-                style={{
-                  marginTop: "8px",
-                  marginBottom: "8px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  router.back();
-                }}
-              />
-            </Box>
-            <Box
-              sx={{
-                flex: 1,
-                mr: 4,
-                color: "grey",
+    <Box
+      sx={{
+        p: 2,
+      }}
+    >
+      <Grid container spacing={2}>
+        <Grid
+          item
+          xs={12}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: "row",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <Image
+              src={BackIcon}
+              alt={"BackIcon"}
+              height={30}
+              style={{
+                marginTop: "8px",
+                marginBottom: "8px",
                 cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                columnGap: "4px",
-                visibility:
-                  pagination.total_data_count > 0 ? "visible" : "hidden",
               }}
               onClick={() => {
-                setStepIndex(0);
-                setRun(true);
-              }}
-            >
-              <DriveEta fontSize="small" />
-              <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
-            </Box>
-          </Grid>
-        </Grid>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Grid container spacing={2} className="joyride-tabs">
-              {statusCards.map((card, index) => {
-                return (
-                  <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
-                    <StatusCard
-                      card={card}
-                      selectedCard={selectedCard}
-                      count={
-                        card?.value === 0
-                          ? orderCount?.accepted +
-                            orderCount?.completed +
-                            orderCount?.rejected +
-                            orderCount?.cancelled
-                          : card?.value === 1
-                          ? orderCount?.accepted
-                          : card?.value === 2
-                          ? orderCount?.completed
-                          : card?.value === 3
-                          ? orderCount?.pending
-                          : card?.value === 4
-                          ? orderCount?.rejected
-                          : card?.value === 5
-                          ? orderCount?.cancelled
-                          : 0
-                      }
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </Grid>
-          <Grid item xs={12}>
-            {/* Filters bar */}
-            <FilterBar filters={filters} setFilters={setFilters} />
-          </Grid>
-          <Grid item xs={12}>
-            <DataGrid
-              getRowId={(row) => (row?.id ? row?.id : 0)}
-              autoHeight
-              loading={loading}
-              rows={orders}
-              columns={columns}
-              disableRowSelectionOnClick
-              disableColumnFilter
-              hideFooter
-              getRowHeight={(params) => 100}
-              sx={{
-                backgroundColor: "#fff",
-              }}
-              sortingMode="server"
-              onSortModelChange={(model) => {
-                setFilters((prev) => ({
-                  ...prev,
-                  order_by: model?.[0]?.field
-                    ? model?.[0]?.sort === "asc"
-                      ? `-${model?.[0]?.field}`
-                      : `${model?.[0]?.field}`
-                    : "upcoming",
-                }));
-              }}
-              localeText={{
-                noRowsLabel: "No orders found",
+                router.back();
               }}
             />
+          </Box>
+          <Box
+            sx={{
+              flex: 1,
+              mr: 4,
+              color: "grey",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              columnGap: "4px",
+              visibility:
+                pagination.total_data_count > 0 ? "visible" : "hidden",
+            }}
+            onClick={() => {
+              setStepIndex(0);
+              setRun(true);
+            }}
+          >
+            <DriveEta fontSize="small" />
+            <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+          </Box>
+        </Grid>
+      </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Grid container spacing={2} className="joyride-tabs">
+            {statusCards.map((card, index) => {
+              return (
+                <Grid item key={index} xs={12} sm={6} md={4} lg={2.4}>
+                  <StatusCard
+                    card={card}
+                    selectedCard={selectedCard}
+                    count={
+                      card?.value === 0
+                        ? orderCount?.accepted +
+                          orderCount?.completed +
+                          orderCount?.rejected +
+                          orderCount?.cancelled
+                        : card?.value === 1
+                        ? orderCount?.accepted
+                        : card?.value === 2
+                        ? orderCount?.completed
+                        : card?.value === 3
+                        ? orderCount?.pending
+                        : card?.value === 4
+                        ? orderCount?.rejected
+                        : card?.value === 5
+                        ? orderCount?.cancelled
+                        : 0
+                    }
+                  />
+                </Grid>
+              );
+            })}
           </Grid>
-          <Grid item xs={12}>
-            <Box
+        </Grid>
+        <Grid item xs={12}>
+          {/* Filters bar */}
+          <FilterBar filters={filters} setFilters={setFilters} />
+        </Grid>
+        <Grid item xs={12}>
+          <DataGrid
+            getRowId={(row) => (row?.id ? row?.id : 0)}
+            autoHeight
+            loading={loading}
+            rows={orders}
+            columns={columns}
+            disableRowSelectionOnClick
+            disableColumnFilter
+            hideFooter
+            getRowHeight={(params) => 100}
+            sx={{
+              backgroundColor: "#fff",
+            }}
+            sortingMode="server"
+            onSortModelChange={(model) => {
+              setFilters((prev) => ({
+                ...prev,
+                order_by: model?.[0]?.field
+                  ? model?.[0]?.sort === "asc"
+                    ? `-${model?.[0]?.field}`
+                    : `${model?.[0]?.field}`
+                  : "upcoming",
+              }));
+            }}
+            localeText={{
+              noRowsLabel: "No orders found",
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+            }}
+          >
+            <Pagination
+              count={pagination.total_page_count}
+              page={pagination.current_page_number}
+              onChange={handlePaginationChange}
               sx={{
                 display: "flex",
                 justifyContent: "center",
-                alignItems: "center",
-                mt: 2,
               }}
-            >
-              <Pagination
-                count={pagination.total_page_count}
-                page={pagination.current_page_number}
-                onChange={handlePaginationChange}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-                color="secondary"
-                shape="rounded"
-              />
-            </Box>
-          </Grid>
+              color="secondary"
+              shape="rounded"
+            />
+          </Box>
         </Grid>
-        <UpdateOrder
-          order_id={selectedOrder?.id!}
-          open={open}
-          setOpen={setOpen}
-        />
-        <ReviewModal
-          reviewOrder={selectedReviewOrder}
-          open={openReviewModal}
-          setOpen={setOpenReviewModal}
-          readonly={true}
-        />
+      </Grid>
+      <UpdateOrder
+        order_id={selectedOrder?.id!}
+        open={open}
+        setOpen={setOpen}
+      />
+      <ReviewModal
+        reviewOrder={selectedReviewOrder}
+        open={openReviewModal}
+        setOpen={setOpenReviewModal}
+        readonly={true}
+      />
 
-        <Joyride
-          callback={handleJoyrideCallback}
-          continuous
-          stepIndex={stepIndex}
-          run={run}
-          scrollToFirstStep
-          showSkipButton
-          steps={steps}
-          spotlightClicks
-          styles={{
-            options: {
-              zIndex: 2,
-            },
-          }}
-          locale={{ last: "Finish" }}
-        />
-      </Box>
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous
+        stepIndex={stepIndex}
+        run={run}
+        scrollToFirstStep
+        showSkipButton
+        steps={steps}
+        spotlightClicks
+        styles={{
+          options: {
+            zIndex: 2,
+          },
+        }}
+        locale={{ last: "Finish" }}
+      />
       <WalletConnectModal
         open={connectWallet}
         setOpen={setConnectWallet}
         connect={true}
       />
-    </RouteProtection>
+    </Box>
   );
 }
