@@ -9,6 +9,7 @@ import Image from "next/image";
 import OrderSummaryDetails from "@/src/components/dashboardComponents/orderSummaryDetails";
 import OrderSummaryTable from "@/src/components/dashboardComponents/orderSummaryTable";
 import {
+  Backdrop,
   Box,
   Button,
   CircularProgress,
@@ -45,6 +46,7 @@ export default function Orders() {
     orderId: "",
   });
   const [loading, setLoading] = useState(false);
+  const [redirectLoading, setRedirectLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [rowSelectionModel, setRowSelectionModel] =
@@ -168,13 +170,10 @@ export default function Orders() {
   };
 
   const handleUserInteraction = async () => {
-    const { isSuccess, data, message } = await postService(
-      `orders/order-list/`,
-      {
-        page_number: pagination.current_page_number,
-        page_size: pagination.current_page_size,
-      }
-    );
+    const { isSuccess, data } = await postService(`orders/order-list/`, {
+      page_number: pagination.current_page_number,
+      page_size: pagination.current_page_size,
+    });
 
     if (isSuccess && data?.data?.status_counts) {
       const { status_counts: orders } = data.data;
@@ -209,6 +208,16 @@ export default function Orders() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+
+        // Redirecting to dashboard page after two seconds if there are no orders pending
+        if (data?.data?.orders.length == 0) {
+          setRedirectLoading(true);
+          setTimeout(() => {
+            router.push("/influencer/dashboard/?tab=orders");
+          }, 2000);
+        } else {
+          setRedirectLoading(false);
+        }
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
@@ -706,6 +715,26 @@ export default function Orders() {
         }}
         locale={{ last: "Finish" }}
       />
+      {redirectLoading ? (
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={true}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CircularProgress thickness={2} />
+            <Typography sx={{ mt: 3 }} variant="h6">
+              Redirecting to dashboard...
+            </Typography>
+          </Box>
+        </Backdrop>
+      ) : null}
     </RouteProtection>
   );
 }
