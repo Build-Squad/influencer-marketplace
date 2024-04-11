@@ -892,7 +892,9 @@ export default function BusinessDashboardPage() {
                     cancelOrder(params?.row);
                   }}
                   deleteElement={
-                    <HighlightOffIcon color="secondary" sx={{ mt: 1 }} />
+                    <IconButton disabled={cancellationInProgress}>
+                      <HighlightOffIcon />
+                    </IconButton>
                   }
                   title={`Order ${params?.row?.order_code}`}
                   hide={true}
