@@ -215,6 +215,12 @@ class OrderListView(APIView):
                         When(min_publish_date__gte=Now(), then=True),
                         default=False,
                         output_field=BooleanField(),
+                    ),
+                    is_accepted_or_pending=Case(
+                        When(Q(status='accepted') | Q(
+                            status='pending'), then=True),
+                        default=False,
+                        output_field=BooleanField(),
                     )
                 ).order_by(
                     '-is_future',
@@ -222,7 +228,8 @@ class OrderListView(APIView):
                         When(is_future=True, then=F('time_difference')),
                         When(is_future=False, then=F('time_difference') * -1),
                         output_field=DateTimeField(),
-                    )
+                    ),
+                    '-is_accepted_or_pending',
                 )
             elif "order_by" in filters:
                 orders = orders.order_by(filters["order_by"])
