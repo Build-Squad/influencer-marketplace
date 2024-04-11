@@ -42,7 +42,7 @@ export default function CreateEscrow({
   const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(`${process.env.NEXT_PUBLIC_RPC_LINK}`, {
     commitment: "confirmed",
-    confirmTransactionInitialTimeout: 30000,
+    confirmTransactionInitialTimeout: 60000,
   });
   const wallet = useAnchorWallet();
 
@@ -105,7 +105,7 @@ export default function CreateEscrow({
           const tx = new Transaction().add(ix);
 
           const options = {
-            skipPreflight: true, // WARNING: This is dangerous on Mainnet
+            skipPreflight: process.env.NEXT_PUBLIC_RPC_LINK?.includes("devnet"),
           };
 
           try {
