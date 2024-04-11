@@ -1,13 +1,16 @@
 "use client";
+import BackIcon from "@/public/svg/Back.svg";
 import Star from "@/public/svg/Star.svg";
 import { notification } from "@/src/components/shared/notification";
 import { postService, putService } from "@/src/services/httpServices";
-import { KeyboardBackspace, OpenInFull } from "@mui/icons-material";
-import BackIcon from "@/public/svg/Back.svg";
+import { OpenInFull } from "@mui/icons-material";
 import Image from "next/image";
 
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import OrderSummaryDetails from "@/src/components/dashboardComponents/orderSummaryDetails";
 import OrderSummaryTable from "@/src/components/dashboardComponents/orderSummaryTable";
+import RouteProtection from "@/src/components/shared/routeProtection";
+import { DriveEta } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -29,21 +32,27 @@ import {
   GridTreeNodeWithRender,
 } from "@mui/x-data-grid";
 import NextLink from "next/link";
-import React, { useEffect, useState } from "react";
-import RouteProtection from "@/src/components/shared/routeProtection";
 import { useRouter } from "next/navigation";
-import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
-import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
-import { DriveEta } from "@mui/icons-material";
 import { closeSnackbar, enqueueSnackbar } from "notistack";
+import React, { useEffect, useState } from "react";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
+import {
+  endCancellation,
+  startCancellation,
+} from "@/src/reducers/orderCancellationSlice";
 
 export default function Orders() {
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const cancellationInProgress = useAppSelector(
+    (state) => state.orderCancellation.cancellationInProgress
+  );
+  const dispatch = useAppDispatch();
   const [selectedAction, setSelectedAction] = useState({
     status: "",
     orderId: "",
   });
+  const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -356,6 +365,7 @@ export default function Orders() {
                 setSelectedAction({ status: "Accept", orderId });
                 handleClickOpen();
               }}
+              disabled={cancellationInProgress}
             >
               Accept
             </Button>
@@ -369,6 +379,7 @@ export default function Orders() {
                 setSelectedAction({ status: "Decline", orderId });
                 handleClickOpen();
               }}
+              disabled={cancellationInProgress}
             >
               Decline
             </Button>
@@ -396,6 +407,7 @@ export default function Orders() {
     pagination.current_page_number,
     pagination.current_page_size,
     actionLoading,
+    cancellationInProgress,
   ]);
 
   const handleAction = async () => {
@@ -410,6 +422,7 @@ export default function Orders() {
             <CircularProgress color="inherit" size={20} />
           </>
         );
+        dispatch(startCancellation());
         const cancellationNotification = enqueueSnackbar(
           `Declining order request, please wait for confirmation`,
           {
@@ -424,6 +437,7 @@ export default function Orders() {
         );
         if (isSuccess) {
           closeSnackbar(cancellationNotification);
+          dispatch(endCancellation());
           getOrders();
           notification(
             "Order request was declined successfully",
@@ -432,6 +446,7 @@ export default function Orders() {
           );
         } else {
           closeSnackbar(cancellationNotification);
+          dispatch(endCancellation());
           notification(
             message ? message : "Something went wrong, couldn't cancel order",
             "error"
