@@ -21,6 +21,7 @@ interface Props {
   hide?: boolean;
   deleteElement: React.ReactNode;
   sx?: any;
+  disabled?: boolean;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -39,6 +40,7 @@ export const ConfirmCancel: React.FC<Props> = ({
   hide = false,
   deleteElement,
   sx,
+  disabled,
 }) => {
   const [open, setOpen] = React.useState<boolean>(false);
   return (
@@ -49,7 +51,11 @@ export const ConfirmCancel: React.FC<Props> = ({
     >
       <Tooltip title="Cancel">
         <Box
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            if (!disabled) {
+              setOpen(true);
+            }
+          }}
           sx={{ width: "100%", cursor: "pointer" }}
         >
           {deleteElement}

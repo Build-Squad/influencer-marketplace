@@ -25,6 +25,7 @@ type CancelEscrowProps = {
   order: OrderType;
   updateStatus: () => void;
   setConnectWallet: (value: boolean) => void;
+  disabled: boolean;
 };
 
 const programId = new PublicKey(idl.metadata.address);
@@ -33,6 +34,7 @@ export default function CancelEscrow({
   updateStatus,
   order,
   setConnectWallet,
+  disabled,
 }: CancelEscrowProps) {
   const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(`${process.env.NEXT_PUBLIC_RPC_LINK}`, {
@@ -230,7 +232,7 @@ export default function CancelEscrow({
         onClick={() => {
           cancelEscrow();
         }}
-        disabled={localLoading}
+        disabled={localLoading || disabled}
       >
         <DownloadingIcon />
       </IconButton>
