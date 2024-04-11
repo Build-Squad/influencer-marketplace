@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { userSlice } from "./reducers/userSlice";
 import { cartSlice } from "./reducers/cartSlice";
+import { orderCancellationSlice } from "./reducers/orderCancellationSlice";
 import {
   FLUSH,
   PAUSE,
@@ -15,15 +16,16 @@ import storage from "./storage";
 const userPersistConfig = {
   key: "user",
   storage: storage,
-  whitelist: ["user"],
-  blacklist: ["navigation"],
 };
 
 const cartPersistConfig = {
   key: "cart",
   storage: storage,
-  whitelist: ["cart"],
-  blacklist: ["navigation"],
+};
+
+const orderCancellationPersistConfig = {
+  key: "orderCancellation",
+  storage: storage,
 };
 
 const persistedUserReducer = persistReducer(
@@ -35,12 +37,18 @@ const persistedCartReducer = persistReducer(
   cartSlice.reducer
 );
 
+const persistedOrderCancellationReducer = persistReducer(
+  orderCancellationPersistConfig,
+  orderCancellationSlice.reducer
+);
+
 export const makeStore = () => {
   return configureStore({
     reducer: {
       // Add the generated reducer as a specific top-level slice
       user: persistedUserReducer,
       cart: persistedCartReducer,
+      orderCancellation: persistedOrderCancellationReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
