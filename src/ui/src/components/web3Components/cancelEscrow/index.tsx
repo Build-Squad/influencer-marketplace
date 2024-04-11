@@ -39,7 +39,7 @@ export default function CancelEscrow({
   const [localLoading, setLocalLoading] = useState(false);
   const connection = new Connection(`${process.env.NEXT_PUBLIC_RPC_LINK}`, {
     commitment: "confirmed",
-    confirmTransactionInitialTimeout: 60000,
+    confirmTransactionInitialTimeout: 30000,
   });
   const wallet = useAnchorWallet();
 
