@@ -280,7 +280,6 @@ export default function BusinessDashboardPage() {
 
   const handleUserInteraction = async () => {
     try {
-      setLoading(true);
       const { isSuccess, data, message } = await postService(
         `orders/order-list/`,
         {
@@ -296,7 +295,6 @@ export default function BusinessDashboardPage() {
         }
       }
     } finally {
-      setLoading(false);
     }
   };
 
