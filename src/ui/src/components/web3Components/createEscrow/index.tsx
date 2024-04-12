@@ -105,7 +105,7 @@ export default function CreateEscrow({
           const tx = new Transaction().add(ix);
 
           const options = {
-            skipPreflight: true, // WARNING: This is dangerous on Mainnet
+            skipPreflight: process.env.NEXT_PUBLIC_RPC_LINK?.includes("devnet"),
           };
 
           try {

@@ -37,7 +37,7 @@ export default function NotificationPanel({
   const [notificationsAnchor, setNotificationsAnchor] = React.useState(null);
   const openNotifications = Boolean(notificationsAnchor);
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
-  const [onlyUnread, setOnlyUnread] = useState<boolean | null>(null);
+  const [onlyUnread, setOnlyUnread] = useState<boolean | null>(true);
   const [pagination, setPagination] = useState<PaginationType>({
     total_data_count: 0,
     total_page_count: 0,
@@ -128,10 +128,6 @@ export default function NotificationPanel({
   };
 
   useEffect(() => {
-    setOnlyUnread(null);
-  }, [openNotifications]);
-
-  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       getNotifications();
     }, 500);
@@ -194,7 +190,7 @@ export default function NotificationPanel({
               borderRadius: "none",
               boxShadow: "0px 3px 7px #00000026",
               minHeight: 300,
-              maxHeight: 700,
+              maxHeight: "85vh",
               overflow: "auto",
               px: 2,
               py: 1,

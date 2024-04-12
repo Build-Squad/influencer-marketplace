@@ -38,26 +38,26 @@ export default function RootLayout({
         <title>Xfluencer Beta</title>
       </head>
       <body className={inter.className}>
-        <SnackbarProvider
-          maxSnack={5}
-          autoHideDuration={2000}
-          anchorOrigin={{
-            vertical: "top",
-            horizontal: "center",
-          }}
-          preventDuplicate
-        >
-          <Provider store={storeRef.current}>
-            <PersistGate loading={null} persistor={persistorRef.current}>
-              <ThemeRegistry options={{ key: "mui-theme" }}>
+        <Provider store={storeRef.current}>
+          <PersistGate loading={null} persistor={persistorRef.current}>
+            <ThemeRegistry options={{ key: "mui-theme" }}>
+              <SnackbarProvider
+                maxSnack={5}
+                autoHideDuration={2000}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
+                }}
+                preventDuplicate
+              >
                 <WalletContextProvider>
                   <Navbar />
                   {children}
                 </WalletContextProvider>
-              </ThemeRegistry>
-            </PersistGate>
-          </Provider>
-        </SnackbarProvider>
+              </SnackbarProvider>
+            </ThemeRegistry>
+          </PersistGate>
+        </Provider>
       </body>
     </html>
   );
