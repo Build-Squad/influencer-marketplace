@@ -56,7 +56,7 @@ export const ConfirmCancel: React.FC<Props> = ({
               setOpen(true);
             }
           }}
-          sx={{ width: "100%", cursor: "pointer" }}
+          sx={{ width: "100%", cursor: disabled ? "not-allowed" : "pointer" }}
         >
           {deleteElement}
         </Box>

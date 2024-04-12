@@ -233,6 +233,9 @@ export default function CancelEscrow({
           cancelEscrow();
         }}
         disabled={localLoading || disabled}
+        sx={{
+          cursor: disabled ? "not-allowed" : "pointer",
+        }}
       >
         <DownloadingIcon />
       </IconButton>
