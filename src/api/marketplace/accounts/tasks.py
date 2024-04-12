@@ -54,11 +54,6 @@ def updateAccessTokens():
                     logger.error(
                         f"Error refreshing token for {twitter_account.id}, {twitter_account.user_name}: {e}")
                     continue
-                logger.info(
-                    f"New Access token for {twitter_account.id}, {twitter_account.user_name}: {new_token['access_token']}")
-                logger.info(
-                    f"New Refresh token for {twitter_account.id}, {twitter_account.user_name}: {new_token['refresh_token']}")
-
                 # Update the TwitterAccount model with the new tokens
                 twitter_account.access_token = new_token["access_token"]
                 twitter_account.refresh_token = new_token["refresh_token"]

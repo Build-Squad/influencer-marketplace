@@ -66,6 +66,11 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import RuleOutlinedIcon from "@mui/icons-material/RuleOutlined";
 import ManualVerifyModal from "@/src/components/dashboardComponents/manualVerifyModal";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
+import {
+  endCancellation,
+  startCancellation,
+} from "@/src/reducers/orderCancellationSlice";
 
 const tabs = [
   {
@@ -83,6 +88,10 @@ const tabs = [
 ];
 export default function BusinessDashboardPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const cancellationInProgress = useAppSelector(
+    (state) => state.orderCancellation.cancellationInProgress
+  );
   const [connectWallet, setConnectWallet] = useState(false);
   const searchParams = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
@@ -255,7 +264,6 @@ export default function BusinessDashboardPage() {
 
   const handleUserInteraction = async () => {
     try {
-      setLoading(true);
       const { isSuccess, data, message } = await postService(
         `orders/order-list/`,
         {
@@ -282,7 +290,6 @@ export default function BusinessDashboardPage() {
         }
       }
     } finally {
-      setLoading(false);
     }
   };
 
@@ -360,6 +367,7 @@ export default function BusinessDashboardPage() {
           <CircularProgress color="inherit" size={20} />
         </>
       );
+      dispatch(startCancellation());
       const cancellationNotification = enqueueSnackbar(
         `Cancelling ${order?.order_code}, please wait for confirmation`,
         {
@@ -374,10 +382,12 @@ export default function BusinessDashboardPage() {
       );
       if (isSuccess) {
         closeSnackbar(cancellationNotification);
+        dispatch(endCancellation());
         notification("Order cancelled successfully", "success");
         getOrders();
       } else {
         closeSnackbar(cancellationNotification);
+        dispatch(endCancellation());
         notification(
           message ? message : "Something went wrong, couldn't cancel order",
           "error",
@@ -833,6 +843,7 @@ export default function BusinessDashboardPage() {
                   setSelectedOrder(params?.row);
                   setOpen(true);
                 }}
+                disabled={cancellationInProgress}
               >
                 <EditNoteIcon />
               </IconButton>
@@ -864,6 +875,7 @@ export default function BusinessDashboardPage() {
                   order={params?.row}
                   updateStatus={getOrders}
                   setConnectWallet={setConnectWallet}
+                  disabled={cancellationInProgress}
                 />
               )}
             {(params?.row?.status === ORDER_STATUS.ACCEPTED ||
@@ -878,10 +890,13 @@ export default function BusinessDashboardPage() {
                     cancelOrder(params?.row);
                   }}
                   deleteElement={
-                    <HighlightOffIcon color="secondary" sx={{ mt: 1 }} />
+                    <IconButton disabled={cancellationInProgress}>
+                      <HighlightOffIcon />
+                    </IconButton>
                   }
                   title={`Order ${params?.row?.order_code}`}
                   hide={true}
+                  disabled={cancellationInProgress}
                 />
               )}
           </Box>
