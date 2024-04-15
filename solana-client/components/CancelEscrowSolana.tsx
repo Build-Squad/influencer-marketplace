@@ -26,14 +26,17 @@ const programId = new PublicKey(idl.metadata.address);
 interface CancelEscrowSolanaProps {
     business: string,
     influencer: string,
-    orderCode: number
+    orderCode: number,
+    network: string
   }
 
 
-export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influencer, orderCode}) => {
-
+export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, 
+                                                                 influencer, 
+                                                                 orderCode,
+                                                                 network}) => {
     const wallet = useAnchorWallet()
-    const connection = new Connection(clusterApiUrl('devnet'),
+    const connection = new Connection(network,
     {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
@@ -50,7 +53,7 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
         <div className={styles.buttonContainer}>
             <button className={styles.button} disabled>CANCEL (wallet not connected)</button>
         </div>  )      
-     }
+    }
 
     const onClick = async () => {
 
@@ -65,8 +68,7 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business, influ
           ],
           programId
         );
-      
-               
+                     
         const ix = await program.methods.cancelEscrowSol()
             .accounts({
                 business: business_pk,

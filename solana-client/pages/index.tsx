@@ -26,18 +26,23 @@ const Home: NextPage = (props) => {
 
   //// CHANGE THESE ADDRESSED TO CONFIGURE THE XFLUENCER MOCK //////
   const MINT: string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`;
+
   const VALIDATOR: string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`;
-  const BUSINESS: string = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`;
-  const INFLUENCER: string = `4AxvMsyEv5X3ioHuguaAk4ETsCQ6AWDpjgzNEUckaDEx`;
+  //const BUSINESS: string = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`;
+  const BUSINESS: string = `GQRDv58u1dULSyHSYWPqNTjcWjsFHHi763mbqDaEEgQ3`
+
+  //const INFLUENCER: string = `4AxvMsyEv5X3ioHuguaAk4ETsCQ6AWDpjgzNEUckaDEx`;
+  const INFLUENCER: string = `94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA`
 
   //////////////////////////////////////////////////////////////////
-  const NUM_SOLS: number = 0.1;
+  const NUM_SOLS: number = 0.001;
   const LAMPORTS: number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
-  const ORDER_CODE: number = 12349 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+  const ORDER_CODE: number = 12354 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
   const NUM_SPL_TOKENS: number = 1000000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
   const PERCENTAGE_FEE: number = 0;
 
 
+  const NETWORK = "https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474"
 
   return (
     <div className={styles.App}>
@@ -96,9 +101,13 @@ const Home: NextPage = (props) => {
             business={BUSINESS}
             influencer={INFLUENCER}
             lamports={LAMPORTS}
-            orderCode={ORDER_CODE} />
+            orderCode={ORDER_CODE} 
+            network={NETWORK}/>
 
-          <CancelEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
+          <CancelEscrowSolana business={BUSINESS} 
+                              influencer={INFLUENCER} 
+                              orderCode={ORDER_CODE} 
+                              network={NETWORK}/>
 
           <Validate validator={VALIDATOR}
             business={BUSINESS}
@@ -106,7 +115,8 @@ const Home: NextPage = (props) => {
             percentageFee={0}
             orderCode={ORDER_CODE}
             targetState={1}
-            textButton={"Validate Escrow Cancel"} />
+            textButton={"Validate Escrow Cancel"}
+            network={NETWORK} />
 
           <Validate validator={VALIDATOR} 
             business={BUSINESS} 
@@ -114,9 +124,13 @@ const Home: NextPage = (props) => {
             percentageFee={0}
             orderCode={ORDER_CODE} 
             targetState={2} 
-            textButton={"Validate Escrow Delivery"} />
+            textButton={"Validate Escrow Delivery"}
+            network={NETWORK} />
 
-          <ClaimEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE} />
+          <ClaimEscrowSolana business={BUSINESS} 
+                             influencer={INFLUENCER} 
+                             orderCode={ORDER_CODE}
+                             network={NETWORK} />
         </div>
 
         <div className={styles.AppBody}>
@@ -185,7 +199,8 @@ const Home: NextPage = (props) => {
             influencer={INFLUENCER}
             validatorAuthority={VALIDATOR}
             mintTokenAccount={MINT}
-            orderCode={ORDER_CODE} />
+            orderCode={ORDER_CODE} 
+            network={NETWORK} />
 
 
         </div>
