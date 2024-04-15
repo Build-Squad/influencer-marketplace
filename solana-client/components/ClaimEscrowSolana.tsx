@@ -40,13 +40,18 @@ const programId = new PublicKey(idl.metadata.address);
 interface ClaimEscrowSolanaProps {
     business: string,
     influencer: string,
-    orderCode: number
+    orderCode: number,
+    network: string
   }
 
-export const ClaimEscrowSolana: FC<ClaimEscrowSolanaProps> = ({business, influencer, orderCode }) => {
+export const ClaimEscrowSolana: FC<ClaimEscrowSolanaProps> = ({
+                        business, 
+                        influencer, 
+                        orderCode,
+                        network }) => {
 
     const wallet = useAnchorWallet()
-    const connection = new Connection(clusterApiUrl('devnet'),
+    const connection = new Connection(network,
     {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
@@ -92,7 +97,7 @@ export const ClaimEscrowSolana: FC<ClaimEscrowSolanaProps> = ({business, influen
         
         const tx = new Transaction().add(ix);
         const options = {
-			skipPreflight: true      
+			skipPreflight: false      
 		  }
         try {
             const signature = await sendTransaction(tx, connection, options);

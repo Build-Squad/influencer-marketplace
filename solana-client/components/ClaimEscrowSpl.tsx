@@ -55,19 +55,19 @@ interface ClaimEscrowSplProps {
     validatorAuthority: string,
     mintTokenAccount: string,
     orderCode: number,
-
+    network: string
 }
 
 export const ClaimEscrowSpl: FC<ClaimEscrowSplProps> = ({ business,
     influencer,
     validatorAuthority,
     mintTokenAccount,
-    orderCode }) => {
+    orderCode, 
+    network }) => {
 
     const wallet = useAnchorWallet()
-    const network = 'devnet'; // configure to set devnet or devnet
 
-    const connection = new Connection(clusterApiUrl(network),
+    const connection = new Connection(network,
         {
             commitment: "confirmed",
             confirmTransactionInitialTimeout: 30000
