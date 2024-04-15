@@ -1,0 +1,16 @@
+{
+    "rpc": [
+        "https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474",
+        "https://devnet.helius-rpc.com/?api-key=8e0e9a34-2648-421a-8f22-6460b4a68705",
+        "https://rpc.hellomoon.io/8783f611-f16b-44fb-8fe2-f13fcee6dc6a",
+        "https://api.mainnet-beta.solana.com"],
+    "confirmTransactionInitialTimeout": 30000,
+    "commitment": "confirmed",
+    "platformSecret": [219,130,36,67,12,0,90,16,203,1,183,214,76,63,33,
+                       10,57,55,175,108,170,115,163,47,107,37,232,247,
+                       27,77,4,244,206,27,28,78,60,207,85,135,174,117,
+                       158,234,58,116,69,214,193,139,219,194,90,20,191,
+                       164,27,195,22,36,110,224,27,56],
+    "platformValidator": "EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH",
+    "platformPercentageFee": 0    
+}
