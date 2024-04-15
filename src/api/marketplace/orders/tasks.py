@@ -216,11 +216,6 @@ def check_order_status(pk):
 
     if is_completed:
         confirm_escrow.apply_async(args=[order.id])
-        # Create a Order Tracking for the order
-        create_order_tracking(order=order, status=order.status)
-        # Send notification to business
-        create_notification_for_order(order=order, old_status='accepted', new_status='completed')
-
 
 def tweet(text, client):
     try:

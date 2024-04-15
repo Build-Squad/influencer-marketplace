@@ -659,6 +659,9 @@ class CancelOrderView(APIView):
         except Order.DoesNotExist:
             return None
 
+    async def async_cancel_escrow(self, pk, order_status):
+        return await cancel_escrow(pk, order_status)
+
     def put(self, request, pk):
         try:
             order = self.get_object(pk)
@@ -760,7 +763,7 @@ class CancelOrderView(APIView):
                         )
                     else:
                         # Retry the transaction
-                        res = cancel_escrow(pk, order_status)
+                        res = self.async_cancel_escrow(pk, order_status)
                         if res:
                             # Cancel all order items
                             order_items.update(status=order_status)
