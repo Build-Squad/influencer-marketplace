@@ -28,6 +28,7 @@ const programId = new PublicKey(idl.metadata.address);
 const Home: NextPage = (props) => {
 
   //// CHANGE THESE ADDRESSED TO CONFIGURE THE XFLUENCER MOCK //////
+<<<<<<< HEAD
   const MINT: string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`;
 
   const VALIDATOR: string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`;
@@ -43,6 +44,37 @@ const Home: NextPage = (props) => {
   const LAMPORTS: number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
   const ORDER_CODE: number = 36832 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
   const NUM_SPL_TOKENS: number = 1000000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
+=======
+  //const MINT: string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`; // DEVNET
+  const MINT: string = `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`; // MAINNET
+
+  const VALIDATOR: string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`;
+
+  //const BUSINESS: string = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`;  
+  //const BUSINESS: string = `G1BbAgZp5xm9Wrq2X4bC4Bk3GTBpUd2yPtJF6n3qJJiy`;
+  const BUSINESS: string = `GQRDv58u1dULSyHSYWPqNTjcWjsFHHi763mbqDaEEgQ3`;
+
+  //const INFLUENCER: string = `4AxvMsyEv5X3ioHuguaAk4ETsCQ6AWDpjgzNEUckaDEx`;
+  //const INFLUENCER: string = `3ESic1vqhWpxP59adN1VZCMgTxZhik6dBsn2FjZMZmvX`;
+  const INFLUENCER: string = `94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA`;
+
+
+  const RPC_MAINNET = "https://mainnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605";
+  const RPC_DEVNET = "https://devnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605"; 
+
+  //const NETWORK: string = RPC_DEVNET; // SELECT NETWORK
+  const NETWORK: string = RPC_MAINNET; // SELECT NETWORK
+
+  //////////////////////////////////////////////////////////////////
+  const NUM_SOLS: number = 0.0001;
+  const LAMPORTS: number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
+
+  //const ORDER_CODE: number = 12349; // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+  //const ORDER_CODE = 484820;
+  const ORDER_CODE = 23458;
+
+  const NUM_SPL_TOKENS: number = 10000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
+>>>>>>> 5c55b3fb (add network configuration to index tsx for the solana client)
   const PERCENTAGE_FEE: number = 0;
 
   const NETWORK = "https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474"
@@ -153,6 +185,7 @@ const Home: NextPage = (props) => {
             business={BUSINESS}
             influencer={INFLUENCER}
             lamports={LAMPORTS}
+<<<<<<< HEAD
             orderCode={ORDER_CODE} 
             network={NETWORK}/>
 
@@ -160,6 +193,15 @@ const Home: NextPage = (props) => {
                               influencer={INFLUENCER} 
                               orderCode={ORDER_CODE} 
                               network={NETWORK}/>
+=======
+            orderCode={ORDER_CODE} network={NETWORK}/>
+
+          <CancelEscrowSolana 
+            business={BUSINESS} 
+            influencer={INFLUENCER} 
+            orderCode={ORDER_CODE} 
+            network={NETWORK} />
+>>>>>>> 5c55b3fb (add network configuration to index tsx for the solana client)
 
           <Validate validator={VALIDATOR}
             business={BUSINESS}
@@ -167,8 +209,12 @@ const Home: NextPage = (props) => {
             percentageFee={0}
             orderCode={ORDER_CODE}
             targetState={1}
+<<<<<<< HEAD
             textButton={"Validate Escrow Cancel"}
             network={NETWORK} />
+=======
+            textButton={"Validate Escrow Cancel"} network={NETWORK} />
+>>>>>>> 5c55b3fb (add network configuration to index tsx for the solana client)
 
           <Validate validator={VALIDATOR} 
             business={BUSINESS} 
@@ -176,6 +222,7 @@ const Home: NextPage = (props) => {
             percentageFee={0}
             orderCode={ORDER_CODE} 
             targetState={2} 
+<<<<<<< HEAD
             textButton={"Validate Escrow Delivery"}
             network={NETWORK} />
 
@@ -183,6 +230,11 @@ const Home: NextPage = (props) => {
                              influencer={INFLUENCER} 
                              orderCode={ORDER_CODE}
                              network={NETWORK} />
+=======
+            textButton={"Validate Escrow Delivery"} network={NETWORK} />
+
+          <ClaimEscrowSolana business={BUSINESS} influencer={INFLUENCER} orderCode={ORDER_CODE}  network={NETWORK} />
+>>>>>>> 5c55b3fb (add network configuration to index tsx for the solana client)
         </div>
 
         <div className={styles.AppBody}>
@@ -225,7 +277,8 @@ const Home: NextPage = (props) => {
           <CancelEscrowSpl business={BUSINESS}
             validatorAuthority={VALIDATOR}
             mintTokenAccount={MINT}
-            orderCode={ORDER_CODE} />
+            orderCode={ORDER_CODE}
+            network={NETWORK}  />
 
           <ValidateEscrowSpl
             validator={VALIDATOR}
