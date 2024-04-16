@@ -8,7 +8,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Grid,
 } from "@mui/material";
 
 import { ExpandMore } from "@mui/icons-material";
@@ -41,25 +40,34 @@ const FAQs = [
 export default function FAQSection({}: Props) {
   return (
     <>
-      <Grid
-        container
-        justifyContent={"space-between"}
+      <Box
         sx={{
           mt: 3,
+          display: "flex",
+          justifyContent: "space-between",
           paddingY: "46px",
+          alignItems: "center",
+          columnGap: "40px",
         }}
       >
-        <Grid sx={{ textAlign: "left" }} xs={12} sm={12} md={4} xl={4}>
+        <Box sx={{ flex: 1, textAlign: "left" }}>
           <Typography variant="h4" fontWeight={"bold"}>
             Frequently Asked Questions
           </Typography>
-          <Typography sx={{ mt: 3, mb:3, color: "#676767" }} variant="h6">
+          <Typography sx={{ mt: 3, color: "#676767" }} variant="h6">
             Our platform is curated specifically for those influencers who have
             mastered the art of engaging their audience on one of the most
             dynamic social media platforms.
           </Typography>
-        </Grid>
-        <Grid item xs={12} sm={12} md={7} xl={7}>
+        </Box>
+        <Box
+          sx={{
+            flex: 2,
+            display: "flex",
+            flexDirection: "column",
+            rowGap: "20px",
+          }}
+        >
           {FAQs.map(({ question, answer }, index: number) => {
             return (
               <Accordion
@@ -76,7 +84,6 @@ export default function FAQSection({}: Props) {
                       content: "none",
                     },
                   },
-                  mb:2
                 }}
                 key={index}
               >
@@ -97,8 +104,8 @@ export default function FAQSection({}: Props) {
               </Accordion>
             );
           })}
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </>
   );
 }

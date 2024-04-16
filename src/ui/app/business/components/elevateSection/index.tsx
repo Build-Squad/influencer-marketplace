@@ -208,57 +208,56 @@ export default function ElevateSection({}: Props) {
         <Typography sx={{ fontSize: "40px" }}>
           Tailored Marketing Solutions For Businesses
         </Typography>
-        <Grid
-          sx={{ marginTop: "14px" }}
-          mx="auto"
-          container
-          borderRadius="30px"
-          width="80%"
-          border="1px solid #BABABA"
-          justifyContent={"space-between"}
+        <Box
+          sx={{ display: "flex", justifyContent: "center", marginTop: "14px" }}
         >
-          {TABS.map((item, index) => (
-            <Grid
-              item
-              xs={12}
-              sm={12}
-              lg={4}
-              md={12}
-              sx={{
-                flex: "1",
-                cursor: "pointer",
-                display: "flex",
-                paddingX: "56px",
-                justifyContent: "center",
-                alignItems: "center",
-                columnGap: "8px",
-                borderRadius: selectedTab === index ? "30px" : "none",
-                border: selectedTab === index ? "1px solid black" : "none",
-                paddingY: "18px",
-              }}
-              onClick={() => {
-                handleSelect({ index });
-              }}
-              key={index}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M8 10V12L10.7314 9.95143L11.09 9.85021C12.771 9.37573 14 7.8288 14 6C14 3.79086 12.2091 2 10 2H6C3.79086 2 2 3.79086 2 6C2 8.20914 3.79086 10 6 10H8ZM6 16V12C2.68629 12 0 9.31371 0 6C0 2.68629 2.68629 0 6 0H10C13.3137 0 16 2.68629 16 6C16 8.74753 14.1532 11.0637 11.6333 11.775L6 16Z"
-                  fill="black"
-                />
-              </svg>
-              <Typography>{item}</Typography>
-            </Grid>
-          ))}
-        </Grid>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              borderRadius: "30px",
+              border: "1px solid #BABABA",
+              width: "fit-content",
+            }}
+          >
+            {TABS.map((item, index) => {
+              return (
+                <Box
+                  sx={{
+                    cursor: "pointer",
+                    display: "flex",
+                    paddingX: "56px",
+                    alignItems: "center",
+                    columnGap: "8px",
+                    borderRadius: selectedTab == index ? "30px" : "none",
+                    border: selectedTab == index ? "1px solid black" : "none",
+                    paddingY: "18px",
+                  }}
+                  onClick={() => {
+                    handleSelect({ index });
+                  }}
+                  key={index}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M8 10V12L10.7314 9.95143L11.09 9.85021C12.771 9.37573 14 7.8288 14 6C14 3.79086 12.2091 2 10 2H6C3.79086 2 2 3.79086 2 6C2 8.20914 3.79086 10 6 10H8ZM6 16V12C2.68629 12 0 9.31371 0 6C0 2.68629 2.68629 0 6 0H10C13.3137 0 16 2.68629 16 6C16 8.74753 14.1532 11.0637 11.6333 11.775L6 16Z"
+                      fill="black"
+                    />
+                  </svg>
+                  <Typography>{item}</Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
       </Box>
       <Grid
         container

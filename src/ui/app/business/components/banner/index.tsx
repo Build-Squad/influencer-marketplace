@@ -41,14 +41,13 @@ export default function Banner({}: Props) {
         alignItems: "center",
         flexDirection: "column",
         position: "relative",
-        paddingY: { xs: "32px", sm: "64px", md: "82px" },
+        paddingY: "82px",
       }}
     >
       <Box
         sx={{
           display: "flex",
           alignItems: "flex-end",
-          flexDirection: { xs: "column", md: "row" },
           columnGap: "4px",
         }}
       >
@@ -65,7 +64,7 @@ export default function Banner({}: Props) {
       </Box>
       <Box
         sx={{
-          width: { xs: "80%", sm: "70%", md: "60%" },
+          width: "60%",
           textAlign: "center",
           mt: 1,
           display: "flex",
@@ -74,7 +73,7 @@ export default function Banner({}: Props) {
       >
         <Typography
           variant="h4"
-          sx={{ fontSize: { xs: "2rem", sm: "2.25rem", md: "2.65rem" } }}
+          sx={{ fontSize: "2.65rem" }}
           fontWeight={"bold"}
         >
           Effortless Connections, Powerful Results
@@ -88,10 +87,10 @@ export default function Banner({}: Props) {
       <Box
         sx={{
           mt: 3,
-          px: { xs: 2, sm: 3, md: 5 },
-          py: { xs: 2, sm: 3 },
-          paddingBottom: { xs: "8px", md: "12px" },
-          width: { xs: "90%", sm: "80%", md: "60%" },
+          px: 5,
+          py: 3,
+          paddingBottom: "12px",
+          width: "60%",
           background: "rgba(255, 255, 255, 0.51)",
           borderRadius: "16px",
           backdropFilter: "blur(5px)",
@@ -105,7 +104,7 @@ export default function Banner({}: Props) {
             justifyContent={"space-between"}
             alignItems={"flex-start"}
           >
-            <Grid item xs={12} sm={6} md={5} lg={5}>
+            <Grid item xs={6} sm={6} md={6} lg={5}>
               <TextField
                 label="Platform"
                 color="secondary"
@@ -126,10 +125,10 @@ export default function Banner({}: Props) {
                 variant="outlined"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={5} lg={5}>
+            <Grid item xs={6} sm={6} md={6} lg={5}>
               <FiltersComponent formik={formik} type={"CATEGORIES"} />
             </Grid>
-            <Grid item xs={12} sm={12} md={2} lg={2}>
+            <Grid item xs={12} sm={12} md={12} lg={2}>
               <Button
                 size="large"
                 type="submit"
@@ -138,7 +137,7 @@ export default function Banner({}: Props) {
                 sx={{
                   borderRadius: "12px",
                   fontWeight: "bold",
-                  px: 4,
+                  px: 5,
                   py: 1,
                 }}
               >
@@ -149,7 +148,7 @@ export default function Banner({}: Props) {
         </form>
       </Box>
 
-      <Box sx={{ mt: 5, textAlign: "center", maxWidth: "90%" }}>
+      <Box sx={{ mt: 5, textAlign: "center" }}>
         <Typography variant="h6">
           How can Xfluencer add to the success of your business?
         </Typography>
@@ -174,8 +173,7 @@ export default function Banner({}: Props) {
                     borderRadius: "24px",
                     border: "1px solid #7B7B7B",
                     background: "rgba(255, 255, 255, 0.40)",
-                    fontSize: { xs: "16px", md: "20px" },
-                    marginBottom: "8px",
+                    fontSize: "20px",
                   }}
                 >
                   {it}
