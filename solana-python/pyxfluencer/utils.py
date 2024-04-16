@@ -116,8 +116,6 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
             PRIORITY_FEE_IX = set_compute_unit_price(priority_fees)
             tx.add(PRIORITY_FEE_IX)
 
-            tx.fee_payer = signers[0].pubkey()
-
             try:
                 tx_res = await client.send_transaction(tx, *signers)
                 print(tx_res)
