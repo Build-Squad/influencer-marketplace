@@ -18,7 +18,8 @@ async def main():
     
     # implement caller to claim escrow instruction
     configuration = load_configuration()
-    network = configuration["network"]
+    #network = configuration["network"]
+    network = configuration["rpc"]["mainnet"]
         
     print(f"Network: {network} Program ID: {PROGRAM_ID}")
             
