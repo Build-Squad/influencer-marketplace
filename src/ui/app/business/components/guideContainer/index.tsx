@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import Image from "next/image";
 
 type Props = {};
@@ -24,7 +24,9 @@ const WORKING_STEPS = [
 ];
 
 const stepContainerStyle = {
+  flex: "1",
   textAlign: "center",
+  maxWidth: "20%",
 };
 
 export default function GuideContainer({}: Props) {
@@ -42,25 +44,18 @@ export default function GuideContainer({}: Props) {
       <Typography variant="subtitle1" sx={{ color: "#505050" }}>
         Explore, Purchase, Analyse in seconds.
       </Typography>
-      <Grid
-        container
-        justifyContent={"space-between"}
-        columnGap={"10px"}
-        rowGap={"20px"}
+      <Box
         sx={{
+          display: "flex",
+          justifyContent: "space-around",
           padding: "64px 72px",
           paddingBottom: "0px",
+          flexWrap: "wrap",
+          columnGap: "10px",
         }}
       >
         {WORKING_STEPS.map((step) => (
-          <Grid
-            key={step.id}
-            sx={stepContainerStyle}
-            xs={12}
-            sm={3}
-            lg={3}
-            md={3}
-          >
+          <Box key={step.id} sx={stepContainerStyle}>
             <Image
               src={step.imageUrl}
               height={94}
@@ -68,9 +63,9 @@ export default function GuideContainer({}: Props) {
               alt={step.description}
             />
             <Typography variant="subtitle1">{step.description}</Typography>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }
