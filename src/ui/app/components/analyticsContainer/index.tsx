@@ -28,8 +28,7 @@ const ANALYTICS_DATA: AnalyticsRoleData[] = [
     },
     data2: {
       value: "76 %",
-      subtitle:
-        "Users say they bought something after a recommendation from X",
+      subtitle: "Users say they bought something after a recommendation from X",
     },
     data3: {
       value: "238 M",
@@ -72,7 +71,9 @@ const AnalyticsItem: React.FC<AnalyticsDataItem> = ({
     sm={12}
     md={3}
     lg={3}
-    justifyContent="space-around"
+    sx={{
+      justifyContent: { sm: "flex-start", md: "space-around" },
+    }}
     alignItems="center"
     display="flex"
   >
@@ -82,7 +83,7 @@ const AnalyticsItem: React.FC<AnalyticsDataItem> = ({
       </Typography>
       <Typography variant="subtitle1">{subtitle}</Typography>
     </Box>
-    <svg
+    {/* <svg
       xmlns="http://www.w3.org/2000/svg"
       width="2"
       height="126"
@@ -96,7 +97,7 @@ const AnalyticsItem: React.FC<AnalyticsDataItem> = ({
         strokeOpacity="0.6"
         strokeLinecap="round"
       />
-    </svg>
+    </svg> */}
   </Grid>
 );
 

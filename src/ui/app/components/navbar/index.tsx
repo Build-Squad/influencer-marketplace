@@ -8,14 +8,21 @@ import {
   Badge,
   Box,
   Button,
+  Divider,
+  Drawer,
+  IconButton,
   Link,
+  List,
   Toolbar,
   Typography,
 } from "@mui/material";
+import CableIcon from "@mui/icons-material/Cable";
 import Image from "next/image";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import LoginMenu from "../loginMenu";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import CartIcon from "@/public/svg/Cart.svg";
 import CartDisabledIcon from "@/public/svg/Cart_disabled.svg";
@@ -37,6 +44,7 @@ import { notification } from "@/src/components/shared/notification";
 import NextLink from "next/link";
 import SavedProfileIcon from "@/public/svg/Saved.svg";
 import SavedProfileDisabledIcon from "@/public/svg/Saved_disabled.svg";
+import { PostponedPathnameNormalizer } from "next/dist/server/future/normalizers/request/postponed";
 
 const MENU_ITEMS: {
   [key: string]: {
@@ -228,9 +236,14 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
+  const [toggleDrawer, setToggleDrawer] = useState(false);
 
   const params = useSearchParams();
   const user = useAppSelector((state) => state.user);
+
+  useEffect(() => {
+    setToggleDrawer(false);
+  }, [pathname]);
 
   useEffect(() => {
     const status = params.get("authenticationStatus");
@@ -301,9 +314,9 @@ export default function Navbar() {
         {user?.loggedIn || pathname.includes("login") ? null : (
           <Box
             sx={{
-              display: "flex",
               columnGap: "8px",
               justifyContent: "center",
+              display: { xs: "none", md: "flex" },
             }}
           >
             <Button
@@ -332,7 +345,13 @@ export default function Navbar() {
             </Button>
           </Box>
         )}
-        <Box sx={{ textAlign: "right", width: "33%" }}>
+        <Box
+          sx={{
+            textAlign: "right",
+            width: "33%",
+            display: { xs: "none", md: "block" },
+          }}
+        >
           <Box
             sx={{
               display: "flex",
@@ -388,7 +407,153 @@ export default function Navbar() {
             )}
           </Box>
         </Box>
+        <Box
+          sx={{
+            textAlign: "right",
+            width: "33%",
+            display: { xs: "block", md: "none" },
+          }}
+        >
+          <IconButton edge="end" onClick={() => setToggleDrawer(!toggleDrawer)}>
+            <MenuIcon />
+          </IconButton>
+        </Box>
       </Toolbar>
+
+      <Drawer
+        anchor={"bottom"}
+        open={toggleDrawer}
+        onClose={() => setToggleDrawer(!toggleDrawer)}
+      >
+        <>
+          <List>
+            {user?.loggedIn ? (
+              user?.user?.role?.name.includes("business_owner") ? (
+                <Box
+                  sx={{
+                    py: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    rowGap: "8px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {[
+                    "Profile",
+                    "Explore",
+                    "Dashboard",
+                    "Messages",
+                    "Cart",
+                    "Bookmarks",
+                    "Notifications",
+                  ].map((item) => {
+                    return <MenuItemsComponent items={[item]} />;
+                  })}
+                  <LogoutIcon sx={{ height: "16px" }} />
+                  <Typography
+                    onClick={logoutTwitterUser}
+                    sx={{ fontSize: "10px" }}
+                  >
+                    Logout
+                  </Typography>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    py: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    rowGap: "8px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {[
+                    "Profile",
+                    "Orders",
+                    "Dashboard",
+                    "Messages",
+                    "Notifications",
+                  ].map((item) => {
+                    return <MenuItemsComponent items={[item]} />;
+                  })}
+                  <LogoutIcon sx={{ height: "16px" }} />
+                  <Typography
+                    onClick={logoutTwitterUser}
+                    sx={{ fontSize: "10px" }}
+                  >
+                    Logout
+                  </Typography>
+                </Box>
+              )
+            ) : (
+              <Box
+                sx={{
+                  py: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  rowGap: "8px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {pathname.includes("business") ? (
+                  <>
+                    <MenuItemsComponent items={["Home", "Explore"]} />
+                    <CableIcon sx={{ height: "16px" }} />
+                    <Typography
+                      onClick={handleConnect}
+                      sx={{ fontSize: "10px" }}
+                    >
+                      Connect
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <CableIcon sx={{ height: "16px" }} />
+                    <Typography
+                      onClick={handleConnect}
+                      sx={{ fontSize: "10px" }}
+                    >
+                      Connect
+                    </Typography>
+                  </>
+                )}
+                <Box sx={{ display: "flex", columnGap: "10px", mt: 2 }}>
+                  <Button
+                    size="small"
+                    variant={getButtonVariant("influencer")}
+                    color="secondary"
+                    sx={{
+                      borderRadius: "20px",
+                    }}
+                    onClick={() => {
+                      router.push("/influencer");
+                    }}
+                  >
+                    For Influencer
+                  </Button>
+                  <Button
+                    size="small"
+                    variant={getButtonVariant("business")}
+                    color="secondary"
+                    sx={{
+                      borderRadius: "20px",
+                    }}
+                    onClick={() => {
+                      router.push("/business");
+                    }}
+                  >
+                    For Business
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </List>
+          <Divider />
+        </>
+      </Drawer>
     </AppBar>
   );
 }

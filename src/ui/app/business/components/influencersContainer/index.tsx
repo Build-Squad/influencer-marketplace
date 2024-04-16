@@ -55,10 +55,9 @@ export default function InfluencersContainer({ topInfluencers }: Props) {
           <ArrowBackIos onClick={handleBack} sx={{ cursor: "pointer" }} />
         </Grid>
         <Grid item flex={1}>
-          <Box
+          <Grid
+            container
             sx={{
-              display: "flex",
-              flexWrap: "wrap",
               gap: "20px",
               justifyContent: "center",
             }}
@@ -66,7 +65,7 @@ export default function InfluencersContainer({ topInfluencers }: Props) {
             {displayedInfluencers.map((inf, index) => (
               <InfluencersCards influencer={inf} key={index} />
             ))}
-          </Box>
+          </Grid>
         </Grid>
         <Grid item>
           <ArrowForwardIos onClick={handleForward} sx={{ cursor: "pointer" }} />
