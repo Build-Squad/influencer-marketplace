@@ -1,5 +1,6 @@
 {
-    "network": "https://devnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605",
+    "network": "https://mainnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605",
+    "network-dev":"https://devnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605",
     "rpc":{
         "mainnet":"https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474",
         "devnet":""
@@ -28,8 +29,8 @@
     },
     "platform": "EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH",
     "amount":{
-        "lamports":10000000,
-        "usdc": 1000000
+        "lamports":10000,
+        "usdc": 1
     },
     "order_code": 36831,
     "program_id":{

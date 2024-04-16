@@ -18,12 +18,24 @@ PROGRAM_ID = Pubkey.from_string(program_id)
 @dataclass
 class KeypairPaths:
     home: str = os.getenv("HOME") + "/influencer-marketplace/solana-python/test_wallets"
+    
     platform: str = "platform_EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH.json"
     validation_authority: str = f"{home}/{platform}"
+    
     business: str = "business_6suvWCcjg5o7xgHrDGc4MXQxraK9PnZyEXzjhhQN6HUK.json"
     bussines_keypair: str = f"{home}/{business}"
+    
+    # my local business address for mainnet
+    bussines_GQRD = f"{os.getenv('HOME')}/.config/solana/id.json"
+    
     influencer: str = "influencer_94fznXq73oweXLrg2zL75XAMy9xNEbqtb191Xcrq97QA.json"
     influencer_keypair: str = f"{home}/{influencer}"
+
+    # My custom private keypair for mainnet
+    business_EBBR: str = "business_EBBR.json"
+    bussines_EBBR_keypair: str = f"{home}/{business_EBBR}"
+
+    
 
 
 @dataclass
