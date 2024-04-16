@@ -77,7 +77,7 @@ async def get_token_account_info(ata_address: str, network: str) -> AccountInfo:
         raise Exception(f"Getting Token Account Info {e}")
 
 
-async def sign_and_send_transaction(ix, signers, network, async_client: bool = True):
+async def sign_and_send_transaction(ix, signers, network, async_client: bool = True, priority_fees: int = 0):
     client = select_client(network=network, async_client=async_client)
 
     recent_blockhash_resp = await client.get_latest_blockhash()
@@ -113,8 +113,7 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
             modify_compute_units = set_compute_unit_limit(cu_set)
             tx.add(modify_compute_units)
 
-            PRIORITY_RATE = 500000  # MICRO_LAMPORTS
-            PRIORITY_FEE_IX = set_compute_unit_price(PRIORITY_RATE)
+            PRIORITY_FEE_IX = set_compute_unit_price(priority_fees)
             tx.add(PRIORITY_FEE_IX)
 
             tx.fee_payer = signers[0].pubkey()

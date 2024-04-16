@@ -84,6 +84,7 @@ class EscrowValidator:
     network: str = "https://api.devnet.solana.com"
     percentage_fee: int = 0
     processing_spl_escrow: bool = False
+    priority_fees: int = 0
         
     async def cancel(self):
         return await validate_escrow(self.validator_authority,
@@ -93,7 +94,9 @@ class EscrowValidator:
                                      self.order_code,
                                      self.network,
                                      self.percentage_fee,
-                                     self.processing_spl_escrow)
+                                     self.processing_spl_escrow,
+                                     self.priority_fees
+                                     )
     async def deliver(self):
         return await validate_escrow(self.validator_authority,
                                      self.business_address, 
@@ -102,7 +105,9 @@ class EscrowValidator:
                                      self.order_code, 
                                      self.network,
                                      self.percentage_fee,
-                                     self.processing_spl_escrow) 
+                                     self.processing_spl_escrow,
+                                     self.priority_fees
+                                     )
         
     
 # NON SPL escrow
@@ -111,7 +116,9 @@ async def validate_escrow_to_cancel(validator_authority: Keypair,
                                     influencer_address: str,
                                     order_code:int, 
                                     network: str = "https://api.devnet.solana.com", 
-                                    percentage_fee: int = 0):
+                                    percentage_fee: int = 0,
+                                    priority_fees: int = 0
+                                    ):
     """
 
     Args:
@@ -132,7 +139,9 @@ async def validate_escrow_to_cancel(validator_authority: Keypair,
                                 order_code,
                                 network, 
                                 percentage_fee, 
-                                processing_spl_escrow=False)    
+                                 processing_spl_escrow=False,
+                                 priority_fees=priority_fees
+                                 )
 
 # NON SPL escrow
 async def validate_escrow_to_delivered(validator_authority: Keypair,
@@ -140,7 +149,9 @@ async def validate_escrow_to_delivered(validator_authority: Keypair,
                                        influencer_address: str,
                                        order_code:int,
                                        network: str = "https://api.devnet.solana.com",
-                                       percentage_fee: int = 0): 
+                                       percentage_fee: int = 0,
+                                       priority_fees: int = 0
+                                       ):
     """_summary_
 
     Args:
@@ -161,7 +172,9 @@ async def validate_escrow_to_delivered(validator_authority: Keypair,
                                  order_code, 
                                  network, 
                                  percentage_fee, 
-                                 processing_spl_escrow=False)    
+                                 processing_spl_escrow=False,
+                                 priority_fees=priority_fees
+                                 )
 
 
 async def validate_escrow(validation_authority: Keypair,
@@ -171,7 +184,8 @@ async def validate_escrow(validation_authority: Keypair,
                           order_code: int,
                           network: str = "https://api.devnet.solana.com",
                           percentage_fee: int = 0,
-                          processing_spl_escrow: bool = False):
+                          processing_spl_escrow: bool = False,
+                          priority_fees: int = 0):
 
     business_pk = Pubkey.from_string(business_address)
     influencer_pk = Pubkey.from_string(influencer_address)
@@ -222,7 +236,7 @@ async def validate_escrow(validation_authority: Keypair,
         ix = validate_escrow_spl(args, accounts, program_id=PROGRAM_ID)
 
     try:
-        tx_resp = await sign_and_send_transaction(ix, signers, network)
+        tx_resp = await sign_and_send_transaction(ix, signers, network, priority_fees=priority_fees)
         if tx_resp:
             print(f"Escrow validation status: {tx_resp}")
             return tx_resp

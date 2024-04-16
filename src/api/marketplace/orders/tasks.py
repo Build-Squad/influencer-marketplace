@@ -63,12 +63,16 @@ def cancel_escrow(order_id: str, status: str):
             escrow=escrow, transaction_type='cancel_escrow'
         )
 
+        priority_fees = int(Configuration.objects.get(
+            key='priority_fees').value)
+
         if order_currency.currency_type == 'SOL':
             result = asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair,
                                                            business_address=buyer_primary_wallet.wallet_address_id,
                                                            influencer_address=influencer_primary_wallet.wallet_address_id,
                                                            order_code=order.order_number,
                                                            network=RPC_ENDPOINT,
+                                                           priority_fees=priority_fees
                                                            ))
         elif order_currency.currency_type == 'SPL':
             result = asyncio.run(validate_escrow(
@@ -78,7 +82,8 @@ def cancel_escrow(order_id: str, status: str):
                 target_escrow_state=EscrowState.CANCEL,
                 order_code=order.order_number,
                 network=RPC_ENDPOINT,
-                processing_spl_escrow=True
+                processing_spl_escrow=True,
+                priority_fees=priority_fees
             ))
         # Update all the values of the on_chain_transaction with result.value[0]
         result_dict = json.loads(result)
@@ -143,13 +148,17 @@ def confirm_escrow(order_id: str):
             escrow=escrow, transaction_type='confirm_escrow'
         )
 
+        priority_fees = int(Configuration.objects.get(
+            key='priority_fees').value)
+
         if order_currency.currency_type == 'SOL':
             result = asyncio.run(validate_escrow_to_delivered(validator_authority=val_auth_keypair,
                                                               business_address=buyer_primary_wallet.wallet_address_id,
                                                               influencer_address=influencer_primary_wallet.wallet_address_id,
                                                               order_code=order.order_number,
                                                               network=RPC_ENDPOINT,
-                                                              percentage_fee=platform_fees
+                                                              percentage_fee=platform_fees,
+                                                              priority_fees=priority_fees
                                                               ))
         elif order_currency.currency_type == 'SPL':
             result = asyncio.run(validate_escrow(
@@ -160,7 +169,8 @@ def confirm_escrow(order_id: str):
                 order_code=order.order_number,
                 network=RPC_ENDPOINT,
                 percentage_fee=platform_fees,
-                processing_spl_escrow=True
+                processing_spl_escrow=True,
+                priority_fees=priority_fees
             ))
 
         # Update all the values of the on_chain_transaction with result.value[0]
