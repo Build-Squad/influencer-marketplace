@@ -28,9 +28,8 @@ async def main():
             
     keypair_paths = KeypairPaths()
             
-    #business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)     
-    business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_GQRD)     
-
+    business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)     
+    #business, business_pk = get_local_keypair_pubkey() 
     
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     

@@ -1,7 +1,14 @@
-from solders.pubkey import Pubkey
 from solana.rpc.types import TxOpts
 
-from pyxfluencer.utils import get_local_keypair_pubkey, select_client, sign_and_send_transaction_sync
+from pathlib import Path
+from solders.pubkey import Pubkey # type: ignore
+from anchorpy import Idl, Program
+
+import asyncio
+from solders.system_program import ID as SYS_PROGRAM_ID
+
+
+from pyxfluencer.utils import get_local_keypair_pubkey, select_client
 from pyxfluencer.utils import sign_and_send_transaction
 from pyxfluencer.program_id import PROGRAM_ID
 
@@ -62,13 +69,9 @@ async def main():
     amount = configuration["amount"]["lamports"]
     order_code = configuration["order_code"]
 
-<<<<<<< HEAD
 
-    args = {"amount":int(amount), "order_code":int(order_code)}
-=======
-    args = {"amount":int(amount),
-            "order_code":int(order_code) }
->>>>>>> d9396cde (add python sign and send transaction sync)
+    args = {"amount":int(amount), 
+            "order_code":int(order_code)}
     
     SEEDS = [b"escrow",
             bytes(business_pk),
@@ -85,25 +88,23 @@ async def main():
         "to":influencer_pk
         }
 
+    client = select_client(network=network, async_client=False)
+
+    latest_blockhash = client.get_latest_blockhash().value.last_valid_block_height
+    
+
     opts = TxOpts(skip_confirmation = False,
                   skip_preflight = False,
+                  max_retries=1,
+                  last_valid_block_height=latest_blockhash,
                   preflight_commitment="processed")
-
 
     print_tittle("Instruction description")   
     
-    
-    
-    
     ix = create_escrow(args, accounts, program_id=PROGRAM_ID)
-    
-    print(ix)
-    
     signers = [business]
 
-<<<<<<< HEAD
     sign_status = await sign_and_send_transaction(ix, signers, network)
-=======
     ## forming the transaction
     from solana.transaction import Transaction
     from solana.rpc.core import RPCException
@@ -112,13 +113,10 @@ async def main():
     tx = Transaction(fee_payer=business_pk, recent_blockhash=None) \
         .add(set_compute_unit_price(1_000)) \
         .add(ix)
->>>>>>> d9396cde (add python sign and send transaction sync)
-
 
     #sign_status = await sign_and_send_transaction(ix, signers, opts, network)
     #sign_status = sign_and_send_transaction_sync(ix, signers, opts, network)
 
-    #print(sign_status)
     try:        
         print("Network selected: ",network)
         client = select_client(network=network, async_client=False)
@@ -126,10 +124,8 @@ async def main():
         #print("Simulate Transaction")
         #simulate_response = client.simulate_transaction(tx, sig_verify=True)
         #print("Simulate Response", simulate_response)
-        
         #print(simulate_response.value.err)
         
-        #exit()
         print("Start Sending transactions with options", opts)
                   
         tx_res = client.send_transaction(tx, *signers, opts=opts)
@@ -144,8 +140,9 @@ async def main():
         return signature_status.to_json()
     except RPCException as e:        
         raise RPCException(f"RPC exception happened: {e}")
+    
+   
 
-import asyncio
 
 asyncio.run(main())
     
