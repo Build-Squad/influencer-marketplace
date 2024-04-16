@@ -40,6 +40,8 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({validator, busi
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
     });
+
+
     const program = utils.getAnchorProgram(connection);
     const provider = new AnchorProvider(connection, wallet, {})
     setProvider(provider)

@@ -46,17 +46,19 @@ interface CancelEscrowSplProps {
     business: string,
     validatorAuthority: string,
     mintTokenAccount: string,
-    orderCode: number
+    orderCode: number,
+    network: string
 }
 
 export const CancelEscrowSpl: FC<CancelEscrowSplProps> = (
                             {business, 
                              validatorAuthority, 
                              mintTokenAccount,
-                             orderCode}) => {
+                             orderCode, 
+                             network}) => {
 
     const wallet = useAnchorWallet()
-    const connection = new Connection(clusterApiUrl('devnet'),
+    const connection = new Connection(network,
     {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
