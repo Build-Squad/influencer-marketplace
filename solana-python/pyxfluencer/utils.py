@@ -18,6 +18,7 @@ from anchorpy.utils.rpc import AccountInfo
 
 import asyncio
 
+
 def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
     home = os.getenv("HOME")
@@ -77,30 +78,44 @@ async def get_token_account_info(ata_address: str, network: str) -> AccountInfo:
 
 
 async def sign_and_send_transaction(ix, signers, network, async_client: bool = True):
-    max_attempts = 3
-    wait_time = 2  # seconds
+    client = select_client(network=network, async_client=async_client)
 
-    for attempt in range(1, max_attempts + 1):
+    recent_blockhash_resp = await client.get_latest_blockhash()
+    recent_blockhash = recent_blockhash_resp.value.blockhash
+    recent_block_height = recent_blockhash_resp.value.last_valid_block_height
+    block_height = (await client.get_block_height()).value
+    attempts = 0
+
+    print(recent_block_height, block_height, recent_block_height)
+
+    while True and attempts < 10:
         try:
-            client = select_client(network=network, async_client=async_client)
-
+            if block_height >= recent_block_height:
+                break
+            attempts += 1
             # Obtain a recent blockhash
-            recent_blockhash_resp = await client.get_latest_blockhash()
-            recent_blockhash = recent_blockhash_resp.value.blockhash
-
+            print("Attempt", attempts)
             # Create the transaction with the recent blockhash
             tx = Transaction(recent_blockhash=recent_blockhash)
+            tx.add(ix)
+
+            try:
+                simulated_transaction_resp = await client.simulate_transaction(tx)
+                print(simulated_transaction_resp)
+            except Exception as e:
+                print(f"Error simulating transaction: {e}")
+                print("Retrying...")
+                block_height = (await client.get_block_height()).value
+                continue
+
+            # Set compute unit limit
+            cu_set = simulated_transaction_resp.value.units_consumed + 1000
+            modify_compute_units = set_compute_unit_limit(cu_set)
+            tx.add(modify_compute_units)
 
             PRIORITY_RATE = 500000  # MICRO_LAMPORTS
             PRIORITY_FEE_IX = set_compute_unit_price(PRIORITY_RATE)
             tx.add(PRIORITY_FEE_IX)
-
-            # Set compute unit limit
-            cu_set = 200_000
-            modify_compute_units = set_compute_unit_limit(cu_set)
-            tx.add(modify_compute_units)
-
-            tx.add(ix)
 
             tx.fee_payer = signers[0].pubkey()
 
@@ -112,28 +127,21 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
                 raise
 
             if tx_res:
-
                 print("Client Response tx signature: ", tx_res)
                 print("Waiting for transaction confirmation")
 
                 try:
-                    signature_status = await client.confirm_transaction(tx_res.value)
+                    signature_status = await client.confirm_transaction(tx_res.value, last_valid_block_height=recent_block_height)
                 except Exception as e:
                     print(f"Error confirming transaction: {e}")
-                    raise
+                    print("Retrying...")
+                    block_height = (await client.get_block_height()).value
+                    continue  # Continue to the next iteration of the loop
 
                 if signature_status:
-
                     print("Confirm Transaction Status Value:", signature_status)
                     return signature_status.to_json()
         except RPCException as e:
             print(f"RPC exception happened: {e}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
-            if attempt < max_attempts:
-                print(
-                    f"Attempt {attempt} failed, retrying in {wait_time} seconds...")
-                await asyncio.sleep(wait_time)
-            else:
-                print("Max attempts reached, giving up.")
-                raise
