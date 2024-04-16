@@ -13,6 +13,13 @@ from .program_id import PROGRAM_ID
 xfluencer_solana_python_client_version = "1.2.2"
 
 ###################
+# Version: 1.2.2
+# Bump: Patch
+# Updated: 16.04.2024
+# - add re-try logic
+# - add priority_ffes instruction
+# - add compute unit instruction
+###################
 # Version: 1.2.1
 # Bump: Patch
 # Updated: 04.04.2024
