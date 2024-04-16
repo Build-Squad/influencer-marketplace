@@ -5,6 +5,7 @@ import argparse
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
+
 from pyxfluencer.instructions import validate_escrow_sol
 from pyxfluencer.utils import get_local_keypair_pubkey, select_client, sign_and_send_transaction_sync
 from pyxfluencer.utils import sign_and_send_transaction
@@ -86,10 +87,8 @@ parser = LaunchParser(prog='launch_validate.py')
 parser.add_argument('--target', choices=['cancel', 'deliver'])
 args = parser.parse_args()
 if args.target == 'cancel':
-    target_state = TargetState.CANCEL
     asyncio.run(main(TargetState.CANCEL))
 elif args.target == 'deliver':
-    target_state = TargetState.DELIVERY
     asyncio.run(main(TargetState.DELIVERY))
 else:
     print("Incorrect Option")
