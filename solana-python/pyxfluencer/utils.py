@@ -120,7 +120,8 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
                 continue
 
             # Set compute unit limit
-            cu_budget:int = simulated_transaction_resp.value.units_consumed * 15 / 10  # increase 50% of simulated CU's          
+            cu_budget: int = simulated_transaction_resp.value.units_consumed * \
+                15 // 10  # increase 50% of simulated CU's
             max_budget = 200_000 
             cu_set = min(cu_budget, max_budget) 
             modify_compute_units = set_compute_unit_limit(cu_set)
