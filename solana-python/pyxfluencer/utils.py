@@ -112,7 +112,7 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
                     if error >= 6000:
                         return from_code(error)
                 else:
-                    print("Simulation LLooks OK")
+                    print("Simulation Looks OK")
             except (KeyError, Exception) as e:
                 print(f"Error simulating transaction: {e}")                
                 print("Retrying...")
