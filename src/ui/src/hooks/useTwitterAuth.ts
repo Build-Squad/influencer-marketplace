@@ -58,9 +58,9 @@ export default function useTwitterAuth() {
           await disconnect();
         }
         if (pathname.includes(ROLE_NAME.INFLUENCER)) {
-          router.push(`/${ROLE_NAME.INFLUENCER}`);
+          router.push(`/login?role=Influencer`);
         } else {
-          router.push(`/business`);
+          router.push(`/login?role=Business`);
         }
       } else {
         notification(

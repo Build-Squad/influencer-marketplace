@@ -90,15 +90,15 @@ const Login: React.FC = () => {
         `reward/check-referral-validity/?referral_code=${referralCode}`
       );
       if (isSuccess) {
-        notification("Referral Code is Valid");
+        notification("Access Code is Valid");
         setIsReferralCodeValid(true);
       } else {
-        notification("Invalid Referral Code", "error");
+        notification("Invalid Access Code", "error");
         setIsReferralCodeValid(false);
       }
       setIsUserTyping(false);
     } catch (error) {
-      console.error("Error during referal code checking:", error);
+      console.error("Error during Access code checking:", error);
       setIsReferralCodeValid(false);
     }
   };
@@ -112,7 +112,7 @@ const Login: React.FC = () => {
         alignItems: "center",
       }}
     >
-      <Box sx={{ maxWidth: "700px", flex: "1" }}>
+      <Box sx={{ maxWidth: "700px", flex: "1", mx: 5 }}>
         <Box sx={{ textAlign: "center", mb: 3 }}>
           <Image
             src={XfluencerLogo}
@@ -131,13 +131,53 @@ const Login: React.FC = () => {
           </Typography>
         </Box>
 
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
+          <Input
+            type="text"
+            color="secondary"
+            sx={{
+              ".MuiInputBase-root": {
+                borderRadius: "24px",
+              },
+              width: "60%",
+            }}
+            placeholder="Enter Access Code"
+            size="small"
+            fullWidth
+            value={referralCode}
+            onChange={(e) => {
+              setReferralCode(e.target.value);
+              setIsUserTyping(true);
+            }}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={checkReferralCode}
+                >
+                  <Send />
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </Box>
+
         {loginAs === "Business" && (
           <LoginAccordion
             title="Connect with Wallets"
             subtitle="If you're a pro, connect your wallet"
             defaultExpanded
+            isDisabled={isUserTyping || !isReferralCodeValid}
           >
             <LoginOptions
+              disabled={isUserTyping || !isReferralCodeValid}
               label="Connect with Wallet"
               onClick={handleConnectWallet}
             />
@@ -152,66 +192,21 @@ const Login: React.FC = () => {
               : "Sign in with your email or socials"
           }
           defaultExpanded={loginAs === "Influencer"}
+          isDisabled={isUserTyping || !isReferralCodeValid}
         >
-          <Grid
-            container
-            spacing={2}
-            justifyContent={
-              loginAs === "Influencer" ? "space-between" : "flex-start"
-            }
-          >
+          <Grid container spacing={2} justifyContent={"flex-start"}>
             <Grid item>
-              <LoginOptions label="Connect with X" onClick={handleConnectX} />
-              {isReferralCodeValid &&
-              !isUserTyping &&
-              loginAs === "Influencer" ? (
-                <Typography
-                  variant="caption"
-                  sx={{ color: "green", ml: 1, mt: 0.5 }}
-                  component={"div"}
-                >
-                  Hurray!!! Referral Code {referralCode} Applied.
-                </Typography>
-              ) : null}
+              <LoginOptions
+                disabled={isUserTyping || !isReferralCodeValid}
+                label="Connect with X"
+                onClick={handleConnectX}
+              />
             </Grid>
-            {loginAs === "Influencer" ? (
-              <Grid item xs={5} md={5} lg={5} sm={5} sx={{ float: "right" }}>
-                <Input
-                  type="text"
-                  color="secondary"
-                  sx={{
-                    ".MuiInputBase-root": {
-                      borderRadius: "24px",
-                    },
-                  }}
-                  placeholder="Enter Referral Code"
-                  size="small"
-                  fullWidth
-                  value={referralCode}
-                  onChange={(e) => {
-                    setReferralCode(e.target.value);
-                    setIsUserTyping(true);
-                  }}
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={checkReferralCode}
-                      >
-                        <Send />
-                      </IconButton>
-                    </InputAdornment>
-                  }
-                />
-                <Typography variant="caption" sx={{ color: "grey" }}>
-                  *Only for first time users
-                </Typography>
-              </Grid>
-            ) : null}
 
             {loginAs === "Business" ? (
               <Grid item>
                 <LoginOptions
+                  disabled={isUserTyping || !isReferralCodeValid}
                   label="Connect with Email"
                   onClick={handleConnectEmail}
                 />
