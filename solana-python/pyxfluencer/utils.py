@@ -1,12 +1,14 @@
+import json
+from typing import List
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
-from solana.rpc.api import Client
-from solana.rpc.async_api import AsyncClient
+from solana.rpc.api import Client # type: ignore
+from solana.rpc.async_api import AsyncClient # type: ignore
 import json
 
-from solana.transaction import Transaction
-from solana.rpc.core import RPCException
+from solana.transaction import Transaction # type: ignore
+from solana.rpc.core import RPCException # type: ignore
 
 from solders.compute_budget import set_compute_unit_price, set_compute_unit_limit
 
@@ -16,8 +18,9 @@ from anchorpy import Wallet, Provider
 from anchorpy.utils import token
 from anchorpy.utils.rpc import AccountInfo
 
-import asyncio
-
+from .errors.custom import from_code
+from solana.rpc.api import SimulateTransactionResp
+from solders.transaction_status import TransactionErrorInstructionError
 
 def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
@@ -77,7 +80,7 @@ async def get_token_account_info(ata_address: str, network: str) -> AccountInfo:
         raise Exception(f"Getting Token Account Info {e}")
 
 
-async def sign_and_send_transaction(ix, signers, network, async_client: bool = True, priority_fees: int = 0):
+async def sign_and_send_transaction(ix, signers, network, async_client: bool = True, priority_fees: int = 0, extra_rpcs: List[str] = None):
     client = select_client(network=network, async_client=async_client)
 
     recent_blockhash_resp = await client.get_latest_blockhash()
@@ -86,7 +89,7 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
     block_height = (await client.get_block_height()).value
     attempts = 0
 
-    print(recent_block_height, block_height, recent_block_height)
+    print("Recent Block Height", recent_block_height, "Block Heigth",block_height)
 
     while True and attempts < 10:
         try:
@@ -100,16 +103,26 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
             tx.add(ix)
 
             try:
-                simulated_transaction_resp = await client.simulate_transaction(tx)
-                print(simulated_transaction_resp)
-            except Exception as e:
-                print(f"Error simulating transaction: {e}")
+                simulated_transaction_resp: SimulateTransactionResp = await client.simulate_transaction(tx)    
+                if simulated_transaction_resp.value.err is not None:
+                    error_tx: TransactionErrorInstructionError = simulated_transaction_resp.value.err 
+                    error_tx_json : str = error_tx.to_json()  
+                    error_tx_dict : dict = json.loads(error_tx_json)    
+                    error: int = error_tx_dict[1]["Custom"]
+                    if error >= 6000:
+                        return from_code(error)
+                else:
+                    print("Simulation LLooks OK")
+            except (KeyError, Exception) as e:
+                print(f"Error simulating transaction: {e}")                
                 print("Retrying...")
                 block_height = (await client.get_block_height()).value
                 continue
 
             # Set compute unit limit
-            cu_set = simulated_transaction_resp.value.units_consumed + 1000
+            cu_budget:int = simulated_transaction_resp.value.units_consumed * 15 / 10  # increase 50% of simulated CU's          
+            max_budget = 200_000 
+            cu_set = min(cu_budget, max_budget) 
             modify_compute_units = set_compute_unit_limit(cu_set)
             tx.add(modify_compute_units)
 
@@ -121,6 +134,7 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
                 print(tx_res)
             except Exception as e:
                 print(f"Error sending transaction: {e}")
+                 
                 raise
 
             if tx_res:
