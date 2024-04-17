@@ -37,7 +37,7 @@ const Services = ({
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cart);
   const loggedInUser = useAppSelector((state) => state.user?.user);
-  const [type, setType] = React.useState<string | null>(null);
+  const [type, setType] = React.useState<string | null>("published");
   const [services, setServices] = React.useState<ServiceType[]>([]);
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
@@ -62,12 +62,9 @@ const Services = ({
         "packages/service",
         {
           page_number: pagination.current_page_number,
-          page_size:
-            id === loggedInUser?.id
-              ? pagination.current_page_size
-              : pagination.current_page_size + 1,
+          page_size: pagination.current_page_size,
           influencer: id,
-          status: id === loggedInUser?.id ? type : "published",
+          status: type,
         }
       );
       if (isSuccess) {
@@ -119,6 +116,18 @@ const Services = ({
       setRefreshPage(false);
     }
   }, [refreshPage]);
+
+  useEffect(() => {
+    if (id && loggedInUser && loggedInUser?.id && loggedInUser?.id === id) {
+      setType(null);
+      setPagination({
+        total_data_count: 0,
+        total_page_count: 0,
+        current_page_number: 1,
+        current_page_size: 8,
+      });
+    }
+  }, [loggedInUser, id]);
 
   useEffect(() => {
     getServices();
