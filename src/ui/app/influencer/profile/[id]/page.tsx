@@ -191,21 +191,25 @@ const ProfileLayout = ({
   ]);
 
   useEffect(() => {
-    // Fetch services for the tour,
-    // if there are none, open the tour
+    if (
+      currentUser &&
+      currentUser?.id === loggedInUser?.id &&
+      currentUser?.twitter_account?.account_categories?.length === 0
+    ) {
+      setCategoryOpen(true);
+    }
+  }, [currentUser?.id, loggedInUser?.id]);
+
+  useEffect(() => {
     if (params.id == loggedInUser?.id) getServices();
-  }, [loggedInUser, params]);
+  }, [loggedInUser?.id, params.id]);
 
   const getServices = async () => {
-    console.log("getServices getting called")
     try {
-      const { message, data, isSuccess, errors } = await getService(
-        "packages/service",
-        {
-          influencer: params.id,
-          status: null,
-        }
-      );
+      const { data, isSuccess } = await getService("packages/service", {
+        influencer: params.id,
+        status: null,
+      });
       if (isSuccess) {
         // Open the tour if there's no service
         if (!data?.pagination?.total_data_count) {

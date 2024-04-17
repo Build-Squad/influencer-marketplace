@@ -20,6 +20,7 @@ import { FC } from "react";
 import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 import * as utils from "./utils";
+import { SendTransactionOptions } from "@solana/wallet-adapter-base";
 
 const programId = new PublicKey(idl.metadata.address);
 
@@ -30,14 +31,21 @@ interface ValidateProps {
     percentageFee : number,
     orderCode: number,
     targetState: number,
-    textButton: string
+    textButton: string, 
+    network: string
   }
 
-export const Validate: FC<ValidateProps> = ({validator, business, influencer, 
-                                             percentageFee, orderCode, targetState, textButton}) => {
+export const Validate: FC<ValidateProps> = ({validator, 
+                                             business, 
+                                             influencer, 
+                                             percentageFee, 
+                                             orderCode, 
+                                             targetState, 
+                                             textButton,
+                                            network}) => {
 
     const wallet = useAnchorWallet()
-    const connection = new Connection(clusterApiUrl('devnet'),
+    const connection = new Connection(network,
     {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000
@@ -95,9 +103,11 @@ export const Validate: FC<ValidateProps> = ({validator, business, influencer,
 
         console.log(tx);
 
-        const options = {
-			skipPreflight: true      
-		  }
+        const options: SendTransactionOptions = {
+			skipPreflight: false,
+            maxRetries: 1,
+            preflightCommitment: 'confirmed'
+		};
 
         try {
             const signature = await sendTransaction(tx, connection, options);
