@@ -1,14 +1,18 @@
 "use client";
+import BackIcon from "@/public/svg/Back.svg";
 import Star from "@/public/svg/Star.svg";
 import { notification } from "@/src/components/shared/notification";
 import { postService, putService } from "@/src/services/httpServices";
-import { KeyboardBackspace, OpenInFull } from "@mui/icons-material";
-import BackIcon from "@/public/svg/Back.svg";
+import { OpenInFull } from "@mui/icons-material";
 import Image from "next/image";
 
+import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import OrderSummaryDetails from "@/src/components/dashboardComponents/orderSummaryDetails";
 import OrderSummaryTable from "@/src/components/dashboardComponents/orderSummaryTable";
+import RouteProtection from "@/src/components/shared/routeProtection";
+import { DriveEta } from "@mui/icons-material";
 import {
+  Backdrop,
   Box,
   Button,
   CircularProgress,
@@ -29,22 +33,29 @@ import {
   GridTreeNodeWithRender,
 } from "@mui/x-data-grid";
 import NextLink from "next/link";
-import React, { useEffect, useState } from "react";
-import RouteProtection from "@/src/components/shared/routeProtection";
 import { useRouter } from "next/navigation";
-import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
-import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
-import { DriveEta } from "@mui/icons-material";
 import { closeSnackbar, enqueueSnackbar } from "notistack";
+import React, { useEffect, useState } from "react";
+import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
+import {
+  endCancellation,
+  startCancellation,
+} from "@/src/reducers/orderCancellationSlice";
 
 export default function Orders() {
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const cancellationInProgress = useAppSelector(
+    (state) => state.orderCancellation.cancellationInProgress
+  );
+  const dispatch = useAppDispatch();
   const [selectedAction, setSelectedAction] = useState({
     status: "",
     orderId: "",
   });
+  const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = useState(false);
+  const [redirectLoading, setRedirectLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [rowSelectionModel, setRowSelectionModel] =
@@ -168,13 +179,10 @@ export default function Orders() {
   };
 
   const handleUserInteraction = async () => {
-    const { isSuccess, data, message } = await postService(
-      `orders/order-list/`,
-      {
-        page_number: pagination.current_page_number,
-        page_size: pagination.current_page_size,
-      }
-    );
+    const { isSuccess, data } = await postService(`orders/order-list/`, {
+      page_number: pagination.current_page_number,
+      page_size: pagination.current_page_size,
+    });
 
     if (isSuccess && data?.data?.status_counts) {
       const { status_counts: orders } = data.data;
@@ -209,6 +217,16 @@ export default function Orders() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+
+        // Redirecting to dashboard page after two seconds if there are no orders pending
+        if (data?.data?.orders.length == 0) {
+          setRedirectLoading(true);
+          setTimeout(() => {
+            router.push("/influencer/dashboard/?tab=orders");
+          }, 2000);
+        } else {
+          setRedirectLoading(false);
+        }
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
@@ -356,6 +374,7 @@ export default function Orders() {
                 setSelectedAction({ status: "Accept", orderId });
                 handleClickOpen();
               }}
+              disabled={cancellationInProgress}
             >
               Accept
             </Button>
@@ -369,6 +388,7 @@ export default function Orders() {
                 setSelectedAction({ status: "Decline", orderId });
                 handleClickOpen();
               }}
+              disabled={cancellationInProgress}
             >
               Decline
             </Button>
@@ -396,6 +416,7 @@ export default function Orders() {
     pagination.current_page_number,
     pagination.current_page_size,
     actionLoading,
+    cancellationInProgress,
   ]);
 
   const handleAction = async () => {
@@ -410,6 +431,7 @@ export default function Orders() {
             <CircularProgress color="inherit" size={20} />
           </>
         );
+        dispatch(startCancellation());
         const cancellationNotification = enqueueSnackbar(
           `Declining order request, please wait for confirmation`,
           {
@@ -424,6 +446,7 @@ export default function Orders() {
         );
         if (isSuccess) {
           closeSnackbar(cancellationNotification);
+          dispatch(endCancellation());
           getOrders();
           notification(
             "Order request was declined successfully",
@@ -432,6 +455,7 @@ export default function Orders() {
           );
         } else {
           closeSnackbar(cancellationNotification);
+          dispatch(endCancellation());
           notification(
             message ? message : "Something went wrong, couldn't cancel order",
             "error"
@@ -706,6 +730,26 @@ export default function Orders() {
         }}
         locale={{ last: "Finish" }}
       />
+      {redirectLoading ? (
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={true}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CircularProgress thickness={2} />
+            <Typography sx={{ mt: 3 }} variant="h6">
+              Redirecting to dashboard...
+            </Typography>
+          </Box>
+        </Backdrop>
+      ) : null}
     </RouteProtection>
   );
 }

@@ -20,6 +20,7 @@ from marketplace import celery_app
 
 from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered, validate_escrow
 from pyxfluencer.utils import get_local_keypair_pubkey
+from pyxfluencer.errors.custom import EscrowAlreadyCancel, EscrowAlreadyReleased
 
 import time
 import json
@@ -63,26 +64,69 @@ def cancel_escrow(order_id: str, status: str):
             escrow=escrow, transaction_type='cancel_escrow'
         )
 
-        if order_currency.currency_type == 'SOL':
-            result = asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair,
-                                                           business_address=buyer_primary_wallet.wallet_address_id,
-                                                           influencer_address=influencer_primary_wallet.wallet_address_id,
-                                                           order_code=order.order_number,
-                                                           network=RPC_ENDPOINT,
-                                                           ))
-        elif order_currency.currency_type == 'SPL':
-            result = asyncio.run(validate_escrow(
-                validation_authority=val_auth_keypair,
-                business_address=buyer_primary_wallet.wallet_address_id,
-                influencer_address=influencer_primary_wallet.wallet_address_id,
-                target_escrow_state=EscrowState.CANCEL,
-                order_code=order.order_number,
-                network=RPC_ENDPOINT,
-                processing_spl_escrow=True
-            ))
-        # Update all the values of the on_chain_transaction with result.value[0]
-        result_dict = json.loads(result)
+        priority_fees = int(Configuration.objects.get(
+            key='priority_fees').value)
 
+        if order_currency.currency_type == 'SOL':
+            try:
+                result = asyncio.run(validate_escrow_to_cancel(validator_authority=val_auth_keypair,
+                                                               business_address=buyer_primary_wallet.wallet_address_id,
+                                                               influencer_address=influencer_primary_wallet.wallet_address_id,
+                                                               order_code=order.order_number,
+                                                               network=RPC_ENDPOINT,
+                                                               priority_fees=priority_fees
+                                                               ))
+            except Exception as e:
+                logger.error('Error in cancelling escrow: %s', str(e))
+                on_chain_transaction.is_confirmed = False
+                on_chain_transaction.err = {
+                    'message': 'Error in cancelling escrow', 'error': str(e)
+                }
+                on_chain_transaction.save()
+                return False
+
+        elif order_currency.currency_type == 'SPL':
+            try:
+                result = asyncio.run(validate_escrow(
+                    validation_authority=val_auth_keypair,
+                    business_address=buyer_primary_wallet.wallet_address_id,
+                    influencer_address=influencer_primary_wallet.wallet_address_id,
+                    target_escrow_state=EscrowState.CANCEL,
+                    order_code=order.order_number,
+                    network=RPC_ENDPOINT,
+                    processing_spl_escrow=True,
+                    priority_fees=priority_fees
+                ))
+            except Exception as e:
+                logger.error('Error in cancelling escrow: %s', str(e))
+                on_chain_transaction.is_confirmed = False
+                on_chain_transaction.err = {
+                    'message': 'Error in cancelling escrow', 'error': str(e)
+                }
+                on_chain_transaction.save()
+                return False
+
+        if isinstance(result, EscrowAlreadyCancel):
+            # Escrow already cancelled
+            # Update the order status to cancelled
+            if order.status != status:
+                order.status = status
+                order.save()
+
+                create_order_tracking(order=order, status=status)
+                create_notification_for_order(
+                    order=order, old_status='accepted', new_status=status)
+
+                escrow.status = "cancelled"
+                escrow.save()
+
+                on_chain_transaction.is_confirmed = True
+                on_chain_transaction.save()
+
+                return True
+
+        result_dict = json.loads(s=result)
+        # Update all the values of the on_chain_transaction with result.value[0]
         # Access the first item in the 'value' list
         transaction_result = result_dict['result']['value'][0]
 
@@ -118,7 +162,7 @@ def cancel_escrow(order_id: str, status: str):
         return False
 
 
-@celery_app.task(base=QueueOnce, once={'graceful': True}, autoretry_for=(Exception,), retry_kwargs={'max_retries': 3})
+@celery_app.task(base=QueueOnce, once={'graceful': True}, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def confirm_escrow(order_id: str):
     try:
         # Get order and corresponding escrow
@@ -143,25 +187,67 @@ def confirm_escrow(order_id: str):
             escrow=escrow, transaction_type='confirm_escrow'
         )
 
+        priority_fees = int(Configuration.objects.get(
+            key='priority_fees').value)
+
         if order_currency.currency_type == 'SOL':
-            result = asyncio.run(validate_escrow_to_delivered(validator_authority=val_auth_keypair,
-                                                              business_address=buyer_primary_wallet.wallet_address_id,
-                                                              influencer_address=influencer_primary_wallet.wallet_address_id,
-                                                              order_code=order.order_number,
-                                                              network=RPC_ENDPOINT,
-                                                              percentage_fee=platform_fees
-                                                              ))
+            try:
+                result = asyncio.run(validate_escrow_to_delivered(validator_authority=val_auth_keypair,
+                                                                  business_address=buyer_primary_wallet.wallet_address_id,
+                                                                  influencer_address=influencer_primary_wallet.wallet_address_id,
+                                                                  order_code=order.order_number,
+                                                                  network=RPC_ENDPOINT,
+                                                                  percentage_fee=platform_fees,
+                                                                  priority_fees=priority_fees
+                                                                  ))
+            except Exception as e:
+                logger.error('Error in confirming escrow: %s', str(e))
+                on_chain_transaction.is_confirmed = False
+                on_chain_transaction.err = {
+                    'message': 'Error in confirming escrow', 'error': str(e)
+                }
+                on_chain_transaction.save()
+                raise Exception('Error in confirming escrow', str(e))
+
         elif order_currency.currency_type == 'SPL':
-            result = asyncio.run(validate_escrow(
-                validation_authority=val_auth_keypair,
-                business_address=buyer_primary_wallet.wallet_address_id,
-                influencer_address=influencer_primary_wallet.wallet_address_id,
-                target_escrow_state=EscrowState.DELIVERED,
-                order_code=order.order_number,
-                network=RPC_ENDPOINT,
-                percentage_fee=platform_fees,
-                processing_spl_escrow=True
-            ))
+            try:
+                result = asyncio.run(validate_escrow(
+                    validation_authority=val_auth_keypair,
+                    business_address=buyer_primary_wallet.wallet_address_id,
+                    influencer_address=influencer_primary_wallet.wallet_address_id,
+                    target_escrow_state=EscrowState.DELIVERED,
+                    order_code=order.order_number,
+                    network=RPC_ENDPOINT,
+                    percentage_fee=platform_fees,
+                    processing_spl_escrow=True,
+                    priority_fees=priority_fees
+                ))
+            except Exception as e:
+                logger.error('Error in confirming escrow: %s', str(e))
+                on_chain_transaction.is_confirmed = False
+                on_chain_transaction.err = {
+                    'message': 'Error in confirming escrow', 'error': str(e)
+                }
+                on_chain_transaction.save()
+                raise Exception('Error in confirming escrow', str(e))
+
+        if isinstance(result, EscrowAlreadyReleased):
+            # Escrow already released
+            if order.status != 'completed':
+                order.status = 'completed'
+                order.save()
+
+                create_order_tracking(order=order, status=order.status)
+                create_notification_for_order(
+                    order=order, old_status='accepted', new_status='completed')
+
+                escrow.status = "delivered"
+                escrow.save()
+
+                on_chain_transaction.is_confirmed = True
+                on_chain_transaction.save()
+
+                return True
 
         # Update all the values of the on_chain_transaction with result.value[0]
         result_dict = json.loads(result)
@@ -216,11 +302,6 @@ def check_order_status(pk):
 
     if is_completed:
         confirm_escrow.apply_async(args=[order.id])
-        # Create a Order Tracking for the order
-        create_order_tracking(order=order, status=order.status)
-        # Send notification to business
-        create_notification_for_order(order=order, old_status='accepted', new_status='completed')
-
 
 def tweet(text, client):
     try:

@@ -69,3 +69,6 @@ src/api/marketplace/.idea
 #secret
 # src/api/marketplace/secret/
 src/api/marketplace/dump.rdb
+
+# solana-ts
+solana-ts-node/node_modules/*

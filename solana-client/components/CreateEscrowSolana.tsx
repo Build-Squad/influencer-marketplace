@@ -28,13 +28,14 @@ interface CreateEscrowSolanaProps {
     business: string,
     influencer: string,
     orderCode: number,
-    lamports: number
+    lamports: number,
+    network: string
   }
 
-export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({validator, business, influencer, orderCode, lamports}) => {
+export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({validator, business, influencer, orderCode, lamports, network}) => {
 
     const wallet = useAnchorWallet()
-    const connection = new Connection(clusterApiUrl('devnet'),
+    const connection = new Connection(network,
     {
         commitment: "confirmed",
         confirmTransactionInitialTimeout: 30000

@@ -533,13 +533,24 @@ const CreateUpdateService = ({
                   <Box
                     sx={{
                       display: "flex",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       justifyContent: "space-between",
                     }}
                   >
-                    <Typography variant="body1">
-                      Platform Fee ({platform_fees}%)
-                    </Typography>
+                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                      <Typography variant="body1">
+                        Platform Fee{" "}
+                        <span style={{ textDecoration: "line-through" }}>
+                          ({platform_fees}%)
+                        </span>
+                      </Typography>
+                      <Typography variant="caption">
+                        <span style={{ color: "#C60C30" }}>
+                          Free only for beta
+                        </span>
+                      </Typography>
+                    </Box>
+
                     <Typography variant="body1">
                       {((formik.values.price * platform_fees) / 100).toFixed(
                         4

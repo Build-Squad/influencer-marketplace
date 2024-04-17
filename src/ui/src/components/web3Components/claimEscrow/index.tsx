@@ -123,7 +123,7 @@ export default function ClaimEscrow({
           const tx = new Transaction().add(ix);
 
           const options = {
-            skipPreflight: true,
+            skipPreflight: process.env.NEXT_PUBLIC_RPC_LINK?.includes("devnet"),
           };
 
           try {
