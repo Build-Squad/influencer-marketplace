@@ -20,6 +20,7 @@ from marketplace import celery_app
 
 from pyxfluencer import validate_escrow_to_cancel, validate_escrow_to_delivered, validate_escrow
 from pyxfluencer.utils import get_local_keypair_pubkey
+from pyxfluencer.errors.custom import EscrowAlreadyCancel, EscrowAlreadyReleased
 
 import time
 import json
@@ -85,9 +86,28 @@ def cancel_escrow(order_id: str, status: str):
                 processing_spl_escrow=True,
                 priority_fees=priority_fees
             ))
-        # Update all the values of the on_chain_transaction with result.value[0]
-        result_dict = json.loads(result)
 
+        if isinstance(result, EscrowAlreadyCancel):
+            # Escrow already cancelled
+            # Update the order status to cancelled
+            if order.status != status:
+                order.status = status
+                order.save()
+
+                create_order_tracking(order=order, status=status)
+                create_notification_for_order(
+                    order=order, old_status='accepted', new_status=status)
+
+                escrow.status = "cancelled"
+                escrow.save()
+
+                on_chain_transaction.is_confirmed = True
+                on_chain_transaction.save()
+
+                return True
+
+        result_dict = json.loads(s=result)
+        # Update all the values of the on_chain_transaction with result.value[0]
         # Access the first item in the 'value' list
         transaction_result = result_dict['result']['value'][0]
 
@@ -172,6 +192,24 @@ def confirm_escrow(order_id: str):
                 processing_spl_escrow=True,
                 priority_fees=priority_fees
             ))
+
+        if isinstance(result, EscrowAlreadyReleased):
+            # Escrow already released
+            if order.status != 'completed':
+                order.status = 'completed'
+                order.save()
+
+                create_order_tracking(order=order, status=order.status)
+                create_notification_for_order(
+                    order=order, old_status='accepted', new_status='completed')
+
+                escrow.status = "delivered"
+                escrow.save()
+
+                on_chain_transaction.is_confirmed = True
+                on_chain_transaction.save()
+
+                return True
 
         # Update all the values of the on_chain_transaction with result.value[0]
         result_dict = json.loads(result)
