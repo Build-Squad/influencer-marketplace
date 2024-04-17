@@ -1106,6 +1106,7 @@ export default function BusinessDashboardPage() {
             {params?.row?.approved &&
               (params?.row?.status === ORDER_ITEM_STATUS.ACCEPTED ||
                 params?.row?.status === ORDER_ITEM_STATUS.CANCELLED) &&
+              params?.row?.order_id?.status === ORDER_STATUS.ACCEPTED &&
               // Publish date is in the future
               dayjs(params?.row?.publish_date) > dayjs() && (
                 <Tooltip title="Schedule Post" placement="top" arrow>
