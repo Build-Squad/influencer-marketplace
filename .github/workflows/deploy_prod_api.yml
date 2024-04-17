@@ -41,7 +41,7 @@ jobs:
           source venv/bin/activate 
           pip3 install -r requirements.txt 
           pip3 uninstall pyxfluencer -y
-          pip3 install pyxfluencer-1.2.2-py3-none-any.whl
+          latest_file=$(ls -v | grep 'pyxfluencer-[0-9.]*-py3-none-any.whl' | tail -n 1) && pip install $latest_file
           python3 manage.py migrate 
           python3 manage.py collectstatic -link --noinput 
           echo "Stopping previous processes..."

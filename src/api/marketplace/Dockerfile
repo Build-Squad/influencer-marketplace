@@ -13,11 +13,11 @@ COPY ./requirements.txt /api/
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
-COPY ./pyxfluencer-1.2.2-py3-none-any.whl /api/
-RUN pip install pyxfluencer-1.2.2-py3-none-any.whl
-
 # copy project
 COPY . /api
+
+# find the latest .whl file and install it
+RUN LATEST_WHL=$(ls -v | grep 'pyxfluencer-[0-9.]*-py3-none-any.whl' | tail -n 1) && pip install $LATEST_WHL
 
 # Make ports available for dev
 EXPOSE 8000
