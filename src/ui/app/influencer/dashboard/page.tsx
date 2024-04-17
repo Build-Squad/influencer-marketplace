@@ -1158,7 +1158,7 @@ export default function BusinessDashboardPage() {
     const tab = searchParams.get("tab");
     const _selectedTab = tabs.find((_tab) => _tab.key === tab);
     if (_selectedTab) setSelectedTab(_selectedTab?.value);
-    else router.push(tabs[0]?.route!);
+    else router.replace(tabs[0]?.route!);
   }, [searchParams]);
 
   useEffect(() => {
