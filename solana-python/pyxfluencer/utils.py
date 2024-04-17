@@ -157,3 +157,6 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
             print(f"RPC exception happened: {e}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+    # If max attempts reached, raise an exception
+    raise Exception("Max attempts reached, transaction failed")
