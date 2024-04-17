@@ -172,7 +172,7 @@ async def validate_escrow_to_delivered(validator_authority: Keypair,
                                  EscrowState.DELIVERED, 
                                  order_code, 
                                  network, 
-                                 percentage_fee=priority_fees, 
+                                 percentage_fee=percentage_fee, 
                                  processing_spl_escrow=False,
                                  priority_fees=priority_fees
                                  )
