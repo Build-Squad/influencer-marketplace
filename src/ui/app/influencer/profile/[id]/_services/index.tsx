@@ -58,7 +58,7 @@ const Services = ({
   const getServices = async () => {
     try {
       setLoading(true);
-      const { message, data, isSuccess, errors } = await getService(
+      const { message, data, isSuccess } = await getService(
         "packages/service",
         {
           page_number: pagination.current_page_number,
@@ -120,12 +120,6 @@ const Services = ({
   useEffect(() => {
     if (id && loggedInUser && loggedInUser?.id && loggedInUser?.id === id) {
       setType(null);
-      setPagination({
-        total_data_count: 0,
-        total_page_count: 0,
-        current_page_number: 1,
-        current_page_size: 8,
-      });
     }
   }, [loggedInUser, id]);
 
