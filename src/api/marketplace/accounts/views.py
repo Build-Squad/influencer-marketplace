@@ -1637,7 +1637,6 @@ class WalletAuth(APIView):
                     )
                     wallet.user_id = user
                     wallet.save()
-                    print("New User ===== ", user)
                     # Referral entry for new users
                     self.manage_referral(request, user)
                     is_new_user = True

@@ -10,6 +10,7 @@ from django.http import (
 from decouple import config
 from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User
 import datetime
+from .services import JWTOperations
 from .constants import TWITTER_SCOPES, TWITTER_CALLBACK_URL
 import os
 import re
