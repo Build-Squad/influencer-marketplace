@@ -230,10 +230,14 @@ const Login: React.FC = () => {
       </Box>
 
       {/* Wallet Model */}
-      <WalletConnectModal open={walletOpen} setOpen={setWalletOpen} />
+      <WalletConnectModal
+        open={walletOpen}
+        setOpen={setWalletOpen}
+        referralCode={referralCode}
+      />
 
       {/* Email Modal */}
-      <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} />
+      <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} referralCode={referralCode}/>
     </Box>
   );
 };
