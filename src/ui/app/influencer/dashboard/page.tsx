@@ -56,6 +56,7 @@ import Joyride, { ACTIONS, EVENTS, STATUS } from "react-joyride";
 import XfluencerLogo from "@/public/svg/Xfluencer_Logo_Beta.svg";
 import { DriveEta } from "@mui/icons-material";
 import WalletConnectModal from "@/src/components/web3Components/walletConnectModal";
+import { getProfileCompletedStatus } from "@/src/services/profileCompletion";
 
 const tabs = [
   {
@@ -71,22 +72,6 @@ const tabs = [
     key: "order-items",
   },
 ];
-
-const getProfileCompletedStatus: (businessDetails: any) => string = (
-  businessDetails
-) => {
-  if (businessDetails) {
-    let count = 0;
-    if (businessDetails?.isTwitterAccountConnected) count += 5;
-    if (businessDetails?.isWalletConnected) count += 5;
-    count +=
-      Object.values(businessDetails).filter(
-        (value) => value !== "" && value !== null
-      ).length - 7;
-    return `${count} / ${10 + Object.keys(businessDetails).length - 7}`;
-  }
-  return "-";
-};
 
 export default function BusinessDashboardPage() {
   const router = useRouter();
@@ -640,8 +625,7 @@ export default function BusinessDashboardPage() {
     )
       .replace(/\s/g, "")
       .split("/");
-
-    return (
+      return (
       (parseInt(completionStringArr[0]) / parseInt(completionStringArr[1])) *
       100
     );

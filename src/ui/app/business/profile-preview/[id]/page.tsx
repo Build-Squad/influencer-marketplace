@@ -27,6 +27,7 @@ import Image from "next/image";
 import NotFound from "@/public/svg/not_found.svg";
 import { stringToColor } from "@/src/utils/helper";
 import { BADGES } from "@/src/utils/consts";
+import { getProfileCompletedStatus } from "@/src/services/profileCompletion";
 
 type Props = {
   params: {
@@ -48,22 +49,6 @@ const styles = {
   },
 };
 
-const getProfileCompletedStatus: (businessDetails: any) => string = (
-  businessDetails
-) => {
-  if (businessDetails) {
-    let count = 0;
-    if (businessDetails?.isTwitterAccountConnected) count += 5;
-    if (businessDetails?.isWalletConnected) count += 5;
-    count +=
-      Object.values(businessDetails).filter(
-        (value) => value !== "" && value !== null
-      ).length - 7;
-    return `${count} / ${10 + Object.keys(businessDetails).length - 7}`;
-  }
-  return "-";
-};
-
 const formatTwitterFollowers = (followersCount: any) => {
   if (followersCount >= 1000000) {
     // Convert to millions format
@@ -80,8 +65,7 @@ const formatTwitterFollowers = (followersCount: any) => {
 export default function BusinessProfilePreview({ params }: Props) {
   const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [collaborations, setCollaborations] = useState([]);
-  const [businessDetails, setBusinessDetails] =
-    useState<BasicBusinessDetailsType>();
+  const [businessDetails, setBusinessDetails] = useState<any>();
   const user = useAppSelector((state) => state.user?.user);
 
   const router = useRouter();
@@ -103,6 +87,8 @@ export default function BusinessProfilePreview({ params }: Props) {
     const completionStringArr = getProfileCompletedStatus(businessDetails)
       .replace(/\s/g, "")
       .split("/");
+
+    console.log(completionStringArr);
 
     return (
       (parseInt(completionStringArr[0]) / parseInt(completionStringArr[1])) *
@@ -160,8 +146,6 @@ export default function BusinessProfilePreview({ params }: Props) {
       if (isSuccess) {
         setBusinessDetails({
           ...data?.data,
-          isTwitterAccountConnected: !!user?.twitter_account,
-          isWalletConnected: !!user?.wallets?.length,
         });
         getCollaborators(data?.data?.influencer_ids);
       }
@@ -211,10 +195,10 @@ export default function BusinessProfilePreview({ params }: Props) {
               alignItems: "center",
             }}
           >
-            {user?.twitter_account?.profile_image_url ? (
+            {!!businessDetails?.user_twitter_profile_image ? (
               <Avatar
                 alt={"Business Account Image"}
-                src={user?.twitter_account?.profile_image_url}
+                src={businessDetails?.user_twitter_profile_image}
                 sx={{
                   width: 138,
                   height: 138,
@@ -222,12 +206,14 @@ export default function BusinessProfilePreview({ params }: Props) {
               />
             ) : (
               <Avatar
-                alt={businessDetails?.business_name}
-                src={businessDetails?.business_name}
+                alt={businessDetails?.user_account?.username}
+                src={businessDetails?.user_account?.username}
                 sx={{
                   width: 138,
                   height: 138,
-                  bgcolor: stringToColor(user?.username ?? ""),
+                  bgcolor: stringToColor(
+                    businessDetails?.user_account?.username ?? ""
+                  ),
                 }}
               />
             )}
@@ -412,7 +398,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             margin: "20px",
           }}
         >
-          {user?.role?.name === "business_owner" ? (
+          {user?.id == params?.id ? (
             <Button
               fullWidth
               variant={"contained"}
@@ -511,7 +497,7 @@ export default function BusinessProfilePreview({ params }: Props) {
             <Typography fontWeight={"bold"} sx={{ mt: 2 }}>
               {BADGES[getCurrentBadgeIndex()].name}
             </Typography>
-            {user?.role?.name === "business_owner" ? (
+            {user?.id == params?.id ? (
               isProfileComplete ? (
                 <Typography variant="subtitle1" sx={{ color: "#626262" }}>
                   Profile complete! Enjoy your upgraded badge & enhanced
