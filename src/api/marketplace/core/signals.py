@@ -10,6 +10,5 @@ from .services import update_priority_fees
 
 @receiver(post_save, sender=Configuration)
 def post_save_update_priority_fees(sender, instance, created, **kwargs):
-    print("hello")
     if instance.key == "platform_fees" and not created:
         update_priority_fees()
