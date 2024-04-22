@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Grid, Link, Typography } from "@mui/material";
 import Image from "next/image";
 import Facebook from "@/public/svg/Facebook.svg";
 import Instgram from "@/public/svg/Instgram.svg";
@@ -63,11 +63,23 @@ const Footer = () => {
         <Typography sx={styles.accountLinks} variant="h6">
           Company
         </Typography>
-        {["Blog", "Privacy Policy", "Xfluencer Pro (coming soon)"].map(
-          (link) => (
-            <Typography key={link}>{link}</Typography>
-          )
-        )}
+        <Typography>Blog</Typography>
+        <Link
+          href="https://docs.xfluencer.io/v1"
+          target="_blank"
+          sx={{
+            textDecoration: "none",
+            "&:hover": {
+              textDecoration: "underline",
+            },
+            color: "white",
+          }}
+        >
+          Docs
+        </Link>
+        {["Privacy Policy", "Xfluencer Pro (coming soon)"].map((link) => (
+          <Typography key={link}>{link}</Typography>
+        ))}
       </Grid>
 
       {/** Column 4 */}

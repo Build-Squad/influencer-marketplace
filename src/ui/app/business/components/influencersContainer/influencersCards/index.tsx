@@ -286,18 +286,18 @@ export default function InfluencersCards({
                 justifyContent={"center"}
                 alignItems={"center"}
               >
-                <Typography variant="subtitle1" fontWeight={"bold"}>
+                <Typography variant="subtitle2" fontWeight={"bold"}>
                   Followers:
                 </Typography>
                 <Typography
-                  variant="subtitle1"
+                  variant="subtitle2"
                   fontWeight={"light"}
                   sx={{ ml: 1 }}
                 >
                   {influencer?.followers}
                 </Typography>
               </Box>
-              <Typography variant="subtitle1" fontWeight={"bold"}>
+              <Typography variant="subtitle2" fontWeight={"bold"}>
                 {`${influencer?.minPrice} - ${influencer?.maxPrice}`}
               </Typography>
             </Box>

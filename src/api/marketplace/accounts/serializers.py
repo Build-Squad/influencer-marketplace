@@ -85,7 +85,7 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
 
     def get_service_types(self, twitter_account):
         services = Service.objects.filter(
-            package__influencer__twitter_account=twitter_account
+            package__influencer__twitter_account=twitter_account, deleted_at=None
         )
 
         # Extract service types and prices
