@@ -156,11 +156,11 @@ export default function BusinessMessages() {
     );
     if (isSuccess) {
       // Fetching all user-message and if there's exactly 1 object, show the user guide
-      if (data?.data?.orders?.length == 1) {
+      if (data?.pagination?.total_data_count == 1) {
         setStepIndex(0);
         setRun(true);
       }
-      if (data?.data?.orders?.length > 0) {
+      if (data?.pagination?.total_data_count > 0) {
         setHasAMessage(true);
       }
     }

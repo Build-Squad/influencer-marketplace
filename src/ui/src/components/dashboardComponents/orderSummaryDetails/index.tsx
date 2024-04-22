@@ -58,6 +58,7 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
                   display: "flex",
                   justifyContent: "space-between",
                   width: "100%",
+                  alignItems: "center",
                 }}
               >
                 <Link
@@ -66,7 +67,12 @@ const ContentTypeComponent = ({ meta_data }: { meta_data: any }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   underline="hover"
-                  sx={{ color: "#676767" }}
+                  sx={{
+                    color: "#676767",
+                    width: "100%",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
                 >
                   {meta_data.value}
                 </Link>

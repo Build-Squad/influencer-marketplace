@@ -55,7 +55,6 @@ export default function Orders() {
   });
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = useState(false);
-  const [redirectLoading, setRedirectLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [rowSelectionModel, setRowSelectionModel] =
@@ -217,16 +216,6 @@ export default function Orders() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
-
-        // Redirecting to dashboard page after two seconds if there are no orders pending
-        if (data?.data?.orders.length == 0) {
-          setRedirectLoading(true);
-          setTimeout(() => {
-            router.push("/influencer/dashboard/?tab=orders");
-          }, 2000);
-        } else {
-          setRedirectLoading(false);
-        }
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
@@ -474,6 +463,10 @@ export default function Orders() {
               selectedAction.status == "Accept" ? "accepted" : "rejected"
             }`
           );
+          // Redirect to the dashboard if it's the last accepted order
+          if (orders?.length <= 1) {
+            router.push("/influencer/dashboard/?tab=orders");
+          }
         } else {
           notification(
             message
@@ -730,26 +723,6 @@ export default function Orders() {
         }}
         locale={{ last: "Finish" }}
       />
-      {redirectLoading ? (
-        <Backdrop
-          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-          open={true}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <CircularProgress thickness={2} />
-            <Typography sx={{ mt: 3 }} variant="h6">
-              Redirecting to dashboard...
-            </Typography>
-          </Box>
-        </Backdrop>
-      ) : null}
     </RouteProtection>
   );
 }

@@ -539,14 +539,14 @@ const CreateUpdateService = ({
                   >
                     <Box sx={{ display: "flex", flexDirection: "column" }}>
                       <Typography variant="body1">
-                        Platform Fee{" "}
                         <span style={{ textDecoration: "line-through" }}>
-                          ({platform_fees}%)
-                        </span>
+                          Platform Fee
+                        </span>{" "}
+                        ({platform_fees}%)
                       </Typography>
                       <Typography variant="caption">
                         <span style={{ color: "#C60C30" }}>
-                          Free only for beta
+                          Free for closed beta
                         </span>
                       </Typography>
                     </Box>
