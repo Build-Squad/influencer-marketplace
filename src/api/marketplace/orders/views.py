@@ -1487,6 +1487,17 @@ class SendTweetView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
+                if order_item.service_master.twitter_service_type == "spaces":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Spaces scheduling is not supported",
+                            "data": None,
+                            "errors": "Spaces scheduling is not supported",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
                 # Schedule the tweet
                 schedule_tweet(order_item_id)
 
