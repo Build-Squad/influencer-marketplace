@@ -21,6 +21,7 @@ import {
   DISPLAY_DATE_TIME_FORMAT,
   ORDER_ITEM_STATUS,
   ORDER_STATUS,
+  SERVICE_MASTER_TWITTER_SERVICE_TYPE,
   TRANSACTION_TYPE,
 } from "@/src/utils/consts";
 import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
@@ -625,7 +626,7 @@ export default function BusinessDashboardPage() {
     )
       .replace(/\s/g, "")
       .split("/");
-      return (
+    return (
       (parseInt(completionStringArr[0]) / parseInt(completionStringArr[1])) *
       100
     );
@@ -1098,8 +1099,19 @@ export default function BusinessDashboardPage() {
                         ORDER_ITEM_STATUS.SCHEDULED
                       );
                     }}
+                    disabled={
+                      params?.row?.service_master?.twitter_service_type ===
+                      SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES
+                    }
                   >
-                    <ScheduleSendIcon color="warning" />
+                    <ScheduleSendIcon
+                      color={
+                        params?.row?.service_master?.twitter_service_type ===
+                        SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES
+                          ? "disabled"
+                          : "warning"
+                      }
+                    />
                   </IconButton>
                 </Tooltip>
               )}
