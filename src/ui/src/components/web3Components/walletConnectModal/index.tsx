@@ -42,6 +42,7 @@ type WalletConnectModalProps = {
   connect?: boolean;
   onlyAddress?: boolean;
   referralCode?: string;
+  loginType?: string;
 };
 
 const eampleWallets = [
@@ -63,6 +64,7 @@ export default function WalletConnectModal({
   connect = false,
   onlyAddress = false,
   referralCode,
+  loginType,
 }: WalletConnectModalProps) {
   const { publicKey, wallet, wallets } = useWallet();
   const dispatch = useAppDispatch();
@@ -75,13 +77,9 @@ export default function WalletConnectModal({
       wallet_network_id: "solana",
       signature: signature ? signature : undefined,
       message: text ? text : undefined,
+      referral_code: !!referralCode ? referralCode : undefined,
+      loginType: !!loginType ? loginType : undefined,
     };
-    if (referralCode && !connect) {
-      requestBody = {
-        ...requestBody,
-        referral_code: referralCode,
-      };
-    }
     const { isSuccess, data, message } = await postService(
       connect ? "/account/connect-wallet/" : "/account/wallet-auth/",
       requestBody

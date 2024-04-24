@@ -277,6 +277,7 @@ const Login: React.FC = () => {
         open={walletOpen}
         setOpen={setWalletOpen}
         referralCode={referralCode}
+        loginType={loginType}
       />
 
       {/* Email Modal */}
