@@ -84,6 +84,7 @@ const Login: React.FC = () => {
   };
   const handleConnectX = () => {
     startTwitterAuthentication({
+      loginType,
       role: loginAs == "Business" ? "business_owner" : "influencer",
       referral_code: isReferralCodeValid ? referralCode : "",
     });

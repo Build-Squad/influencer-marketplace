@@ -93,6 +93,10 @@ def authTwitterUser(request, role, requestType):
         referral_code = request.GET.get("referral_code", "")
         if referral_code:
             request.session["referral_code"] = referral_code
+        
+        login_type = request.GET.get("login_type", None)
+        if login_type:
+            request.session["login_type"] = login_type
 
         # If the request is connect type, store the user id in session
         if (requestType == "connect"):
@@ -131,6 +135,7 @@ def twitterLoginCallback(request):
     role = request.session.get("role", "")
     requestType = request.session.get("requestType", "")
     referral_code = request.session.get("referral_code", "")
+    login_type = request.session.get("login_type", None)
 
     try:
         # Authenticate User
@@ -140,7 +145,7 @@ def twitterLoginCallback(request):
         refresh_token = authentication_result["refresh_token"]
         # Create USER and JWT and send response
         if (requestType == "auth"):
-            return createJWT(userData, access_token, role, refresh_token, referral_code)
+            return createJWT(userData, access_token, role, refresh_token, referral_code, login_type)
         # Connect the user with twitter account
         elif (requestType == "connect"):
             user_id = request.session.get("user_id", "")
@@ -274,7 +279,7 @@ def manage_referrals(referral_code, new_user_account, current_twitter_user):
         }
 
 
-def createUser(userData, access_token, role, refresh_token, referral_code):
+def createUser(userData, access_token, role, refresh_token, referral_code, login_type):
     try:
         is_new_user = False
         existing_user = TwitterAccount.objects.filter(
@@ -282,6 +287,11 @@ def createUser(userData, access_token, role, refresh_token, referral_code):
 
         # Operations for twitter user account
         if existing_user is None:
+            if login_type == "LOGIN":
+                return {
+                    "status": "error",
+                    "message": f"Account not found. Please connect using an invite code.",
+                }
             newUser = TwitterAccount.objects.create(
                 twitter_id=userData.id,
                 name=userData.name,
@@ -432,7 +442,7 @@ def connectUser(userData, access_token, refresh_token, user_id):
 # The userData here is from twitter
 
 
-def createJWT(userData, access_token, role, refresh_token, referral_code):
+def createJWT(userData, access_token, role, refresh_token, referral_code, login_type):
     try:
         # Creating a response object with JWT cookie
         if role == "business_owner":
@@ -441,7 +451,7 @@ def createJWT(userData, access_token, role, refresh_token, referral_code):
             redirect_url = f"{config('FRONT_END_URL')}influencer/"
 
         current_user_data = createUser(
-            userData, access_token, role, refresh_token, referral_code)
+            userData, access_token, role, refresh_token, referral_code, login_type)
         if current_user_data["status"] == "error":
             return redirect(
                 redirect_url
