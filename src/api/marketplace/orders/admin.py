@@ -1,14 +1,37 @@
 from django.contrib import admin
+
+from .tasks import cancel_escrow, check_order_status, confirm_escrow
+
+from .services import create_manual_verification_notification
 from .models import Order, OrderItem, OrderAttachment, OrderItemTracking, OrderMessage, OrderMessageAttachment, Transaction, Review, OrderItemMetaData, OrderTracking, Escrow, OnChainTransaction, OrderItemMetric
 
 
+def confirm_escrow_transaction(modeladmin, request, queryset):
+    for order in queryset:
+        confirm_escrow.apply_async(args=[order.id])
+
+
+def cancel_escrow_transaction(modeladmin, request, queryset):
+    for order in queryset:
+        cancel_escrow(order.id, "cancelled")
+
+
+def admin_verify(modeladmin, request, queryset):
+    for order_item in queryset:
+        order_item.is_verified = True
+        order_item.status = "published"
+        order_item.save()
+        create_manual_verification_notification(order_item)
+        check_order_status(pk=order_item.order_id.id)
+
 class OrderAdmin(admin.ModelAdmin):
     list_display = [field.name for field in Order._meta.fields]
-
+    actions = [confirm_escrow_transaction, cancel_escrow_transaction]
 
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = [field.name for field in OrderItem._meta.fields]
     list_filter = ('package__influencer__username', 'order_id')
+    actions = [admin_verify]
 
 
 class OrderItemMetaDataAdmin(admin.ModelAdmin):
