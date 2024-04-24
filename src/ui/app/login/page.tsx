@@ -22,6 +22,9 @@ import EmailLoginModal from "@/src/components/emailLoginModal";
 import { getService } from "@/src/services/httpServices";
 import { Send } from "@mui/icons-material";
 import { notification } from "@/src/components/shared/notification";
+import TypeModal from "./components/typeModal";
+
+// Two types of login would be SIGNIN and LOGIN
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -30,8 +33,10 @@ const Login: React.FC = () => {
   const role = searchParams.get("role");
 
   const [loginAs, setLoginAs] = useState(role ?? "Business");
+  const [loginType, setLoginType] = useState("");
   const [walletOpen, setWalletOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
+  const [typeOpen, setTypeOpen] = useState(true);
   const [referralCode, setReferralCode] = useState("");
   const [isReferralCodeValid, setIsReferralCodeValid] = useState(false);
   const [isUserTyping, setIsUserTyping] = useState(false);
@@ -90,18 +95,21 @@ const Login: React.FC = () => {
         `reward/check-referral-validity/?referral_code=${referralCode}`
       );
       if (isSuccess) {
-        notification("Access Code is Valid");
+        notification("Referral Code is Valid");
         setIsReferralCodeValid(true);
       } else {
-        notification("Invalid Access Code", "error");
+        notification("Invalid Referral Code", "error");
         setIsReferralCodeValid(false);
       }
       setIsUserTyping(false);
     } catch (error) {
-      console.error("Error during Access code checking:", error);
+      console.error("Error during Referral code checking:", error);
       setIsReferralCodeValid(false);
     }
   };
+
+  const isSectionDisabled =
+    loginType == "SIGNIN" && (isUserTyping || !isReferralCodeValid);
 
   return (
     <Box
@@ -110,6 +118,7 @@ const Login: React.FC = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        filter: !!loginType ? "none" : "blur(6px)",
       }}
     >
       <Box sx={{ maxWidth: "700px", flex: "1", mx: 5 }}>
@@ -122,7 +131,9 @@ const Login: React.FC = () => {
             priority
           />
           <Typography variant="h5" fontWeight="bold" sx={{ mt: 1 }}>
-            Sign in to XFluencer as a {loginAs}
+            {loginType == "SIGNIN"
+              ? `Sign-in to XFluencer as a ${loginAs}`
+              : `Log-in to XFluencer as a ${loginAs}`}
           </Typography>
           <Typography variant="caption" sx={{ lineHeight: "2px" }}>
             {loginAs == "Business"
@@ -133,10 +144,10 @@ const Login: React.FC = () => {
 
         <Box
           sx={{
-            display: "flex",
             flexDirection: "column",
             alignItems: "center",
             mb: 3,
+            display: loginType == "SIGNIN" ? "flex" : "none",
           }}
         >
           <Input
@@ -148,7 +159,7 @@ const Login: React.FC = () => {
               },
               width: "60%",
             }}
-            placeholder="Enter Access Code"
+            placeholder="Enter Referral Code To Sign-In"
             size="small"
             fullWidth
             value={referralCode}
@@ -174,10 +185,10 @@ const Login: React.FC = () => {
             title="Connect with Wallets"
             subtitle="If you're a pro, connect your wallet"
             defaultExpanded
-            isDisabled={isUserTyping || !isReferralCodeValid}
+            isDisabled={isSectionDisabled}
           >
             <LoginOptions
-              disabled={isUserTyping || !isReferralCodeValid}
+              disabled={isSectionDisabled}
               label="Connect with Wallet"
               onClick={handleConnectWallet}
             />
@@ -192,12 +203,12 @@ const Login: React.FC = () => {
               : "Sign in with your email or socials"
           }
           defaultExpanded={loginAs === "Influencer"}
-          isDisabled={isUserTyping || !isReferralCodeValid}
+          isDisabled={isSectionDisabled}
         >
           <Grid container spacing={2} justifyContent={"flex-start"}>
             <Grid item>
               <LoginOptions
-                disabled={isUserTyping || !isReferralCodeValid}
+                disabled={isSectionDisabled}
                 label="Connect with X"
                 onClick={handleConnectX}
               />
@@ -206,7 +217,7 @@ const Login: React.FC = () => {
             {loginAs === "Business" ? (
               <Grid item>
                 <LoginOptions
-                  disabled={isUserTyping || !isReferralCodeValid}
+                  disabled={isSectionDisabled}
                   label="Connect with Email"
                   onClick={handleConnectEmail}
                 />
@@ -214,19 +225,50 @@ const Login: React.FC = () => {
             ) : null}
           </Grid>
         </LoginAccordion>
-        <Typography
-          variant="subtitle2"
-          sx={{
-            color: "#0089EA",
-            textTransform: "none",
-            cursor: "pointer",
-            mt: 3,
-            textAlign: "end",
-          }}
-          onClick={handleLoginAsToggle}
-        >
-          Login as {loginAs === "Business" ? "Influencer" : "Business"}?
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+          {loginType === "SIGNIN" ? (
+            <Typography
+              variant="subtitle2"
+              sx={{
+                textTransform: "none",
+                cursor: "pointer",
+              }}
+              onClick={() => setLoginType("LOGIN")}
+            >
+              Existing User?{" "}
+              <span style={{ color: "#0089EA", fontWeight: "bold" }}>
+                Login-in
+              </span>
+            </Typography>
+          ) : (
+            <Typography
+              variant="subtitle2"
+              sx={{
+                textTransform: "none",
+                cursor: "pointer",
+              }}
+              onClick={() => setLoginType("SIGNIN")}
+            >
+              New User?{" "}
+              <span style={{ color: "#0089EA", fontWeight: "bold" }}>
+                Sign-in
+              </span>
+            </Typography>
+          )}
+
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: "#0089EA",
+              textTransform: "none",
+              cursor: "pointer",
+            }}
+            onClick={handleLoginAsToggle}
+          >
+            {loginType == "SIGNIN" ? "Sign-In as" : "Login as"}{" "}
+            {loginAs === "Business" ? "Influencer" : "Business"}?
+          </Typography>
+        </Box>
       </Box>
 
       {/* Wallet Model */}
@@ -237,7 +279,12 @@ const Login: React.FC = () => {
       />
 
       {/* Email Modal */}
-      <EmailLoginModal open={emailOpen} setOpen={setEmailOpen} referralCode={referralCode}/>
+      <EmailLoginModal
+        open={emailOpen}
+        setOpen={setEmailOpen}
+        referralCode={referralCode}
+      />
+      <TypeModal open={typeOpen} setOpen={setTypeOpen} setType={setLoginType} />
     </Box>
   );
 };
