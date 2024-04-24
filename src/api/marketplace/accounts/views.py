@@ -1120,10 +1120,12 @@ class UserAuth(APIView):
 
 
 class OTPAuth(APIView):
-    def get_or_create_user(self, email, referral_code):
+    def get_or_create_user(self, email, referral_code, login_type):
         try:
             return User.objects.get(email=email)
         except User.DoesNotExist:
+            if(login_type == "LOGIN"):
+                return None
             user = User.objects.create(
                 email=email,
                 role=Role.objects.get(name="business_owner"),
@@ -1147,7 +1149,15 @@ class OTPAuth(APIView):
             if serializer.is_valid():
                 # If user exists, send OTP
                 user = self.get_or_create_user(
-                    request.data["email"], request.data["referral_code"])
+                    request.data["email"], request.data["referral_code"], request.data["loginType"])
+                if user is None:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Account not found. Please connect using an invite code.",
+                        },
+                    )
                 otp_service = OTPAuthenticationService()
                 otp, otp_expiration = otp_service.generateOTP()
                 if user:

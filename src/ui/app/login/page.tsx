@@ -284,6 +284,7 @@ const Login: React.FC = () => {
         open={emailOpen}
         setOpen={setEmailOpen}
         referralCode={referralCode}
+        loginType={loginType}
       />
       <TypeModal open={typeOpen} setOpen={setTypeOpen} setType={setLoginType} />
     </Box>
