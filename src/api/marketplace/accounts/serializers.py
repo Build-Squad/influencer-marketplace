@@ -25,46 +25,6 @@ from .models import (
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 
-
-class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
-    influencer_ids = serializers.SerializerMethodField(read_only=True)
-    is_twitter_connected = serializers.SerializerMethodField(read_only=True)
-    is_wallet_connected = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = BusinessAccountMetaData
-        fields = "__all__"
-
-    def get_influencer_ids(self, business_meta_data):
-        completed_orders = Order.objects.filter(
-            buyer=business_meta_data.user_account, status="completed"
-        )
-        influencer_ids = set()
-
-        for completed_order in completed_orders:
-            completed_order_items = OrderItem.objects.filter(order_id=completed_order)
-            package_ids = completed_order_items.values_list("package_id", flat=True)
-            influencers = Package.objects.filter(id__in=package_ids).values_list(
-                "influencer_id", flat=True
-            )
-            influencer_ids.update(influencers)
-
-        return list(influencer_ids)
-
-    def get_is_twitter_connected(self, business_meta_data):
-        userAccount = business_meta_data.user_account
-        if userAccount.twitter_account:
-            return True
-        return False
-
-
-    def get_is_wallet_connected(self, business_meta_data):
-        user_wallet = Wallet.objects.filter(user_id = business_meta_data.user_account)
-        if(user_wallet):
-            return True
-        return False
-
-
 class CategoryMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoryMaster
@@ -125,7 +85,7 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
 
     def get_service_types(self, twitter_account):
         services = Service.objects.filter(
-            package__influencer__twitter_account=twitter_account
+            package__influencer__twitter_account=twitter_account, deleted_at=None
         )
 
         # Extract service types and prices
@@ -268,6 +228,52 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+class BusinessAccountMetaDataSerializer(serializers.ModelSerializer):
+    influencer_ids = serializers.SerializerMethodField(read_only=True)
+    is_twitter_connected = serializers.SerializerMethodField(read_only=True)
+    is_wallet_connected = serializers.SerializerMethodField(read_only=True)
+    user_twitter_profile_image = serializers.SerializerMethodField(read_only=True)
+    user_account = UserSerializer(read_only=True)
+
+    class Meta:
+        model = BusinessAccountMetaData
+        fields = "__all__"
+
+    def get_influencer_ids(self, business_meta_data):
+        completed_orders = Order.objects.filter(
+            buyer=business_meta_data.user_account, status="completed"
+        )
+        influencer_ids = set()
+
+        for completed_order in completed_orders:
+            completed_order_items = OrderItem.objects.filter(order_id=completed_order)
+            package_ids = completed_order_items.values_list("package_id", flat=True)
+            influencers = Package.objects.filter(id__in=package_ids).values_list(
+                "influencer_id", flat=True
+            )
+            influencer_ids.update(influencers)
+
+        return list(influencer_ids)
+
+    def get_is_twitter_connected(self, business_meta_data):
+        userAccount = business_meta_data.user_account
+        if userAccount.twitter_account:
+            return True
+        return False
+
+
+    def get_is_wallet_connected(self, business_meta_data):
+        user_wallet = Wallet.objects.filter(user_id = business_meta_data.user_account)
+        if(user_wallet):
+            return True
+        return False
+
+    def get_user_twitter_profile_image(self, business_meta_data):
+        userAccount = business_meta_data.user_account
+        try:
+            return userAccount.twitter_account.profile_image_url
+        except Exception as e:
+            return ""
 
 class TwitterReadSerializer(serializers.ModelSerializer):
     class Meta:
