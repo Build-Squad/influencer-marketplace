@@ -290,7 +290,7 @@ def createUser(userData, access_token, role, refresh_token, referral_code, login
             if login_type == "LOGIN":
                 return {
                     "status": "error",
-                    "message": "Account not found. Please connect using an invite code.",
+                    "message": "Account not found. Please sign-in using an invite code.",
                 }
             newUser = TwitterAccount.objects.create(
                 twitter_id=userData.id,

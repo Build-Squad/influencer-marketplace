@@ -1149,13 +1149,13 @@ class OTPAuth(APIView):
             if serializer.is_valid():
                 # If user exists, send OTP
                 user = self.get_or_create_user(
-                    request.data["email"], request.data["referral_code"], request.data["loginType"])
+                    request.data["email"], request.data.get("referral_code", None), request.data.get("loginType", None))
                 if user is None:
                     return Response(
                         {
                             "isSuccess": False,
                             "data": None,
-                            "message": "Account not found. Please connect using an invite code.",
+                            "message": "Account not found. Please sign-in using an invite code.",
                         },
                     )
                 otp_service = OTPAuthenticationService()
@@ -1594,7 +1594,7 @@ class WalletAuth(APIView):
         return result
 
     def manage_referral(self, request, user):
-        referral_code = request.data["referral_code"]
+        referral_code = request.data.get("referral_code", None)
         if referral_code is not None:
             referred_by = User.objects.get(referral_code=referral_code)
             if referred_by:
@@ -1627,6 +1627,19 @@ class WalletAuth(APIView):
 
                 # Should create a wallet if no wallet is found for the requested user else return the wallet
                 wallet = self.get_wallet(request.data["wallet_address_id"])
+
+                # Check if logintype is LOGIN so the user should exist already 
+                if wallet is None and request.data.get("loginType", None) == "LOGIN":
+                     return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Account not found. Please sign-in using an invite code.",
+                            "errors": "Account not found. Please sign-in using an invite code.",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
                 if wallet is None:
                     wallet_provider = self.get_or_create_wallet_provider(
                         serializer.validated_data["wallet_provider_id"]
