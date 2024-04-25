@@ -1142,6 +1142,8 @@ export default function BusinessDashboardPage() {
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
               params?.row?.service_master?.twitter_service_type !==
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET &&
+              params?.row?.service_master?.twitter_service_type !==
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES &&
               params?.row?.is_verified && (
                 <Link
                   href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}

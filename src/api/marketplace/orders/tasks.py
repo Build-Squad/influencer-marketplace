@@ -170,7 +170,8 @@ def confirm_escrow(order_id: str):
         escrow = Escrow.objects.get(order=order)
 
         order_items = OrderItem.objects.filter(order_id=order)
-        platform_fees = int(order_items[0].platform_fee)
+        # pyxflfuencer expects a number between 100 and 200
+        platform_fees = int(order_items[0].platform_fee) * 100
         order_currency = order_items[0].currency
 
         buyer_primary_wallet = Wallet.objects.get(

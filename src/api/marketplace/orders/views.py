@@ -1487,6 +1487,17 @@ class SendTweetView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
+                if order_item.service_master.twitter_service_type == "spaces":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Spaces scheduling is not supported",
+                            "data": None,
+                            "errors": "Spaces scheduling is not supported",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
                 # Schedule the tweet
                 schedule_tweet(order_item_id)
 
@@ -1657,17 +1668,29 @@ class ManualVerifyOrderItemView(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            # Also check that the order_item is in accepted or cancelled state
-            if order_item.status not in ["published"]:
-                return Response(
-                    {
-                        "isSuccess": False,
-                        "message": "Order item is already " + order_item.status,
-                        "data": None,
-                        "errors": "Order item is already " + order_item.status,
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            if order_item.service_master.twitter_service_type == "spaces":
+                if order_item.status not in ["accepted"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order item is already " + order_item.status,
+                            "data": None,
+                            "errors": "Order item is already " + order_item.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                # Also check that the order_item is in accepted or cancelled state
+                if order_item.status not in ["published"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order item is already " + order_item.status,
+                            "data": None,
+                            "errors": "Order item is already " + order_item.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
             # Get the data from serializer
             serializer = ManualVerifyOrderItemSerializer(
@@ -1675,6 +1698,7 @@ class ManualVerifyOrderItemView(APIView):
             )
             if serializer.is_valid():
                 order_item.is_verified = True
+                order_item.status = "published"
                 if serializer.validated_data.get("published_post_link"):
                     published_link = serializer.validated_data.get(
                         "published_post_link")

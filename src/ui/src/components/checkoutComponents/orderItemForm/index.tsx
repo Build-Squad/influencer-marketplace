@@ -15,6 +15,7 @@ import {
   FORM_DATE_TIME_TZ_FORMAT,
   ORDER_ITEM_STATUS,
   ROLE_NAME,
+  SERVICE_MASTER_TWITTER_SERVICE_TYPE,
 } from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -43,6 +44,7 @@ import { isUrl } from "@/src/utils/helper";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { Tweet } from "react-tweet";
+import { InfoOutlined } from "@mui/icons-material";
 
 type OrderItemFormProps = {
   orderItem: any;
@@ -406,8 +408,21 @@ export default function OrderItemForm({
                           onClick={() => {
                             updateStatus(ORDER_ITEM_STATUS.SCHEDULED);
                           }}
+                          disabled={
+                            orderItem?.order_item?.service_master
+                              ?.twitter_service_type ===
+                            SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES
+                          }
                         >
-                          <ScheduleSendIcon color="warning" />
+                          <ScheduleSendIcon
+                            color={
+                              orderItem?.order_item?.service_master
+                                ?.twitter_service_type ===
+                              SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES
+                                ? "disabled"
+                                : "warning"
+                            }
+                          />
                         </IconButton>
                       </Tooltip>
                     ) : (
@@ -457,6 +472,22 @@ export default function OrderItemForm({
             )}
         </Box>
       </Box>
+      {orderItem?.order_item?.service_master?.twitter_service_type ===
+        SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES && (
+        <Typography
+          sx={{
+            fontStyle: "italic",
+            color: "text.secondary",
+            mt: 1,
+          }}
+        >
+          Spaces need to be manually scheduled by the influencer through their
+          mobile app. Business owners will need to then manually validate /
+          approve the scheduled space. Xflunencer will not be able to track the
+          status of the space due to limitations in the X (formerly Twitter)
+          API.
+        </Typography>
+      )}
       <Divider
         sx={{
           my: 2,

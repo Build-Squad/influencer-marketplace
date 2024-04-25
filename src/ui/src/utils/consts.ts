@@ -86,6 +86,7 @@ export const SERVICE_MASTER_TWITTER_SERVICE_TYPE = {
   POLL: "poll",
   RETWEET: "retweet",
   THREAD: "thread",
+  SPACES: "spaces",
 };
 
 export const ORDER_ITEM_METRIC_TYPE_LABEL = {
