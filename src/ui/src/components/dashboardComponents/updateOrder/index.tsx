@@ -315,7 +315,7 @@ export default function UpdateOrder({
                       <>
                         {orderItem?.status === ORDER_ITEM_STATUS.PUBLISHED ? (
                           <OrderSummaryDetails
-                            orderItem={orderItem}
+                            orderItem={[orderItem]}
                             orderStatus={order?.status}
                           />
                         ) : (
