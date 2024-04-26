@@ -16,6 +16,7 @@ import {
   ORDER_ITEM_STATUS,
   ROLE_NAME,
   SERVICE_MASTER_TWITTER_SERVICE_TYPE,
+  SPACES_DISCLAIMER_TEXT,
 } from "@/src/utils/consts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -481,11 +482,7 @@ export default function OrderItemForm({
             mt: 1,
           }}
         >
-          Spaces need to be manually scheduled by the influencer through their
-          mobile app. Business owners will need to then manually validate /
-          approve the scheduled space. Xflunencer will not be able to track the
-          status of the space due to limitations in the X (formerly Twitter)
-          API.
+          {SPACES_DISCLAIMER_TEXT}
         </Typography>
       )}
       <Divider
