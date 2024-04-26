@@ -729,6 +729,20 @@ class CancelOrderView(APIView):
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+                elif order_item.status == "accepted" and order_item.service_master.twitter_service_type == "spaces":
+                    # Disable the cancel button for spaces 1 hour before the publish_date but allow if it's in past
+                    if order_item.publish_date < timezone.now() + timezone.timedelta(hours=1) and order_item.publish_date > timezone.now():
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Order cannot be cancelled as publish date of a space is less than 1 hour",
+                                "data": None,
+                                "errors": "Order cannot be cancelled as publish date of a space is less than 1 hour",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+
             order_status = "cancelled" if request.user_account.id == order.buyer.id else "rejected"
             # See if an on chain transaction is already created
             escrow = self.get_escrow(order)
