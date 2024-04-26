@@ -742,14 +742,6 @@ class CancelOrderView(APIView):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
 
-            return Response(
-                {
-                    "isSuccess": True,
-                    "data": None,
-                    "message": "Order can be cancelled",
-
-                }
-            )
 
             order_status = "cancelled" if request.user_account.id == order.buyer.id else "rejected"
             # See if an on chain transaction is already created
