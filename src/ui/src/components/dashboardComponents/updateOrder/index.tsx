@@ -1,6 +1,7 @@
 import { getService, putService } from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
+  ORDER_ITEM_STATUS,
   ORDER_STATUS,
   ROLE_NAME,
 } from "@/src/utils/consts";
@@ -311,21 +312,30 @@ export default function UpdateOrder({
                 {order?.order_item_order_id?.map(
                   (orderItem: any, index: number) => {
                     return (
-                      <OrderItemForm
-                        key={index}
-                        orderItem={{
-                          order_item: orderItem,
-                          index: index,
-                        }}
-                        index={index}
-                        disableDelete={true}
-                        updateFunction={updateOrderItemMetaData}
-                        sx={{
-                          my: 2,
-                        }}
-                        updateOrderItemPublishDate={updatePublishDate}
-                        getOrderDetails={getOrderDetails}
-                      />
+                      <>
+                        {orderItem?.status === ORDER_ITEM_STATUS.PUBLISHED ? (
+                          <OrderSummaryDetails
+                            orderItem={[orderItem]}
+                            orderStatus={order?.status}
+                          />
+                        ) : (
+                          <OrderItemForm
+                            key={index}
+                            orderItem={{
+                              order_item: orderItem,
+                              index: index,
+                            }}
+                            index={index}
+                            disableDelete={true}
+                            updateFunction={updateOrderItemMetaData}
+                            sx={{
+                              my: 2,
+                            }}
+                            updateOrderItemPublishDate={updatePublishDate}
+                            getOrderDetails={getOrderDetails}
+                          />
+                        )}
+                      </>
                     );
                   }
                 )}

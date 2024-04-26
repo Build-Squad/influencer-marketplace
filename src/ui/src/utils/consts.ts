@@ -86,6 +86,7 @@ export const SERVICE_MASTER_TWITTER_SERVICE_TYPE = {
   POLL: "poll",
   RETWEET: "retweet",
   THREAD: "thread",
+  SPACES: "spaces",
 };
 
 export const ORDER_ITEM_METRIC_TYPE_LABEL = {
@@ -165,6 +166,9 @@ export const TWITTER_PROMOTION_TEXT =
 
 export const XFLUENCER_PROMOTION_TEXT =
   "Hi I've just signed up for XFluencer, an incredible platform connecting influencers and businesses like never before. Please find my referral code: ";
+
+export const SPACES_DISCLAIMER_TEXT =
+  "Spaces need to be manually scheduled by the influencer through their mobile app. Business owners will need to then manually validate / approve the scheduled space. Xflunencer will not be able to track the status of the space due to limitations in the X (formerly Twitter) API. Spaces cannot be cancelled one hour before publish date";
 
 export const IDL: Xfluencer = {
   version: "1.0.0",

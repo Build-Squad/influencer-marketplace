@@ -60,6 +60,8 @@ class OrderItemReadSerializer(serializers.ModelSerializer):
     def get_allow_manual_approval(self, obj):
         COUNTDOWN_TIME_FOR_VALIDATION = int(Configuration.objects.get(
             key='countdown_time_for_validation').value)
+        if obj.service_master.twitter_service_type == "spaces":
+            return (not obj.is_verified) and obj.status == "accepted"
         return obj.status == "published" and (not obj.is_verified) and obj.publish_date < (timezone.now() - timedelta(seconds=COUNTDOWN_TIME_FOR_VALIDATION))
 
 # Not being used

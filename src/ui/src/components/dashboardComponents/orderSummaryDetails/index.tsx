@@ -3,6 +3,8 @@ import {
   DISPLAY_DATE_TIME_FORMAT,
   ORDER_STATUS,
   ORDER_ITEM_STATUS,
+  SERVICE_MASTER_TWITTER_SERVICE_TYPE,
+  SPACES_DISCLAIMER_TEXT,
 } from "@/src/utils/consts";
 import { Attachment, Download } from "@mui/icons-material";
 import { postService } from "@/src/services/httpServices";
@@ -363,6 +365,19 @@ const OrderSummaryDetails = ({
                 handleClick={handleClick}
               />
             </Box>
+
+            {eachOrderItem?.service_master?.twitter_service_type ===
+              SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES && (
+              <Typography
+                sx={{
+                  fontStyle: "italic",
+                  color: "text.secondary",
+                  mt: 1,
+                }}
+              >
+                {SPACES_DISCLAIMER_TEXT}
+              </Typography>
+            )}
 
             {eachOrderItem?.order_item_meta_data
               ?.sort((a: any, b: any) => a.order - b.order)

@@ -359,6 +359,42 @@ export default function BusinessDashboardPage() {
     }
   };
 
+  const isOrderCancellationAllowed = (order: OrderType): boolean => {
+    const orderStatus = order?.status;
+    const orderItems = order?.order_item_order_id;
+
+    const isValidOrderStatus =
+      orderStatus === ORDER_STATUS.ACCEPTED ||
+      orderStatus === ORDER_STATUS.PENDING;
+    const hasValidOrderItems =
+      orderItems?.filter(
+        (item: OrderItemType) =>
+          item?.status === ORDER_ITEM_STATUS.PUBLISHED ||
+          item?.status === ORDER_ITEM_STATUS.SCHEDULED
+      ).length === 0;
+
+    let isNotWithinAnHourOfSpaces = true;
+
+    orderItems?.forEach((order_item: OrderItemType) => {
+      if (
+        order_item?.status === ORDER_ITEM_STATUS.ACCEPTED &&
+        order_item?.service_master?.twitter_service_type ===
+          SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES
+      ) {
+        if (
+          dayjs(order_item?.publish_date) > dayjs() &&
+          dayjs(order_item?.publish_date).diff(dayjs(), "hour") < 1
+        ) {
+          isNotWithinAnHourOfSpaces = false;
+        }
+      }
+    });
+
+    return (
+      isValidOrderStatus && hasValidOrderItems && isNotWithinAnHourOfSpaces
+    );
+  };
+
   const cancelOrder = async (order: OrderType) => {
     try {
       setCancelLoading(true);
@@ -878,27 +914,21 @@ export default function BusinessDashboardPage() {
                   disabled={cancellationInProgress}
                 />
               )}
-            {(params?.row?.status === ORDER_STATUS.ACCEPTED ||
-              params?.row?.status === ORDER_STATUS.PENDING) &&
-              params?.row?.order_item_order_id?.filter(
-                (item: OrderItemType) =>
-                  item?.status === ORDER_ITEM_STATUS.PUBLISHED ||
-                  item?.status === ORDER_ITEM_STATUS.SCHEDULED
-              ).length === 0 && (
-                <ConfirmCancel
-                  onConfirm={() => {
-                    cancelOrder(params?.row);
-                  }}
-                  deleteElement={
-                    <IconButton disabled={cancellationInProgress}>
-                      <HighlightOffIcon />
-                    </IconButton>
-                  }
-                  title={`Order ${params?.row?.order_code}`}
-                  hide={true}
-                  disabled={cancellationInProgress}
-                />
-              )}
+            {isOrderCancellationAllowed(params?.row) && (
+              <ConfirmCancel
+                onConfirm={() => {
+                  cancelOrder(params?.row);
+                }}
+                deleteElement={
+                  <IconButton disabled={cancellationInProgress}>
+                    <HighlightOffIcon />
+                  </IconButton>
+                }
+                title={`Order ${params?.row?.order_code}`}
+                hide={true}
+                disabled={cancellationInProgress}
+              />
+            )}
           </Box>
         );
       },
@@ -1142,6 +1172,8 @@ export default function BusinessDashboardPage() {
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE.LIKE_TWEET &&
               params?.row?.service_master?.twitter_service_type !==
                 SERVICE_MASTER_TWITTER_SERVICE_TYPE?.RETWEET &&
+              params?.row?.service_master?.twitter_service_type !==
+                SERVICE_MASTER_TWITTER_SERVICE_TYPE.SPACES &&
               params?.row?.is_verified && (
                 <Link
                   href={`/business/dashboard/analytics/order-item/${params?.row?.id}`}

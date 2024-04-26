@@ -62,6 +62,7 @@ class ServiceMaster(models.Model):
         ('poll', 'poll'),
         ('retweet', 'retweet'),
         ('thread', 'thread'),
+        ('spaces', 'spaces'),
     )
 
     id = models.UUIDField(primary_key=True, verbose_name='ServiceMaster', default=uuid.uuid4, editable=False)

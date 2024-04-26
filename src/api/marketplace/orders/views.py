@@ -729,6 +729,20 @@ class CancelOrderView(APIView):
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+                elif order_item.status == "accepted" and order_item.service_master.twitter_service_type == "spaces":
+                    # Disable the cancel button for spaces 1 hour before the publish_date but allow if it's in past
+                    if order_item.publish_date < timezone.now() + timezone.timedelta(hours=1) and order_item.publish_date > timezone.now():
+                        return Response(
+                            {
+                                "isSuccess": False,
+                                "message": "Order cannot be cancelled as publish date of a space is less than 1 hour",
+                                "data": None,
+                                "errors": "Order cannot be cancelled as publish date of a space is less than 1 hour",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+
             order_status = "cancelled" if request.user_account.id == order.buyer.id else "rejected"
             # See if an on chain transaction is already created
             escrow = self.get_escrow(order)
@@ -1487,6 +1501,17 @@ class SendTweetView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
+                if order_item.service_master.twitter_service_type == "spaces":
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Spaces scheduling is not supported",
+                            "data": None,
+                            "errors": "Spaces scheduling is not supported",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
                 # Schedule the tweet
                 schedule_tweet(order_item_id)
 
@@ -1657,17 +1682,29 @@ class ManualVerifyOrderItemView(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            # Also check that the order_item is in accepted or cancelled state
-            if order_item.status not in ["published"]:
-                return Response(
-                    {
-                        "isSuccess": False,
-                        "message": "Order item is already " + order_item.status,
-                        "data": None,
-                        "errors": "Order item is already " + order_item.status,
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            if order_item.service_master.twitter_service_type == "spaces":
+                if order_item.status not in ["accepted"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order item is already " + order_item.status,
+                            "data": None,
+                            "errors": "Order item is already " + order_item.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                # Also check that the order_item is in accepted or cancelled state
+                if order_item.status not in ["published"]:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "message": "Order item is already " + order_item.status,
+                            "data": None,
+                            "errors": "Order item is already " + order_item.status,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
             # Get the data from serializer
             serializer = ManualVerifyOrderItemSerializer(
@@ -1675,6 +1712,7 @@ class ManualVerifyOrderItemView(APIView):
             )
             if serializer.is_valid():
                 order_item.is_verified = True
+                order_item.status = "published"
                 if serializer.validated_data.get("published_post_link"):
                     published_link = serializer.validated_data.get(
                         "published_post_link")
