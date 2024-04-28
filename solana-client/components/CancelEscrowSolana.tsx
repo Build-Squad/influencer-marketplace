@@ -89,7 +89,9 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business,
     }
 
     return (
-        <button className={styles.button} onClick={onClick}>Cancel Business {business}</button>
+        <button className={styles.button} onClick={onClick}>
+            Cancel Business {business}
+        </button>
     )
 
 }

@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NextPage } from 'next'
 import Head from 'next/head'
 import { Input } from "@nextui-org/react";
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 
 import styles from '../styles/Home.module.css'
 import WalletContextProvider from '../components/WalletContextProvider'
@@ -31,6 +31,7 @@ const Home: NextPage = (props) => {
   const MINT: string = `Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr`;
 
   const VALIDATOR: string = `EsYxpj9ADJyGEjMv3tyDpADv33jDPkv9uLymXWwQCiwH`;
+
   //const BUSINESS: string = `EBBRDuAZVf2XHJsQwzZqwPLF64cKC8SbaukL3H19nX2Q`;
   const BUSINESS: string = `GQRDv58u1dULSyHSYWPqNTjcWjsFHHi763mbqDaEEgQ3`
 
@@ -44,8 +45,27 @@ const Home: NextPage = (props) => {
   const NUM_SPL_TOKENS: number = 1000000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
   const PERCENTAGE_FEE: number = 0;
 
-
   const NETWORK = "https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474"
+
+  const [balance, setBalance] = useState('');
+  
+  useEffect(() => {
+      // React advises to declare the async function directly inside useEffect
+      async function getBalance() {   
+        const connection = new Connection(NETWORK,
+          {
+              commitment: "confirmed",
+              confirmTransactionInitialTimeout: 30000
+          });
+        let accountInfo = await connection.getAccountInfo(new PublicKey(VALIDATOR));
+                
+        setBalance((accountInfo.lamports / 10**9).toString());
+      };
+      
+      if (!balance) {
+        getBalance();
+      }
+  }, []);
 
   
   return (
@@ -68,9 +88,14 @@ const Home: NextPage = (props) => {
         </div>
 
         <div className={styles.input}>
-          <Input type="validator_authority" label="validator Authority"
-            placeholder="Enter a valid solana address"
-            value={VALIDATOR} />
+          <Input type="validator_authority" 
+                 label="validator Authority"
+                   placeholder="Enter a valid solana address"
+                 value={VALIDATOR} />
+          <Input type="validator_authority" 
+                 label="Validator Authority Solana Balance (SOL)"                
+                 value={balance} />
+          
         </div>
 
         <div className={styles.AppBody}>
@@ -101,7 +126,8 @@ const Home: NextPage = (props) => {
         </div>
 
         <div className={styles.AppBody}>
-          <CreateEscrowSolana validator={VALIDATOR}
+          <CreateEscrowSolana 
+            validator={VALIDATOR}
             business={BUSINESS}
             influencer={INFLUENCER}
             lamports={LAMPORTS}
