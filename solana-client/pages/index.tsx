@@ -47,25 +47,40 @@ const Home: NextPage = (props) => {
 
   const NETWORK = "https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474"
 
-  const [balance, setBalance] = useState('');
+  const [balanceValidator, setBalanceValidator] = useState('');
+  const [balanceBusiness, setBalanceBusiness] = useState('');
+  const [balanceInfluencer, setBalanceInfluencer] = useState('');
+
+  const connection = new Connection(NETWORK,
+    {
+        commitment: "confirmed",
+        confirmTransactionInitialTimeout: 30000
+    });
+    async function getBalanceAccount(account, setBalance) {         
+      let accountInfo = await connection.getAccountInfo(new PublicKey(account));                
+      setBalance((accountInfo.lamports / 10**9).toString());
+    };
   
-  useEffect(() => {
+  useEffect(() => {      
       // React advises to declare the async function directly inside useEffect
-      async function getBalance() {   
-        const connection = new Connection(NETWORK,
-          {
-              commitment: "confirmed",
-              confirmTransactionInitialTimeout: 30000
-          });
-        let accountInfo = await connection.getAccountInfo(new PublicKey(VALIDATOR));
-                
-        setBalance((accountInfo.lamports / 10**9).toString());
-      };
-      
-      if (!balance) {
-        getBalance();
+      if (!balanceBusiness) {
+        getBalanceAccount(VALIDATOR, setBalanceValidator);
       }
-  }, []);
+  }, [balanceValidator]);
+
+  useEffect(() => {   
+    if (!balanceBusiness) {
+      getBalanceAccount(BUSINESS, setBalanceBusiness);
+    }   
+  }, [balanceValidator]);
+
+  useEffect(() => {     
+    if (!balanceInfluencer) {
+      getBalanceAccount(INFLUENCER, setBalanceInfluencer);
+    }   
+  }, [balanceInfluencer]);
+  
+
 
   
   return (
@@ -93,8 +108,8 @@ const Home: NextPage = (props) => {
                    placeholder="Enter a valid solana address"
                  value={VALIDATOR} />
           <Input type="validator_authority" 
-                 label="Validator Authority Solana Balance (SOL)"                
-                 value={balance} />
+                 label="Solana Balance"                
+                 value={balanceValidator} />
           
         </div>
 
@@ -106,10 +121,17 @@ const Home: NextPage = (props) => {
           <Input type="address_business" label="Business Address"
             placeholder="Enter a valid solana address"
             value={BUSINESS} />
+          <Input type="address_business_account" 
+                 label="SOL Balance (business)"                
+                 value={balanceBusiness} />
 
           <Input type="address_influencer" label="Influencer Address"
             placeholder="Enter a valid solana address"
             value={INFLUENCER} />
+          <Input type="address_influencer_account" 
+                 label="SOL Balance (Influencer)"                
+                 value={balanceInfluencer} />
+
 
           <Input type="amount_sol" label="Amount Lamports"
             placeholder="Enter amount of lamports"
