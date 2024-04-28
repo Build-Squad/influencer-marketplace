@@ -92,12 +92,23 @@ async def check_account(client, account_pk):
 
 
 
-## TODO: Check funds on validator
-## 1 retrieve token account of the validator
-async def check_funds_on_validator(client, validator_account_pk):
+async def check_funds_on_validator(network: str, 
+                                   validator_account_pk: Pubkey, 
+                                   MIN_LAMPORTS_ALLOWED: int = 10000000 # 0.01 SOL
+):
     try:        
-        validator_account_info = await client.get_token_account_info(validator_account_pk)
-        print(validator_account_info)        
+        ## check funds on validation authority
+        from .utils import check_funds_on_validator
+        client = select_client(network=network, async_client=True)        
+        account_data = await client.get_account_info(validator_account_pk)
+        if account_data is None:
+            raise Exception(f"Validator Authority {validator_account_pk} does not exist")
+        else:
+            if account_data.value is not None:
+                if account_data.value.lamports < MIN_LAMPORTS_ALLOWED:
+                    raise Exception(f"Validator Authority {str(validator_account_pk)} does not hold minimal amount ot lamports to pay transaction fees")
+                else:
+                    print(f"Validator Authority has an amount of {account_data.value.lamports} lamports")
     except Exception as err:
         raise Exception(f"{err}")
 

@@ -35,7 +35,7 @@ def load_keypairs():
     
     validation_kp, validation_pk  \
         = get_local_keypair_pubkey(path=keypair_paths.validation_authority)   
-    business_kp, business_pk = get_local_keypair_pubkey() #path=keypair_paths.bussines_keypair)
+    business_kp, business_pk = get_local_keypair_pubkey() # if no params, takes local keypair (id.json)
     influencer_kp, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     return {"validator":{"keypair":validation_kp, "pubkey":validation_pk},
             "business":{"keypair":business_kp, "pubkey":business_pk},
@@ -75,11 +75,10 @@ async def main(target_state):
 
 
 
-
+import sys
 
 class LaunchParser(argparse.ArgumentParser):
     def error(self, message):
-        sys.sterr.write("error: %s\n" % message)
         self.print_help()
         sys.exit(2)
 

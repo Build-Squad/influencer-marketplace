@@ -31,7 +31,7 @@ async def main():
     #print(validation)  # way to get base58 from keypair seed
         
     _, validation_authority_pk = get_local_keypair_pubkey(path=keypair_paths.validation_authority)
-    business, business_pk = get_local_keypair_pubkey() # get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
+    business, business_pk = get_local_keypair_pubkey() # if no params, takes local keypair (id.json)
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     
     assert str(validation_authority_pk) == configuration["platform"]         
