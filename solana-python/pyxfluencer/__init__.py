@@ -7,8 +7,9 @@ from solders.keypair import Keypair
 
 from .instructions import validate_escrow_sol
 from .instructions import validate_escrow_spl
-from .utils import sign_and_send_transaction
+from .utils import select_client, sign_and_send_transaction
 from .program_id import PROGRAM_ID
+from .accounts.escrow_account_solana import EscrowAccountSolana
 
 xfluencer_solana_python_client_version = "1.2.2"
 
@@ -88,6 +89,7 @@ class EscrowValidator:
     priority_fees: int = 0
         
     async def cancel(self):
+                
         return await validate_escrow(self.validator_authority,
                                      self.business_address, 
                                      self.influencer_address, 
@@ -211,6 +213,18 @@ async def validate_escrow(validation_authority: Keypair,
 
         escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
 
+
+        # Check whether the escrow pda does exist or not before to launch validation
+        client = select_client(network=network, async_client=True)
+        account = await EscrowAccountSolana.fetch(client, escrow_pda)
+        
+        print(f"Checking Existance of the Escrow Account PDA {str(escrow_pda)}")
+        if account is None:
+            raise Exception(f"Escrow Account PDA {str(escrow_pda)} was not found or is closed")         
+        else:
+            print(f"Escrow Account PDA with address {str(escrow_pda)} was found in the program, having an amount of " +  
+                  f"lamports equal to {account.amount} and its status set to {account.status}")
+
         accounts = {
             "validation_authority": validation_authority.pubkey(),
             "influencer": influencer_pk,
@@ -219,8 +233,6 @@ async def validate_escrow(validation_authority: Keypair,
         }
 
         ix = validate_escrow_sol(args, accounts, program_id=PROGRAM_ID)
-
-        # return await sign_and_send_transaction(ix, signers, opts, network)
 
     else:
         print("Processing Escrow SPL case")
