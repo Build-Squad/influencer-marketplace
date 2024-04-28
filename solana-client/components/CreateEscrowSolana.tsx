@@ -55,8 +55,8 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({validator, busi
         )      
      } else {
         console.warn("Wallet does NOT Business Configuration");
-        console.log("public",publicKey)
-        console.log("wallet",wallet.publicKey)
+        console.log("public:",publicKey.toString())
+        console.log("wallet:",wallet.publicKey.toString())
      }
 
 
@@ -100,22 +100,9 @@ export const CreateEscrowSolana: FC<CreateEscrowSolanaProps> = ({validator, busi
         const options = {
 			skipPreflight: true      
 		  }
-
-        try {
-            const signature = await sendTransaction(tx, connection, options);
-            console.debug("signature", signature.valueOf());
-            const txSign = await connection.confirmTransaction(signature, "processed");
-            console.debug("txSing",txSign.value);
-            console.debug("context", txSign.context);
-            console.debug("value", txSign.value);
-            if(txSign.value.err != null){
-                throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
-            }
-        }
-        catch(error)
-        {
-            console.error(error);
-        }
+        
+        const signature = await sendTransaction(tx, connection, options);
+        await utils.confirmTransactionSignature(signature, connection);
     }
 
     return (

@@ -65,7 +65,7 @@ export const Validate: FC<ValidateProps> = ({validator,
             </div>  
         )      
      } else {       
-        console.log("wallet",wallet.publicKey)
+        console.log("wallet",wallet.publicKey.toString())
      }
 
 
@@ -109,29 +109,14 @@ export const Validate: FC<ValidateProps> = ({validator,
             preflightCommitment: 'confirmed'
 		};
 
-        try {
-            const signature = await sendTransaction(tx, connection, options);
-            console.debug("signature", signature.valueOf());
-            const txSign = await connection.confirmTransaction(signature, "processed");
-            console.debug("txSing",txSign.value);
-            console.debug("context", txSign.context);
-            console.debug("value", txSign.value);
-            if(txSign.value.err != null){
-                throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
-            }
-        }
-        catch(error)
-        {
-            console.error(error)
-            alert("Error Found on Validation " + error);
-        }
-
+        const signature = await sendTransaction(tx, connection, options);
+        await utils.confirmTransactionSignature(signature, connection);
     
     }
 
     return (
       <button className={styles.button} onClick={onClick}>
-        {textButton}
+        {textButton} | Validator == {validator}
       </button>
     )
 

@@ -2,7 +2,7 @@ import React from "react";
 import { NextPage } from 'next'
 import Head from 'next/head'
 import { Input } from "@nextui-org/react";
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 
 import styles from '../styles/Home.module.css'
 import WalletContextProvider from '../components/WalletContextProvider'
@@ -19,8 +19,11 @@ import { CreateEscrowSpl } from '../components/CreateEscrowSpl'
 import { CancelEscrowSpl } from '../components/CancelEscrowSpl'
 import { ValidateEscrowSpl } from '../components/ValidateEscrowSpl'
 import { ClaimEscrowSpl } from '../components/ClaimEscrowSpl'
+import { utf8 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
+import idl from "../xfluencer.json"
 
+const programId = new PublicKey(idl.metadata.address);
 
 const Home: NextPage = (props) => {
 
@@ -37,13 +40,14 @@ const Home: NextPage = (props) => {
   //////////////////////////////////////////////////////////////////
   const NUM_SOLS: number = 0.001;
   const LAMPORTS: number = NUM_SOLS * LAMPORTS_PER_SOL; // (10^9 lamports == 1 SOL)
-  const ORDER_CODE: number = 12354 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
+  const ORDER_CODE: number = 36832 // THIS MUST BE UNIQUE PER business-influencer (1 transaction at a time) OTHERWISE ERROR
   const NUM_SPL_TOKENS: number = 1000000; // 6 decimals ==> 10 ** 6 == 1 Token Unit
   const PERCENTAGE_FEE: number = 0;
 
 
   const NETWORK = "https://bold-hidden-glade.solana-mainnet.quiknode.pro/bcd715dccef5e699ea43459b691a09c2bc8dc474"
 
+  
   return (
     <div className={styles.App}>
 
