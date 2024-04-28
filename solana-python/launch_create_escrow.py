@@ -19,7 +19,7 @@ async def main():
     
     configuration = load_configuration()
 
-    network = configuration["network"]
+    network = configuration["rpc"]["mainnet"]
     
     print(f"Network: {network}")
     print(f"Program ID: {PROGRAM_ID}")
@@ -31,17 +31,18 @@ async def main():
     #print(validation)  # way to get base58 from keypair seed
         
     _, validation_authority_pk = get_local_keypair_pubkey(path=keypair_paths.validation_authority)
-    business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
+    business, business_pk = get_local_keypair_pubkey() # get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     
-    assert str(validation_authority_pk) == configuration["platform"]       
+    assert str(validation_authority_pk) == configuration["platform"]         
     assert str(business_pk) == configuration["business"]["pubkey"]
     assert str(influencer_pk) == configuration["influencer"]["pubkey"]
 
     amount = configuration["amount"]["lamports"]
     order_code = configuration["order_code"]
 
-    args = {"amount":int(amount), "order_code":int(order_code) }
+
+    args = {"amount":int(amount), "order_code":int(order_code)}
     
     SEEDS = [b"escrow",
             bytes(business_pk),
@@ -66,7 +67,7 @@ async def main():
            
     signers = [business]    
 
-    sign_status = await sign_and_send_transaction(ix, signers, opts, network)
+    sign_status = await sign_and_send_transaction(ix, signers, network)
 
     print(sign_status)
 
