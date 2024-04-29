@@ -133,8 +133,8 @@ const Login: React.FC = () => {
           />
           <Typography variant="h5" fontWeight="bold" sx={{ mt: 1 }}>
             {loginType == "SIGNIN"
-              ? `Sign-in to XFluencer as a ${loginAs}`
-              : `Log-in to XFluencer as a ${loginAs}`}
+              ? `Sign-up to XFluencer as a ${loginAs}`
+              : `Sign-in to XFluencer as a ${loginAs}`}
           </Typography>
           <Typography variant="caption" sx={{ lineHeight: "2px" }}>
             {loginAs == "Business"
@@ -160,7 +160,7 @@ const Login: React.FC = () => {
               },
               width: "60%",
             }}
-            placeholder="Enter Referral Code To Sign-In"
+            placeholder="Enter Invite Code To Sign-Up"
             size="small"
             fullWidth
             value={referralCode}
@@ -238,7 +238,7 @@ const Login: React.FC = () => {
             >
               Existing User?{" "}
               <span style={{ color: "#0089EA", fontWeight: "bold" }}>
-                Login-in
+                Sign-in
               </span>
             </Typography>
           ) : (
@@ -252,7 +252,7 @@ const Login: React.FC = () => {
             >
               New User?{" "}
               <span style={{ color: "#0089EA", fontWeight: "bold" }}>
-                Sign-in
+                Sign-up
               </span>
             </Typography>
           )}
@@ -266,7 +266,7 @@ const Login: React.FC = () => {
             }}
             onClick={handleLoginAsToggle}
           >
-            {loginType == "SIGNIN" ? "Sign-In as" : "Login as"}{" "}
+            {loginType == "SIGNIN" ? "Sign-Up as" : "Sign-in as"}{" "}
             {loginAs === "Business" ? "Influencer" : "Business"}?
           </Typography>
         </Box>

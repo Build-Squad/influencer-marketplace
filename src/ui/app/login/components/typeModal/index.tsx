@@ -68,7 +68,7 @@ export default function TypeModal({ open, setOpen, setType }: Props) {
                 setOpen(false);
               }}
             >
-              Log in to existing account!
+              Sign in to existing account!
             </Button>
           </Grid>
           <Grid item xs={12} sm={12} lg={6} xl={6}>
