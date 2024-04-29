@@ -41,6 +41,7 @@ const formatTwitterFollowers = (followersCount: any) => {
 export default function Explore({}: Props) {
   const [influencersData, setInfluencersData] = useState<InfluencersType[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
+  const [pageChanged, setPageChanged] = useState<boolean>(false);
   const [pagination, setPagination] = React.useState<PaginationType>({
     total_data_count: 0,
     total_page_count: 0,
@@ -72,7 +73,10 @@ export default function Explore({}: Props) {
   }, [formik.values]);
 
   useEffect(() => {
-    getInfluencers();
+    if (pagination.current_page_number != 1 && pageChanged) {
+      getInfluencers();
+      setPageChanged(false);
+    }
   }, [pagination.current_page_number]);
 
   useEffect(() => {
@@ -81,12 +85,19 @@ export default function Explore({}: Props) {
 
     if (filterData) {
       formik.setFieldValue("categories", filterData?.categories);
+      getInfluencers(filterData);
     }
-    getInfluencers(filterData);
     return () => {
       localStorage.removeItem("filterData");
     };
   }, []);
+
+  useEffect(() => {
+    if (refresh) {
+      getInfluencers();
+      setRefresh(false);
+    }
+  }, [refresh]);
 
   const getPrice = (inf: any, type = "max") => {
     if (type == "max") {
@@ -159,18 +170,12 @@ export default function Explore({}: Props) {
     event: React.ChangeEvent<unknown>,
     page: number
   ) => {
+    setPageChanged(true);
     setPagination((prev) => ({
       ...prev,
       current_page_number: page,
     }));
   };
-
-  useEffect(() => {
-    if (refresh) {
-      getInfluencers();
-      setRefresh(false);
-    }
-  }, [refresh]);
 
   return (
     <>
