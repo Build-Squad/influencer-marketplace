@@ -7,6 +7,7 @@ from django.http import (
     HttpResponse,
     HttpResponseRedirect,
 )
+from rest_framework import status
 from decouple import config
 from accounts.models import AccountCategory, CategoryMaster, Role, TwitterAccount, User
 import datetime
@@ -291,6 +292,7 @@ def createUser(userData, access_token, role, refresh_token, referral_code, login
                 return {
                     "status": "error",
                     "message": "Account not found. Please sign-in using an invite code.",
+                    "status_code":status.HTTP_404_NOT_FOUND,
                 }
             newUser = TwitterAccount.objects.create(
                 twitter_id=userData.id,
@@ -452,13 +454,17 @@ def createJWT(userData, access_token, role, refresh_token, referral_code, login_
 
         current_user_data = createUser(
             userData, access_token, role, refresh_token, referral_code, login_type)
+        
         if current_user_data["status"] == "error":
+            status_code = current_user_data.get("status_code", 400)
             return redirect(
                 redirect_url
-                + f"?authenticationStatus=error&message={current_user_data['message']}"
+                + f"?authenticationStatus=error&message={current_user_data['message']}&status_code={status_code}"
             )
 
         current_user = current_user_data["current_user"]
+        
+
 
         # Redirect influencers to their profile page.
         if role == "influencer":
