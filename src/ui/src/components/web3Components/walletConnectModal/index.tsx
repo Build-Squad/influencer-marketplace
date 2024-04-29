@@ -41,6 +41,8 @@ type WalletConnectModalProps = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   connect?: boolean;
   onlyAddress?: boolean;
+  referralCode?: string;
+  loginType?: string;
 };
 
 const eampleWallets = [
@@ -61,18 +63,22 @@ export default function WalletConnectModal({
   setOpen,
   connect = false,
   onlyAddress = false,
+  referralCode,
+  loginType,
 }: WalletConnectModalProps) {
   const { publicKey, wallet, wallets } = useWallet();
   const dispatch = useAppDispatch();
   const [rawWalletAddress, setRawWalletAddress] = React.useState<string>("");
 
   const onSubmit = async (signature?: string, text?: string) => {
-    const requestBody = {
+    let requestBody = {
       wallet_address_id: publicKey?.toBase58(),
       wallet_provider_id: wallet?.adapter?.name,
       wallet_network_id: "solana",
       signature: signature ? signature : undefined,
       message: text ? text : undefined,
+      referral_code: !!referralCode ? referralCode : undefined,
+      loginType: !!loginType ? loginType : undefined,
     };
     const { isSuccess, data, message } = await postService(
       connect ? "/account/connect-wallet/" : "/account/wallet-auth/",

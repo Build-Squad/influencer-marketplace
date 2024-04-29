@@ -12,7 +12,8 @@ interface LoginAccordionProps {
   title: string;
   subtitle: string;
   defaultExpanded?: boolean;
-  children: React.ReactNode; 
+  children: React.ReactNode;
+  isDisabled?: boolean;
 }
 
 const LoginAccordion: React.FC<LoginAccordionProps> = ({
@@ -20,6 +21,7 @@ const LoginAccordion: React.FC<LoginAccordionProps> = ({
   subtitle,
   defaultExpanded = false,
   children,
+  isDisabled = false,
 }) => {
   return (
     <Accordion
@@ -38,6 +40,7 @@ const LoginAccordion: React.FC<LoginAccordionProps> = ({
             content: "none",
           },
         },
+        filter: isDisabled ? "blur(3px)" : "none",
       }}
     >
       <AccordionSummary expandIcon={<ExpandMore />}>

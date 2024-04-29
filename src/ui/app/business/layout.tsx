@@ -2,10 +2,11 @@
 
 import { useAppDispatch, useAppSelector } from "@/src/hooks/useRedux";
 import { initializeCart, resetCart } from "@/src/reducers/cartSlice";
-import { postService } from "@/src/services/httpServices";
+import { getService, postService } from "@/src/services/httpServices";
 import { ORDER_STATUS } from "@/src/utils/consts";
 import { useWallet } from "@solana/wallet-adapter-react";
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function BusinessLayout({
   children,
@@ -13,6 +14,7 @@ export default function BusinessLayout({
   children: React.ReactNode;
 }) {
   const { publicKey } = useWallet();
+  const router = useRouter();
   const user = useAppSelector((state) => state.user);
   const cart = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
@@ -50,6 +52,22 @@ export default function BusinessLayout({
       getCurrentDraftOrder();
     }
   }, [user?.loggedIn]);
+
+  // Restrict access to landing page for logged out user
+  const loginStatus = async () => {
+    try {
+      const { isSuccess } = await getService("account/");
+      if (!isSuccess) {
+        router.push("/login?role=Business");
+      }
+    } catch (error) {
+      router.push("/login?role=Business");
+    }
+  };
+
+  useEffect(() => {
+    loginStatus();
+  }, []);
 
   return <div>{children}</div>;
 }

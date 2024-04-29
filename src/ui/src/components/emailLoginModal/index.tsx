@@ -21,11 +21,15 @@ import CloseIcon from "@mui/icons-material/Close";
 type EmailLoginModalProps = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  referralCode?: string;
+  loginType? :string
 };
 
 export default function EmailLoginModal({
   open,
   setOpen,
+  referralCode,
+  loginType
 }: EmailLoginModalProps) {
   const [email, setEmail] = React.useState("");
   const [otp, setOTP] = React.useState("");
@@ -39,6 +43,8 @@ export default function EmailLoginModal({
     }
     const { isSuccess, message } = await postService("account/otp/", {
       email,
+      referral_code: referralCode,
+      loginType
     });
     if (isSuccess) {
       notification(message);
