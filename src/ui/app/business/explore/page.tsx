@@ -73,11 +73,11 @@ export default function Explore({}: Props) {
   }, [formik.values]);
 
   useEffect(() => {
-    if (pagination.current_page_number != 1 && pageChanged) {
+    if (pageChanged) {
       getInfluencers();
       setPageChanged(false);
     }
-  }, [pagination.current_page_number]);
+  }, [pageChanged]);
 
   useEffect(() => {
     let filterData: any = localStorage.getItem("filterData");
