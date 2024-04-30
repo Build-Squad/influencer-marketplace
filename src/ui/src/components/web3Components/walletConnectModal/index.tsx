@@ -43,6 +43,7 @@ type WalletConnectModalProps = {
   onlyAddress?: boolean;
   referralCode?: string;
   loginType?: string;
+  setLoginType?: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const eampleWallets = [
@@ -65,6 +66,7 @@ export default function WalletConnectModal({
   onlyAddress = false,
   referralCode,
   loginType,
+  setLoginType,
 }: WalletConnectModalProps) {
   const { publicKey, wallet, wallets } = useWallet();
   const dispatch = useAppDispatch();
@@ -80,10 +82,19 @@ export default function WalletConnectModal({
       referral_code: !!referralCode ? referralCode : undefined,
       loginType: !!loginType ? loginType : undefined,
     };
-    const { isSuccess, data, message } = await postService(
+    const { isSuccess, data, message, statusCode } = await postService(
       connect ? "/account/connect-wallet/" : "/account/wallet-auth/",
       requestBody
     );
+    if (!connect && statusCode == 404) {
+      notification(
+        message ? message : "Something went wrong, please try again later",
+        "error",
+        5000
+      );
+      setOpen(false);
+      if (setLoginType) setLoginType("SIGNIN");
+    }
     if (isSuccess) {
       if (!connect) {
         dispatch(loginReducer(data?.data));

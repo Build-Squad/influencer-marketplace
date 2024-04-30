@@ -29,7 +29,6 @@ import TypeModal from "./components/typeModal";
 const Login: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const role = searchParams.get("role");
 
   const [loginAs, setLoginAs] = useState(role ?? "Business");
@@ -55,6 +54,25 @@ const Login: React.FC = () => {
           ? "/business/explore"
           : "/influencer";
       router.push(redirectRoute);
+    } else {
+      if (!isTwitterUserLoggedIn) {
+        const status = searchParams.get("authenticationStatus");
+        const paramMessage = searchParams.get("message");
+        const status_code = searchParams.get("status_code");
+        if (status) {
+          notification(
+            paramMessage
+              ? paramMessage
+              : "Something went wrong, please try again later",
+            "error",
+            5000
+          );
+          if (status_code == "404") {
+            setTypeOpen(false)
+            setLoginType("SIGNIN");
+          }
+        }
+      }
     }
   }, [isTwitterUserLoggedIn]);
 
@@ -96,15 +114,15 @@ const Login: React.FC = () => {
         `reward/check-referral-validity/?referral_code=${referralCode}`
       );
       if (isSuccess) {
-        notification("Referral Code is Valid");
+        notification("Invite Code is Valid");
         setIsReferralCodeValid(true);
       } else {
-        notification("Invalid Referral Code", "error");
+        notification("Invalid Invite Code", "error");
         setIsReferralCodeValid(false);
       }
       setIsUserTyping(false);
     } catch (error) {
-      console.error("Error during Referral code checking:", error);
+      console.error("Error during Invite code checking:", error);
       setIsReferralCodeValid(false);
     }
   };
@@ -278,6 +296,7 @@ const Login: React.FC = () => {
         setOpen={setWalletOpen}
         referralCode={referralCode}
         loginType={loginType}
+        setLoginType={setLoginType}
       />
 
       {/* Email Modal */}
@@ -286,6 +305,7 @@ const Login: React.FC = () => {
         setOpen={setEmailOpen}
         referralCode={referralCode}
         loginType={loginType}
+        setLoginType={setLoginType}
       />
       <TypeModal open={typeOpen} setOpen={setTypeOpen} setType={setLoginType} />
     </Box>

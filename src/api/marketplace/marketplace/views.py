@@ -458,7 +458,7 @@ def createJWT(userData, access_token, role, refresh_token, referral_code, login_
         if current_user_data["status"] == "error":
             status_code = current_user_data.get("status_code", 400)
             return redirect(
-                redirect_url
+                f"{config('FRONT_END_URL')}login/"
                 + f"?authenticationStatus=error&message={current_user_data['message']}&status_code={status_code}"
             )
 
