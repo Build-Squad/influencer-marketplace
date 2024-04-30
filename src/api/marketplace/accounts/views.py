@@ -1157,6 +1157,7 @@ class OTPAuth(APIView):
                             "data": None,
                             "message": "Account not found. Please sign-in using an invite code.",
                         },
+                        status=status.HTTP_404_NOT_FOUND,
                     )
                 otp_service = OTPAuthenticationService()
                 otp, otp_expiration = otp_service.generateOTP()

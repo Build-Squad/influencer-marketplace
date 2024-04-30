@@ -223,31 +223,13 @@ const MenuItemsComponent = ({ items }: { items: string[] }) => {
 };
 
 export default function Navbar() {
-  const { isTwitterUserLoggedIn, logoutTwitterUser } = useTwitterAuth();
+  const { logoutTwitterUser } = useTwitterAuth();
 
   const router = useRouter();
   const pathname = usePathname();
   // const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
 
-  const params = useSearchParams();
   const user = useAppSelector((state) => state.user);
-
-  useEffect(() => {
-    const status = params.get("authenticationStatus");
-    const paramMessage = params.get("message");
-    if (status) {
-      let snackBarMessage =
-        status === "success" ? LOGIN_STATUS_SUCCESS : LOGIN_STATUS_FAILED;
-
-      if (paramMessage) snackBarMessage = paramMessage;
-      notification(
-        snackBarMessage,
-        status === "success" ? "success" : "error",
-        3000
-      );
-      router.push(pathname);
-    }
-  }, [isTwitterUserLoggedIn]);
 
   const handleConnect = () => {
     const roleQueryParams = pathname.includes("business")
