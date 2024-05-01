@@ -17,6 +17,7 @@ import {
   EMAIL_PRIVACY_TEXT,
   ROLE_NAME,
   TWITTER_PROMOTION_TEXT,
+  USER_MASTER_KEY,
   XFLUENCER_PROMOTION_TEXT,
 } from "@/src/utils/consts";
 import EditIcon from "@mui/icons-material/Edit";
@@ -37,6 +38,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Checkbox,
 } from "@mui/material";
 import dayjs from "dayjs";
 import Image from "next/image";
@@ -110,85 +112,136 @@ const ProfileLayout = ({
   // From the BE or anything, fetch if the user is visiting the page for the first time.
   const [stepIndex, setStepIndex] = React.useState<number>(0);
   const [run, setRun] = useState(false);
-  const [steps, setSteps] = useState<any>([
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Take a Quick Tour!
-          </Typography>
-          <Typography>
-            This tour will walk you through the listing of your service and
-            claiming your payments upon completion and validation of orders.
-            Simply create and list your service for business owners and let the
-            magic happen.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Connect a Wallet
-          </Typography>
-          <Typography>
-            Connect your wallet (if not already) before listing a service to
-            recieve payouts.
-          </Typography>
-        </Box>
-      ),
-      target: ".joyride-wallet-table",
-      placement: "right",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Click on "Create A Service"
-          </Typography>
-          <Typography>
-            Please list the type of service you wish to publish, select its
-            price and fill in some details. Simply enter the information, and
-            you're all set to go.
-          </Typography>
-        </Box>
-      ),
-      target: ".joyride-create-service-tab",
-      placement: "right",
-    },
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Congratulations!!!
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            You've completed your services tour, you're good to go and list a
-            service and start earning.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-  ]);
+  const [doNotShowAgain, setDoNotShowAgain] = React.useState<boolean>(false);
+  const [steps, setSteps] = useState<any>([]);
+  const [totalServices, setTotalServices] = React.useState<number>(0);
+
+  const handleDoNotShow = async () => {
+    try {
+      const { isSuccess, message } = await postService(`account/user-guide/`, {
+        do_not_show_again: !doNotShowAgain,
+        key: "INFLUENCER_PROFILE",
+      });
+
+      if (isSuccess) {
+        if (!doNotShowAgain) {
+          notification("User Guide won't be shown automatically!", "success");
+          setRun(false);
+        }
+        setDoNotShowAgain((prevState) => !prevState);
+      } else {
+        notification(
+          message ? message : "Something went wrong while setting user guide",
+          "error"
+        );
+      }
+    } finally {
+    }
+  };
+
+  // Setting the state again and again so that the value of doNotShowAgain should be the updated one.
+  useEffect(() => {
+    const interactiveSteps = [
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Take a Quick Tour!
+            </Typography>
+            <Typography>
+              This tour will walk you through the listing of your service and
+              claiming your payments upon completion and validation of orders.
+              Simply create and list your service for business owners and let
+              the magic happen.
+            </Typography>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Connect a Wallet
+            </Typography>
+            <Typography>
+              Connect your wallet (if not already) before listing a service to
+              recieve payouts.
+            </Typography>
+          </Box>
+        ),
+        target: ".joyride-wallet-table",
+        placement: "right",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Click on "Create A Service"
+            </Typography>
+            <Typography>
+              Please list the type of service you wish to publish, select its
+              price and fill in some details. Simply enter the information, and
+              you're all set to go.
+            </Typography>
+          </Box>
+        ),
+        target: ".joyride-create-service-tab",
+        placement: "right",
+      },
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Congratulations!!!
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              You've completed your services tour, you're good to go and list a
+              service and start earning.
+            </Typography>
+            {!totalServices ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  placeContent: "center center",
+                  marginBottom: "-32px",
+                  marginTop: "12px",
+                }}
+              >
+                <Checkbox
+                  checked={doNotShowAgain}
+                  size="small"
+                  onChange={handleDoNotShow}
+                />
+                <Typography variant="body2" sx={{ my: "auto" }}>
+                  Don't show this again.
+                </Typography>
+              </Box>
+            ) : null}
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+    ];
+
+    setSteps(interactiveSteps);
+  }, [doNotShowAgain, totalServices]);
 
   useEffect(() => {
     if (
@@ -199,26 +252,6 @@ const ProfileLayout = ({
       setCategoryOpen(true);
     }
   }, [currentUser?.id, loggedInUser?.id]);
-
-  useEffect(() => {
-    if (params.id == loggedInUser?.id) getServices();
-  }, [loggedInUser?.id, params.id]);
-
-  const getServices = async () => {
-    try {
-      const { data, isSuccess } = await getService("packages/service", {
-        influencer: params.id,
-        status: null,
-      });
-      if (isSuccess) {
-        // Open the tour if there's no service
-        if (!data?.pagination?.total_data_count) {
-          setRun(true);
-        }
-      }
-    } finally {
-    }
-  };
 
   const handleJoyrideCallback = (data: any) => {
     const { action, index, status, type } = data;
@@ -266,7 +299,25 @@ const ProfileLayout = ({
 
   useEffect(() => {
     getRegions();
+    getUserGuideDetail();
   }, []);
+
+  const getServices = async () => {
+    try {
+      const { data, isSuccess } = await getService("packages/service", {
+        influencer: params.id,
+        status: null,
+      });
+      if (isSuccess) {
+        // Open the tour if there's no service
+        if (!data?.pagination?.total_data_count && !doNotShowAgain) {
+          setRun(true);
+        }
+        setTotalServices(data?.pagination?.total_data_count);
+      }
+    } finally {
+    }
+  };
 
   useEffect(() => {
     if (currentUser?.region) {
@@ -279,6 +330,23 @@ const ProfileLayout = ({
       setEditibleBio(currentUser?.twitter_account?.description);
     }
   }, [currentUser]);
+
+  // Get the status of do not show again checkbox for the particular user for a particular guide master key
+  const getUserGuideDetail = async () => {
+    try {
+      const { isSuccess, data } = await getService(`/account/user-guide`, {
+        master_key: USER_MASTER_KEY.INFLUENCER_PROFILE,
+      });
+      if (isSuccess) {
+        setDoNotShowAgain(data?.data?.dont_show_again);
+        if (!data?.data?.dont_show_again && params.id == loggedInUser?.id) {
+          getServices();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to get user guide details:", error);
+    }
+  };
 
   const getUserDetails = async () => {
     const { isSuccess, message, data } = await getService(
