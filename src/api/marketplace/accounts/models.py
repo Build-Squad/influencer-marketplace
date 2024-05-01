@@ -93,7 +93,63 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-    
+
+
+class UserGuideMaster(models.Model):
+    GUIDE_CHOICES = (("BUSINESS_CHECKOUT", "BUSINESS_CHECKOUT"),
+                     ("BUSINESS_DASHBOARD", "BUSINESS_DASHBOARD"),
+                     ("BUSINESS_MESSAGE", "BUSINESS_MESSAGE"),
+                     ("INFLUENCER_PROFILE", "INFLUENCER_PROFILE"),
+                     ("INFLUENCER_ORDERS", "INFLUENCER_ORDERS"),
+                     ("INFLUENCER_DASHBOARD", "INFLUENCER_DASHBOARD"),
+                     ("INFLUENCER_MESSAGE", "INFLUENCER_MESSAGE"),
+                     )
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="User Guide Master ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    name = models.CharField(max_length=255, blank=True, null=True)
+
+    key = models.CharField(
+        choices=GUIDE_CHOICES, max_length=25
+    )
+
+    class Meta:
+        db_table = "user_guide_master"
+
+    def __str__(self):
+        return self.key
+
+
+class UserGuide(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        verbose_name="User Guide ID",
+        default=uuid.uuid4,
+        editable=False,
+    )
+    user_account = models.ForeignKey(
+        User,
+        related_name="user_guide_user_account",
+        on_delete=SET_NULL,
+        null=True,
+        blank=True,
+    )
+    user_guide_master = models.ForeignKey(
+        UserGuideMaster,
+        related_name="user_guide_master",
+        on_delete=SET_NULL,
+        null=True,
+        blank=True,
+    )
+    dont_show_again = models.BooleanField(default=False, blank=True, null=True)
+
+    class Meta:
+        db_table = "user_guide"
+
+
 class CategoryMaster(models.Model):
     CATEGORY_CHOICES = (("custom", "custom"), ("standard", "standard"))
     id = models.UUIDField(
