@@ -114,7 +114,8 @@ async def main():
            
     signers = [business]    
 
-    sign_status = await sign_and_send_transaction(ix, signers, opts, network)
+    #print(network)
+    sign_status = await sign_and_send_transaction(ix, signers, network)
 
     print(sign_status)
 

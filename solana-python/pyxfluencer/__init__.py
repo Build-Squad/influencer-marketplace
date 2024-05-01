@@ -7,11 +7,19 @@ from solders.keypair import Keypair
 
 from .instructions import validate_escrow_sol
 from .instructions import validate_escrow_spl
-from .utils import sign_and_send_transaction
+from .utils import select_client, sign_and_send_transaction
 from .program_id import PROGRAM_ID
+from .accounts.escrow_account_solana import EscrowAccountSolana
+from .utils import check_funds_on_validator
 
-xfluencer_solana_python_client_version = "1.2.2"
+xfluencer_solana_python_client_version = "1.2.3"
 
+###################
+# Version: 1.2.3
+# Bump: Patch
+# Updated: 28.04.2024
+# - add check on validator funds to pay transaction fees
+# - add check on existance of the escrow pda account before to launch validation
 ###################
 # Version: 1.2.2
 # Bump: Patch
@@ -83,33 +91,30 @@ class EscrowValidator:
     influencer_address: str | Pubkey
     order_code: int
     network: str = "https://api.devnet.solana.com"
-    percentage_fee: int = 0
+    percentage_fee: int = 0 # amount between 0 and 500 (0.00% - 5.00%)
     processing_spl_escrow: bool = False
-    priority_fees: int = 0
+    priority_fees: int = 20000 # micro lamports 
+    MIN_LAMPORTS_ALLOWED: int = 10000000 # 0.01 SOL
         
-    async def cancel(self):
+    async def _validate_escrow(self, target_escrow_state: EscrowState):
         return await validate_escrow(self.validator_authority,
                                      self.business_address, 
                                      self.influencer_address, 
-                                     EscrowState.CANCEL, 
+                                     target_escrow_state, 
                                      self.order_code,
                                      self.network,
                                      percentage_fee = self.percentage_fee,
                                      processing_spl_escrow = self.processing_spl_escrow,
-                                     priority_fees = self.priority_fees
-                                     )
-    async def deliver(self):
-        return await validate_escrow(self.validator_authority,
-                                     self.business_address, 
-                                     self.influencer_address, 
-                                     EscrowState.DELIVERED, 
-                                     self.order_code, 
-                                     self.network,
-                                     percentage_fee = self.percentage_fee,
-                                     processing_spl_escrow = self.processing_spl_escrow,
-                                     priority_fees = self.priority_fees
+                                     priority_fees = self.priority_fees,
+                                     MIN_LAMPROTS_ALLOWED=self.MIN_LAMPORTS_ALLOWED
                                      )
         
+    async def cancel(self):   
+        return await self._validate_escrow(EscrowState.CANCEL)             
+
+    async def deliver(self):   
+        return await self._validate_escrow(EscrowState.DELIVERED)             
+                
     
 # NON SPL escrow
 async def validate_escrow_to_cancel(validator_authority: Keypair,
@@ -186,8 +191,12 @@ async def validate_escrow(validation_authority: Keypair,
                           network: str = "https://api.devnet.solana.com",
                           percentage_fee: int = 0,
                           processing_spl_escrow: bool = False,
-                          priority_fees: int = 0):
+                          priority_fees: int = 0,
+                          MIN_LAMPROTS_ALLOWED: int = 10000000 # 0.01 SOL
+                          ):
     
+    await check_funds_on_validator(network, validation_authority.pubkey(), MIN_LAMPORTS_ALLOWED=MIN_LAMPROTS_ALLOWED)
+        
     if isinstance(business_address,str):
         business_pk = Pubkey.from_string(business_address)
     else:
@@ -211,6 +220,18 @@ async def validate_escrow(validation_authority: Keypair,
 
         escrow_pda, _ = Pubkey.find_program_address(SEEDS, PROGRAM_ID)
 
+
+        # Check whether the escrow pda does exist or not before to launch validation
+        client = select_client(network=network, async_client=True)
+        account = await EscrowAccountSolana.fetch(client, escrow_pda)
+        
+        print(f"Checking Existance of the Escrow Account PDA {str(escrow_pda)}")
+        if account is None:
+            raise Exception(f"Escrow Account PDA {str(escrow_pda)} was not found or is closed")         
+        else:
+            print(f"Escrow Account PDA with address {str(escrow_pda)} was found in the program, having an amount of " +  
+                  f"lamports equal to {account.amount} and its status set to {account.status}")
+
         accounts = {
             "validation_authority": validation_authority.pubkey(),
             "influencer": influencer_pk,
@@ -219,8 +240,6 @@ async def validate_escrow(validation_authority: Keypair,
         }
 
         ix = validate_escrow_sol(args, accounts, program_id=PROGRAM_ID)
-
-        # return await sign_and_send_transaction(ix, signers, opts, network)
 
     else:
         print("Processing Escrow SPL case")

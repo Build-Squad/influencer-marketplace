@@ -133,21 +133,10 @@ export const ClaimEscrowSpl: FC<ClaimEscrowSplProps> = ({ business,
         const options = {
             skipPreflight: true
         }
-        try {
-            const signature = await sendTransaction(tx, connection, options);
-            const txSign = await connection.confirmTransaction(signature, "processed");
-            console.debug("txSing", txSign)
-            console.debug("context", txSign.context);
-            console.debug("value", txSign.value);
-            if (txSign.value.err != null) {
-                throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
+        const signature = await sendTransaction(tx, connection, options);
+        await utils.confirmTransactionSignature(signature, connection);
 
-            }
-        }
-        catch (error) {
-            console.warn("an error was raised sending claim for spl");
-            console.error(error)
-        }
+
     }
 
     return (

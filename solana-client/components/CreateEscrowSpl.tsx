@@ -169,22 +169,9 @@ export const CreateEscrowSpl: FC<CreateEscrowSplProps> = ({validator,
 			  skipPreflight: true,
 			  confirm: false			     
 			}
-  
-		  try {
-			  const signature = await sendTransaction(tx, connection, options);
-			  console.debug("signature", signature.valueOf());
-			  const txSign = await connection.confirmTransaction(signature, "processed");
-			  console.debug("txSing",txSign.value);
-			  console.debug("context", txSign.context);
-			  console.debug("value", txSign.value);
-			  if(txSign.value.err != null){
-				  throw new Error(`Instruction Error Number Found: ` + txSign.value.err['InstructionError'][0].toString());
-			  }
-		  }
-		  catch(error)
-		  {
-			  console.error(error);
-		  }
+			const signature = await sendTransaction(tx, connection, options);
+        await utils.confirmTransactionSignature(signature, connection);
+
 	}
 
 	return (

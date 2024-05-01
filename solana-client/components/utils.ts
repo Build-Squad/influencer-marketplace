@@ -24,7 +24,10 @@ import {
   TransactionInstruction,
   TransactionSignature,
   clusterApiUrl,
+  TransactionConfirmationStrategy,
 } from '@solana/web3.js';
+
+import { useAnchorWallet, useWallet } from '@solana/wallet-adapter-react';
 
 import idl from "../xfluencer.json"
 
@@ -32,7 +35,7 @@ import idl from "../xfluencer.json"
 import { TOKEN_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 
 import { Connection, Commitment } from '@solana/web3.js'
-import { SignerWalletAdapterProps } from "@solana/wallet-adapter-base";
+import { SendTransactionOptions, SignerWalletAdapterProps } from "@solana/wallet-adapter-base";
 
 
 export enum AccountState {
@@ -255,12 +258,10 @@ export async function getOrCreateAssociatedTokenAccount(
 
   // This is the optimal logic, considering TX fee, client-side computation, RPC roundtrips and guaranteed idempotent.
   // Sadly we can't do this atomically.
-  let account;
+  let account = null;
   try {
     console.log("associatedToken", associatedToken.toString())
-    account = await getAccountInfo(connection,
-      associatedToken,
-      commitment, programId)
+    account = await getAccountInfo(connection, associatedToken, commitment, programId)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error) {
@@ -358,6 +359,23 @@ export const getAnchorProgram = (connection: Connection): anchor.Program => {
   }
 
 
+export const confirmTransactionSignature = async (
+          signature: string,
+          connection: Connection,
+          ) =>{
+  try {   
+    const txSign = await connection.confirmTransaction(signature, "processed");
+    console.debug("txSing:", txSign, "context", txSign.context.slot, "value", txSign.value.err);
+    if(txSign.value.err != null){
+        throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
+    }
+  }
+  catch(error)
+  {
+    console.error(error)
+  }
+  
+}
 
 
 

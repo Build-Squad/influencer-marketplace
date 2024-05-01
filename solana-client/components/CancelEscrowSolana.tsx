@@ -83,24 +83,15 @@ export const CancelEscrowSolana: FC<CancelEscrowSolanaProps> = ({business,
 			skipPreflight: true      
 		}
 
-        try {
-            const signature = await sendTransaction(tx, connection, options);
-            const txSign = await connection.confirmTransaction(signature, "processed");
-            console.debug("txSing", txSign);
-            console.debug("context", txSign.context);
-            console.debug("value", txSign.value);
-            if(txSign.value.err != null){
-                throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
-            }
-        }
-        catch(error)
-        {
-            console.error(error)
-        }
+        const signature = await sendTransaction(tx, connection, options);
+        await utils.confirmTransactionSignature(signature, connection);
+
     }
 
     return (
-        <button className={styles.button} onClick={onClick}>Cancel Business {business}</button>
+        <button className={styles.button} onClick={onClick}>
+            Cancel Business {business}
+        </button>
     )
 
 }

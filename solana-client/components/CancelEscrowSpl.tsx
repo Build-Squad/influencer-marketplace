@@ -122,21 +122,10 @@ export const CancelEscrowSpl: FC<CancelEscrowSplProps> = (
         const options = {
 			skipPreflight: true      
 		}
+        const signature = await sendTransaction(tx, connection, options);
+        await utils.confirmTransactionSignature(signature, connection);
 
-        try {
-            const signature = await sendTransaction(tx, connection, options);
-            const txSign = await connection.confirmTransaction(signature, "processed");
-            console.debug("txSing", txSign);
-            console.debug("context", txSign.context);
-            console.debug("value", txSign.value);
-            if(txSign.value.err != null){
-                throw new Error(`Instruction error number found: ` + txSign.value.err['InstructionError'][0].toString());
-            }
-        }
-        catch(error)
-        {
-            console.error(error)
-        }
+
     }
 
     return (

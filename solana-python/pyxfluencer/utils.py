@@ -1,3 +1,4 @@
+import os
 import json
 from typing import List
 from solders.keypair import Keypair
@@ -5,22 +6,22 @@ from solders.pubkey import Pubkey
 
 from solana.rpc.api import Client # type: ignore
 from solana.rpc.async_api import AsyncClient # type: ignore
-import json
 
 from solana.transaction import Transaction # type: ignore
 from solana.rpc.core import RPCException # type: ignore
-
-from solders.compute_budget import set_compute_unit_price, set_compute_unit_limit
-
-import os
 
 from anchorpy import Wallet, Provider
 from anchorpy.utils import token
 from anchorpy.utils.rpc import AccountInfo
 
 from .errors.custom import from_code
+
 from solana.rpc.api import SimulateTransactionResp
+
 from solders.transaction_status import TransactionErrorInstructionError
+from solders.compute_budget import set_compute_unit_price, set_compute_unit_limit
+
+from anchorpy.error import ProgramError
 
 def get_local_keypair_pubkey(keypair_file="id.json", path=None):
 
@@ -49,9 +50,9 @@ def select_client(network: str = None, async_client: bool = False, default_netwo
         "testnet":  "https://api.testnet.solana.com",
         "localnet": "http://localhost:8899/",
         "local":    "http://localhost:8899/",
+        "devnet-helius": "https://devnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605",
         "mainnet":      "https://api.mainnet-beta.solana.com/",
         "mainnet-beta": "https://api.mainnet-beta.solana.com/",
-        "devnet-helius": "https://devnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605",
         "mainnet-helius": "https://mainnet.helius-rpc.com/?api-key=b57191c8-c14e-4ae2-83b6-1ab88c2f3605"
     }
 
@@ -80,7 +81,59 @@ async def get_token_account_info(ata_address: str, network: str) -> AccountInfo:
         raise Exception(f"Getting Token Account Info {e}")
 
 
-async def sign_and_send_transaction(ix, signers, network, async_client: bool = True, priority_fees: int = 0, extra_rpcs: List[str] = None):
+async def check_account(client, account_pk): 
+    try:
+        print(f"Getting Account Info From {account_pk}")
+        account_info = await client.get_account_info(account_pk)
+        if account_info.value is None:
+            raise Exception(f"Account Not Initialized --> {account_pk}")
+    except Exception as err:
+        raise Exception(f"{err}")
+
+
+
+async def check_funds_on_validator(network: str, 
+                                   validator_account_pk: Pubkey, 
+                                   MIN_LAMPORTS_ALLOWED: int = 10000000 # 0.01 SOL
+):
+    try:        
+        ## check funds on validation authority
+        from .utils import check_funds_on_validator
+        client = select_client(network=network, async_client=True)        
+        account_data = await client.get_account_info(validator_account_pk)
+        if account_data is None:
+            raise Exception(f"Validator Authority {validator_account_pk} does not exist")
+        else:
+            if account_data.value is not None:
+                if account_data.value.lamports < MIN_LAMPORTS_ALLOWED:
+                    raise Exception(f"Validator Authority {str(validator_account_pk)} does not hold minimal amount ot lamports to pay transaction fees")
+                else:
+                    print(f"Validator Authority has an amount of {account_data.value.lamports} lamports")
+    except Exception as err:
+        raise Exception(f"{err}")
+
+async def sign_and_send_transaction(ix, 
+                                    signers, 
+                                    network, async_client: bool = True, 
+                                    priority_fees: int = 20000, # Micro lamports per lamport 1_000_000
+                                    extra_rpcs: List[str] = None,
+                                    max_attempts = 10):
+    """
+    Args:
+        ix (_type_): _description_
+        signers (_type_): _description_
+        network (_type_): _description_
+        async_client (bool, optional): _description_. Defaults to True.
+        priority_fees (int, optional): _description_. Defaults to 20000.
+        extra_rpcs (List[str], optional): _description_. Defaults to None.
+
+    Raises:
+        Exception: _description_
+
+    Returns:
+        _type_: _description_
+    """
+    
     client = select_client(network=network, async_client=async_client)
 
     recent_blockhash_resp = await client.get_latest_blockhash()
@@ -88,10 +141,10 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
     recent_block_height = recent_blockhash_resp.value.last_valid_block_height
     block_height = (await client.get_block_height()).value
     attempts = 0
-
-    print("Recent Block Height", recent_block_height, "Block Heigth",block_height)
-
-    while True and attempts < 10:
+    
+    print("Most Recent Block Height", recent_block_height, "vs Block Heigth",block_height)
+        
+    while True and attempts < max_attempts:
         try:
             if block_height >= recent_block_height:
                 break
@@ -100,8 +153,7 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
             print("Attempt", attempts)
             # Create the transaction with the recent blockhash
             tx = Transaction(recent_blockhash=recent_blockhash)
-            tx.add(ix)
-
+            tx.add(ix)                                        
             try:
                 simulated_transaction_resp: SimulateTransactionResp = await client.simulate_transaction(tx)    
                 if simulated_transaction_resp.value.err is not None:
@@ -109,33 +161,38 @@ async def sign_and_send_transaction(ix, signers, network, async_client: bool = T
                     error_tx_json : str = error_tx.to_json()  
                     error_tx_dict : dict = json.loads(error_tx_json)    
                     error: int = error_tx_dict[1]["Custom"]
-                    if error >= 6000:
+                    print(f"Error number found on simulation: {error}")
+                    if error >= 6000:                        
                         return from_code(error)
+                    else:             
+                        return ProgramError(error, "Anchor Error", logs=simulated_transaction_resp.value.logs)
                 else:
                     print("Simulation Looks OK")
+                    print(simulated_transaction_resp)
             except (KeyError, Exception) as e:
                 print(f"Error simulating transaction: {e}")                
                 print("Retrying...")
                 block_height = (await client.get_block_height()).value
                 continue
-
+ 
             # Set compute unit limit
             cu_budget: int = simulated_transaction_resp.value.units_consumed * \
                 15 // 10  # increase 50% of simulated CU's
+                
             max_budget = 200_000 
             cu_set = min(cu_budget, max_budget) 
             modify_compute_units = set_compute_unit_limit(cu_set)
             tx.add(modify_compute_units)
 
-            PRIORITY_FEE_IX = set_compute_unit_price(priority_fees)
+            # Set priority fees ix
+            PRIORITY_FEE_IX = set_compute_unit_price(priority_fees) # Micro Lamports Per Lamports == 10 ** 6
             tx.add(PRIORITY_FEE_IX)
-
-            try:
+            
+            try:                
                 tx_res = await client.send_transaction(tx, *signers)
-                print(tx_res)
+                #print(tx_res)
             except Exception as e:
-                print(f"Error sending transaction: {e}")
-                 
+                print(f"Error sending transaction: {e}")                 
                 raise
 
             if tx_res:
