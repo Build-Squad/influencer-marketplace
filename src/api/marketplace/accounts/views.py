@@ -74,6 +74,7 @@ import datetime
 
 from nacl.signing import VerifyKey
 import base58
+from reward.models import UserReferrals
 
 from django.utils import timezone
 # Twitter account API-Endpoint
@@ -141,13 +142,15 @@ class TopInfluencers(APIView):
             ).values_list('influencer__twitter_account', flat=True).distinct()
 
             # Filter the TwitterAccount queryset based on the extracted IDs
-            twitterAccount = twitterAccount.filter(id__in=account_ids_with_published_package)
+            twitterAccount = twitterAccount.filter(
+                id__in=account_ids_with_published_package)
 
             twitterAccount = twitterAccount[:8]
 
             # Paginate the results
             pagination = Pagination(twitterAccount, request)
-            serializer = TwitterAccountSerializer(pagination.getData(), many=True)
+            serializer = TwitterAccountSerializer(
+                pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -163,6 +166,7 @@ class TopInfluencers(APIView):
 
 class TwitterAccountList(APIView):
     authentication_classes = [JWTAuthenticationOptional]
+
     def get(self, request):
         try:
             languages = request.GET.getlist("languages[]", [])
@@ -182,14 +186,12 @@ class TwitterAccountList(APIView):
 
             searchString = request.GET.get("searchString", "")
             rating = request.GET.get("rating", "0")
-            
+
             # Default fetch influencers for explore page
             role = request.GET.get("role", "influencer")
 
             # By default Fetch twitter account that have atleast one published service.
-            packageStatus =request.GET.get("packageStatus", "published")
-
-            
+            packageStatus = request.GET.get("packageStatus", "published")
 
             # Filter based on parameters
             twitterAccount = TwitterAccount.objects.all()
@@ -205,8 +207,8 @@ class TwitterAccountList(APIView):
             ).values_list('influencer__twitter_account', flat=True).distinct()
 
             # Filter the TwitterAccount queryset based on the extracted IDs
-            twitterAccount = twitterAccount.filter(id__in=account_ids_with_published_package)
-
+            twitterAccount = twitterAccount.filter(
+                id__in=account_ids_with_published_package)
 
             # From the account model itself.
             if upperFollowerLimit:
@@ -239,7 +241,8 @@ class TwitterAccountList(APIView):
                 )
 
             if regions:
-                region_ids = RegionMaster.objects.filter(regionName__in=regions).values_list('id', flat=True)
+                region_ids = RegionMaster.objects.filter(
+                    regionName__in=regions).values_list('id', flat=True)
                 twitterAccount = twitterAccount.filter(
                     Q(user_twitter_account_id__region_user_account__region__in=region_ids)
                 )
@@ -315,24 +318,26 @@ class TwitterAccountList(APIView):
                 twitterAccount = twitterAccount.exclude(
                     id__in=twitter_accounts_to_exclude
                 )
-            
+
             if rating != "0":
-                exclude_ids = [] 
-                
+                exclude_ids = []
+
                 for twitter_account in twitterAccount:
-                    user = get_object_or_404(User, twitter_account=twitter_account)
-                    
+                    user = get_object_or_404(
+                        User, twitter_account=twitter_account)
+
                     reviews = Review.objects.filter(
                         order__order_item_order_id__package__influencer=user,
                         order__deleted_at=None,
                         order__status="completed"
                     )
-                    
-                    total_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or Decimal('0')
-                    
+
+                    total_rating = reviews.aggregate(Avg('rating'))[
+                        'rating__avg'] or Decimal('0')
+
                     if total_rating < Decimal(rating):
                         exclude_ids.append(twitter_account.id)
-                
+
                 twitterAccount = twitterAccount.exclude(id__in=exclude_ids)
 
             twitterAccount = twitterAccount.order_by("-followers_count")
@@ -447,21 +452,22 @@ class TwitterAccountDetail(APIView):
 class CategoryMasterList(APIView):
     def get(self, request):
         try:
-            is_verified = request.GET.get("is_verified" , None)
-            show_on_main = request.GET.get("show_on_main" , None)
-            
+            is_verified = request.GET.get("is_verified", None)
+            show_on_main = request.GET.get("show_on_main", None)
+
             categoryMaster = CategoryMaster.objects.all()
             if is_verified:
                 is_verified = bool(is_verified)
                 categoryMaster = categoryMaster.filter(is_verified=is_verified)
-            
 
             if show_on_main:
                 show_on_main = bool(show_on_main)
-                categoryMaster = categoryMaster.filter(show_on_main=show_on_main)
+                categoryMaster = categoryMaster.filter(
+                    show_on_main=show_on_main)
 
             pagination = Pagination(categoryMaster, request)
-            serializer = CategoryMasterSerializer(pagination.getData(), many=True)
+            serializer = CategoryMasterSerializer(
+                pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -574,7 +580,8 @@ class AccountRegionList(APIView):
             region_id = request.data.get("region_id")
 
             # Check if the user already has an AccountRegion
-            account_region = AccountRegion.objects.filter(user_account=user_id).first()
+            account_region = AccountRegion.objects.filter(
+                user_account=user_id).first()
             if account_region:
                 # If an AccountRegion exists, update the region
                 account_region.region_id = region_id
@@ -589,7 +596,8 @@ class AccountRegionList(APIView):
                 )
 
             # Create a new AccountRegion instance
-            account_region_data = {"user_account": user_id, "region": region_id}
+            account_region_data = {
+                "user_account": user_id, "region": region_id}
             serializer = AccountRegionSerializer(data=account_region_data)
 
             if serializer.is_valid():
@@ -634,7 +642,8 @@ class AccountCategoryList(APIView):
                 twitter_account_id=twitter_account_id
             )
             pagination = Pagination(accountCategory, request)
-            serializer = AccountCategorySerializer(pagination.getData(), many=True)
+            serializer = AccountCategorySerializer(
+                pagination.getData(), many=True)
             return Response(
                 {
                     "isSuccess": True,
@@ -958,7 +967,8 @@ class BankAccountDetail(APIView):
             bankAccount = self.get_object(pk)
             if bankAccount is None:
                 return handleNotFound("Bank Account")
-            serializer = BankAccountSerializer(instance=bankAccount, data=request.data)
+            serializer = BankAccountSerializer(
+                instance=bankAccount, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -1108,18 +1118,27 @@ class UserAuth(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 class OTPAuth(APIView):
-    def get_or_create_user(self, email):
+    def get_or_create_user(self, email, referral_code, login_type):
         try:
             return User.objects.get(email=email)
         except User.DoesNotExist:
+            if(login_type == "LOGIN"):
+                return None
             user = User.objects.create(
                 email=email,
                 role=Role.objects.get(name="business_owner"),
                 username=email,
             )
+            if referral_code is not None:
+                referred_by = User.objects.get(referral_code=referral_code)
+                if referred_by:
+                    # Create mapping between referred_by and new_user_account
+                    UserReferrals.objects.create(
+                        user_account=user,
+                        referred_by=referred_by)
             user.save()
-            
             return user
 
     @swagger_auto_schema(request_body=OTPAuthenticationSerializer)
@@ -1129,7 +1148,17 @@ class OTPAuth(APIView):
 
             if serializer.is_valid():
                 # If user exists, send OTP
-                user = self.get_or_create_user(request.data["email"])
+                user = self.get_or_create_user(
+                    request.data["email"], request.data.get("referral_code", None), request.data.get("loginType", None))
+                if user is None:
+                    return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Account not found. Please sign-in using an invite code.",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
                 otp_service = OTPAuthenticationService()
                 otp, otp_expiration = otp_service.generateOTP()
                 if user:
@@ -1232,8 +1261,6 @@ class OTPVerification(APIView):
                         samesite="None",
                     )
 
-                    
-
                     response.data = {
                         "isSuccess": True,
                         "data": UserSerializer(user).data,
@@ -1255,6 +1282,7 @@ class OTPVerification(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 class OTPAuthV2(APIView):
     def get_user(self, username, email):
         try:
@@ -1268,7 +1296,6 @@ class OTPAuthV2(APIView):
                 return current_user
         except User.DoesNotExist:
             return None
-            
 
     @swagger_auto_schema(request_body=OTPAuthenticationV2Serializer)
     def post(self, request):
@@ -1277,7 +1304,8 @@ class OTPAuthV2(APIView):
 
             if serializer.is_valid():
                 # If user exists, send OTP.
-                user = self.get_user(request.data["username"], request.data["email"])
+                user = self.get_user(
+                    request.data["username"], request.data["email"])
                 otp_service = OTPAuthenticationService()
                 otp, otp_expiration = otp_service.generateOTP()
                 if user:
@@ -1312,7 +1340,7 @@ class OTPAuthV2(APIView):
                         },
                         status=status.HTTP_200_OK,
                     )
-                else:                    
+                else:
                     return Response(
                         {
                             "isSuccess": False,
@@ -1324,6 +1352,7 @@ class OTPAuthV2(APIView):
                 return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)
+
 
 class OTPVerifyV2(APIView):
     def get_object(self, username):
@@ -1352,14 +1381,15 @@ class OTPVerifyV2(APIView):
                 is_valid = otp_service.validateOTP(request.data["otp"], user)
                 if is_valid:
                     # If the OTP is valid, save the data to the user table
-                        
+
                     user.email_verified_at = timezone.now()
                     user.email = request.data["email"]
                     if user.login_method == "email":
                         user.username = request.data["email"]
                     user.save()
 
-                    business_account_meta = BusinessAccountMetaData.objects.get(user_account=user)
+                    business_account_meta = BusinessAccountMetaData.objects.get(
+                        user_account=user)
                     business_account_meta.user_email = request.data["email"]
                     business_account_meta.save()
                     response = Response()  # Create a new Response instance
@@ -1383,6 +1413,7 @@ class OTPVerifyV2(APIView):
                 return handleBadRequest(serializer.errors)
         except Exception as e:
             return handleServerException(e)
+
 
 class EmailVerification(APIView):
     # A GET request to this endpoint will extract the user id from the JWT and check if the user exists and then send an email to the user
@@ -1537,7 +1568,8 @@ class WalletAuth(APIView):
             wallet_provider = WalletProvider.objects.get(wallet_provider=name)
             return wallet_provider
         except WalletProvider.DoesNotExist:
-            wallet_provider = WalletProvider.objects.create(wallet_provider=name)
+            wallet_provider = WalletProvider.objects.create(
+                wallet_provider=name)
             wallet_provider.save()
             return wallet_provider
 
@@ -1561,6 +1593,16 @@ class WalletAuth(APIView):
         result = VerifyKey(pubkey).verify(smessage=msg, signature=signed)
 
         return result
+
+    def manage_referral(self, request, user):
+        referral_code = request.data.get("referral_code", None)
+        if referral_code is not None:
+            referred_by = User.objects.get(referral_code=referral_code)
+            if referred_by:
+                # Create mapping between referred_by and new_user_account
+                UserReferrals.objects.create(
+                    user_account=user,
+                    referred_by=referred_by)
 
     @swagger_auto_schema(request_body=WalletAuthSerializer)
     def post(self, request):
@@ -1586,6 +1628,19 @@ class WalletAuth(APIView):
 
                 # Should create a wallet if no wallet is found for the requested user else return the wallet
                 wallet = self.get_wallet(request.data["wallet_address_id"])
+
+                # Check if logintype is LOGIN so the user should exist already 
+                if wallet is None and request.data.get("loginType", None) == "LOGIN":
+                     return Response(
+                        {
+                            "isSuccess": False,
+                            "data": None,
+                            "message": "Account not found. Please sign-in using an invite code.",
+                            "errors": "Account not found. Please sign-in using an invite code.",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
                 if wallet is None:
                     wallet_provider = self.get_or_create_wallet_provider(
                         serializer.validated_data["wallet_provider_id"]
@@ -1606,6 +1661,8 @@ class WalletAuth(APIView):
                     )
                     wallet.user_id = user
                     wallet.save()
+                    # Referral entry for new users
+                    self.manage_referral(request, user)
                     is_new_user = True
                 else:
                     user = User.objects.get(username=wallet.user_id)
@@ -1656,7 +1713,7 @@ class WalletAuth(APIView):
                 )
                 message = "Logged in successfully"
                 if is_new_user:
-                    message="New user? Head to your profile to earn badges!"
+                    message = "New user? Head to your profile to earn badges!"
                 response.data = {
                     "isSuccess": True,
                     "data": UserSerializer(user).data,
@@ -1786,6 +1843,7 @@ class WalletNonceCreateView(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 class WalletList(APIView):
     authentication_classes = [JWTAuthentication]
 
@@ -1807,6 +1865,7 @@ class WalletList(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 class DisconnectTwitterAccount(APIView):
     def get_object(self, pk):
         try:
@@ -1815,11 +1874,12 @@ class DisconnectTwitterAccount(APIView):
             return None
 
     authentication_classes = [JWTAuthentication]
+
     def delete(self, request, pk):
         try:
             # Get the user object
             user = self.get_object(pk)
-            
+
             # If user not found, raise NotFound exception
             if user is None:
                 raise NotFound("User not found")
@@ -1877,6 +1937,7 @@ class WalletDetail(APIView):
         except Exception as e:
             return handleServerException(e)
 
+
 class BusinessAccountMetaDataDetail(APIView):
     def get_object(self, userId):
         try:
@@ -1889,7 +1950,8 @@ class BusinessAccountMetaDataDetail(APIView):
             businessAccountMetaData = self.get_object(userId)
             if businessAccountMetaData is None:
                 return handleNotFound("Business Account Meta Data")
-            serializer = BusinessAccountMetaDataSerializer(businessAccountMetaData)
+            serializer = BusinessAccountMetaDataSerializer(
+                businessAccountMetaData)
             return Response(
                 {
                     "isSuccess": True,

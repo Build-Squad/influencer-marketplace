@@ -32,12 +32,16 @@ export default function useTwitterAuth() {
   const startTwitterAuthentication = async ({
     role = "",
     referral_code = "",
+    loginType = "",
   }: {
     role: string;
     referral_code?: string;
+    loginType?: string;
   }) => {
     try {
-      window.location.href = `${BACKEND_URL}auth-twitter-user/${role}/auth/?referral_code=${referral_code}`;
+      if (!!loginType) {
+        window.location.href = `${BACKEND_URL}auth-twitter-user/${role}/auth/?referral_code=${referral_code}&login_type=${loginType}`;
+      }
     } catch (error) {
       console.error("Error initiating Twitter authentication:", error);
     }
@@ -58,9 +62,9 @@ export default function useTwitterAuth() {
           await disconnect();
         }
         if (pathname.includes(ROLE_NAME.INFLUENCER)) {
-          router.push(`/${ROLE_NAME.INFLUENCER}`);
+          router.push(`/login?role=Influencer`);
         } else {
-          router.push(`/business`);
+          router.push(`/login?role=Business`);
         }
       } else {
         notification(

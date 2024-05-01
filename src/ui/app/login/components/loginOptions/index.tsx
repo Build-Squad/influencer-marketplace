@@ -1,15 +1,21 @@
-"use client"
+"use client";
 import { Button } from "@mui/material";
 import React from "react";
 
 interface LoginOptionProps {
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }
 
-const LoginOptions: React.FC<LoginOptionProps> = ({ label, onClick }) => {
+const LoginOptions: React.FC<LoginOptionProps> = ({
+  label,
+  onClick,
+  disabled = false,
+}) => {
   return (
     <Button
+      disabled={disabled}
       variant="outlined"
       sx={{
         background: "linear-gradient(90deg, #99E2E8 0%, #F7E7F7 100%)",

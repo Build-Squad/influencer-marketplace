@@ -41,6 +41,9 @@ type WalletConnectModalProps = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   connect?: boolean;
   onlyAddress?: boolean;
+  referralCode?: string;
+  loginType?: string;
+  setLoginType?: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const eampleWallets = [
@@ -61,23 +64,37 @@ export default function WalletConnectModal({
   setOpen,
   connect = false,
   onlyAddress = false,
+  referralCode,
+  loginType,
+  setLoginType,
 }: WalletConnectModalProps) {
   const { publicKey, wallet, wallets } = useWallet();
   const dispatch = useAppDispatch();
   const [rawWalletAddress, setRawWalletAddress] = React.useState<string>("");
 
   const onSubmit = async (signature?: string, text?: string) => {
-    const requestBody = {
+    let requestBody = {
       wallet_address_id: publicKey?.toBase58(),
       wallet_provider_id: wallet?.adapter?.name,
       wallet_network_id: "solana",
       signature: signature ? signature : undefined,
       message: text ? text : undefined,
+      referral_code: !!referralCode ? referralCode : undefined,
+      loginType: !!loginType ? loginType : undefined,
     };
-    const { isSuccess, data, message } = await postService(
+    const { isSuccess, data, message, statusCode } = await postService(
       connect ? "/account/connect-wallet/" : "/account/wallet-auth/",
       requestBody
     );
+    if (!connect && statusCode == 404) {
+      notification(
+        message ? message : "Something went wrong, please try again later",
+        "error",
+        5000
+      );
+      setOpen(false);
+      if (setLoginType) setLoginType("SIGNIN");
+    }
     if (isSuccess) {
       if (!connect) {
         dispatch(loginReducer(data?.data));
