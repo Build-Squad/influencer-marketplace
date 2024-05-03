@@ -101,7 +101,7 @@ describe("Testing Escrow for SOL", () => {
   });
 
 
-  it('Create Escrow for SOL, Validate for Cancellation, and Claim Cancel By Business', async () => {
+  it('Create Escrow for SOL, Validate to Cancel, and Claim Cancel By Business', async () => {
 
     const orderCode = 2;
 
@@ -130,7 +130,6 @@ describe("Testing Escrow for SOL", () => {
     /////////////////// 
     // create escrow //
     ///////////////////
-
     await program.methods
     .createEscrow(
       new anchor.BN(amount),
@@ -219,7 +218,7 @@ describe("Testing Escrow for SOL", () => {
     program.programId
     );
 
-    const amount = 10 ** 9; // 1 SOL
+    const amount = 1.05 * 10 ** 9; // 1 SOL
 
     const options = {
       skipPreflight: true      
@@ -245,7 +244,7 @@ describe("Testing Escrow for SOL", () => {
     const escrowAccount = await program.account.escrowAccountSolana.fetch(escrowPDA)  
     const escrow_value = escrowAccount.amount.toNumber();
 
-    console.log("Amount in escrow after creation",escrow_value)
+    console.log("Amount in Escrow After Creation",escrow_value)
     assert.ok(escrow_value == amount);
 
     /////////////////////
@@ -274,7 +273,8 @@ describe("Testing Escrow for SOL", () => {
 
     const account_validator = await provider.connection.getBalanceAndContext(validationAuthorityPublicKey);
     const fees_collected = account_validator.value;
-    console.log("Fees collected by validation authority", fees_collected)
+    console.log("Fees collected by validation authority", fees_collected, amount * percentage_fee / (percentage_fee + 10000))
+    assert.ok(fees_collected >= amount * percentage_fee / (percentage_fee + 10000));
 
     const account_escrow = await provider.connection.getBalanceAndContext(escrowPDA);
     const remaining = account_escrow.value;
@@ -373,14 +373,14 @@ describe("Testing Escrow for SOL", () => {
     /////////////////////
     // validate escrow //
     /////////////////////    
-    const state = 3;  // 3 is a bad state transiction (only 1 or 2)
-    const percentage_fee = 500;
+    const targetState = 3;  // 3 is a bad state transiction (only taget states 1 and 2 are allowed)
+    const percentageFee = 500;
 
     try {
       await program.methods
         .validateEscrowSol(
-          state,
-          percentage_fee
+          targetState,
+          percentageFee
           )
         .accounts(
           { 
