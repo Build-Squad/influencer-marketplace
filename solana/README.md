@@ -49,6 +49,14 @@ Check you have the right version `0.29.0`
 anchor --version
 ```
 
+## Configuration
+
+Check `Anchor.toml` file has the right configuration. 
+
+* Make sure program ids correspond to its network.
+* Setup the right provider for deployment, normally it should be `localnet` whend development. 
+* Scripts define the test that will be run when you type `anchor test`
+
 ## Build
 
 To build the Solana program, run the following command:
@@ -69,7 +77,7 @@ Previous outcome should match the program id specied at `lib.rs` line `declare_i
 
 ## Test
 
-Trigger the TS Solana Program test using
+Trigger the Type Script Solana Program test using the following command:
 
 ```bash
 anchor test

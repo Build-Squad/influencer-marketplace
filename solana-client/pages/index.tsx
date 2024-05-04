@@ -225,7 +225,8 @@ const Home: NextPage = (props) => {
           <CancelEscrowSpl business={BUSINESS}
             validatorAuthority={VALIDATOR}
             mintTokenAccount={MINT}
-            orderCode={ORDER_CODE} />
+            orderCode={ORDER_CODE}
+            network={NETWORK}  />
 
           <ValidateEscrowSpl
             validator={VALIDATOR}

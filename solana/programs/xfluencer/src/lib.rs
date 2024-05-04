@@ -60,7 +60,7 @@ pub mod xfluencer {
                          amount: u64, 
                          order_code: u64
     ) -> ProgramResult {
-        processor::create_escrow_solana::process(ctx, amount, order_code)
+        processor::create_escrow_sol::process(ctx, amount, order_code)
     }
 
     pub fn claim_escrow(ctx: Context<ClaimEscrowSolana>, 

@@ -54,7 +54,9 @@ async def main():
     account_info = await get_token_account_info(ata, network)
     print(f"ATA account {ata} --> amount tokens = {account_info.amount}")    
 
-    business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
+    #business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_keypair)
+    business, business_pk = get_local_keypair_pubkey(path=keypair_paths.bussines_GQRD)
+
     _, influencer_pk = get_local_keypair_pubkey(path=keypair_paths.influencer_keypair)
     _, validation_authority_pk = get_local_keypair_pubkey(path=keypair_paths.validation_authority)
 
@@ -71,6 +73,10 @@ async def main():
 
     # find pdas for create escrow with spl 
     order_code = configuration["order_code"]
+
+    print("order code selected:",order_code)
+
+
     
     SEEDS = [b"token-seed", 
              bytes(str(order_code),"UTF-8")]

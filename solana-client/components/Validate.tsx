@@ -53,7 +53,9 @@ export const Validate: FC<ValidateProps> = ({validator,
 
     const program = utils.getAnchorProgram(connection);
     const provider = new AnchorProvider(connection, wallet, {})
+
     setProvider(provider)
+
     const { publicKey, signTransaction, sendTransaction } = useWallet()
     
     if (!connection || !publicKey) { 			

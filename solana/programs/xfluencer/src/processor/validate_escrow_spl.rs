@@ -18,44 +18,59 @@ enum EscrowState {
     Delivered
 }
 
+impl EscrowState {
+    fn from_u8(value: u8) -> EscrowState {
+        match value {
+            0 => EscrowState::New,
+            1 => EscrowState::Canceled,
+            2 => EscrowState::Delivered,
+            _ => panic!("Unknown value: {}", value),
+        }
+    }
+}
+
+
 pub fn process(
     ctx: Context<ValidateEscrowSpl>,
     target_state: u8,
     percentage_fee: u16,
 ) -> ProgramResult {
 
-    let current_state = ctx.accounts.escrow_account.status;
+    let current_state_raw = ctx.accounts.escrow_account.status;
 
     msg!(
         "Validating Escrow for SPL token From Current ({}) to Target ({}) state",
-        current_state,
+        current_state_raw,
         target_state
     );
+
+    ctx.accounts.escrow_account.status = target_state;
+
+    let target = EscrowState::from_u8(target_state);
+    let current = EscrowState::from_u8(current_state_raw);
 
     // @TODO: Use enumerator instead u8
     // Valid State Transitions
     // 0 -> 1  From New to Cancel
     // 0 -> 2  From New to Delivered
 
-    let cancel_state: u8 = 1;
-    let delivered_state: u8 = 2;
+    //let cancel_state = EscrowState::from_u8(1);
+    //let delivered_state = EscrowState::from_u8(2);
 
-    if current_state == cancel_state {
+    if current == EscrowState::Canceled {
         return err!(CustomError::EscrowAlreadyCancel)?;
     }
 
-    if current_state == delivered_state {
+    if current == EscrowState::Delivered {
         return err!(CustomError::EscrowAlreadyReleased)?;
     }
 
-    if target_state != cancel_state && target_state != delivered_state {
+    if target != EscrowState::Canceled && target != EscrowState::Delivered {
         return err!(CustomError::BadTargetStateForEscrow)?;
     }
 
-    ctx.accounts.escrow_account.status = target_state;
-
     // in case of state is delivered, transfer funds to the validation_authority
-    if target_state == delivered_state {
+    if target == EscrowState::Delivered {
         msg!(
             "Percentage Fee to apply By Xfluencer Platform: {} (2 decimal places)",
             &percentage_fee.to_string()
