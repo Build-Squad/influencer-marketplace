@@ -2,7 +2,11 @@
 import BackIcon from "@/public/svg/Back.svg";
 import Star from "@/public/svg/Star.svg";
 import { notification } from "@/src/components/shared/notification";
-import { postService, putService } from "@/src/services/httpServices";
+import {
+  getService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
 import { OpenInFull } from "@mui/icons-material";
 import Image from "next/image";
 
@@ -15,6 +19,7 @@ import {
   Backdrop,
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -42,6 +47,7 @@ import {
   endCancellation,
   startCancellation,
 } from "@/src/reducers/orderCancellationSlice";
+import { USER_MASTER_KEY } from "@/src/utils/consts";
 
 export default function Orders() {
   const router = useRouter();
@@ -73,97 +79,161 @@ export default function Orders() {
   // User Guide for the vwey first order
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
-  const [steps, setSteps] = useState<any>([
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Order's request dashboard.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            This tour will guide you through the order requests where you can
-            view the orders and accept/decline based on your preference.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Select orders.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Click on the order row to view details about it on the right hand
-            drawer.
-          </Typography>
-        </Box>
-      ),
-      placement: "right",
-      target: ".joyride-order-column",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            View the order.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Please have a close look at the details of each order item including
-            the content, publish time and the amount it's offering. You can also
-            visit the business profile by clicking on the hyperlink.
-          </Typography>
-        </Box>
-      ),
-      placement: "left",
-      target: ".joyride-order-details-drawer",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Accept/Decline Orders.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Accept or decline the order based on your pereference.
-          </Typography>
-        </Box>
-      ),
-      placement: "left",
-      target: ".joyride-action-column",
-    },
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Congratulations!!!
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            You've completed your order requests tour, you're good to go and
-            accept or decline the order request.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-  ]);
+  const [doNotShowAgain, setDoNotShowAgain] = useState<boolean>(false);
+  const [steps, setSteps] = useState<any>();
+
+  useEffect(() => {
+    const interactiveSteps = [
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Order's request dashboard.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              This tour will guide you through the order requests where you can
+              view the orders and accept/decline based on your preference.
+            </Typography>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Select orders.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Click on the order row to view details about it on the right hand
+              drawer.
+            </Typography>
+          </Box>
+        ),
+        placement: "right",
+        target: ".joyride-order-column",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              View the order.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Please have a close look at the details of each order item
+              including the content, publish time and the amount it's offering.
+              You can also visit the business profile by clicking on the
+              hyperlink.
+            </Typography>
+          </Box>
+        ),
+        placement: "left",
+        target: ".joyride-order-details-drawer",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Accept/Decline Orders.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Accept or decline the order based on your pereference.
+            </Typography>
+          </Box>
+        ),
+        placement: "left",
+        target: ".joyride-action-column",
+      },
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Congratulations!!!
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              You've completed your order requests tour, you're good to go and
+              accept or decline the order request.
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                placeContent: "center center",
+                marginBottom: "-32px",
+                marginTop: "12px",
+              }}
+            >
+              <Checkbox
+                checked={doNotShowAgain}
+                size="small"
+                onChange={handleDoNotShow}
+              />
+              <Typography variant="body2" sx={{ my: "auto" }}>
+                Don't show this again.
+              </Typography>
+            </Box>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+    ];
+    setSteps(interactiveSteps);
+  }, [doNotShowAgain]);
+
+  const handleDoNotShow = async () => {
+    try {
+      const { isSuccess, message } = await postService(`account/user-guide/`, {
+        do_not_show_again: !doNotShowAgain,
+        key: USER_MASTER_KEY.INFLUENCER_ORDERS,
+      });
+
+      if (isSuccess) {
+        if (!doNotShowAgain) {
+          notification("User Guide won't be shown automatically!", "success");
+          setRun(false);
+        }
+        setDoNotShowAgain((prevState) => !prevState);
+      } else {
+        notification(
+          message ? message : "Something went wrong while setting user guide",
+          "error"
+        );
+      }
+    } finally {
+    }
+  };
+
+  // Get the status of do not show again checkbox for the particular user for a particular guide master key
+  const getUserGuideDetail = async () => {
+    try {
+      const { isSuccess, data } = await getService(`/account/user-guide`, {
+        master_key: USER_MASTER_KEY.INFLUENCER_ORDERS,
+      });
+      if (isSuccess) {
+        setDoNotShowAgain(data?.data?.dont_show_again);
+        if (data?.data?.dont_show_again == false) {
+          handleUserInteraction();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to get user guide details:", error);
+    }
+  };
 
   const handleJoyrideCallback = (data: any) => {
     const { action, index, status, type } = data;
@@ -196,6 +266,10 @@ export default function Orders() {
       }
     }
   };
+
+  useEffect(() => {
+    getUserGuideDetail();
+  }, []);
 
   const getOrders = async () => {
     try {
@@ -391,10 +465,6 @@ export default function Orders() {
       ),
     },
   ];
-
-  useEffect(() => {
-    handleUserInteraction();
-  }, []);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

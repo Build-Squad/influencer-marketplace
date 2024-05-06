@@ -229,7 +229,7 @@ export default function BusinessMessages() {
 
   useEffect(() => {
     getUserGuideDetail();
-  }, [doNotShowAgain]);
+  }, []);
 
   const getAllChats = async () => {
     try {

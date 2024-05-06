@@ -159,7 +159,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     getUserGuideDetail();
-  }, [doNotShowAgain]);
+  }, []);
 
   const handleDoNotShow = async () => {
     try {

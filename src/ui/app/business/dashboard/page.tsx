@@ -363,7 +363,7 @@ export default function BusinessDashboardPage() {
 
   useEffect(() => {
     getUserGuideDetail();
-  }, [doNotShowAgain]);
+  }, []);
 
   const getOrders = async () => {
     try {

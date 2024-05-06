@@ -300,7 +300,7 @@ const ProfileLayout = ({
   useEffect(() => {
     getRegions();
     getUserGuideDetail();
-  }, [loggedInUser?.id]);
+  }, []);
 
   const getServices = async () => {
     try {
