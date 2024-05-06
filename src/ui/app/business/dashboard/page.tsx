@@ -16,7 +16,11 @@ import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import StatusChip from "@/src/components/shared/statusChip";
 import CancelEscrow from "@/src/components/web3Components/cancelEscrow";
-import { postService, putService } from "@/src/services/httpServices";
+import {
+  getService,
+  postService,
+  putService,
+} from "@/src/services/httpServices";
 import {
   DISPLAY_DATE_FORMAT,
   DISPLAY_DATE_TIME_FORMAT,
@@ -24,6 +28,7 @@ import {
   ORDER_STATUS,
   SERVICE_MASTER_TWITTER_SERVICE_TYPE,
   TRANSACTION_TYPE,
+  USER_MASTER_KEY,
 } from "@/src/utils/consts";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import CancelScheduleSendIcon from "@mui/icons-material/CancelScheduleSend";
@@ -34,6 +39,7 @@ import ScheduleSendIcon from "@mui/icons-material/ScheduleSend";
 import {
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Grid,
   IconButton,
@@ -139,116 +145,181 @@ export default function BusinessDashboardPage() {
   });
   const [selectedTab, setSelectedTab] = React.useState<number>(0);
 
+  const [doNotShowAgain, setDoNotShowAgain] = React.useState<boolean>(false);
+
   // User Guide only for the order's tab for the very first order. And if there are no orders only show the first step
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
-  const [steps, setSteps] = useState<any>([
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Manage your orders here!
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            This tour will help you manage your order accurately once you've
-            placed an order. The options would include editing your orders,
-            cancelling your orders, view the transactions, giving ratings and
-            many more.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Categorise your orders.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Click on the status you wanna view your orders for.
-          </Typography>
-        </Box>
-      ),
-      placement: "top",
-      target: ".joyride-tabs",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Customized filters.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Advanced filters for orders based on the services, date, order ID,
-            and influencers.
-          </Typography>
-        </Box>
-      ),
-      placement: "top",
-      target: ".joyride-dashboard-filters",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Take actions.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Hover the actions to see what it does and click to do the action.
-            Actions include viewing order details, editing your order,
-            cancelling the order and many more.
-          </Typography>
-        </Box>
-      ),
-      placement: "top",
-      target: ".joyride-actions-column",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Give reviews.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Click here to give reviews to the orders.
-          </Typography>
-        </Box>
-      ),
-      placement: "top",
-      target: ".joyride-review-column",
-    },
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Congratulations!!!
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            You've completed your dashboard tour, you're now good to go to
-            manage your orders and analyse them.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-  ]);
+  const [steps, setSteps] = useState<any>();
+
+  useEffect(() => {
+    const interactiveSteps = [
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Manage your orders here!
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              This tour will help you manage your order accurately once you've
+              placed an order. The options would include editing your orders,
+              cancelling your orders, view the transactions, giving ratings and
+              many more.
+            </Typography>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Categorise your orders.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Click on the status you wanna view your orders for.
+            </Typography>
+          </Box>
+        ),
+        placement: "top",
+        target: ".joyride-tabs",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Customized filters.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Advanced filters for orders based on the services, date, order ID,
+              and influencers.
+            </Typography>
+          </Box>
+        ),
+        placement: "top",
+        target: ".joyride-dashboard-filters",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Take actions.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Hover the actions to see what it does and click to do the action.
+              Actions include viewing order details, editing your order,
+              cancelling the order and many more.
+            </Typography>
+          </Box>
+        ),
+        placement: "top",
+        target: ".joyride-actions-column",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Give reviews.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Click here to give reviews to the orders.
+            </Typography>
+          </Box>
+        ),
+        placement: "top",
+        target: ".joyride-review-column",
+      },
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Congratulations!!!
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              You've completed your dashboard tour, you're now good to go to
+              manage your orders and analyse them.
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                placeContent: "center center",
+                marginBottom: "-32px",
+                marginTop: "12px",
+              }}
+            >
+              <Checkbox
+                checked={doNotShowAgain}
+                size="small"
+                onChange={handleDoNotShow}
+              />
+              <Typography variant="body2" sx={{ my: "auto" }}>
+                Don't show this again.
+              </Typography>
+            </Box>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+    ];
+
+    setSteps(interactiveSteps);
+  }, [doNotShowAgain]);
+
+  const handleDoNotShow = async () => {
+    try {
+      const { isSuccess, message } = await postService(`account/user-guide/`, {
+        do_not_show_again: !doNotShowAgain,
+        key: USER_MASTER_KEY.BUSINESS_DASHBOARD,
+      });
+
+      if (isSuccess) {
+        if (!doNotShowAgain) {
+          notification("User Guide won't be shown automatically!", "success");
+          setRun(false);
+        }
+        setDoNotShowAgain((prevState) => !prevState);
+      } else {
+        notification(
+          message ? message : "Something went wrong while setting user guide",
+          "error"
+        );
+      }
+    } finally {
+    }
+  };
+
+  // Get the status of do not show again checkbox for the particular user for a particular guide master key
+  const getUserGuideDetail = async () => {
+    try {
+      const { isSuccess, data } = await getService(`/account/user-guide`, {
+        master_key: USER_MASTER_KEY.BUSINESS_DASHBOARD,
+      });
+      if (isSuccess) {
+        setDoNotShowAgain(data?.data?.dont_show_again);
+        if (!data?.data?.dont_show_again) {
+          handleUserInteraction();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to get user guide details:", error);
+    }
+  };
 
   const handleJoyrideCallback = (data: any) => {
     const { action, index, status, type } = data;
@@ -285,13 +356,14 @@ export default function BusinessDashboardPage() {
           setStepIndex(0);
           setRun(true);
         }
-        if (data?.pagination?.total_data_count > 0) {
-          setHasAnOrder(true);
-        }
       }
     } finally {
     }
   };
+
+  useEffect(() => {
+    getUserGuideDetail();
+  }, []);
 
   const getOrders = async () => {
     try {
@@ -318,6 +390,11 @@ export default function BusinessDashboardPage() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+        if (data?.pagination?.total_data_count > 0) {
+          setHasAnOrder(true);
+        } else {
+          setHasAnOrder(false);
+        }
       } else {
         notification(message ? message : "Something went wrong", "error");
       }
@@ -1269,10 +1346,6 @@ export default function BusinessDashboardPage() {
   ];
 
   useEffect(() => {
-    handleUserInteraction();
-  }, []);
-
-  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (selectedTab === 0) {
         getOrders();
@@ -1564,24 +1637,22 @@ export default function BusinessDashboardPage() {
           setOpen={setOpenVerifyModal}
           orderItemId={selectedOrderItemId}
         />
-        {selectedTab == 0 ? (
-          <Joyride
-            callback={handleJoyrideCallback}
-            continuous
-            stepIndex={stepIndex}
-            run={run}
-            scrollToFirstStep
-            showSkipButton
-            steps={steps}
-            spotlightClicks
-            styles={{
-              options: {
-                zIndex: 2,
-              },
-            }}
-            locale={{ last: "Finish" }}
-          />
-        ) : null}
+        <Joyride
+          callback={handleJoyrideCallback}
+          continuous
+          stepIndex={stepIndex}
+          run={run}
+          scrollToFirstStep
+          showSkipButton
+          steps={steps}
+          spotlightClicks
+          styles={{
+            options: {
+              zIndex: 2,
+            },
+          }}
+          locale={{ last: "Finish" }}
+        />
       </Box>
       <WalletConnectModal
         open={connectWallet}

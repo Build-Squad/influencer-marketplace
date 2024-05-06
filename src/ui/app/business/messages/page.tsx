@@ -6,11 +6,12 @@ import OrderChatPanel from "@/src/components/messagesComponents/orderChatPanel";
 import { notification } from "@/src/components/shared/notification";
 import RouteProtection from "@/src/components/shared/routeProtection";
 import { useAppSelector } from "@/src/hooks/useRedux";
-import { postService } from "@/src/services/httpServices";
-import { ORDER_STATUS } from "@/src/utils/consts";
+import { getService, postService } from "@/src/services/httpServices";
+import { ORDER_STATUS, USER_MASTER_KEY } from "@/src/utils/consts";
 import ChatIcon from "@mui/icons-material/Chat";
 import {
   Box,
+  Checkbox,
   CircularProgress,
   Grid,
   Pagination,
@@ -59,83 +60,146 @@ export default function BusinessMessages() {
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
   const [hasAMessage, setHasAMessage] = useState(false);
-  const [steps, setSteps] = useState<any>([
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Chat with influencers.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            This tour will guide you through the chatting room where you can
-            message the influencers and have a short discussion about your
-            order.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Customized filters.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Advanced filters for chats based on the services, order ID, and
-            status of orders.
-          </Typography>
-        </Box>
-      ),
-      placement: "right",
-      target: ".joyride-message-filters",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Influencer's List.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Click on the influencer to chat with them and have a discussion
-            about the order.
-          </Typography>
-        </Box>
-      ),
-      placement: "right",
-      target: ".joyride-user-chats",
-    },
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Congratulations!!!
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            You've completed your messages tour, you're good to go and chat with
-            your influencer.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-  ]);
+  const [doNotShowAgain, setDoNotShowAgain] = useState<boolean>(false);
+  const [steps, setSteps] = useState<any>();
+
+  useEffect(() => {
+    const interactiveSteps = [
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Chat with influencers.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              This tour will guide you through the chatting room where you can
+              message the influencers and have a short discussion about your
+              order.
+            </Typography>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Customized filters.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Advanced filters for chats based on the services, order ID, and
+              status of orders.
+            </Typography>
+          </Box>
+        ),
+        placement: "right",
+        target: ".joyride-message-filters",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Influencer's List.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Click on the influencer to chat with them and have a discussion
+              about the order.
+            </Typography>
+          </Box>
+        ),
+        placement: "right",
+        target: ".joyride-user-chats",
+      },
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Congratulations!!!
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              You've completed your messages tour, you're good to go and chat
+              with your influencer.
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                placeContent: "center center",
+                marginBottom: "-32px",
+                marginTop: "12px",
+              }}
+            >
+              <Checkbox
+                checked={doNotShowAgain}
+                size="small"
+                onChange={handleDoNotShow}
+              />
+              <Typography variant="body2" sx={{ my: "auto" }}>
+                Don't show this again.
+              </Typography>
+            </Box>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+    ];
+    setSteps(interactiveSteps);
+  }, [doNotShowAgain]);
+
+  const handleDoNotShow = async () => {
+    try {
+      const { isSuccess, message } = await postService(`account/user-guide/`, {
+        do_not_show_again: !doNotShowAgain,
+        key: USER_MASTER_KEY.BUSINESS_MESSAGE,
+      });
+
+      if (isSuccess) {
+        if (!doNotShowAgain) {
+          notification("User Guide won't be shown automatically!", "success");
+          setRun(false);
+        }
+        setDoNotShowAgain((prevState) => !prevState);
+      } else {
+        notification(
+          message ? message : "Something went wrong while setting user guide",
+          "error"
+        );
+      }
+    } finally {
+    }
+  };
+
+  // Get the status of do not show again checkbox for the particular user for a particular guide master key
+  const getUserGuideDetail = async () => {
+    try {
+      const { isSuccess, data } = await getService(`/account/user-guide`, {
+        master_key: USER_MASTER_KEY.BUSINESS_MESSAGE,
+      });
+      if (isSuccess) {
+        setDoNotShowAgain(data?.data?.dont_show_again);
+        if (data?.data?.dont_show_again == false) {
+          handleUserInteraction();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to get user guide details:", error);
+    }
+  };
 
   const handleJoyrideCallback = (data: any) => {
     const { action, index, status, type } = data;
@@ -160,11 +224,12 @@ export default function BusinessMessages() {
         setStepIndex(0);
         setRun(true);
       }
-      if (data?.pagination?.total_data_count > 0) {
-        setHasAMessage(true);
-      }
     }
   };
+
+  useEffect(() => {
+    getUserGuideDetail();
+  }, []);
 
   const getAllChats = async () => {
     try {
@@ -184,6 +249,9 @@ export default function BusinessMessages() {
           total_data_count: data?.pagination?.total_data_count,
           total_page_count: data?.pagination?.total_page_count,
         });
+        if (data?.pagination?.total_data_count > 0) {
+          setHasAMessage(true);
+        }
       }
     } finally {
       setLoading(false);
@@ -218,10 +286,6 @@ export default function BusinessMessages() {
     // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
   }, [filters, pagination.current_page_number, pagination.current_page_size]);
-
-  useEffect(() => {
-    handleUserInteraction();
-  }, []);
 
   if (!user) {
     return (

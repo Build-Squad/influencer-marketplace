@@ -16,8 +16,12 @@ import {
   postService,
   putService,
 } from "@/src/services/httpServices";
-import { CHECKOUT_TEXT, ORDER_STATUS } from "@/src/utils/consts";
-import { Box, Button, Grid, Link, Typography } from "@mui/material";
+import {
+  CHECKOUT_TEXT,
+  ORDER_STATUS,
+  USER_MASTER_KEY,
+} from "@/src/utils/consts";
+import { Box, Button, Checkbox, Grid, Link, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import NextLink from "next/link";
@@ -38,99 +42,164 @@ export default function CheckoutPage() {
   // User Guide
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [run, setRun] = useState(false);
-  const [steps, setSteps] = useState<any>([
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Place your order successfully!
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            This tour will help you place your selected services order
-            accurately. Please ensure you follow each step without skipping any.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Fill in the details.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Enter the details and select the time to publish your service.
-          </Typography>
-        </Box>
-      ),
-      placement: "right",
-      target: ".joyride-order-item-form",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Save your order.
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Click on save to proceed with the payment.
-          </Typography>
-        </Box>
-      ),
-      placement: "top",
-      target: ".joyride-order-save-button",
-    },
-    {
-      content: (
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Make Payment
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Once you've saved your order, click on "Make Offer" and pay via your
-            wallet.
-          </Typography>
-        </Box>
-      ),
-      placement: "left",
-      target: ".joyride-make-payment",
-    },
-    {
-      content: (
-        <Box>
-          <Image
-            src={XfluencerLogo}
-            width={175}
-            height={30}
-            alt="bgimg"
-            priority
-          />
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
-            Congratulations!!!
-          </Typography>
-          <Typography sx={{ mt: 1 }}>
-            You've completed your checkout tour, you're good to go and create
-            an order request.
-          </Typography>
-        </Box>
-      ),
-      placement: "center",
-      target: "body",
-    },
-  ]);
+  const [steps, setSteps] = useState<any>();
+  const [doNotShowAgain, setDoNotShowAgain] = useState<boolean>(false);
+
+  // Setting the state again and again so that the value of doNotShowAgain should be the updated one.
+  useEffect(() => {
+    const interactiveSteps = [
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Place your order successfully!
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              This tour will help you place your selected services order
+              accurately. Please ensure you follow each step without skipping
+              any.
+            </Typography>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Fill in the details.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Enter the details and select the time to publish your service.
+            </Typography>
+          </Box>
+        ),
+        placement: "right",
+        target: ".joyride-order-item-form",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Save your order.
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Click on save to proceed with the payment.
+            </Typography>
+          </Box>
+        ),
+        placement: "top",
+        target: ".joyride-order-save-button",
+      },
+      {
+        content: (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Make Payment
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              Once you've saved your order, click on "Make Offer" and pay via
+              your wallet.
+            </Typography>
+          </Box>
+        ),
+        placement: "left",
+        target: ".joyride-make-payment",
+      },
+      {
+        content: (
+          <Box>
+            <Image
+              src={XfluencerLogo}
+              width={175}
+              height={30}
+              alt="bgimg"
+              priority
+            />
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
+              Congratulations!!!
+            </Typography>
+            <Typography sx={{ mt: 1 }}>
+              You've completed your checkout tour, you're good to go and create
+              an order request.
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                placeContent: "center center",
+                marginBottom: "-32px",
+                marginTop: "12px",
+              }}
+            >
+              <Checkbox
+                checked={doNotShowAgain}
+                size="small"
+                onChange={handleDoNotShow}
+              />
+              <Typography variant="body2" sx={{ my: "auto" }}>
+                Don't show this again.
+              </Typography>
+            </Box>
+          </Box>
+        ),
+        placement: "center",
+        target: "body",
+      },
+    ];
+    setSteps(interactiveSteps);
+  }, [doNotShowAgain]);
 
   useEffect(() => {
-    getOrders();
+    getUserGuideDetail();
   }, []);
+
+  const handleDoNotShow = async () => {
+    try {
+      const { isSuccess, message } = await postService(`account/user-guide/`, {
+        do_not_show_again: !doNotShowAgain,
+        key: USER_MASTER_KEY.BUSINESS_CHECKOUT,
+      });
+
+      if (isSuccess) {
+        if (!doNotShowAgain) {
+          notification("User Guide won't be shown automatically!", "success");
+          setRun(false);
+        }
+        setDoNotShowAgain((prevState) => !prevState);
+      } else {
+        notification(
+          message ? message : "Something went wrong while setting user guide",
+          "error"
+        );
+      }
+    } finally {
+    }
+  };
+
+  // Get the status of do not show again checkbox for the particular user for a particular guide master key
+  const getUserGuideDetail = async () => {
+    try {
+      const { isSuccess, data } = await getService(`/account/user-guide`, {
+        master_key: USER_MASTER_KEY.BUSINESS_CHECKOUT,
+      });
+      if (isSuccess) {
+        setDoNotShowAgain(data?.data?.dont_show_again);
+        if (data?.data?.dont_show_again == false) {
+          getOrders();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to get user guide details:", error);
+    }
+  };
 
   const getOrders = async () => {
     try {
@@ -381,23 +450,25 @@ export default function CheckoutPage() {
             router.back();
           }}
         />
-        <Box
-          sx={{
-            mr: 4,
-            color: "grey",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            columnGap: "4px",
-          }}
-          onClick={() => {
-            setStepIndex(0);
-            setRun(true);
-          }}
-        >
-          <DriveEta fontSize="small" />
-          <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
-        </Box>
+        {cart?.orderItems?.length !== 0 ? (
+          <Box
+            sx={{
+              mr: 4,
+              color: "grey",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              columnGap: "4px",
+            }}
+            onClick={() => {
+              setStepIndex(0);
+              setRun(true);
+            }}
+          >
+            <DriveEta fontSize="small" />
+            <Typography sx={{ color: "#C60C30" }}>Take A Tour!</Typography>
+          </Box>
+        ) : null}
       </Box>
       {cart?.orderItems?.length === 0 ? (
         <Box
@@ -575,7 +646,11 @@ export default function CheckoutPage() {
                       </Button>
                     }
                   />
-                  <CreateEscrow setLoading={setLoading} loading={loading} updateStatus={updateStatus} />
+                  <CreateEscrow
+                    setLoading={setLoading}
+                    loading={loading}
+                    updateStatus={updateStatus}
+                  />
                 </Box>
               </Box>
             </Grid>

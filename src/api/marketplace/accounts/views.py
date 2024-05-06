@@ -38,6 +38,8 @@ from .models import (
     User,
     BankAccount,
     Role,
+    UserGuide,
+    UserGuideMaster,
     Wallet,
     WalletNetwork,
     WalletNonce,
@@ -613,6 +615,80 @@ class AccountRegionList(APIView):
             else:
                 return handleBadRequest(serializer.errors)
 
+        except Exception as e:
+            return handleServerException(e)
+
+class UserGuideDetail(APIView):    
+    def get_or_create_user_guide(self, key, user_account):
+        try:
+            user_guide_master = UserGuideMaster.objects.get(key=key)
+            user_guide = UserGuide.objects.filter(
+                user_account=user_account, 
+                user_guide_master=user_guide_master
+            )
+
+            if user_guide.exists():
+                return user_guide.first()
+            else:
+                return UserGuide.objects.create(
+                    user_account=user_account,
+                    user_guide_master=user_guide_master,
+                )   
+        except Exception as e:
+            return None
+
+
+    authentication_classes = [JWTAuthentication]
+    def get(self, request):
+        try:
+            master_key = request.GET.get("master_key", "")
+            user_account = request.user_account
+
+            user_guide = UserGuide.objects.filter(
+                user_guide_master__key=master_key,
+                user_account=user_account
+            ).first()
+
+            dont_show_again = None
+            if user_guide:
+                dont_show_again = user_guide.dont_show_again
+            else:
+                dont_show_again = False
+
+            return Response(
+                {
+                    "isSuccess": True,
+                    "data": {
+                        "dont_show_again": dont_show_again,
+                    },
+                    "message": "User Guide retrieved successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+            
+        except Exception as e:
+            return handleServerException(e)
+    
+    authentication_classes = [JWTAuthentication]
+    def post(self, request):
+        try:
+            do_not_show_again = request.data.get("do_not_show_again", None)
+            key = request.data.get("key", None)
+            user_account = request.user_account
+
+            if key:
+                user_guide = self.get_or_create_user_guide(key, user_account)
+                user_guide.dont_show_again = do_not_show_again
+                user_guide.save()
+
+                return Response(
+                    {
+                        "isSuccess": True,
+                        "data": None,
+                        "message": "User guide updated successfully.",
+                    }
+                )
+                
         except Exception as e:
             return handleServerException(e)
 

@@ -15,6 +15,7 @@ from .views import (
     AccountCategoryList,
     AccountCategoryDetail,
     TwitterPromotionView,
+    UserGuideDetail,
     UserList,
     UserDetail,
     BankAccountList,
@@ -60,7 +61,7 @@ urlpatterns = [
     path("user/", UserList.as_view(), name="user-list"),
     path("user/<uuid:pk>/", UserDetail.as_view(), name="user-detail"),
 
-
+    path("user-guide/", UserGuideDetail.as_view(), name="user-guide-detail"),
 
     path("business-meta-data/<uuid:userId>/", BusinessAccountMetaDataDetail.as_view(), name="business-account-meta-data-detail"),
 
