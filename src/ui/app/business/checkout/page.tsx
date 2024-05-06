@@ -45,8 +45,6 @@ export default function CheckoutPage() {
   const [steps, setSteps] = useState<any>();
   const [doNotShowAgain, setDoNotShowAgain] = useState<boolean>(false);
 
-  // New user guide
-
   // Setting the state again and again so that the value of doNotShowAgain should be the updated one.
   useEffect(() => {
     const interactiveSteps = [
