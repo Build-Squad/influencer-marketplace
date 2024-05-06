@@ -120,7 +120,7 @@ const ProfileLayout = ({
     try {
       const { isSuccess, message } = await postService(`account/user-guide/`, {
         do_not_show_again: !doNotShowAgain,
-        key: "INFLUENCER_PROFILE",
+        key: USER_MASTER_KEY.INFLUENCER_PROFILE,
       });
 
       if (isSuccess) {
